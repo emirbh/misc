@@ -1,4 +1,4 @@
-package main
+package tests
 
 import (
 	"context"
@@ -14,10 +14,10 @@ import (
 )
 
 // TestExtendedJSON verifies that complex types like ObjectIDs and Dates
-// survive a full export-and-import cycle without losing type fidelity.
+// survive a full export-and-import cycle by wrapping them in a top-level BSON document.
 func TestExtendedJSON(t *testing.T) {
 	ctx := context.Background()
-	tempDir := t.TempDir() // Creates a secure, temporary folder unique to this test run
+	tempDir := t.TempDir() // Automatically isolated and cleaned up by Go
 	filePath := filepath.Join(tempDir, "test_extended.json")
 
 	// --- PHASE 1: Populate and Export ---
@@ -29,7 +29,7 @@ func TestExtendedJSON(t *testing.T) {
 
 	col1 := client1.Database("test_db").Collection("items")
 	originalID := primitive.NewObjectID()
-	originalTime := time.Now().Truncate(time.Millisecond) // Truncate because JSON drops nanoseconds
+	originalTime := time.Now().Truncate(time.Millisecond) // JSON precision drops nanoseconds
 
 	_, err = col1.InsertOne(ctx, bson.M{
 		"_id":        originalID,
@@ -45,8 +45,11 @@ func TestExtendedJSON(t *testing.T) {
 	var originalDocs []bson.M
 	_ = cursor.All(ctx, &originalDocs)
 
-	// Marshal into MongoDB Extended JSON
-	extJSON, err := bson.MarshalExtJSONIndent(originalDocs, false, true, "", "  ")
+	// FIX: Wrap the slice inside a top-level BSON document map
+	wrappedData := bson.M{"data": originalDocs}
+
+	// Marshal the wrapped document into MongoDB Extended JSON
+	extJSON, err := bson.MarshalExtJSONIndent(wrappedData, false, true, "", "  ")
 	if err != nil {
 		t.Fatalf("Failed to marshal Extended JSON: %v", err)
 	}
@@ -65,29 +68,29 @@ func TestExtendedJSON(t *testing.T) {
 
 	col2 := client2.Database("test_db").Collection("items")
 
-	// Read and process file
+	// Read file from disk
 	readData, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatalf("Failed to read file: %v", err)
 	}
 
-	var rawDocs []json.RawMessage
-	if err := json.Unmarshal(readData, &rawDocs); err != nil {
-		t.Fatalf("Failed to unmarshal array: %v", err)
+	// Unmarshal back into a wrapped BSON map.
+	// This automatically turns "$oid" and "$date" back into true Go/Mongo types natively!
+	var wrappedImport bson.M
+	if err := bson.UnmarshalExtJSON(readData, false, &wrappedImport); err != nil {
+		t.Fatalf("Extended unmarshal failed: %v", err)
 	}
 
+	// Extract the array from our wrapper key (decoded as primitive.A)
+	rawItems := wrappedImport["data"].(primitive.A)
+	
 	var importedDocs []interface{}
-	for _, raw := range rawDocs {
-		var doc bson.M
-		// Critical: Decodes "$oid" back into a true primitive.ObjectID
-		if err := bson.UnmarshalExtJSON(raw, false, &doc); err != nil {
-			t.Fatalf("Extended unmarshal failed: %v", err)
-		}
-		importedDocs = append(importedDocs, doc)
+	for _, item := range rawItems {
+		importedDocs = append(importedDocs, item)
 	}
 
 	if _, err := col2.InsertMany(ctx, importedDocs); err != nil {
-		t.Fatalf("Failed to import docs: %v", err)
+		t.Fatalf("Failed to import docs into Lungo: %v", err)
 	}
 
 	// --- PHASE 3: Assertions ---
@@ -97,14 +100,14 @@ func TestExtendedJSON(t *testing.T) {
 		t.Fatalf("Test Failed: Document lost or ID corrupted during loop: %v", err)
 	}
 
-	// Check if data type is correct (not a string, but an actual primitive.ObjectID)
+	// Type Assertion Check: Verify _id is a real primitive.ObjectID structure, not a string
 	if _, ok := verifiedDoc["_id"].(primitive.ObjectID); !ok {
-		t.Error("Type Assertion Failed: _id is not a primitive.ObjectID")
+		t.Error("Type Assertion Failed: _id did not decode back into a primitive.ObjectID")
 	}
 }
 
-// TestStandardJSON verifies export/import cycle using standard Go JSON.
-// Note: We avoid complex types here because standard JSON treats everything as primitive strings/floats.
+// TestStandardJSON verifies export/import cycle using standard Go JSON arrays.
+// Note: This works natively with arrays because standard Go JSON has no "TopElement" restrictions.
 func TestStandardJSON(t *testing.T) {
 	ctx := context.Background()
 	tempDir := t.TempDir()
@@ -132,7 +135,6 @@ func TestStandardJSON(t *testing.T) {
 
 	readData, _ := os.ReadFile(filePath)
 
-	// Standard Go JSON target slice
 	var importedDocs []bson.M
 	if err := json.Unmarshal(readData, &importedDocs); err != nil {
 		t.Fatalf("Standard JSON unmarshal failed: %v", err)
