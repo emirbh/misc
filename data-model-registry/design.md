@@ -85,6 +85,52 @@ type DataModel struct {
 - `type` must be `data-model` or `model_implementation`.
 - Physical models must have a non-empty `implements` field.
 
+### 2.6 Metadata
+
+Metadata is stored in a **separate collection** from the data models themselves, linked by `model_id` (which corresponds to the model's `$id`). This keeps JSON Schema documents clean and allows metadata to be queried and versioned independently.
+
+```go
+type Metadata struct {
+    ModelID   string    `json:"model_id"             bson:"_id"`
+    Name      string    `json:"name"                 bson:"name"`
+    Owner     string    `json:"owner"                bson:"owner"`
+    Version   int       `json:"version"              bson:"version"`
+    Status    string    `json:"status,omitempty"      bson:"status,omitempty"`
+    Tags      []string  `json:"tags,omitempty"        bson:"tags,omitempty"`
+    CreatedAt time.Time `json:"created_at"           bson:"created_at"`
+    UpdatedAt time.Time `json:"updated_at"           bson:"updated_at"`
+    CreatedBy string    `json:"created_by"           bson:"created_by"`
+    UpdatedBy string    `json:"updated_by"           bson:"updated_by"`
+}
+```
+
+| Field       | Description                                                              |
+|-------------|--------------------------------------------------------------------------|
+| `model_id`  | Foreign key to `DataModel.$id`. Used as `_id` in the metadata collection |
+| `name`      | Human-readable display name for the model                                |
+| `owner`     | Team or individual responsible for the model                             |
+| `version`   | Auto-incrementing version number, bumped on every update                 |
+| `status`    | Lifecycle status (e.g., `draft`, `active`, `deprecated`). Defaults to `draft` |
+| `tags`      | Free-form labels for categorization and filtering                        |
+| `created_at`| Timestamp of initial creation (UTC)                                      |
+| `updated_at`| Timestamp of last update (UTC)                                           |
+| `created_by`| Identity of the user who created the metadata                            |
+| `updated_by`| Identity of the user who last updated the metadata                       |
+
+**Why a separate collection?** The JSON Schema documents (`DataModel`) are the source of truth for schema structure. Mixing operational metadata (ownership, versioning, timestamps) into them would pollute the schema with non-standard fields. A separate collection allows:
+
+- Querying metadata independently (e.g., "all models owned by team X" without loading property trees).
+- Updating metadata (bump version, change owner) without rewriting the schema document.
+- Different access patterns and indexes optimized for each use case.
+
+**Validation rules for metadata:**
+
+- `model_id` is required and must reference an existing data model.
+- `name` is required.
+- `owner` is required.
+- `created_by` is required.
+- Duplicate metadata for the same `model_id` is rejected.
+
 ---
 
 ## 3. Architecture
@@ -202,6 +248,8 @@ Collections are named based on the configured domain and model scope:
 | `domain=billing, scope=both`     | `billing_datamodels_all`       |
 | `domain=inventory, scope=logical`| `inventory_datamodels_logical` |
 
+The metadata collection is named `<domain>_metadata` (e.g., `billing_metadata`). It is always a single collection per domain regardless of `model_scope`, since metadata applies to all model types.
+
 ### 5.2 Dynamic Database Naming
 
 The database name defaults to `<domain>_schema_registry` (e.g., `billing_schema_registry`) but can be overridden with the `mongo_db` configuration field.
@@ -221,13 +269,22 @@ The `peer_url` field connects the two instances so each can resolve cross-type r
 
 ### 5.4 MongoDB Indexes
 
-Three indexes are created on each collection at startup:
+**Data models collection** — three indexes:
 
 | Index Name     | Key(s)             | Type      | Purpose                                            |
 |----------------|--------------------|-----------|----------------------------------------------------|
-| `text_search`  | `_search`          | Text      | Full-text search across all model metadata          |
+| `text_search`  | `_search`          | Text      | Full-text search across all model content           |
 | `idx_type`     | `type`             | Standard  | Fast filtering by model type (logical/physical)     |
 | `idx_refs`     | `refs`             | Multi-key | O(log n) lookup for reference graph queries         |
+
+**Metadata collection** — four indexes:
+
+| Index Name       | Key(s)       | Type      | Purpose                                          |
+|------------------|--------------|-----------|--------------------------------------------------|
+| `idx_owner`      | `owner`      | Standard  | Filter models by owning team                     |
+| `idx_status`     | `status`     | Standard  | Filter by lifecycle status                       |
+| `idx_tags`       | `tags`       | Multi-key | Filter by tag label                              |
+| `idx_updated_at` | `updated_at` | Descending| Default sort order for metadata listings         |
 
 Index creation is idempotent — calling `EnsureIndexes` on startup is safe.
 
@@ -328,11 +385,26 @@ type Repository interface {
 }
 ```
 
+### 6.5 Metadata Repository Interface
+
+```go
+type MetadataRepository interface {
+    Save(ctx context.Context, meta domain.Metadata) error
+    FindByModelID(ctx context.Context, modelID string) (*domain.Metadata, error)
+    Delete(ctx context.Context, modelID string) error
+    List(ctx context.Context, opts MetadataListOptions) ([]domain.Metadata, error)
+}
+```
+
+Both the MongoDB and lungo packages implement `MetadataRepository`. The metadata collection shares the same database (and the same lungo JSON file in local dev) as the data models collection.
+
 ---
 
 ## 7. REST API
 
 ### 7.1 Endpoints
+
+**Data Model Endpoints:**
 
 | Method   | Path                        | Description                                        |
 |----------|-----------------------------|----------------------------------------------------|
@@ -344,7 +416,20 @@ type Repository interface {
 | `PUT`    | `/api/v1/models/{id}`       | Update a model (upsert)                            |
 | `DELETE` | `/api/v1/models/{id}`       | Delete a model (optional `?cascade=true`)          |
 | `GET`    | `/api/v1/models/{id}/graph` | Get one-hop reference graph for a model            |
+| `GET`    | `/api/v1/models/{id}/full`  | Get model with its metadata combined               |
 | `GET`    | `/api/v1/stats`             | Summary statistics (counts, unimplemented models)  |
+
+**Metadata Endpoints:**
+
+| Method   | Path                              | Description                                          |
+|----------|-----------------------------------|------------------------------------------------------|
+| `GET`    | `/api/v1/metadata`                | List metadata (filter by `?owner=`, `?status=`, `?tag=`) |
+| `POST`   | `/api/v1/metadata`                | Create metadata for a model                          |
+| `GET`    | `/api/v1/metadata/{modelID}`      | Get metadata by model ID                             |
+| `PUT`    | `/api/v1/metadata/{modelID}`      | Update metadata (auto-increments version)            |
+| `DELETE` | `/api/v1/metadata/{modelID}`      | Delete metadata                                      |
+
+**Note:** Model IDs containing special characters (e.g., `https://...`) must be URL-encoded when used as path parameters.
 
 ### 7.2 Search Parameters
 
@@ -405,6 +490,63 @@ curl -X DELETE "http://localhost:8080/api/v1/models/https://example.com/schemas/
 ```
 
 This deletes the logical model and all physical models that implement it.
+
+### 7.7 Example: Create Metadata
+
+```bash
+curl -X POST http://localhost:8080/api/v1/metadata \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model_id": "https://example.com/schemas/customer",
+    "name": "Customer Model",
+    "owner": "billing-team",
+    "created_by": "alice",
+    "tags": ["billing", "core"]
+  }'
+```
+
+Response includes auto-set fields: `version: 1`, `status: "draft"`, `created_at`, `updated_at`.
+
+### 7.8 Example: Update Metadata
+
+```bash
+curl -X PUT "http://localhost:8080/api/v1/metadata/https%3A%2F%2Fexample.com%2Fschemas%2Fcustomer" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Customer Model v2",
+    "status": "active",
+    "updated_by": "bob"
+  }'
+```
+
+Only provided fields are updated. `version` is auto-incremented and `updated_at` is set to the current time.
+
+### 7.9 Example: Get Model with Metadata
+
+```bash
+curl "http://localhost:8080/api/v1/models/https%3A%2F%2Fexample.com%2Fschemas%2Fcustomer/full"
+```
+
+Returns:
+
+```json
+{
+  "model": { "$id": "...", "title": "Customer", ... },
+  "metadata": { "name": "Customer Model v2", "owner": "billing-team", "version": 2, ... }
+}
+```
+
+### 7.10 Example: List Metadata by Owner
+
+```bash
+curl "http://localhost:8080/api/v1/metadata?owner=billing-team"
+```
+
+### 7.11 Example: List Metadata by Tag
+
+```bash
+curl "http://localhost:8080/api/v1/metadata?tag=core&limit=20"
+```
 
 ---
 
@@ -474,31 +616,39 @@ data-model-registry/
 ├── go.sum
 └── internal/
     ├── api/
-    │   └── handlers.go                  # REST API handlers
+    │   ├── handlers.go                  # Data model REST API handlers
+    │   └── metadata_handlers.go         # Metadata REST API handlers
     ├── config/
     │   ├── config.go                    # Config struct and validation
     │   └── config_test.go
     ├── domain/
-    │   ├── model.go                     # Core types and pure functions
-    │   └── model_test.go
+    │   ├── model.go                     # Core data model types
+    │   ├── model_test.go
+    │   ├── metadata.go                  # Metadata types and functions
+    │   └── metadata_test.go
     ├── fp/
     │   ├── fp.go                        # Generic FP utilities
     │   └── fp_test.go
     ├── repository/
-    │   ├── repository.go                # Storage interface
+    │   ├── repository.go                # Data model storage interface
+    │   ├── metadata_repository.go       # Metadata storage interface
     │   ├── local/
     │   │   ├── local_repo.go            # In-memory store (inverted index)
     │   │   └── local_repo_test.go
     │   ├── lungo/
-    │   │   ├── lungo_repo.go            # Lungo MongoDB-compatible store
+    │   │   ├── lungo_repo.go            # Lungo data model store
     │   │   ├── lungo_repo_test.go
+    │   │   ├── metadata_repo.go         # Lungo metadata store
     │   │   └── jsonstore.go             # JSON file persistence for lungo
     │   └── mongo/
-    │       ├── mongo_repo.go            # Production MongoDB store
-    │       └── mongo_repo_test.go
+    │       ├── mongo_repo.go            # MongoDB data model store
+    │       ├── mongo_repo_test.go
+    │       └── metadata_repo.go         # MongoDB metadata store
     └── service/
-        ├── model_service.go             # Business logic layer
-        └── model_service_test.go
+        ├── model_service.go             # Data model business logic
+        ├── model_service_test.go
+        ├── metadata_service.go          # Metadata business logic
+        └── metadata_service_test.go
 ```
 
 ---
@@ -520,13 +670,13 @@ data-model-registry/
 
 | Package                        | Tests                                                                      |
 |--------------------------------|----------------------------------------------------------------------------|
-| `internal/domain`              | Ref extraction, search text building, prepare, validation, predicates      |
+| `internal/domain`              | Ref extraction, search text building, prepare, validation, predicates, metadata validation/prepare |
 | `internal/fp`                  | Map, Filter, Reduce, FlatMap, Unique, Paginate, Tokenize, Result           |
 | `internal/repository/local`    | Full CRUD, search (single/multi-word, case-insensitive), pagination, refs  |
 | `internal/repository/lungo`    | CRUD, search, find implementations, list with type filter                  |
 | `internal/repository/mongo`    | Same suite as local (requires running MongoDB, skipped if `MONGO_URI` unset) |
-| `internal/service`             | Register, remove (with/without cascade), stats, reference graph            |
-| `internal/config`              | Collection naming, database naming, validation                             |
+| `internal/service`             | Register, remove (with/without cascade), stats, reference graph, metadata CRUD, model+metadata join |
+| `internal/config`              | Collection naming, database naming, metadata collection naming, validation |
 
 ### 12.2 Running Tests
 
@@ -571,6 +721,17 @@ Lungo ships with a `FileStore` that serializes its catalog to a BSON binary file
 - JSON files are human-readable, making it easy to inspect or manually edit the local database during development.
 - The file (`local_dev_db.json`) can be committed to version control to share seed data across the team if desired.
 
-### 13.5 Cobra + Viper
+### 13.5 Separate Metadata Collection
+
+Metadata (ownership, versioning, timestamps, tags) is stored in a dedicated `<domain>_metadata` collection rather than embedded in the data model documents. This was chosen because:
+
+- **Schema purity** — JSON Schema documents remain standards-compliant with no custom operational fields mixed in. Consumers who download a schema get a valid JSON Schema, not a hybrid document.
+- **Independent query patterns** — "show all models owned by team X" or "list recently updated models" requires scanning metadata fields. A separate collection with targeted indexes (owner, status, tags, updated_at) serves these queries efficiently without touching the schema documents.
+- **Independent update cadence** — metadata changes (ownership transfer, status promotion, tagging) happen far more frequently than schema changes. Updating a small metadata document is cheaper than rewriting an entire schema document with deep property trees.
+- **Version tracking** — the auto-incrementing `version` field on metadata tracks how many times the operational attributes changed, independent of schema content versions.
+
+The tradeoff is an extra read when both schema and metadata are needed together, but the `/api/v1/models/{id}/full` endpoint handles this as a parallel fetch internally.
+
+### 13.6 Cobra + Viper
 
 Cobra provides a structured CLI with subcommands, flags, and help generation. Viper layers configuration from files, environment variables, and flags with a single unified API. Together they allow the same binary to be configured differently across environments without code changes.
