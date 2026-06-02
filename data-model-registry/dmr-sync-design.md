@@ -1,6 +1,6 @@
 # DMR Synchronization Sub-System — Design Document
 
-**Version:** 1.2
+**Version:** 1.3
 **Status:** Draft — Pending Review
 **Language:** Go
 **Paradigm:** Functional Programming
@@ -13,7 +13,8 @@
 |---|---|
 | 1.0 | Initial draft |
 | 1.1 | Transport narrowed to AMQ + in-memory; co-located broker topology; full payload on ReconcileResponse; ClaimConflict audit to MongoDB; reconciliation via message bus only; bounded local event queue; no automatic failback |
-| 1.2 | ClaimConflictRecord written by both owner and challenger (Role field); DeleteConflict event for unauthorised ModelDeleted, recorded by both owner and originator; no BrokerRoleEvent (broker topology stays out of sync bus); package path moved to internal/sync |
+| 1.2 | ClaimConflictRecord written by both owner and challenger (Role field); DeleteConflict event for unauthorised ModelDeleted, recorded by both owner and originator; no BrokerRoleEvent; package path moved to internal/sync |
+| 1.3 | Organic growth topology (1→2→N pods); single-pod no-op sync; PeerDiscoveryRequest/Response for new pod bootstrap; BootstrapTimeout config; growth topology table; broker role table per pod count |
 
 ---
 
@@ -22,18 +23,19 @@
 1. [Overview](#1-overview)
 2. [Goals & Non-Goals](#2-goals--non-goals)
 3. [Architecture](#3-architecture)
-4. [Ownership Model](#4-ownership-model)
-5. [Event Catalogue](#5-event-catalogue)
-6. [Conflict Records](#6-conflict-records)
-7. [Transport Layer](#7-transport-layer)
-8. [Peer Registry](#8-peer-registry)
-9. [Heartbeat](#9-heartbeat)
-10. [Reconciliation & Remediation](#10-reconciliation--remediation)
-11. [Degraded Mode](#11-degraded-mode)
-12. [Package Structure](#12-package-structure)
-13. [Interface Definitions](#13-interface-definitions)
-14. [Configuration](#14-configuration)
-15. [Testing Strategy](#15-testing-strategy)
+4. [Organic Growth Topology](#4-organic-growth-topology)
+5. [Ownership Model](#5-ownership-model)
+6. [Event Catalogue](#6-event-catalogue)
+7. [Conflict Records](#7-conflict-records)
+8. [Transport Layer](#8-transport-layer)
+9. [Peer Registry](#9-peer-registry)
+10. [Heartbeat](#10-heartbeat)
+11. [Reconciliation & Remediation](#11-reconciliation--remediation)
+12. [Degraded Mode](#12-degraded-mode)
+13. [Package Structure](#13-package-structure)
+14. [Interface Definitions](#14-interface-definitions)
+15. [Configuration](#15-configuration)
+16. [Testing Strategy](#16-testing-strategy)
 
 ---
 
@@ -47,7 +49,9 @@ A Data Model Registry (DMR) deployment consists of multiple instances, each resp
 
 This document describes the `sync` sub-system that enables DMR instances to self-coordinate through event-driven messaging over **Red Hat AMQ**, with deterministic ownership rules and a reconciliation mechanism to detect and correct state divergence.
 
-Every DMR pod runs an **identical image** that includes both the DMR service and an AMQ broker. Broker roles (Primary, Standby, Dormant) are negotiated at runtime by the AMQ cluster — they are not baked into the image or the DMR configuration. The sync package has no awareness of which pod holds which broker role; that is purely broker-layer state.
+Every DMR pod runs an **identical image** that includes both the DMR service and an AMQ broker. Broker roles (Primary, Standby, Dormant) are negotiated at runtime by the AMQ cluster. The sync package has no awareness of which pod holds which broker role — that is purely broker-layer state.
+
+The deployment grows organically: starting from a single pod, adding pods one at a time. The first two pods form the active HA broker pair; all subsequent pods carry dormant brokers ready to be recruited if the standby is lost.
 
 The `sync` package lives at `internal/sync` within the DMR module. The internal boundary enforces the parent-package relationship now, while the design (pluggable transport, EventHandler interface) means it can be extracted to a standalone module later with only a path rename and `go.mod` split.
 
@@ -57,6 +61,8 @@ The `sync` package lives at `internal/sync` within the DMR module. The internal 
 
 ### Goals
 
+- Support organic growth from 1 pod upward with no reconfiguration of existing pods
+- Bootstrap peer awareness on startup via `PeerDiscoveryRequest` broadcast
 - Propagate scope ownership (domain + model type) across all instances at startup
 - Detect and resolve conflicts when two instances claim the same scope
 - Distribute model mutation events (update, delete) to all peers
@@ -68,16 +74,18 @@ The `sync` package lives at `internal/sync` within the DMR module. The internal 
 - Provide an **in-memory transport** for local development and testing
 - Survive broker failover transparently via AMQ client failover URLs
 - Operate in **degraded mode** (local only) when no broker Primary is available
+- Operate correctly as a single pod with no peers (no-op sync, no errors)
 
 ### Non-Goals
 
-- Dynamic scope reassignment at runtime (ownership is static per instance lifecycle)
+- Dynamic scope reassignment at runtime
 - Distributed locking or leader election
-- Cross-instance write coordination (the owner is the single writer for its scope)
+- Cross-instance write coordination
 - HTTP endpoints for triggering reconciliation
 - Kafka, RabbitMQ, or Redis transport adapters
 - Automatic failback when a previously failed broker pod recovers
-- Exposing AMQ broker role (Primary/Standby/Dormant) as a sync event — broker topology is infrastructure state, not application state
+- Exposing AMQ broker role as a sync event
+- High-scale broker topology (AMQ cluster with redistribution) — deferred to future
 
 ---
 
@@ -106,79 +114,29 @@ graph TB
             DMR3 <--> AMQ3
         end
 
+        subgraph PodN["DMR Pod N (identical image)"]
+            DMRN[DMR Service]
+            AMQN[AMQ Broker\nDORMANT]
+            DMRN <--> AMQN
+        end
+
         AMQ1 <-->|replication| AMQ2
-        AMQ2 <-->|cluster| AMQ3
         AMQ1 <-->|cluster| AMQ3
+        AMQ2 <-->|cluster| AMQ3
+        AMQ3 -. cluster .-> AMQN
     end
 
-    OP[Operator] -->|publishes ReconcileRequest\nvia message bus| AMQ1
-    MongoDB1[(MongoDB\nPod 1)] --- DMR1
-    MongoDB2[(MongoDB\nPod 2)] --- DMR2
-    MongoDB3[(MongoDB\nPod 3)] --- DMR3
+    OP[Operator] -->|ReconcileRequest\nvia message bus| AMQ1
 ```
 
-### 3.2 Broker Role Lifecycle
-
-Roles are negotiated by the AMQ cluster at runtime. The DMR sync package has no visibility into or dependency on these roles.
-
-```mermaid
-stateDiagram-v2
-    [*] --> DORMANT : Pod starts\n(broker joins cluster)
-
-    DORMANT --> STANDBY : Recruited by cluster
-    STANDBY --> PRIMARY : PRIMARY pod dies\n(automatic promotion)
-    PRIMARY --> DORMANT : Recovered pod rejoins\n(no automatic failback)
-    DORMANT --> PRIMARY : No PRIMARY exists\n(last broker standing)
-
-    note right of PRIMARY
-        Serves all sync traffic.
-        Replicates to STANDBY.
-        DMR unaware of this role.
-    end note
-
-    note right of STANDBY
-        Passive. Replicating.
-        Ready to promote.
-        DMR unaware of this role.
-    end note
-
-    note right of DORMANT
-        Connected to cluster.
-        Eligible for STANDBY.
-        No automatic failback.
-        DMR unaware of this role.
-    end note
-```
-
-### 3.3 Failover Chain
-
-```mermaid
-sequenceDiagram
-    participant P1 as Pod 1 AMQ (PRIMARY)
-    participant P2 as Pod 2 AMQ (STANDBY)
-    participant P3 as Pod 3 AMQ (DORMANT)
-    participant C as DMR Clients (all pods)
-
-    Note over P1,P3: Normal operation
-    P1->>P2: Replicating continuously
-
-    Note over P1: Pod 1 dies
-    P2->>P2: Detect PRIMARY lost → promote
-    P3->>P3: Recruited as new STANDBY
-    C->>P2: Failover reconnect (automatic, transparent to DMR)
-
-    Note over P1: Pod 1 recovers
-    P1->>P1: Joins cluster as DORMANT
-    P1-->>P2: Does NOT reclaim PRIMARY
-```
-
-### 3.4 Component Diagram
+### 3.2 Component Diagram
 
 ```mermaid
 graph TB
     subgraph internal/sync
         CFG[Config\nsync/config.go]
         COORD[Coordinator\nsync/coordinator.go]
+        DISC[Discovery\nsync/discovery/]
         HB[Heartbeat\nsync/heartbeat/]
         REG[Peer Registry\nsync/peer/]
         REC[Reconciler\nsync/reconcile/]
@@ -186,6 +144,7 @@ graph TB
         DQ[Degraded Queue\nsync/queue/]
 
         CFG --> COORD
+        COORD --> DISC
         COORD --> HB
         COORD --> REG
         COORD --> REC
@@ -218,9 +177,96 @@ graph TB
 
 ---
 
-## 4. Ownership Model
+## 4. Organic Growth Topology
 
-### 4.1 Claim-Based, Immutable Ownership
+### 4.1 Broker Role by Pod Count
+
+The deployment grows one pod at a time. No existing pod requires reconfiguration when a new pod is added. The `FailoverURL` in each pod's config lists all known peer broker addresses — new pods are added to the config of future pods only.
+
+| Pod Count | Pod 1 Broker | Pod 2 Broker | Pod 3+ Broker | Sync Behaviour |
+|---|---|---|---|---|
+| 1 | PRIMARY | — | — | No-op: no peers, ScopeClaimed published to empty bus |
+| 2 | PRIMARY | STANDBY | — | Full HA pair, sync active |
+| 3 | PRIMARY | STANDBY | DORMANT | Full HA, Pod 3 participates in sync as DMR peer |
+| N | PRIMARY | STANDBY | DORMANT (all) | Full HA, all pods participate in sync |
+
+### 4.2 Failover and Recovery at Any N
+
+```mermaid
+sequenceDiagram
+    participant P1 as Pod 1 (PRIMARY)
+    participant P2 as Pod 2 (STANDBY)
+    participant P3 as Pod 3..N (DORMANT)
+    participant C as All DMR Services
+
+    Note over P1,P3: Normal — Pod 1 is PRIMARY
+    P1->>P2: Replicating continuously
+
+    Note over P1: Pod 1 dies
+    P2->>P2: Promote to PRIMARY
+    P3->>P3: Pod 3 recruited as new STANDBY
+    C->>P2: Failover reconnect (transparent to DMR)
+
+    Note over P1: Pod 1 recovers
+    P1->>P1: Rejoins as DORMANT (no failback)
+    P2-->>P2: Remains PRIMARY
+```
+
+### 4.3 Single-Pod Behaviour
+
+A single-pod deployment is a fully valid starting state. The sync sub-system starts cleanly with zero peers:
+
+- `PeerDiscoveryRequest` is published on startup and times out after `BootstrapTimeout` with no responses — this is not an error
+- `ScopeClaimed` is published to the bus with no consumers — discarded, not an error
+- Heartbeat ticker runs normally — no peers update, no TTL watches fire
+- Reconciler has nothing to diff — no-op
+- All local DMR operations (read, write, delete) function normally
+
+When a second pod is added later, it discovers Pod 1 via `PeerDiscoveryRequest` and the sync relationship is established without any change to Pod 1.
+
+### 4.4 New Pod Bootstrap — PeerDiscoveryRequest
+
+When a new pod starts it does not know about existing peers. Existing peers will not re-broadcast their `ScopeClaimed` unprompted. The bootstrap sequence resolves this:
+
+```mermaid
+sequenceDiagram
+    participant New as New Pod (Pod N)
+    participant B as dmr.sync.scope
+    participant P1 as Pod 1 (existing)
+    participant P2 as Pod 2 (existing)
+    participant Reg as Peer Registry (Pod N)
+
+    New->>B: Publish PeerDiscoveryRequest\n{requesterID=N, timestamp}
+
+    par Pod 1 responds
+        B->>P1: Deliver PeerDiscoveryRequest
+        P1->>B: Publish ScopeClaimed\n{instanceID=1, domain, types, configHash}
+    and Pod 2 responds
+        B->>P2: Deliver PeerDiscoveryRequest
+        P2->>B: Publish ScopeClaimed\n{instanceID=2, domain, types, configHash}
+    end
+
+    B->>New: Deliver ScopeClaimed (Pod 1)
+    New->>Reg: Register(Pod 1) ✓
+    B->>New: Deliver ScopeClaimed (Pod 2)
+    New->>Reg: Register(Pod 2) ✓
+
+    Note over New: BootstrapTimeout expires
+    New->>New: Peer registry populated\nPublish own ScopeClaimed\nBegin normal operation
+```
+
+**Key points:**
+- `PeerDiscoveryRequest` is published on `dmr.sync.scope` (multicast) — all existing peers receive it
+- Existing peers respond by re-publishing their own `ScopeClaimed` — no new response event type needed
+- New pod waits `BootstrapTimeout` for responses, then publishes its own `ScopeClaimed` and begins normal operation
+- If no responses arrive within `BootstrapTimeout`, pod assumes it is first in the cluster — valid, not an error
+- Existing peers also receive the new pod's `ScopeClaimed` and register it in their own peer registries
+
+---
+
+## 5. Ownership Model
+
+### 5.1 Claim-Based, Immutable Ownership
 
 Scope ownership is **configured at startup** and never changes during an instance's lifetime. The rule is: **first claim wins**.
 
@@ -228,7 +274,7 @@ Scope ownership is **configured at startup** and never changes during an instanc
 sequenceDiagram
     participant A as DMR Instance A (first)
     participant B as Broker
-    participant C as DMR Instance B (challenger)
+    participant C as DMR Instance C (challenger)
     participant MA as MongoDB (Instance A)
     participant MC as MongoDB (Instance C)
 
@@ -238,20 +284,23 @@ sequenceDiagram
 
     Note over C: Instance C starts with same scope config
 
+    C->>B: Publish PeerDiscoveryRequest
+    B->>A: Deliver PeerDiscoveryRequest
+    A->>B: Publish ScopeClaimed (discovery response)
+    B->>C: Deliver ScopeClaimed — payments/logical already claimed by A
+
     C->>B: Publish ScopeClaimed\n{instanceID=C, domain=payments, types=[logical]}
     B->>A: Deliver ScopeClaimed
     A->>A: FindOwner(payments, logical) → owned by A
     A->>B: Publish ClaimConflict\n{ownerID=A, challengerID=C, scope=...}
     B->>C: Deliver ClaimConflict
 
-    A->>MA: Persist ClaimConflictRecord\n{role=owner, ...}
-    C->>MC: Persist ClaimConflictRecord\n{role=challenger, ...}
+    A->>MA: Persist ClaimConflictRecord {role=owner}
+    C->>MC: Persist ClaimConflictRecord {role=challenger}
     C->>C: Stand down — will not write for this scope
 ```
 
-### 4.2 Unauthorised Delete — DeleteConflict
-
-A `ModelDeleted` event originating from a non-owner is a protocol violation. The owner rejects it and both parties record the conflict.
+### 5.2 Unauthorised Delete — DeleteConflict
 
 ```mermaid
 sequenceDiagram
@@ -263,17 +312,15 @@ sequenceDiagram
 
     X->>B: Publish ModelDeleted\n{originID=X, modelID=m1, domain=payments}
     B->>O: Deliver ModelDeleted
-
     O->>O: FindOwner(payments, logical) → owner is O, not X
     O->>O: Reject — do not apply deletion
     O->>B: Publish DeleteConflict\n{ownerID=O, originID=X, modelID=m1, currentModel=FullModel}
-
     B->>X: Deliver DeleteConflict
-    O->>MO: Persist DeleteConflictRecord\n{role=rejector, ...}
-    X->>MX: Persist DeleteConflictRecord\n{role=originator, ...}
+    O->>MO: Persist DeleteConflictRecord {role=rejector}
+    X->>MX: Persist DeleteConflictRecord {role=originator}
 ```
 
-### 4.3 Peer State Machine
+### 5.3 Peer State Machine
 
 ```mermaid
 stateDiagram-v2
@@ -299,21 +346,59 @@ stateDiagram-v2
 
 ---
 
-## 5. Event Catalogue
+## 6. Event Catalogue
 
 All event payloads are defined in the **DMR package** (`dmr/sync_events.go`). The sync package carries them in a generic `Envelope[T]`.
 
-### 5.1 Topics, Address Types, and Events
+### 6.1 Topics, Address Types, and Events
 
 | Topic | AMQ Address Type | Event Types | Publisher | Consumer |
 |---|---|---|---|---|
-| `dmr.sync.scope` | Multicast | `ScopeClaimed`, `ScopeReleased`, `ClaimConflict`, `DeleteConflict` | self / owner | all peers |
+| `dmr.sync.scope` | Multicast | `PeerDiscoveryRequest`, `ScopeClaimed`, `ScopeReleased`, `ClaimConflict`, `DeleteConflict` | self / owner | all peers |
 | `dmr.sync.heartbeat` | Multicast | `HeartbeatEvent` | self | all peers |
 | `dmr.sync.model` | Multicast | `ModelUpdated`, `ModelDeleted` | scope owner | all peers |
 | `dmr.sync.reconcile.request` | Multicast | `ReconcileRequest` | any instance | scope owner |
 | `dmr.sync.reconcile.reply.{instanceID}` | **Anycast** | `ReconcileResponse` | scope owner | requesting instance only |
 
-### 5.2 Envelope and Payload Types
+### 6.2 Startup Sequence — Full Event Flow
+
+```mermaid
+sequenceDiagram
+    participant N as New Pod
+    participant B as Message Bus
+    participant P as Existing Peers
+
+    rect rgb(220, 240, 255)
+        Note over N,P: Phase 1 — Discovery (BootstrapTimeout window)
+        N->>B: PeerDiscoveryRequest
+        B->>P: Deliver
+        P->>B: ScopeClaimed (each peer responds)
+        B->>N: Deliver ScopeClaimed (all peers)
+        N->>N: Populate peer registry
+    end
+
+    rect rgb(220, 255, 220)
+        Note over N,P: Phase 2 — Announce self
+        N->>B: ScopeClaimed {own scope}
+        B->>P: Deliver — peers register new pod
+    end
+
+    rect rgb(255, 240, 220)
+        Note over N,P: Phase 3 — Reconcile
+        N->>B: ReconcileRequest (one per owned scope)
+        B->>P: Deliver to scope owners
+        P->>B: ReconcileResponse (full model payloads)
+        B->>N: Deliver responses
+        N->>N: Diff and apply
+    end
+
+    rect rgb(240, 220, 255)
+        Note over N,P: Phase 4 — Normal operation
+        N->>B: HeartbeatEvent (every HeartbeatInterval)
+    end
+```
+
+### 6.3 Envelope and Payload Types
 
 ```mermaid
 classDiagram
@@ -324,6 +409,11 @@ classDiagram
         +Timestamp  time.Time
         +SchemaVer  int
         +Payload    T
+    }
+
+    class PeerDiscoveryRequest {
+        +RequesterID string
+        +Timestamp   time.Time
     }
 
     class ScopeClaimed {
@@ -408,6 +498,7 @@ classDiagram
         +Payload    JSONSchema
     }
 
+    Envelope~T~ --> PeerDiscoveryRequest
     Envelope~T~ --> ScopeClaimed
     Envelope~T~ --> ScopeReleased
     Envelope~T~ --> ClaimConflict
@@ -423,35 +514,11 @@ classDiagram
 
 ---
 
-## 6. Conflict Records
+## 7. Conflict Records
 
-Both conflict types are persisted to MongoDB by **both parties** involved. The `Role` field distinguishes perspective.
+Both conflict types are persisted to MongoDB by **both parties** involved. The `Role` field distinguishes perspective. Both record types live in a single `conflict_records` collection with a `type` discriminator field.
 
-### 6.1 ClaimConflictRecord
-
-```mermaid
-classDiagram
-    class ClaimConflictRecord {
-        +ID           ObjectID
-        +OwnerID      string
-        +ChallengerID string
-        +Domain       string
-        +ModelTypes   []ModelType
-        +DetectedAt   time.Time
-        +RecordedAt   time.Time
-        +Role         ConflictRole
-    }
-
-    class ConflictRole {
-        <<enumeration>>
-        owner
-        challenger
-        rejector
-        originator
-    }
-
-    ClaimConflictRecord --> ConflictRole
-```
+### 7.1 ClaimConflictRecord
 
 | Field | Owner record | Challenger record |
 |---|---|---|
@@ -459,25 +526,7 @@ classDiagram
 | `ChallengerID` | the instance that was rejected | self |
 | `Role` | `owner` | `challenger` |
 
-### 6.2 DeleteConflictRecord
-
-```mermaid
-classDiagram
-    class DeleteConflictRecord {
-        +ID           ObjectID
-        +OwnerID      string
-        +OriginID     string
-        +ModelID      string
-        +Domain       string
-        +ModelType    ModelType
-        +CurrentModel FullModel
-        +DetectedAt   time.Time
-        +RecordedAt   time.Time
-        +Role         ConflictRole
-    }
-
-    DeleteConflictRecord --> ConflictRole
-```
+### 7.2 DeleteConflictRecord
 
 | Field | Owner (rejector) record | Originator record |
 |---|---|---|
@@ -486,23 +535,25 @@ classDiagram
 | `CurrentModel` | full model that was protected | full model received in `DeleteConflict` event |
 | `Role` | `rejector` | `originator` |
 
-### 6.3 MongoDB Collection
-
-Both record types live in a dedicated `conflict_records` collection with a `type` discriminator field (`claim` or `delete`). This keeps conflict audit queries in one place.
+### 7.3 MongoDB Collection Schema
 
 ```
 conflict_records
-  ├── type:  "claim" | "delete"
-  ├── role:  "owner" | "challenger" | "rejector" | "originator"
-  ├── domain, modelType, detectedAt   ← indexed for operator queries
+  ├── type        "claim" | "delete"         ← discriminator, indexed
+  ├── role        "owner" | "challenger"
+  │               "rejector" | "originator"
+  ├── domain                                  ← indexed
+  ├── model_type                              ← indexed
+  ├── detected_at                             ← indexed
+  ├── recorded_at
   └── ...type-specific fields
 ```
 
 ---
 
-## 7. Transport Layer
+## 8. Transport Layer
 
-### 7.1 Interface
+### 8.1 Interface
 
 ```mermaid
 classDiagram
@@ -519,17 +570,6 @@ classDiagram
         HEALTHY
         DEGRADED
         UNAVAILABLE
-    }
-
-    class MessageHandler {
-        <<type>>
-        func(msg Message) error
-    }
-
-    class Message {
-        +Topic   string
-        +Payload []byte
-        +Headers map~string~string~
     }
 
     class MemoryTransport {
@@ -555,13 +595,11 @@ classDiagram
     Transport <|.. MemoryTransport
     Transport <|.. AMQTransport
     Transport --> TransportStatus
-    Transport --> MessageHandler
-    MessageHandler --> Message
 ```
 
-### 7.2 AMQ Connection Strategy
+### 8.2 AMQ Connection Strategy
 
-Each DMR pod connects to its **local AMQ broker first**, falling back to peers. The sync package has no awareness of which pod is Primary — the failover URL handles that transparently.
+Each DMR pod connects to its **local AMQ broker first**, falling back to cluster peers. The sync package has no awareness of which pod is Primary.
 
 ```
 failover:(amqp://localhost:5672,amqp://pod2:5672,amqp://pod3:5672)
@@ -571,12 +609,9 @@ failover:(amqp://localhost:5672,amqp://pod2:5672,amqp://pod3:5672)
   &failover.maxReconnectAttempts=-1
 ```
 
-`randomize=false` — localhost always tried first, keeps traffic local.  
-`maxReconnectAttempts=-1` — retry indefinitely; Coordinator degraded mode handles service-level consequences.
+As new pods are added, their addresses are included in the `FailoverURL` of subsequently deployed pods. Existing pods do not need their failover URL updated — the cluster handles message routing internally.
 
-### 7.3 Address Type Mapping
-
-The `AMQTransport` adapter resolves address type from the topic name internally. Callers use the same `Publish`/`Subscribe` API regardless.
+### 8.3 Address Type Mapping
 
 | Topic prefix | AMQ address type | Reason |
 |---|---|---|
@@ -584,15 +619,15 @@ The `AMQTransport` adapter resolves address type from the topic name internally.
 | `dmr.sync.heartbeat` | Multicast | All peers must receive |
 | `dmr.sync.model` | Multicast | All peers must receive |
 | `dmr.sync.reconcile.request` | Multicast | All potential owners must receive |
-| `dmr.sync.reconcile.reply.*` | Anycast | Point-to-point — avoids durable subscription duplication in clustered AMQ |
+| `dmr.sync.reconcile.reply.*` | Anycast | Point-to-point reply per instance |
 
 ---
 
-## 8. Peer Registry
+## 9. Peer Registry
 
-### 8.1 Structure
+### 9.1 Structure
 
-The peer registry is an **in-memory claim ledger**, rebuilt on startup via incoming `ScopeClaimed` events from live peers.
+The peer registry is an **in-memory claim ledger**, populated at startup via `PeerDiscoveryRequest` and maintained via incoming events thereafter.
 
 ```mermaid
 classDiagram
@@ -631,7 +666,7 @@ classDiagram
     PeerInfo --> PeerStatus
 ```
 
-### 8.2 Scope Lookup
+### 9.2 Scope Lookup
 
 ```mermaid
 flowchart TD
@@ -645,7 +680,7 @@ flowchart TD
 
 ---
 
-## 9. Heartbeat
+## 10. Heartbeat
 
 ```mermaid
 sequenceDiagram
@@ -653,10 +688,9 @@ sequenceDiagram
     participant B as dmr.sync.heartbeat
     participant Peer as DMR Peer
     participant Reg as Peer Registry
-    participant Rec as Reconciler
 
     loop Every HeartbeatInterval
-        Self->>B: Publish HeartbeatEvent\n{instanceID, domain, types, schemaHash, modelCount}
+        Self->>B: HeartbeatEvent\n{instanceID, domain, types, schemaHash, modelCount}
     end
 
     B->>Peer: Deliver HeartbeatEvent
@@ -666,7 +700,7 @@ sequenceDiagram
     alt Hash matches
         Peer->>Peer: No action
     else Hash differs
-        Peer->>B: Publish ReconcileRequest\non dmr.sync.reconcile.request
+        Peer->>B: Publish ReconcileRequest
     end
 
     loop Every TTL check interval
@@ -686,32 +720,21 @@ sequenceDiagram
 
 ---
 
-## 10. Reconciliation & Remediation
+## 11. Reconciliation & Remediation
 
 Reconciliation is triggered **exclusively via the message bus**.
 
-### 10.1 Trigger Points
+### 11.1 Trigger Points
 
-```mermaid
-flowchart TD
-    T1[HeartbeatEvent:\nmismatched SchemaHash]
-    T2[Peer: DEAD → ACTIVE]
-    T3[Operator publishes\nReconcileRequest manually]
-    T4[Scheduled reconciliation\nperiodic timer]
+| Trigger | Who publishes ReconcileRequest |
+|---|---|
+| HeartbeatEvent with mismatched SchemaHash | Receiver |
+| Peer transitions DEAD → ACTIVE | All peers |
+| New pod completes bootstrap (Phase 3) | New pod |
+| Scheduled reconciliation timer | Self |
+| Operator publishes ReconcileRequest manually | Operator |
 
-    T1 & T2 & T3 & T4 --> RQ[Publish ReconcileRequest\non dmr.sync.reconcile.request]
-
-    RQ --> OWN[Owner receives request]
-    OWN --> RS[Publish ReconcileResponse\non dmr.sync.reconcile.reply.requesterID\nwith full FullModel payloads]
-    RS --> DIFF[Requester diffs response vs local]
-    DIFF --> CLASS[Classify divergences]
-
-    CLASS --> AR{Auto-resolvable\nand auto mode on?}
-    AR -->|Yes| APPLY[Apply owner FullModel\nowner always wins]
-    AR -->|No| QUEUE[Add to RemediationReport\nfor operator]
-```
-
-### 10.2 Reconcile Flow
+### 11.2 Reconcile Flow
 
 ```mermaid
 sequenceDiagram
@@ -724,19 +747,19 @@ sequenceDiagram
     B->>Own: Deliver
 
     Own->>Own: Load all models for scope
-    Own->>B: ReconcileResponse on\ndmr.sync.reconcile.reply.{requesterID}\n{models: []FullModel, fullHash}
+    Own->>B: ReconcileResponse\non dmr.sync.reconcile.reply.{requesterID}\n{models: []FullModel, fullHash}
     B->>Req: Deliver (anycast)
 
     loop For each divergence
         alt MISSING | PHANTOM | CONFLICT
-            Req->>Repo: Apply owner FullModel (owner wins)
+            Req->>Repo: Apply owner FullModel (owner always wins)
         else CLAIM_CONFLICT | OWNER_UNREACHABLE
             Req->>Req: Add to RemediationReport
         end
     end
 ```
 
-### 10.3 Divergence Classification
+### 11.3 Divergence Classification
 
 | Kind | Description | Auto-Resolvable | Resolution |
 |---|---|---|---|
@@ -746,7 +769,7 @@ sequenceDiagram
 | `CLAIM_CONFLICT` | Two instances claimed same scope | No | Operator fixes config, restarts challenger |
 | `OWNER_UNREACHABLE` | Owner is DEAD | No | Operator intervention |
 
-### 10.4 RemediationReport
+### 11.4 RemediationReport
 
 ```mermaid
 classDiagram
@@ -782,11 +805,11 @@ classDiagram
 
 ---
 
-## 11. Degraded Mode
+## 12. Degraded Mode
 
-When no AMQ Primary is reachable the Coordinator enters **degraded mode**. DMR continues to serve local reads and writes normally — only cross-instance event propagation is affected.
+When no AMQ Primary is reachable the Coordinator enters **degraded mode**. DMR continues to serve local reads and writes normally.
 
-### 11.1 State Machine
+### 12.1 State Machine
 
 ```mermaid
 stateDiagram-v2
@@ -799,7 +822,7 @@ stateDiagram-v2
     DEGRADED --> NORMAL : Full broker recovery
 ```
 
-### 11.2 Behaviour Per State
+### 12.2 Behaviour Per State
 
 | State | Event Publishing | Heartbeat | Local Reads | Local Writes |
 |---|---|---|---|---|
@@ -807,7 +830,7 @@ stateDiagram-v2
 | `DEGRADED` | Queued locally (bounded) | Paused | ✓ | ✓ |
 | `ISOLATED` | Dropped (logged) | Paused | ✓ | ✓ |
 
-### 11.3 Recovery Sequence
+### 12.3 Recovery Sequence
 
 ```mermaid
 sequenceDiagram
@@ -818,7 +841,6 @@ sequenceDiagram
 
     T->>C: Status → DEGRADED
     C->>C: Enter DEGRADED mode
-    Note over Q: Events accumulate (bounded)
 
     B->>T: Connection restored
     T->>C: Status → HEALTHY
@@ -828,21 +850,19 @@ sequenceDiagram
     C->>C: Enter NORMAL mode
 ```
 
-### 11.4 Queue Parameters
+### 12.4 Queue Parameters
 
 | Parameter | Default | Description |
 |---|---|---|
 | `DegradedQueueCap` | 1000 events | Max queued before ISOLATED |
 | `IsolatedThreshold` | 10m | Time in DEGRADED before ISOLATED warning |
 
-Events dropped during ISOLATED are recovered via reconciliation on reconnect — no permanent data loss, only propagation delay.
-
 ---
 
-## 12. Package Structure
+## 13. Package Structure
 
 ```
-internal/sync/                      ← sync sub-system (internal to DMR module for now)
+internal/sync/                      ← sync sub-system (internal to DMR module)
 │
 ├── config.go                       ← SyncConfig, Scope, TransportConfig, HAPolicy
 ├── coordinator.go                  ← Coordinator interface + implementation
@@ -865,6 +885,10 @@ internal/sync/                      ← sync sub-system (internal to DMR module 
 │   ├── registry.go                 ← PeerRegistry (in-memory claim ledger)
 │   └── registry_test.go
 │
+├── discovery/
+│   ├── discovery.go                ← PeerDiscoveryRequest publisher + response handler
+│   └── discovery_test.go
+│
 ├── heartbeat/
 │   ├── heartbeat.go                ← ticker publisher + TTL watcher
 │   └── heartbeat_test.go
@@ -880,19 +904,17 @@ internal/sync/                      ← sync sub-system (internal to DMR module 
     ├── reconciler_test.go
     └── remediator_test.go
 
-dmr/                                ← parent package
+dmr/
 │
-├── sync_events.go                  ← all event payload types + FullModel
+├── sync_events.go                  ← all event payload types including PeerDiscoveryRequest
 ├── sync_handler.go                 ← implements internal/sync/event.EventHandler
 ├── sync_wiring.go                  ← constructs sync.Coordinator, injects deps
 └── conflict_audit.go               ← persists ClaimConflictRecord + DeleteConflictRecord
-                                       to MongoDB conflict_records collection
-                                       both parties write their own record with Role field
 ```
 
 ---
 
-## 13. Interface Definitions
+## 14. Interface Definitions
 
 ### Transport
 
@@ -929,6 +951,7 @@ type Transport interface {
 // internal/sync/event/handler.go
 
 type EventHandler interface {
+    OnPeerDiscoveryRequest(ctx context.Context, requesterID string) error
     OnScopeClaimed(ctx context.Context, peerID string, scope Scope) error
     OnScopeReleased(ctx context.Context, peerID string, scope Scope) error
     OnClaimConflict(ctx context.Context, ownerID, challengerID string, scope Scope) error
@@ -954,8 +977,8 @@ const (
 )
 
 type Coordinator interface {
-    Start(ctx context.Context) error
-    Stop(ctx context.Context) error
+    Start(ctx context.Context) error        // runs discovery → announce → reconcile → heartbeat
+    Stop(ctx context.Context) error         // publishes ScopeReleased, drains queue
     PublishModelUpdated(ctx context.Context, event ModelMutationEvent) error
     PublishModelDeleted(ctx context.Context, event ModelDeletionEvent) error
     Mode() CoordinatorMode
@@ -965,7 +988,7 @@ type Coordinator interface {
 
 ---
 
-## 14. Configuration
+## 15. Configuration
 
 ```go
 // internal/sync/config.go
@@ -974,6 +997,7 @@ type SyncConfig struct {
     InstanceID        string
     Scope             Scope
     Transport         TransportConfig
+    BootstrapTimeout  time.Duration  // Default: 5s  — wait for PeerDiscoveryRequest responses
     HeartbeatInterval time.Duration  // Default: 30s
     StaleTTL          time.Duration  // Default: 90s
     DeadTTL           time.Duration  // Default: 180s
@@ -990,7 +1014,7 @@ type Scope struct {
 
 type TransportConfig struct {
     Kind        TransportKind
-    FailoverURL string         // e.g. failover:(amqp://localhost:5672,amqp://pod2:5672)
+    FailoverURL string         // failover:(amqp://localhost:5672,amqp://pod2:5672,...)
     HAPolicy    HAPolicy
     Options     map[string]any
 }
@@ -1012,34 +1036,38 @@ const (
 
 ---
 
-## 15. Testing Strategy
+## 16. Testing Strategy
 
 | Layer | Scope | Transport | Gate |
 |---|---|---|---|
 | Unit | Pure functions: diff, digest, registry ops, queue bounds, conflict classification | None / mocks | Always run |
-| Local integration | Coordinator wiring, event flow, heartbeat, degraded mode, conflict record writes | In-memory | Always run |
+| Local integration | Full coordinator lifecycle, discovery, event flow, heartbeat, degraded mode, conflict records | In-memory | Always run |
 | External integration | AMQ adapter: publish, subscribe, failover, reconnect | Real AMQ broker | `AMQ_URL` env var present |
 
 ### Key Test Scenarios
 
 | Scenario | Layer | Assertion |
 |---|---|---|
+| Single pod starts — no peers, no errors | Local integration | Discovery times out cleanly; ScopeClaimed published; normal operation begins |
+| New pod discovers existing peers via PeerDiscoveryRequest | Local integration | Existing peers respond with ScopeClaimed; new pod registry populated before BootstrapTimeout |
+| Pod joins after BootstrapTimeout with no peers | Unit | No error; pod assumes it is first in cluster |
 | Two instances claim same scope | Unit | ClaimConflict published; both parties write ClaimConflictRecord with correct Role |
 | Non-owner publishes ModelDeleted | Local integration | Owner rejects; DeleteConflict published; both parties write DeleteConflictRecord with correct Role |
 | DeleteConflict carries CurrentModel payload | Unit | FullModel present and matches owner's stored model |
 | Peer transitions ACTIVE → STALE → DEAD | Local integration | Status transitions fire on TTL |
 | Hash mismatch on heartbeat triggers ReconcileRequest | Local integration | ReconcileRequest published on correct topic |
-| Owner always wins on CONFLICT divergence | Unit | FullModel from owner applied |
+| Owner always wins on CONFLICT divergence | Unit | Owner FullModel applied |
 | ReconcileResponse carries full model payloads | Local integration | FullModel.Payload present and correct |
-| Reconcile reply delivered to requesting instance only | Local integration | Anycast — other instances do not receive |
+| Reconcile reply delivered only to requesting instance | Local integration | Anycast — other instances do not receive |
 | DEAD → ACTIVE triggers reconciliation | Local integration | ReconcileRequest emitted on re-announce |
-| Graceful shutdown propagates ScopeReleased | Local integration | Peer marked RELEASED in registry |
-| Degraded queue respects cap | Unit | Event 1001 dropped; ISOLATED entered |
-| Recovery flushes queue then re-announces | Local integration | Queued events published; ScopeClaimed re-sent; ReconcileRequest published |
-| Recovered PRIMARY broker pod stays DORMANT | Local integration | No failback promotion observed by DMR |
-| AMQ adapter reconnects on broker restart | External integration | Failover URL used; messages delivered after reconnect |
-| conflict_records collection contains both perspectives | Local integration | Two records per conflict with distinct Role values |
+| Graceful shutdown publishes ScopeReleased | Local integration | Peer marked RELEASED in registry |
+| Degraded queue respects cap → ISOLATED | Unit | Event 1001 dropped; ISOLATED entered |
+| Recovery flushes queue, re-announces, reconciles | Local integration | Queued events published; ScopeClaimed re-sent; ReconcileRequest published |
+| Recovered broker pod stays DORMANT | Local integration | No failback promotion observed by DMR |
+| AMQ adapter reconnects after broker restart | External integration | Failover URL used; messages delivered after reconnect |
+| conflict_records contains both perspectives per conflict | Local integration | Two records per conflict with distinct Role values |
+| 1→2→3 pod growth sequence | Local integration | Each new pod discovers predecessors; all registries consistent after bootstrap |
 
 ---
 
-*End of document — v1.2*
+*End of document — v1.3*
