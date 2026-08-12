@@ -1,0 +1,14 @@
+Apache Superset does not offer an out-of-the-box "API Button" widget. 
+
+There are 4 ways to integrate API Button:
+1. Embed Superset in a Custom Parent App
+  - How it works: Embed your Superset dashboard into a React, Vue, or HTML application using the @superset-ui/embedded-sdk.  API Trigger: Place a standard web button in your parent application's UI right alongside or above the embedded dashboard iframe. Clicking the button triggers your application's backend API call directly.Best for: Production environments where full control over UI and API security is required.
+2. Build a Custom Visualization Plugin
+  - How it works: Create a custom React plugin using Superset's plugin architecture that renders a button component rather than a chart.API Trigger: Attach an event listener to the React button that uses JavaScript fetch() or Superset's internal callApi helper to invoke your target API endpoint.Best for: Native Superset environments where you want the button to live inside a standard dashboard chart slot.
+3. Use the Handlebars Plugin
+  - How it works: Enable the Handlebars viz plugin feature flag in your Superset configuration (superset_config.py).API Trigger: Write custom HTML inside the Handlebars component to render styled buttons or interactive links that trigger external webhooks or endpoints.Best for: Low-code implementations when you want to avoid rebuilding the frontend assets.
+4. Markdown Link / Webhook Redirect (Simplest Fallback)
+  - How it works: Add a standard Markdown widget to the dashboard and style a link to look like a button using inline CSS or custom CSS overrides ([Run Action](https://api.yourdomain.com/trigger)).API Trigger: Opens an external URL or web service that accepts the request and triggers the workflow.Best for: Quick non-production prototypes or simple GET actions.
+
+
+Apache Superset uses a dual-stack architecture where the frontend is written in TypeScript w/ React, while the backend is written in Python with Flask, SQLAlchemy, Pandas, and Celery.
