@@ -12,7 +12,7 @@ Prerequisites: [`swap-cdm-mapping.md`](swap-cdm-mapping.md) for type mappings,
 
 ```mermaid
 flowchart TD
-    src["Phase 1<br/>Your swap data<br/>(internal format)"]
+    src["Phase 1<br/>Your swap data<br/>(JSON / CSV / FpML XML)"]
     cdm["Phase 2<br/>CDM TradeState<br/>(JSON)"]
     ws["Phase 3<br/>CDM WorkflowStep<br/>(wraps trade in lifecycle event)"]
     re["Phase 4<br/>DRR ReportableEvent<br/>(adds reportable context)"]
@@ -49,8 +49,24 @@ flowchart TD
    LEI (counterparty identifiers), UTI (if you only have internal IDs), execution venue,
    confirmation method, master agreement type/vintage.
 
-**Output:** JSON or CSV sample files in a `data/input/` directory, plus a field mapping
-spreadsheet showing source field → CDM target field.
+**Output:** Sample files in a `data/input/` directory (JSON — one file per trade for
+development, CSV — one row per trade for bulk processing, or FpML XML — standard
+confirmations or proprietary dialects), plus a field mapping spreadsheet showing
+source field → CDM target field. All formats produce the same `SwapTrade` POJO;
+all downstream phases are format-agnostic.
+
+**CSV format notes:** Nested objects are flattened into separate columns (`party1Lei`,
+`party1Name` instead of a nested `party1` object). List fields use pipe delimiters
+(`USNY|GBLO`). The `CsvSwapTradeReader` streams one row at a time, so memory usage
+stays constant regardless of file size.
+
+**FpML format notes:** `FpmlSwapTradeReader` parses FpML 5.x confirmation XML using
+DOM, extracting trade economics from `<swap>`, `<swaption>`, `<fra>`, `<capFloor>`,
+and `<fxSwap>` elements. Party LEIs come from `<partyId>` with the `iso17442` scheme.
+For proprietary FpML dialects (e.g. CitiML), an XSLT preprocessor normalises the
+XML to standard FpML before parsing — see `config/citiml-to-fpml.xslt` for an
+example. New dialects require only a new XSLT stylesheet at
+`config/{name}-to-fpml.xslt`; no Java changes needed.
 
 ---
 
@@ -67,7 +83,7 @@ spreadsheet showing source field → CDM target field.
    <dependency>
      <groupId>org.finos.cdm</groupId>
      <artifactId>cdm-java</artifactId>
-     <version>5.29.0</version>  <!-- must match DRR's pin -->
+     <version>5.19.0</version>  <!-- pulled transitively by DRR 5.20.1 -->
    </dependency>
    <dependency>
      <groupId>com.regnosys</groupId>
@@ -76,7 +92,10 @@ spreadsheet showing source field → CDM target field.
    </dependency>
    ```
 
-   **Critical:** use CDM **5.29.0**, not 8.x. DRR is pinned to CDM 5 — see
+   **Critical:** use CDM **5.x**, not 8.x. Note the published DRR 5.20.1 artifact
+   resolves CDM **5.19.0**, even though the `drr` source checkout (master) declares
+   `<finos.cdm.version>5.29.0</finos.cdm.version>`. Let DRR pull CDM transitively
+   rather than pinning it yourself — see
    [`CDM-DRR-integration-notes.md`](CDM-DRR-integration-notes.md).
 
 2. **Write a mapper** from your internal format to CDM builder objects. The mapping
@@ -328,6 +347,13 @@ ISO 20022 XML or DTCC RDS harmonised.
 
 **What to do:**
 
+> **Verified against DRR 5.20.1:** the published artifact contains
+> `Project_*ToIso20022` functions for **ESMA, FCA, ASIC, JFSA and MAS only**.
+> There is no CFTC projection function and no DTCC RDS Harmonized projection in
+> that release, so CFTC Part 43/45 stop at the Phase 6 report. The table below
+> describes DRR's projection design generally; check which functions your
+> pinned version actually ships before wiring one up.
+
 DRR has projection pipelines for each regime:
 
 | Regime | Projection target | Pipeline config |
@@ -356,7 +382,7 @@ Object iso20022Output = projectionFunc.evaluate(report);
 
 | Phase | Input | Output | Key class/function |
 |---|---|---|---|
-| 1. Define input | — | Your data schema + samples | (your design) |
+| 1. Define input | — | Your data schema + samples (JSON, CSV, or FpML) | `SwapTradeReader` / `CsvSwapTradeReader` / `FpmlSwapTradeReader` |
 | 2. Build TradeState | Your swap record | CDM `TradeState` (validated, qualified) | CDM builder API + `RosettaTypeValidator` |
 | 3. Wrap in WorkflowStep | `TradeState` + action + event | CDM `WorkflowStep` with `BusinessEvent` | `Create_AcceptedWorkflowStepFromInstruction` |
 | 4. Create ReportableEvent | `WorkflowStep` | DRR `ReportableEvent` + `ReportableInformation` | `Create_ReportableEvents` |

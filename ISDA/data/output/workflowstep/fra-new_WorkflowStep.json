@@ -1,0 +1,840 @@
+{
+  "businessEvent" : {
+    "intent" : "ContractFormation",
+    "eventDate" : "2026-08-18",
+    "instruction" : [ {
+      "primitiveInstruction" : {
+        "contractFormation" : {
+          "legalAgreement" : [ {
+            "legalAgreementIdentification" : {
+              "agreementName" : {
+                "agreementType" : "MasterAgreement",
+                "masterAgreementType" : {
+                  "value" : "ISDAMaster"
+                }
+              },
+              "vintage" : 2002
+            },
+            "contractualParty" : [ {
+              "externalReference" : "Party1"
+            }, {
+              "externalReference" : "Party2"
+            } ]
+          } ]
+        },
+        "execution" : {
+          "product" : {
+            "contractualProduct" : {
+              "productTaxonomy" : [ {
+                "source" : "ISDA",
+                "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+              } ],
+              "economicTerms" : {
+                "payout" : {
+                  "interestRatePayout" : [ {
+                    "payerReceiver" : {
+                      "payer" : "Party1",
+                      "receiver" : "Party2"
+                    },
+                    "priceQuantity" : {
+                      "quantitySchedule" : {
+                        "value" : {
+                          "value" : 25000000,
+                          "unit" : {
+                            "currency" : {
+                              "value" : "EUR"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "rateSpecification" : {
+                      "fixedRate" : {
+                        "rateSchedule" : {
+                          "price" : {
+                            "value" : {
+                              "value" : 0.0285,
+                              "priceType" : "InterestRate"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "dayCountFraction" : {
+                      "value" : "ACT/360"
+                    },
+                    "calculationPeriodDates" : {
+                      "effectiveDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2026-11-20"
+                          }
+                        }
+                      },
+                      "terminationDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2027-05-20"
+                          }
+                        }
+                      },
+                      "calculationPeriodFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    },
+                    "paymentDates" : {
+                      "paymentFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    }
+                  }, {
+                    "payerReceiver" : {
+                      "payer" : "Party2",
+                      "receiver" : "Party1"
+                    },
+                    "priceQuantity" : {
+                      "quantitySchedule" : {
+                        "value" : {
+                          "value" : 25000000,
+                          "unit" : {
+                            "currency" : {
+                              "value" : "EUR"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "rateSpecification" : {
+                      "floatingRate" : {
+                        "rateOption" : {
+                          "value" : {
+                            "floatingRateIndex" : {
+                              "value" : "EUR-EURIBOR-Reuters"
+                            },
+                            "indexTenor" : {
+                              "periodMultiplier" : 6,
+                              "period" : "M"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "dayCountFraction" : {
+                      "value" : "ACT/360"
+                    },
+                    "calculationPeriodDates" : {
+                      "effectiveDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2026-11-20"
+                          }
+                        }
+                      },
+                      "terminationDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2027-05-20"
+                          }
+                        }
+                      },
+                      "calculationPeriodFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    },
+                    "paymentDates" : {
+                      "paymentFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    },
+                    "resetDates" : {
+                      "resetRelativeTo" : "CalculationPeriodStartDate",
+                      "resetFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    }
+                  } ]
+                }
+              }
+            }
+          },
+          "priceQuantity" : [ {
+            "price" : [ {
+              "value" : {
+                "value" : 0.0285,
+                "unit" : {
+                  "currency" : {
+                    "value" : "EUR"
+                  }
+                },
+                "perUnitOf" : {
+                  "currency" : {
+                    "value" : "EUR"
+                  }
+                },
+                "priceType" : "InterestRate"
+              }
+            } ],
+            "quantity" : [ {
+              "value" : {
+                "value" : 25000000,
+                "unit" : {
+                  "currency" : {
+                    "value" : "EUR",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                    }
+                  }
+                }
+              }
+            } ]
+          }, {
+            "quantity" : [ {
+              "value" : {
+                "value" : 25000000,
+                "unit" : {
+                  "currency" : {
+                    "value" : "EUR",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                    }
+                  }
+                }
+              }
+            } ]
+          } ],
+          "counterparty" : [ {
+            "role" : "Party1",
+            "partyReference" : {
+              "externalReference" : "Party1"
+            }
+          }, {
+            "role" : "Party2",
+            "partyReference" : {
+              "externalReference" : "Party2"
+            }
+          } ],
+          "parties" : [ {
+            "partyId" : [ {
+              "identifier" : {
+                "value" : "549300EXAMPLE0LEI001"
+              },
+              "identifierType" : "LEI"
+            } ],
+            "name" : {
+              "value" : "Alpha Bank"
+            },
+            "meta" : {
+              "externalKey" : "Party1"
+            }
+          }, {
+            "partyId" : [ {
+              "identifier" : {
+                "value" : "549300EXAMPLE0LEI004"
+              },
+              "identifierType" : "LEI"
+            } ],
+            "name" : {
+              "value" : "Delta Finance"
+            },
+            "meta" : {
+              "externalKey" : "Party2"
+            }
+          } ],
+          "executionDetails" : {
+            "executionType" : "OffFacility"
+          },
+          "tradeDate" : {
+            "value" : "2026-08-18"
+          },
+          "tradeIdentifier" : [ {
+            "issuer" : {
+              "value" : "549300EXAMPLE0LEI001"
+            },
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "value" : "TRD20260818A03"
+              },
+              "version" : 1
+            } ],
+            "identifierType" : "UniqueTransactionIdentifier"
+          } ]
+        }
+      },
+      "before" : {
+        "value" : {
+          "trade" : {
+            "tradeIdentifier" : [ {
+              "issuer" : {
+                "value" : "549300EXAMPLE0LEI001"
+              },
+              "assignedIdentifier" : [ {
+                "identifier" : {
+                  "value" : "TRD20260818A03"
+                },
+                "version" : 1
+              } ],
+              "identifierType" : "UniqueTransactionIdentifier"
+            } ],
+            "tradeDate" : {
+              "value" : "2026-08-18"
+            },
+            "tradableProduct" : {
+              "product" : {
+                "contractualProduct" : {
+                  "productTaxonomy" : [ {
+                    "source" : "ISDA",
+                    "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+                  } ],
+                  "economicTerms" : {
+                    "payout" : {
+                      "interestRatePayout" : [ {
+                        "payerReceiver" : {
+                          "payer" : "Party1",
+                          "receiver" : "Party2"
+                        },
+                        "priceQuantity" : {
+                          "quantitySchedule" : {
+                            "value" : {
+                              "value" : 25000000,
+                              "unit" : {
+                                "currency" : {
+                                  "value" : "EUR"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "rateSpecification" : {
+                          "fixedRate" : {
+                            "rateSchedule" : {
+                              "price" : {
+                                "value" : {
+                                  "value" : 0.0285,
+                                  "priceType" : "InterestRate"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "dayCountFraction" : {
+                          "value" : "ACT/360"
+                        },
+                        "calculationPeriodDates" : {
+                          "effectiveDate" : {
+                            "adjustableDate" : {
+                              "adjustedDate" : {
+                                "value" : "2026-11-20"
+                              }
+                            }
+                          },
+                          "terminationDate" : {
+                            "adjustableDate" : {
+                              "adjustedDate" : {
+                                "value" : "2027-05-20"
+                              }
+                            }
+                          },
+                          "calculationPeriodFrequency" : {
+                            "periodMultiplier" : 6,
+                            "period" : "M"
+                          }
+                        },
+                        "paymentDates" : {
+                          "paymentFrequency" : {
+                            "periodMultiplier" : 6,
+                            "period" : "M"
+                          }
+                        }
+                      }, {
+                        "payerReceiver" : {
+                          "payer" : "Party2",
+                          "receiver" : "Party1"
+                        },
+                        "priceQuantity" : {
+                          "quantitySchedule" : {
+                            "value" : {
+                              "value" : 25000000,
+                              "unit" : {
+                                "currency" : {
+                                  "value" : "EUR"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "rateSpecification" : {
+                          "floatingRate" : {
+                            "rateOption" : {
+                              "value" : {
+                                "floatingRateIndex" : {
+                                  "value" : "EUR-EURIBOR-Reuters"
+                                },
+                                "indexTenor" : {
+                                  "periodMultiplier" : 6,
+                                  "period" : "M"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "dayCountFraction" : {
+                          "value" : "ACT/360"
+                        },
+                        "calculationPeriodDates" : {
+                          "effectiveDate" : {
+                            "adjustableDate" : {
+                              "adjustedDate" : {
+                                "value" : "2026-11-20"
+                              }
+                            }
+                          },
+                          "terminationDate" : {
+                            "adjustableDate" : {
+                              "adjustedDate" : {
+                                "value" : "2027-05-20"
+                              }
+                            }
+                          },
+                          "calculationPeriodFrequency" : {
+                            "periodMultiplier" : 6,
+                            "period" : "M"
+                          }
+                        },
+                        "paymentDates" : {
+                          "paymentFrequency" : {
+                            "periodMultiplier" : 6,
+                            "period" : "M"
+                          }
+                        },
+                        "resetDates" : {
+                          "resetRelativeTo" : "CalculationPeriodStartDate",
+                          "resetFrequency" : {
+                            "periodMultiplier" : 6,
+                            "period" : "M"
+                          }
+                        }
+                      } ]
+                    }
+                  }
+                }
+              },
+              "tradeLot" : [ {
+                "priceQuantity" : [ {
+                  "price" : [ {
+                    "value" : {
+                      "value" : 0.0285,
+                      "unit" : {
+                        "currency" : {
+                          "value" : "EUR"
+                        }
+                      },
+                      "perUnitOf" : {
+                        "currency" : {
+                          "value" : "EUR"
+                        }
+                      },
+                      "priceType" : "InterestRate"
+                    }
+                  } ],
+                  "quantity" : [ {
+                    "value" : {
+                      "value" : 25000000,
+                      "unit" : {
+                        "currency" : {
+                          "value" : "EUR",
+                          "meta" : {
+                            "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                          }
+                        }
+                      }
+                    }
+                  } ]
+                }, {
+                  "quantity" : [ {
+                    "value" : {
+                      "value" : 25000000,
+                      "unit" : {
+                        "currency" : {
+                          "value" : "EUR",
+                          "meta" : {
+                            "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                          }
+                        }
+                      }
+                    }
+                  } ]
+                } ]
+              } ],
+              "counterparty" : [ {
+                "role" : "Party1",
+                "partyReference" : {
+                  "externalReference" : "Party1"
+                }
+              }, {
+                "role" : "Party2",
+                "partyReference" : {
+                  "externalReference" : "Party2"
+                }
+              } ]
+            },
+            "party" : [ {
+              "partyId" : [ {
+                "identifier" : {
+                  "value" : "549300EXAMPLE0LEI001"
+                },
+                "identifierType" : "LEI"
+              } ],
+              "name" : {
+                "value" : "Alpha Bank"
+              },
+              "meta" : {
+                "externalKey" : "Party1"
+              }
+            }, {
+              "partyId" : [ {
+                "identifier" : {
+                  "value" : "549300EXAMPLE0LEI004"
+                },
+                "identifierType" : "LEI"
+              } ],
+              "name" : {
+                "value" : "Delta Finance"
+              },
+              "meta" : {
+                "externalKey" : "Party2"
+              }
+            } ],
+            "executionDetails" : {
+              "executionType" : "OffFacility"
+            },
+            "contractDetails" : {
+              "documentation" : [ {
+                "legalAgreementIdentification" : {
+                  "agreementName" : {
+                    "agreementType" : "MasterAgreement",
+                    "masterAgreementType" : {
+                      "value" : "ISDAMaster"
+                    }
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      }
+    } ],
+    "after" : [ {
+      "trade" : {
+        "tradeIdentifier" : [ {
+          "issuer" : {
+            "value" : "549300EXAMPLE0LEI001"
+          },
+          "assignedIdentifier" : [ {
+            "identifier" : {
+              "value" : "TRD20260818A03"
+            },
+            "version" : 1
+          } ],
+          "identifierType" : "UniqueTransactionIdentifier"
+        } ],
+        "tradeDate" : {
+          "value" : "2026-08-18"
+        },
+        "tradableProduct" : {
+          "product" : {
+            "contractualProduct" : {
+              "productTaxonomy" : [ {
+                "source" : "ISDA",
+                "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+              } ],
+              "economicTerms" : {
+                "payout" : {
+                  "interestRatePayout" : [ {
+                    "payerReceiver" : {
+                      "payer" : "Party1",
+                      "receiver" : "Party2"
+                    },
+                    "priceQuantity" : {
+                      "quantitySchedule" : {
+                        "value" : {
+                          "value" : 25000000,
+                          "unit" : {
+                            "currency" : {
+                              "value" : "EUR"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "rateSpecification" : {
+                      "fixedRate" : {
+                        "rateSchedule" : {
+                          "price" : {
+                            "value" : {
+                              "value" : 0.0285,
+                              "priceType" : "InterestRate"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "dayCountFraction" : {
+                      "value" : "ACT/360"
+                    },
+                    "calculationPeriodDates" : {
+                      "effectiveDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2026-11-20"
+                          }
+                        }
+                      },
+                      "terminationDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2027-05-20"
+                          }
+                        }
+                      },
+                      "calculationPeriodFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    },
+                    "paymentDates" : {
+                      "paymentFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    }
+                  }, {
+                    "payerReceiver" : {
+                      "payer" : "Party2",
+                      "receiver" : "Party1"
+                    },
+                    "priceQuantity" : {
+                      "quantitySchedule" : {
+                        "value" : {
+                          "value" : 25000000,
+                          "unit" : {
+                            "currency" : {
+                              "value" : "EUR"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "rateSpecification" : {
+                      "floatingRate" : {
+                        "rateOption" : {
+                          "value" : {
+                            "floatingRateIndex" : {
+                              "value" : "EUR-EURIBOR-Reuters"
+                            },
+                            "indexTenor" : {
+                              "periodMultiplier" : 6,
+                              "period" : "M"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "dayCountFraction" : {
+                      "value" : "ACT/360"
+                    },
+                    "calculationPeriodDates" : {
+                      "effectiveDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2026-11-20"
+                          }
+                        }
+                      },
+                      "terminationDate" : {
+                        "adjustableDate" : {
+                          "adjustedDate" : {
+                            "value" : "2027-05-20"
+                          }
+                        }
+                      },
+                      "calculationPeriodFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    },
+                    "paymentDates" : {
+                      "paymentFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    },
+                    "resetDates" : {
+                      "resetRelativeTo" : "CalculationPeriodStartDate",
+                      "resetFrequency" : {
+                        "periodMultiplier" : 6,
+                        "period" : "M"
+                      }
+                    }
+                  } ]
+                }
+              }
+            }
+          },
+          "tradeLot" : [ {
+            "priceQuantity" : [ {
+              "price" : [ {
+                "value" : {
+                  "value" : 0.0285,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "EUR"
+                    }
+                  },
+                  "perUnitOf" : {
+                    "currency" : {
+                      "value" : "EUR"
+                    }
+                  },
+                  "priceType" : "InterestRate"
+                }
+              } ],
+              "quantity" : [ {
+                "value" : {
+                  "value" : 25000000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "EUR",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              } ]
+            }, {
+              "quantity" : [ {
+                "value" : {
+                  "value" : 25000000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "EUR",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              } ]
+            } ]
+          } ],
+          "counterparty" : [ {
+            "role" : "Party1",
+            "partyReference" : {
+              "externalReference" : "Party1"
+            }
+          }, {
+            "role" : "Party2",
+            "partyReference" : {
+              "externalReference" : "Party2"
+            }
+          } ]
+        },
+        "party" : [ {
+          "partyId" : [ {
+            "identifier" : {
+              "value" : "549300EXAMPLE0LEI001"
+            },
+            "identifierType" : "LEI"
+          } ],
+          "name" : {
+            "value" : "Alpha Bank"
+          },
+          "meta" : {
+            "externalKey" : "Party1"
+          }
+        }, {
+          "partyId" : [ {
+            "identifier" : {
+              "value" : "549300EXAMPLE0LEI004"
+            },
+            "identifierType" : "LEI"
+          } ],
+          "name" : {
+            "value" : "Delta Finance"
+          },
+          "meta" : {
+            "externalKey" : "Party2"
+          }
+        } ],
+        "executionDetails" : {
+          "executionType" : "OffFacility"
+        },
+        "contractDetails" : {
+          "documentation" : [ {
+            "legalAgreementIdentification" : {
+              "agreementName" : {
+                "agreementType" : "MasterAgreement",
+                "masterAgreementType" : {
+                  "value" : "ISDAMaster"
+                }
+              }
+            }
+          } ]
+        }
+      }
+    } ]
+  },
+  "messageInformation" : {
+    "messageId" : {
+      "value" : "TRD20260818A03_v1"
+    }
+  },
+  "timestamp" : [ {
+    "dateTime" : "2026-08-18T08:00:00Z",
+    "qualification" : "eventCreationDateTime"
+  } ],
+  "eventIdentifier" : [ {
+    "issuer" : {
+      "value" : "UTI"
+    },
+    "assignedIdentifier" : [ {
+      "identifier" : {
+        "value" : "TRD20260818A03"
+      },
+      "version" : 1
+    } ]
+  } ],
+  "action" : "New",
+  "party" : [ {
+    "partyId" : [ {
+      "identifier" : {
+        "value" : "549300EXAMPLE0LEI001"
+      },
+      "identifierType" : "LEI"
+    } ],
+    "name" : {
+      "value" : "Alpha Bank"
+    },
+    "meta" : {
+      "externalKey" : "Party1"
+    }
+  }, {
+    "partyId" : [ {
+      "identifier" : {
+        "value" : "549300EXAMPLE0LEI004"
+      },
+      "identifierType" : "LEI"
+    } ],
+    "name" : {
+      "value" : "Delta Finance"
+    },
+    "meta" : {
+      "externalKey" : "Party2"
+    }
+  } ]
+}

@@ -2,11 +2,15 @@
 
 ## Overview
 
-This project takes internal swap trade data in a JSON format, models it using the FINOS Common Domain Model (CDM 5.29.0), and generates regulatory reports via ISDA's Digital Regulatory Reporting (DRR 5.20.1) for multiple regimes, then projects those reports to submission formats (ISO 20022 XML, DTCC RDS).
+This project takes internal swap trade data (JSON files, CSV, or FpML XML), models it using the FINOS Common Domain Model (CDM 5.19.0), and generates regulatory reports via ISDA's Digital Regulatory Reporting (DRR 5.20.1) for multiple regimes, then projects those reports to ISO 20022 XML for the regimes DRR supports. Proprietary FpML dialects (e.g. CitiML) are supported via XSLT preprocessors.
 
 ```mermaid
 flowchart LR
-    A[Internal JSON] --> B[CDM TradeState]
+    A1[JSON files] --> P[SwapTrade POJO]
+    A2[CSV file] --> P
+    A3[FpML XML] --> PP[Preprocessor]
+    PP --> P
+    P --> B[CDM TradeState]
     B --> C[WorkflowStep]
     C --> D[ReportableEvent]
     D --> E[TransactionReportInstruction]
@@ -20,13 +24,13 @@ flowchart LR
 
 | Phase | Goal | Input | Output | Key Class |
 |-------|------|-------|--------|-----------|
-| 1 | Define input format | — | JSON schema + sample files | `data/schema/swap-trade.json` |
+| 1 | Define input format | — | JSON schema + samples + CSV + FpML | `data/schema/swap-trade.json` |
 | 2 | Map to CDM TradeState | `SwapTrade` JSON | CDM `TradeState` JSON | `TradeStateMapper` |
 | 3 | Wrap in WorkflowStep | `TradeState` + metadata | CDM `WorkflowStep` JSON | `WorkflowStepMapper` |
 | 4 | Create ReportableEvent | `WorkflowStep` + reporting info | DRR `ReportableEvent` JSON | `ReportableEventMapper` |
 | 5 | Create report instruction | `ReportableEvent` | DRR `TransactionReportInstruction` JSON | `ReportInstructionMapper` |
 | 6 | Generate regime reports | `TransactionReportInstruction` | Per-regime report JSON | `ReportGenerator` |
-| 7 | Project to submission format | Regime reports | ISO 20022 XML / DTCC RDS JSON | `ProjectionMapper` |
+| 7 | Project to submission format | Regime reports | ISO 20022 Auth.030 XML | `ProjectionMapper` |
 
 ---
 
@@ -34,9 +38,11 @@ flowchart LR
 
 ### Phase 1 — Input Data Model
 
-**Goal**: Define a JSON schema that captures all internal swap trade fields and create sample input files covering the key product types and lifecycle events.
+**Goal**: Define a JSON schema that captures all internal swap trade fields and create sample input files covering the key product types and lifecycle events. Support JSON files, bulk CSV input, and FpML XML confirmations (including proprietary dialects via XSLT preprocessors).
 
 **Process**: The schema defines 23 product types, 6 action types (NEWT, MODI, CORR, EROR, TERM, REVI), and 5 event types (TRAD, NOVA, ETRM, ALOC, COMP). Each trade carries party information (LEI + name), notional, rate, frequency, dates, and optional sections for FX, options, cap/floor, inflation, and novation.
+
+Four input formats are supported — JSON (one file per trade, for development and testing), CSV (one row per trade, for bulk processing), FpML XML (standard FpML 5.x confirmations), and FpML with XSLT preprocessor (proprietary dialects like CitiML). All produce the same `SwapTrade` POJO; all downstream phases are format-agnostic.
 
 **Files produced**:
 
@@ -53,10 +59,14 @@ flowchart LR
 | `data/input/swaption-new.json` | NEWT/TRAD — USD 30M, European swaption |
 | `data/input/fx-swap-new.json` | NEWT/TRAD — EUR/USD near/far |
 | `data/input/cap-floor-new.json` | NEWT/TRAD — USD 20M, 5.00% cap on SOFR 3M |
+| `data/input/sample-trades.csv` | All 9 trades above in a single CSV file |
+| `data/input/fpml/vanilla-swap.xml` | FpML 5.13 confirmation — USD 50M vanilla swap |
+| `data/input/citiml/citi-swap.xml` | Same trade in the CitiML proprietary dialect |
+| `config/citiml-to-fpml.xslt` | Sample XSLT for CitiML → FpML normalisation |
 
 ### Phase 2 — CDM TradeState Mapping
 
-**Goal**: Parse internal JSON into a `SwapTrade` POJO, then build a CDM 5.29.0 `TradeState` with the correct product structure.
+**Goal**: Parse internal JSON into a `SwapTrade` POJO, then build a CDM 5.19.0 `TradeState` with the correct product structure.
 
 **Process**:
 1. `SwapTradeReader` deserialises the input JSON using Jackson (with `JavaTimeModule`).
@@ -70,7 +80,7 @@ flowchart LR
 
 **Key CDM 5 path**: `tradeState.trade.tradableProduct.product.contractualProduct.economicTerms.payout.interestRatePayout[]`
 
-**Input**: `SwapTrade` (in-memory POJO from Phase 1 JSON)
+**Input**: `SwapTrade` (in-memory POJO from Phase 1 — JSON, CSV row, or FpML parse)
 
 **Output**: `data/output/tradestate/{name}_TradeState.json`
 
@@ -142,7 +152,9 @@ Each report is serialised to JSON using `RosettaObjectMapper`.
 
 ### Phase 7 — Projection to Submission Format
 
-**Goal**: Project regime reports to the format expected by trade repositories — ISO 20022 XML for European regimes, DTCC RDS Harmonized for US.
+**Goal**: Project regime reports to the format expected by trade repositories — ISO 20022 Auth.030 XML.
+
+**Important**: DRR 5.20.1 ships ISO 20022 projection functions for ESMA, FCA, ASIC, JFSA and MAS only. There is **no CFTC projection** in this release — no DTCC RDS Harmonized projection exists. CFTC Part 43/45 reports are still produced in Phase 6; they simply stop there. The pipeline logs this and continues.
 
 **Process**: `ProjectionMapper` calls DRR projection functions:
 
@@ -150,10 +162,10 @@ Each report is serialised to JSON using `RosettaObjectMapper`.
 |--------|---------------------|---------------|
 | ESMA EMIR | `Project_EsmaEmirTradeReportToIso20022` | ISO 20022 Auth030 XML |
 | FCA UK EMIR | `Project_FcaUkEmirTradeReportToIso20022` | ISO 20022 Auth030 XML |
-| CFTC Part 45 | `Project_CftcPart45TradeReportToDtccRdsHarmonized` | DTCC RDS JSON |
-| CFTC Part 43 | `Project_CftcPart43TradeReportToDtccRdsHarmonized` | DTCC RDS JSON |
+| CFTC Part 45 | *(none available in DRR 5.20.1)* | — |
+| CFTC Part 43 | *(none available in DRR 5.20.1)* | — |
 
-ISO 20022 output uses `RosettaObjectMapperCreator.forXML()` with the regime-specific Auth030 model config. DTCC RDS output is serialised via `RosettaObjectMapper` to JSON.
+ISO 20022 output uses `RosettaObjectMapperCreator.forXML()` with the regime-specific Auth030 model config.
 
 **Input**: Map of regime → report object
 
@@ -221,10 +233,15 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 |------|-------------|
 | `data/schema/swap-trade.json` | JSON Schema for internal trade format |
 | `data/schema/field-mapping.md` | Field mapping table (internal → CDM) |
-| `data/input/*.json` | Sample input trade files |
+| `data/input/*.json` | Sample input trade files (one per trade) |
+| `data/input/sample-trades.csv` | Sample CSV with all trades in one file |
+| `data/input/fpml/*.xml` | Sample FpML 5.x confirmation files |
+| `data/input/citiml/*.xml` | Sample proprietary-dialect files (for `--preprocessor citiml`) |
+| `config/*.xslt` | XSLT preprocessor stylesheets for proprietary FpML dialects |
 | `data/output/` | All generated output (created at runtime) |
 | `isda-cdm-trade-mapper/pom.xml` | Maven project descriptor |
 | `isda-cdm-trade-mapper/src/main/java/org/isda/mapper/` | All mapper source code |
+| `isda-cdm-trade-mapper/src/main/java/org/isda/mapper/fpml/` | FpML parsing and preprocessing |
 
 ### Source Files
 
@@ -232,6 +249,11 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 |------|-------|---------|
 | `SwapTrade.java` | 1 | Internal trade POJO |
 | `SwapTradeReader.java` | 1 | JSON deserialiser |
+| `CsvSwapTradeReader.java` | 1 | Streaming CSV reader (one row at a time) |
+| `fpml/FpmlSwapTradeReader.java` | 1 | Parses FpML 5.x XML into SwapTrade POJOs |
+| `fpml/FpmlPreprocessor.java` | 1 | Preprocessor interface for XML normalisation |
+| `fpml/IdentityPreprocessor.java` | 1 | Pass-through for standard FpML (no transform) |
+| `fpml/XsltPreprocessor.java` | 1 | Applies XSLT stylesheet for proprietary dialects |
 | `TradeStateMapper.java` | 2 | Dispatches to product mappers, builds CDM TradeState |
 | `product/VanillaSwapMapper.java` | 2 | Builds CDM ContractualProduct for IRS |
 | `util/CdmBuilderUtil.java` | 2 | Shared CDM builder helpers |
@@ -239,20 +261,21 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 | `ReportableEventMapper.java` | 4 | Adds DRR reporting metadata |
 | `ReportInstructionMapper.java` | 5 | DRR enrichment via Guice-injected functions |
 | `ReportGenerator.java` | 6 | Runs regime-specific report functions |
-| `ProjectionMapper.java` | 7 | Projects reports to ISO 20022 / DTCC RDS |
-| `MapperMain.java` | all | CLI entry point chaining all 7 phases |
+| `ProjectionMapper.java` | 7 | Projects ESMA/FCA reports to ISO 20022 Auth.030 XML |
+| `MapperMain.java` | all | CLI entry point — `--json`, `--csv`, `--fpml`, `--preprocessor` |
 
 ---
 
 ## Build
 
+All commands in this guide are run from the repository root.
+
 ```bash
-cd isda-cdm-trade-mapper
-mvn clean compile
+mvn -f isda-cdm-trade-mapper/pom.xml clean compile
 ```
 
 This will:
-1. Download DRR 5.20.1 and its transitive dependency CDM 5.29.0 from ISDA's Artifact Registry.
+1. Download DRR 5.20.1 and its transitive dependency CDM 5.19.0 from ISDA's Artifact Registry.
 2. Download the ISO 20022 model JAR (`org.iso20022:rosetta-source`).
 3. Compile all mapper source files.
 
@@ -261,32 +284,89 @@ If you see authentication errors, ensure `gcloud auth application-default login`
 ### Package
 
 ```bash
-mvn clean package -DskipTests
+mvn -f isda-cdm-trade-mapper/pom.xml clean package -DskipTests
 ```
 
-This creates `target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar`.
+This creates `isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar`.
 
 ---
 
 ## Run
 
-### From Maven
+The pipeline supports four input modes. All produce the same output.
+
+**Run from the repository root**, not from `isda-cdm-trade-mapper/`. `MapperMain` resolves `data/input/`, `data/output/`, and `config/` relative to the working directory, and all three live at the repo root. Point Maven at the module POM with `-f`:
 
 ```bash
-mvn exec:java -Dexec.mainClass=org.isda.mapper.MapperMain
+mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.MapperMain
 ```
+
+The mode examples below assume this. Substitute the `-Dexec.args` value to switch modes.
+
+### Mode 1 — JSON directory (default)
+
+Reads all `*.json` files from `data/input/` and processes each as a separate trade.
+
+```bash
+mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.MapperMain
+```
+
+### Mode 2 — CSV file (bulk)
+
+Streams a CSV file row by row. Suitable for large datasets (millions of rows). Only one row is held in memory at a time.
+
+```bash
+mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.MapperMain \
+    -Dexec.args="--csv data/input/sample-trades.csv"
+```
+
+Progress is logged every 1,000 rows with elapsed time and throughput (rows/sec).
+
+### Mode 3 — FpML XML directory
+
+Reads all `*.xml` files from a directory, parses each as a standard FpML 5.x confirmation, and extracts trade data into `SwapTrade` POJOs. Supports swap, swaption, FRA, cap/floor, and FX swap product types.
+
+```bash
+mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.MapperMain \
+    -Dexec.args="--fpml data/input/fpml/"
+```
+
+Default values for FpML confirmations: `tradeVersion=1`, `actionType=NEWT`, `eventType=TRAD`.
+
+### Mode 4 — FpML with preprocessor (proprietary dialects)
+
+For organisations using modified FpML schemas (e.g. CitiML, BofAML), an XSLT preprocessor normalises the proprietary XML to standard FpML before parsing. The XSLT file is resolved by convention: `config/{name}-to-fpml.xslt`.
+
+```bash
+mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.MapperMain \
+    -Dexec.args="--fpml data/input/citiml/ --preprocessor citiml"
+```
+
+This applies `config/citiml-to-fpml.xslt` to each XML file before parsing. To add a new dialect, create a new XSLT stylesheet following the naming convention.
 
 ### From JAR
 
 ```bash
-java -cp "target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:target/dependency/*" \
+java -cp "isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:isda-cdm-trade-mapper/target/dependency/*" \
      org.isda.mapper.MapperMain
+
+# or with CSV:
+java -cp "isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:isda-cdm-trade-mapper/target/dependency/*" \
+     org.isda.mapper.MapperMain --csv data/input/sample-trades.csv
+
+# or with FpML:
+java -cp "isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:isda-cdm-trade-mapper/target/dependency/*" \
+     org.isda.mapper.MapperMain --fpml data/input/fpml/
+
+# or with FpML + preprocessor:
+java -cp "isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:isda-cdm-trade-mapper/target/dependency/*" \
+     org.isda.mapper.MapperMain --fpml data/input/citiml/ --preprocessor citiml
 ```
 
 To include all dependencies in the classpath, first run:
 
 ```bash
-mvn dependency:copy-dependencies -DoutputDirectory=target/dependency
+mvn -f isda-cdm-trade-mapper/pom.xml dependency:copy-dependencies -DoutputDirectory=target/dependency
 ```
 
 ---
@@ -302,7 +382,7 @@ data/output/
 ├── reportableevent/     # Phase 4 — DRR ReportableEvent JSON
 ├── instruction/         # Phase 5 — TransactionReportInstruction JSON
 ├── reports/             # Phase 6 — Regime-specific report JSON
-└── projections/         # Phase 7 — ISO 20022 XML / DTCC RDS JSON
+└── projections/         # Phase 7 — ISO 20022 Auth.030 XML
 ```
 
 ### Example output for `vanilla-swap-new.json`
@@ -316,7 +396,7 @@ data/output/
 | `reports/vanilla-swap-new_CFTCPart45_Report.json` | JSON | CFTC Part 45 transaction report fields |
 | `reports/vanilla-swap-new_ESMA_EMIR_Report.json` | JSON | ESMA EMIR REFIT report fields |
 | `projections/vanilla-swap-new_ESMA_EMIR_Projection.xml` | XML | ISO 20022 Auth.030 submission-ready XML |
-| `projections/vanilla-swap-new_CFTCPart45_Projection.json` | JSON | DTCC RDS Harmonized submission format |
+| `projections/vanilla-swap-new_FCA_UKEMIR_Projection.xml` | XML | ISO 20022 Auth.030 submission-ready XML |
 
 ### Inspecting JSON output
 
@@ -339,10 +419,50 @@ xmllint --format data/output/projections/vanilla-swap-new_ESMA_EMIR_Projection.x
 
 ## Adding New Trades
 
+### JSON mode
+
 1. Create a new JSON file in `data/input/` following the schema in `data/schema/swap-trade.json`.
 2. Re-run the pipeline — the new file is picked up automatically.
 
-Required fields: `tradeId`, `tradeVersion`, `actionType`, `eventType`, `productType`, `tradeDate`, `effectiveDate`, `maturityDate`, `notionalAmount`, `notionalCurrency`, `party1`, `party2`.
+### CSV mode
+
+1. Add rows to your CSV file (or create a new one). The header row defines the column mapping.
+2. Run with `--csv path/to/file.csv`.
+
+### FpML mode
+
+1. Place standard FpML 5.x confirmation XML files in a directory (e.g. `data/input/fpml/`).
+2. Run with `--fpml path/to/dir`.
+
+The FpML parser extracts trade data from `<swap>`, `<swaption>`, `<fra>`, `<capFloor>`, and `<fxSwap>` elements. Party LEIs are read from `<partyId>` elements with the `iso17442` scheme. See `data/input/fpml/vanilla-swap.xml` for a working example.
+
+### Adding a proprietary FpML dialect
+
+1. Create an XSLT stylesheet at `config/{name}-to-fpml.xslt` that normalises the proprietary XML to standard FpML 5.x (namespace, element names, attribute schemes).
+2. Place the proprietary XML files in a directory.
+3. Run with `--fpml path/to/dir --preprocessor {name}`.
+
+See `config/citiml-to-fpml.xslt` for a sample stylesheet that normalises CitiML (renames elements, converts namespace, adds LEI scheme attributes).
+
+### CSV column format
+
+The CSV uses flat columns. Nested JSON objects are flattened and list fields use pipe (`|`) delimiters:
+
+| JSON field | CSV column(s) |
+|------------|---------------|
+| `party1.lei` | `party1Lei` |
+| `party1.name` | `party1Name` |
+| `party2.lei` | `party2Lei` |
+| `party2.name` | `party2Name` |
+| `novationNewParty.lei` | `novationNewPartyLei` |
+| `novationNewParty.name` | `novationNewPartyName` |
+| `businessCenters: ["USNY","GBLO"]` | `businessCenters: USNY\|GBLO` |
+
+Empty columns are treated as null. See `data/input/sample-trades.csv` for a working example.
+
+### Required fields (both formats)
+
+`tradeId`, `tradeVersion`, `actionType`, `eventType`, `productType`, `tradeDate`, `effectiveDate`, `terminationDate`, `notionalAmount`, `notionalCurrency`, `party1Lei`, `party1Name`, `party2Lei`, `party2Name`.
 
 ---
 
@@ -369,10 +489,12 @@ Currently `ReportableEventMapper` hardcodes `SupervisoryBodyEnum.CFTC`. To suppo
 | Artifact | Version | Source |
 |----------|---------|--------|
 | `com.regnosys.drr:rosetta-source` | 5.20.1 | ISDA Artifact Registry |
-| CDM (transitive) | 5.29.0 | via DRR |
-| `org.iso20022:rosetta-source` (transitive) | 1.32.0 | via DRR |
+| CDM (transitive) | 5.19.0 | via DRR |
+| `org.iso20022:rosetta-source` (transitive) | 1.15.0 | via DRR |
 | Jackson Databind | 2.17.1 | Maven Central |
 | Jackson JSR310 | 2.17.1 | Maven Central |
+| Jackson CSV | 2.17.1 | Maven Central |
+| Jackson XML | 2.17.1 | Maven Central |
 | Google Guice (transitive) | via DRR | — |
 | JUnit Jupiter | 5.9.1 | Maven Central (test only) |
 
@@ -387,3 +509,6 @@ Currently `ReportableEventMapper` hardcodes `SupervisoryBodyEnum.CFTC`. To suppo
 | `NoSuchMethodError` at runtime | Verify JDK 21+; DRR bytecode requires it |
 | Empty `data/output/` directories | Ensure `data/input/` has `.json` files and you run from the project root |
 | Regime report `evaluate()` throws | Check that `ReportableEvent` has correct `reportableInformation` (party roles, supervisory body) |
+| `FpML parse failed` for a file | Ensure the XML uses namespace `http://www.fpml.org/FpML-5/confirmation` and has a `<trade>` element |
+| `XSLT not found` error | Create the stylesheet at `config/{name}-to-fpml.xslt` matching the `--preprocessor` name |
+| `XSLT transform failed` | Check the XSLT stylesheet syntax; test it standalone with `xsltproc` first |

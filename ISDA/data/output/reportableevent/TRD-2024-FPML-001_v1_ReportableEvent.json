@@ -1,0 +1,1130 @@
+{
+  "originatingWorkflowStep" : {
+    "businessEvent" : {
+      "intent" : "ContractFormation",
+      "eventDate" : "2024-06-15",
+      "instruction" : [ {
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "contractualParty" : [ {
+                "externalReference" : "Party1"
+              }, {
+                "externalReference" : "Party2"
+              } ]
+            } ]
+          },
+          "execution" : {
+            "product" : {
+              "contractualProduct" : {
+                "productTaxonomy" : [ {
+                  "source" : "ISDA",
+                  "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+                } ],
+                "economicTerms" : {
+                  "payout" : {
+                    "interestRatePayout" : [ {
+                      "payerReceiver" : {
+                        "payer" : "Party1",
+                        "receiver" : "Party2"
+                      },
+                      "priceQuantity" : {
+                        "quantitySchedule" : {
+                          "value" : {
+                            "value" : 50000000.00,
+                            "unit" : {
+                              "currency" : {
+                                "value" : "USD"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "rateSpecification" : {
+                        "fixedRate" : {
+                          "rateSchedule" : {
+                            "price" : {
+                              "value" : {
+                                "value" : 0.0325,
+                                "priceType" : "InterestRate"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dayCountFraction" : {
+                        "value" : "30/360"
+                      },
+                      "calculationPeriodDates" : {
+                        "effectiveDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2024-06-17"
+                            }
+                          }
+                        },
+                        "terminationDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2029-06-17"
+                            }
+                          }
+                        },
+                        "calculationPeriodFrequency" : {
+                          "periodMultiplier" : 6,
+                          "period" : "M"
+                        }
+                      },
+                      "paymentDates" : {
+                        "paymentFrequency" : {
+                          "periodMultiplier" : 6,
+                          "period" : "M"
+                        }
+                      }
+                    }, {
+                      "payerReceiver" : {
+                        "payer" : "Party2",
+                        "receiver" : "Party1"
+                      },
+                      "priceQuantity" : {
+                        "quantitySchedule" : {
+                          "value" : {
+                            "value" : 50000000.00,
+                            "unit" : {
+                              "currency" : {
+                                "value" : "USD"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "rateSpecification" : {
+                        "floatingRate" : {
+                          "rateOption" : {
+                            "value" : {
+                              "floatingRateIndex" : {
+                                "value" : "USD-SOFR"
+                              },
+                              "indexTenor" : {
+                                "periodMultiplier" : 3,
+                                "period" : "M"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dayCountFraction" : {
+                        "value" : "ACT/360"
+                      },
+                      "calculationPeriodDates" : {
+                        "effectiveDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2024-06-17"
+                            }
+                          }
+                        },
+                        "terminationDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2029-06-17"
+                            }
+                          }
+                        },
+                        "calculationPeriodFrequency" : {
+                          "periodMultiplier" : 3,
+                          "period" : "M"
+                        }
+                      },
+                      "paymentDates" : {
+                        "paymentFrequency" : {
+                          "periodMultiplier" : 3,
+                          "period" : "M"
+                        }
+                      },
+                      "resetDates" : {
+                        "resetRelativeTo" : "CalculationPeriodStartDate",
+                        "resetFrequency" : {
+                          "periodMultiplier" : 3,
+                          "period" : "M"
+                        }
+                      }
+                    } ]
+                  }
+                }
+              }
+            },
+            "priceQuantity" : [ {
+              "price" : [ {
+                "value" : {
+                  "value" : 0.0325,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "USD"
+                    }
+                  },
+                  "perUnitOf" : {
+                    "currency" : {
+                      "value" : "USD"
+                    }
+                  },
+                  "priceType" : "InterestRate"
+                }
+              } ],
+              "quantity" : [ {
+                "value" : {
+                  "value" : 50000000.00,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "USD",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              } ]
+            }, {
+              "quantity" : [ {
+                "value" : {
+                  "value" : 50000000.00,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "USD",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              } ]
+            } ],
+            "counterparty" : [ {
+              "role" : "Party1",
+              "partyReference" : {
+                "externalReference" : "Party1"
+              }
+            }, {
+              "role" : "Party2",
+              "partyReference" : {
+                "externalReference" : "Party2"
+              }
+            } ],
+            "parties" : [ {
+              "partyId" : [ {
+                "identifier" : {
+                  "value" : "5493001KJTIIGC8Y1R12"
+                },
+                "identifierType" : "LEI"
+              } ],
+              "name" : {
+                "value" : "Acme Capital LLC"
+              },
+              "meta" : {
+                "externalKey" : "Party1"
+              }
+            }, {
+              "partyId" : [ {
+                "identifier" : {
+                  "value" : "529900F3LM1KKKCCBR28"
+                },
+                "identifierType" : "LEI"
+              } ],
+              "name" : {
+                "value" : "Beta Investments Inc"
+              },
+              "meta" : {
+                "externalKey" : "Party2"
+              }
+            } ],
+            "executionDetails" : {
+              "executionType" : "OffFacility"
+            },
+            "tradeDate" : {
+              "value" : "2024-06-15"
+            },
+            "tradeIdentifier" : [ {
+              "issuer" : {
+                "value" : "5493001KJTIIGC8Y1R12"
+              },
+              "assignedIdentifier" : [ {
+                "identifier" : {
+                  "value" : "TRD-2024-FPML-001"
+                },
+                "version" : 1
+              } ],
+              "identifierType" : "UniqueTransactionIdentifier"
+            } ]
+          }
+        },
+        "before" : {
+          "value" : {
+            "trade" : {
+              "tradeIdentifier" : [ {
+                "issuer" : {
+                  "value" : "5493001KJTIIGC8Y1R12"
+                },
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "value" : "TRD-2024-FPML-001"
+                  },
+                  "version" : 1
+                } ],
+                "identifierType" : "UniqueTransactionIdentifier"
+              } ],
+              "tradeDate" : {
+                "value" : "2024-06-15"
+              },
+              "tradableProduct" : {
+                "product" : {
+                  "contractualProduct" : {
+                    "productTaxonomy" : [ {
+                      "source" : "ISDA",
+                      "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+                    } ],
+                    "economicTerms" : {
+                      "payout" : {
+                        "interestRatePayout" : [ {
+                          "payerReceiver" : {
+                            "payer" : "Party1",
+                            "receiver" : "Party2"
+                          },
+                          "priceQuantity" : {
+                            "quantitySchedule" : {
+                              "value" : {
+                                "value" : 50000000.00,
+                                "unit" : {
+                                  "currency" : {
+                                    "value" : "USD"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "rateSpecification" : {
+                            "fixedRate" : {
+                              "rateSchedule" : {
+                                "price" : {
+                                  "value" : {
+                                    "value" : 0.0325,
+                                    "priceType" : "InterestRate"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "dayCountFraction" : {
+                            "value" : "30/360"
+                          },
+                          "calculationPeriodDates" : {
+                            "effectiveDate" : {
+                              "adjustableDate" : {
+                                "adjustedDate" : {
+                                  "value" : "2024-06-17"
+                                }
+                              }
+                            },
+                            "terminationDate" : {
+                              "adjustableDate" : {
+                                "adjustedDate" : {
+                                  "value" : "2029-06-17"
+                                }
+                              }
+                            },
+                            "calculationPeriodFrequency" : {
+                              "periodMultiplier" : 6,
+                              "period" : "M"
+                            }
+                          },
+                          "paymentDates" : {
+                            "paymentFrequency" : {
+                              "periodMultiplier" : 6,
+                              "period" : "M"
+                            }
+                          }
+                        }, {
+                          "payerReceiver" : {
+                            "payer" : "Party2",
+                            "receiver" : "Party1"
+                          },
+                          "priceQuantity" : {
+                            "quantitySchedule" : {
+                              "value" : {
+                                "value" : 50000000.00,
+                                "unit" : {
+                                  "currency" : {
+                                    "value" : "USD"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "rateSpecification" : {
+                            "floatingRate" : {
+                              "rateOption" : {
+                                "value" : {
+                                  "floatingRateIndex" : {
+                                    "value" : "USD-SOFR"
+                                  },
+                                  "indexTenor" : {
+                                    "periodMultiplier" : 3,
+                                    "period" : "M"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "dayCountFraction" : {
+                            "value" : "ACT/360"
+                          },
+                          "calculationPeriodDates" : {
+                            "effectiveDate" : {
+                              "adjustableDate" : {
+                                "adjustedDate" : {
+                                  "value" : "2024-06-17"
+                                }
+                              }
+                            },
+                            "terminationDate" : {
+                              "adjustableDate" : {
+                                "adjustedDate" : {
+                                  "value" : "2029-06-17"
+                                }
+                              }
+                            },
+                            "calculationPeriodFrequency" : {
+                              "periodMultiplier" : 3,
+                              "period" : "M"
+                            }
+                          },
+                          "paymentDates" : {
+                            "paymentFrequency" : {
+                              "periodMultiplier" : 3,
+                              "period" : "M"
+                            }
+                          },
+                          "resetDates" : {
+                            "resetRelativeTo" : "CalculationPeriodStartDate",
+                            "resetFrequency" : {
+                              "periodMultiplier" : 3,
+                              "period" : "M"
+                            }
+                          }
+                        } ]
+                      }
+                    }
+                  }
+                },
+                "tradeLot" : [ {
+                  "priceQuantity" : [ {
+                    "price" : [ {
+                      "value" : {
+                        "value" : 0.0325,
+                        "unit" : {
+                          "currency" : {
+                            "value" : "USD"
+                          }
+                        },
+                        "perUnitOf" : {
+                          "currency" : {
+                            "value" : "USD"
+                          }
+                        },
+                        "priceType" : "InterestRate"
+                      }
+                    } ],
+                    "quantity" : [ {
+                      "value" : {
+                        "value" : 50000000.00,
+                        "unit" : {
+                          "currency" : {
+                            "value" : "USD",
+                            "meta" : {
+                              "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                            }
+                          }
+                        }
+                      }
+                    } ]
+                  }, {
+                    "quantity" : [ {
+                      "value" : {
+                        "value" : 50000000.00,
+                        "unit" : {
+                          "currency" : {
+                            "value" : "USD",
+                            "meta" : {
+                              "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                            }
+                          }
+                        }
+                      }
+                    } ]
+                  } ]
+                } ],
+                "counterparty" : [ {
+                  "role" : "Party1",
+                  "partyReference" : {
+                    "externalReference" : "Party1"
+                  }
+                }, {
+                  "role" : "Party2",
+                  "partyReference" : {
+                    "externalReference" : "Party2"
+                  }
+                } ]
+              },
+              "party" : [ {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "5493001KJTIIGC8Y1R12"
+                  },
+                  "identifierType" : "LEI"
+                } ],
+                "name" : {
+                  "value" : "Acme Capital LLC"
+                },
+                "meta" : {
+                  "externalKey" : "Party1"
+                }
+              }, {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "529900F3LM1KKKCCBR28"
+                  },
+                  "identifierType" : "LEI"
+                } ],
+                "name" : {
+                  "value" : "Beta Investments Inc"
+                },
+                "meta" : {
+                  "externalKey" : "Party2"
+                }
+              } ],
+              "executionDetails" : {
+                "executionType" : "OffFacility"
+              },
+              "contractDetails" : {
+                "documentation" : [ {
+                  "legalAgreementIdentification" : {
+                    "agreementName" : {
+                      "agreementType" : "MasterAgreement",
+                      "masterAgreementType" : {
+                        "value" : "ISDAMaster"
+                      }
+                    }
+                  }
+                } ]
+              }
+            }
+          }
+        }
+      } ],
+      "after" : [ {
+        "trade" : {
+          "tradeIdentifier" : [ {
+            "issuer" : {
+              "value" : "5493001KJTIIGC8Y1R12"
+            },
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "value" : "TRD-2024-FPML-001"
+              },
+              "version" : 1
+            } ],
+            "identifierType" : "UniqueTransactionIdentifier"
+          } ],
+          "tradeDate" : {
+            "value" : "2024-06-15"
+          },
+          "tradableProduct" : {
+            "product" : {
+              "contractualProduct" : {
+                "productTaxonomy" : [ {
+                  "source" : "ISDA",
+                  "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+                } ],
+                "economicTerms" : {
+                  "payout" : {
+                    "interestRatePayout" : [ {
+                      "payerReceiver" : {
+                        "payer" : "Party1",
+                        "receiver" : "Party2"
+                      },
+                      "priceQuantity" : {
+                        "quantitySchedule" : {
+                          "value" : {
+                            "value" : 50000000.00,
+                            "unit" : {
+                              "currency" : {
+                                "value" : "USD"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "rateSpecification" : {
+                        "fixedRate" : {
+                          "rateSchedule" : {
+                            "price" : {
+                              "value" : {
+                                "value" : 0.0325,
+                                "priceType" : "InterestRate"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dayCountFraction" : {
+                        "value" : "30/360"
+                      },
+                      "calculationPeriodDates" : {
+                        "effectiveDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2024-06-17"
+                            }
+                          }
+                        },
+                        "terminationDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2029-06-17"
+                            }
+                          }
+                        },
+                        "calculationPeriodFrequency" : {
+                          "periodMultiplier" : 6,
+                          "period" : "M"
+                        }
+                      },
+                      "paymentDates" : {
+                        "paymentFrequency" : {
+                          "periodMultiplier" : 6,
+                          "period" : "M"
+                        }
+                      }
+                    }, {
+                      "payerReceiver" : {
+                        "payer" : "Party2",
+                        "receiver" : "Party1"
+                      },
+                      "priceQuantity" : {
+                        "quantitySchedule" : {
+                          "value" : {
+                            "value" : 50000000.00,
+                            "unit" : {
+                              "currency" : {
+                                "value" : "USD"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "rateSpecification" : {
+                        "floatingRate" : {
+                          "rateOption" : {
+                            "value" : {
+                              "floatingRateIndex" : {
+                                "value" : "USD-SOFR"
+                              },
+                              "indexTenor" : {
+                                "periodMultiplier" : 3,
+                                "period" : "M"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dayCountFraction" : {
+                        "value" : "ACT/360"
+                      },
+                      "calculationPeriodDates" : {
+                        "effectiveDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2024-06-17"
+                            }
+                          }
+                        },
+                        "terminationDate" : {
+                          "adjustableDate" : {
+                            "adjustedDate" : {
+                              "value" : "2029-06-17"
+                            }
+                          }
+                        },
+                        "calculationPeriodFrequency" : {
+                          "periodMultiplier" : 3,
+                          "period" : "M"
+                        }
+                      },
+                      "paymentDates" : {
+                        "paymentFrequency" : {
+                          "periodMultiplier" : 3,
+                          "period" : "M"
+                        }
+                      },
+                      "resetDates" : {
+                        "resetRelativeTo" : "CalculationPeriodStartDate",
+                        "resetFrequency" : {
+                          "periodMultiplier" : 3,
+                          "period" : "M"
+                        }
+                      }
+                    } ]
+                  }
+                }
+              }
+            },
+            "tradeLot" : [ {
+              "priceQuantity" : [ {
+                "price" : [ {
+                  "value" : {
+                    "value" : 0.0325,
+                    "unit" : {
+                      "currency" : {
+                        "value" : "USD"
+                      }
+                    },
+                    "perUnitOf" : {
+                      "currency" : {
+                        "value" : "USD"
+                      }
+                    },
+                    "priceType" : "InterestRate"
+                  }
+                } ],
+                "quantity" : [ {
+                  "value" : {
+                    "value" : 50000000.00,
+                    "unit" : {
+                      "currency" : {
+                        "value" : "USD",
+                        "meta" : {
+                          "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                        }
+                      }
+                    }
+                  }
+                } ]
+              }, {
+                "quantity" : [ {
+                  "value" : {
+                    "value" : 50000000.00,
+                    "unit" : {
+                      "currency" : {
+                        "value" : "USD",
+                        "meta" : {
+                          "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                        }
+                      }
+                    }
+                  }
+                } ]
+              } ]
+            } ],
+            "counterparty" : [ {
+              "role" : "Party1",
+              "partyReference" : {
+                "externalReference" : "Party1"
+              }
+            }, {
+              "role" : "Party2",
+              "partyReference" : {
+                "externalReference" : "Party2"
+              }
+            } ]
+          },
+          "party" : [ {
+            "partyId" : [ {
+              "identifier" : {
+                "value" : "5493001KJTIIGC8Y1R12"
+              },
+              "identifierType" : "LEI"
+            } ],
+            "name" : {
+              "value" : "Acme Capital LLC"
+            },
+            "meta" : {
+              "externalKey" : "Party1"
+            }
+          }, {
+            "partyId" : [ {
+              "identifier" : {
+                "value" : "529900F3LM1KKKCCBR28"
+              },
+              "identifierType" : "LEI"
+            } ],
+            "name" : {
+              "value" : "Beta Investments Inc"
+            },
+            "meta" : {
+              "externalKey" : "Party2"
+            }
+          } ],
+          "executionDetails" : {
+            "executionType" : "OffFacility"
+          },
+          "contractDetails" : {
+            "documentation" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                }
+              }
+            } ]
+          }
+        }
+      } ]
+    },
+    "messageInformation" : {
+      "messageId" : {
+        "value" : "TRD-2024-FPML-001_v1"
+      }
+    },
+    "timestamp" : [ {
+      "dateTime" : "2024-06-15T08:00:00Z",
+      "qualification" : "eventCreationDateTime"
+    } ],
+    "eventIdentifier" : [ {
+      "issuer" : {
+        "value" : "UTI"
+      },
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "TRD-2024-FPML-001"
+        },
+        "version" : 1
+      } ]
+    } ],
+    "action" : "New",
+    "party" : [ {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "5493001KJTIIGC8Y1R12"
+        },
+        "identifierType" : "LEI"
+      } ],
+      "name" : {
+        "value" : "Acme Capital LLC"
+      },
+      "meta" : {
+        "externalKey" : "Party1"
+      }
+    }, {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "529900F3LM1KKKCCBR28"
+        },
+        "identifierType" : "LEI"
+      } ],
+      "name" : {
+        "value" : "Beta Investments Inc"
+      },
+      "meta" : {
+        "externalKey" : "Party2"
+      }
+    } ]
+  },
+  "reportableTrade" : {
+    "trade" : {
+      "tradeIdentifier" : [ {
+        "issuer" : {
+          "value" : "5493001KJTIIGC8Y1R12"
+        },
+        "assignedIdentifier" : [ {
+          "identifier" : {
+            "value" : "TRD-2024-FPML-001"
+          },
+          "version" : 1
+        } ],
+        "identifierType" : "UniqueTransactionIdentifier"
+      } ],
+      "tradeDate" : {
+        "value" : "2024-06-15"
+      },
+      "tradableProduct" : {
+        "product" : {
+          "contractualProduct" : {
+            "productTaxonomy" : [ {
+              "source" : "ISDA",
+              "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+            } ],
+            "economicTerms" : {
+              "payout" : {
+                "interestRatePayout" : [ {
+                  "payerReceiver" : {
+                    "payer" : "Party1",
+                    "receiver" : "Party2"
+                  },
+                  "priceQuantity" : {
+                    "quantitySchedule" : {
+                      "value" : {
+                        "value" : 50000000.00,
+                        "unit" : {
+                          "currency" : {
+                            "value" : "USD"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "rateSpecification" : {
+                    "fixedRate" : {
+                      "rateSchedule" : {
+                        "price" : {
+                          "value" : {
+                            "value" : 0.0325,
+                            "priceType" : "InterestRate"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "dayCountFraction" : {
+                    "value" : "30/360"
+                  },
+                  "calculationPeriodDates" : {
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "adjustedDate" : {
+                          "value" : "2024-06-17"
+                        }
+                      }
+                    },
+                    "terminationDate" : {
+                      "adjustableDate" : {
+                        "adjustedDate" : {
+                          "value" : "2029-06-17"
+                        }
+                      }
+                    },
+                    "calculationPeriodFrequency" : {
+                      "periodMultiplier" : 6,
+                      "period" : "M"
+                    }
+                  },
+                  "paymentDates" : {
+                    "paymentFrequency" : {
+                      "periodMultiplier" : 6,
+                      "period" : "M"
+                    }
+                  }
+                }, {
+                  "payerReceiver" : {
+                    "payer" : "Party2",
+                    "receiver" : "Party1"
+                  },
+                  "priceQuantity" : {
+                    "quantitySchedule" : {
+                      "value" : {
+                        "value" : 50000000.00,
+                        "unit" : {
+                          "currency" : {
+                            "value" : "USD"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "rateSpecification" : {
+                    "floatingRate" : {
+                      "rateOption" : {
+                        "value" : {
+                          "floatingRateIndex" : {
+                            "value" : "USD-SOFR"
+                          },
+                          "indexTenor" : {
+                            "periodMultiplier" : 3,
+                            "period" : "M"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "dayCountFraction" : {
+                    "value" : "ACT/360"
+                  },
+                  "calculationPeriodDates" : {
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "adjustedDate" : {
+                          "value" : "2024-06-17"
+                        }
+                      }
+                    },
+                    "terminationDate" : {
+                      "adjustableDate" : {
+                        "adjustedDate" : {
+                          "value" : "2029-06-17"
+                        }
+                      }
+                    },
+                    "calculationPeriodFrequency" : {
+                      "periodMultiplier" : 3,
+                      "period" : "M"
+                    }
+                  },
+                  "paymentDates" : {
+                    "paymentFrequency" : {
+                      "periodMultiplier" : 3,
+                      "period" : "M"
+                    }
+                  },
+                  "resetDates" : {
+                    "resetRelativeTo" : "CalculationPeriodStartDate",
+                    "resetFrequency" : {
+                      "periodMultiplier" : 3,
+                      "period" : "M"
+                    }
+                  }
+                } ]
+              }
+            }
+          }
+        },
+        "tradeLot" : [ {
+          "priceQuantity" : [ {
+            "price" : [ {
+              "value" : {
+                "value" : 0.0325,
+                "unit" : {
+                  "currency" : {
+                    "value" : "USD"
+                  }
+                },
+                "perUnitOf" : {
+                  "currency" : {
+                    "value" : "USD"
+                  }
+                },
+                "priceType" : "InterestRate"
+              }
+            } ],
+            "quantity" : [ {
+              "value" : {
+                "value" : 50000000.00,
+                "unit" : {
+                  "currency" : {
+                    "value" : "USD",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                    }
+                  }
+                }
+              }
+            } ]
+          }, {
+            "quantity" : [ {
+              "value" : {
+                "value" : 50000000.00,
+                "unit" : {
+                  "currency" : {
+                    "value" : "USD",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                    }
+                  }
+                }
+              }
+            } ]
+          } ]
+        } ],
+        "counterparty" : [ {
+          "role" : "Party1",
+          "partyReference" : {
+            "externalReference" : "Party1"
+          }
+        }, {
+          "role" : "Party2",
+          "partyReference" : {
+            "externalReference" : "Party2"
+          }
+        } ]
+      },
+      "party" : [ {
+        "partyId" : [ {
+          "identifier" : {
+            "value" : "5493001KJTIIGC8Y1R12"
+          },
+          "identifierType" : "LEI"
+        } ],
+        "name" : {
+          "value" : "Acme Capital LLC"
+        },
+        "meta" : {
+          "externalKey" : "Party1"
+        }
+      }, {
+        "partyId" : [ {
+          "identifier" : {
+            "value" : "529900F3LM1KKKCCBR28"
+          },
+          "identifierType" : "LEI"
+        } ],
+        "name" : {
+          "value" : "Beta Investments Inc"
+        },
+        "meta" : {
+          "externalKey" : "Party2"
+        }
+      } ],
+      "executionDetails" : {
+        "executionType" : "OffFacility"
+      },
+      "contractDetails" : {
+        "documentation" : [ {
+          "legalAgreementIdentification" : {
+            "agreementName" : {
+              "agreementType" : "MasterAgreement",
+              "masterAgreementType" : {
+                "value" : "ISDAMaster"
+              }
+            }
+          }
+        } ]
+      }
+    }
+  },
+  "reportableInformation" : {
+    "confirmationMethod" : "Electronic",
+    "executionVenueType" : "OffFacility",
+    "largeSizeTrade" : false,
+    "partyInformation" : [ {
+      "partyReference" : {
+        "externalReference" : "Party1"
+      },
+      "regimeInformation" : [ {
+        "supervisoryBody" : {
+          "value" : "CFTC"
+        },
+        "mandatorilyClearable" : "ProductNotMandatory",
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "partyReference" : {
+        "externalReference" : "Party2"
+      },
+      "regimeInformation" : [ {
+        "supervisoryBody" : {
+          "value" : "CFTC"
+        },
+        "mandatorilyClearable" : "ProductNotMandatory",
+        "reportingRole" : "Counterparty"
+      } ]
+    } ]
+  }
+}
