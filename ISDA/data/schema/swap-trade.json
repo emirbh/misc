@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SwapTrade",
+  "description": "Internal swap trade record — the input format to be mapped to CDM TradeState.",
+  "type": "object",
+  "required": [
+    "tradeId",
+    "tradeVersion",
+    "actionType",
+    "eventType",
+    "productType",
+    "tradeDate",
+    "effectiveDate",
+    "terminationDate",
+    "notionalAmount",
+    "notionalCurrency",
+    "party1",
+    "party2"
+  ],
+  "properties": {
+    "tradeId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]+$",
+      "description": "Alphanumeric trade identifier."
+    },
+    "tradeVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Trade version, starting from 1. Incremented on each amendment or correction."
+    },
+    "actionType": {
+      "type": "string",
+      "enum": ["NEWT", "MODI", "CORR", "EROR", "TERM", "REVI"],
+      "description": "What is being done with this submission: new trade, modification, correction, error cancellation, termination, or revision."
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["TRAD", "NOVA", "ETRM", "ALOC", "COMP"],
+      "description": "The lifecycle event: trade, novation, early termination, allocation, or compression."
+    },
+    "productType": {
+      "type": "string",
+      "enum": [
+        "vanilla_swap",
+        "basic_swap",
+        "ois",
+        "fra",
+        "cap_floor",
+        "swaption",
+        "ois_swaption",
+        "cancelable_swap",
+        "bond_option",
+        "inflation_swap",
+        "inflation_yoy_swap",
+        "swap_spread",
+        "ratelock",
+        "cmd_rate_lock",
+        "fx_leg",
+        "fx_swap",
+        "fx_simple_option",
+        "fx_reset",
+        "di_option",
+        "idi_option",
+        "fee_only",
+        "rates_fee_only",
+        "credit_fee_only"
+      ],
+      "description": "The swap product type."
+    },
+    "tradeDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the trade was agreed (ISO 8601)."
+    },
+    "effectiveDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the swap begins accruing."
+    },
+    "terminationDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Scheduled end date of the swap."
+    },
+
+    "notionalAmount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Notional principal amount."
+    },
+    "notionalCurrency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 currency code for the notional."
+    },
+    "notionalAmount2": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Second leg notional (for cross-currency swaps, FX). Omit if same as notionalAmount."
+    },
+    "notionalCurrency2": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Second leg currency (for cross-currency, FX)."
+    },
+
+    "fixedRate": {
+      "type": "number",
+      "description": "Fixed rate as a decimal (e.g. 0.0325 for 3.25%). Required for fixed-leg products."
+    },
+    "floatingRateIndex": {
+      "type": "string",
+      "description": "Floating rate benchmark name (e.g. USD-SOFR, EUR-EURIBOR-Reuters, BRL-CDI)."
+    },
+    "floatingRateIndexTenor": {
+      "type": "string",
+      "pattern": "^[0-9]+[DWMY]$",
+      "description": "Tenor of the floating rate index (e.g. 3M, 6M, 1Y, 1D for overnight)."
+    },
+    "spread": {
+      "type": "number",
+      "description": "Spread over the floating rate index, as a decimal."
+    },
+
+    "fixedDayCount": {
+      "type": "string",
+      "enum": ["ACT/360", "ACT/365", "ACT/ACT", "30/360", "30E/360", "ACT/365L", "BUS/252"],
+      "description": "Day count convention for the fixed leg."
+    },
+    "floatingDayCount": {
+      "type": "string",
+      "enum": ["ACT/360", "ACT/365", "ACT/ACT", "30/360", "30E/360", "ACT/365L", "BUS/252"],
+      "description": "Day count convention for the floating leg."
+    },
+
+    "paymentFrequency": {
+      "type": "string",
+      "pattern": "^[0-9]+[DWMY]$",
+      "description": "Payment frequency for the fixed leg (e.g. 6M, 1Y, 3M)."
+    },
+    "resetFrequency": {
+      "type": "string",
+      "pattern": "^[0-9]+[DWMY]$",
+      "description": "Reset frequency for the floating leg (e.g. 3M, 6M, 1D for daily)."
+    },
+
+    "businessDayConvention": {
+      "type": "string",
+      "enum": ["FOLLOWING", "MODFOLLOWING", "PRECEDING", "MODPRECEDING", "NONE"],
+      "default": "MODFOLLOWING",
+      "description": "How to adjust dates falling on non-business days."
+    },
+    "businessCenters": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Business center codes for holiday calendars (e.g. [\"USNY\", \"GBLO\"])."
+    },
+
+    "party1": {
+      "$ref": "#/$defs/Party",
+      "description": "First counterparty (typically the reporting entity)."
+    },
+    "party2": {
+      "$ref": "#/$defs/Party",
+      "description": "Second counterparty."
+    },
+
+    "executionVenue": {
+      "type": "string",
+      "description": "MIC code or venue identifier (e.g. XOFF for off-facility, XXXX for OTC)."
+    },
+    "confirmationMethod": {
+      "type": "string",
+      "enum": ["ELECTRONIC", "NON_ELECTRONIC"],
+      "description": "How the trade was confirmed."
+    },
+    "masterAgreementType": {
+      "type": "string",
+      "enum": ["ISDAMaster", "ISDAMaster2002", "ISDAMaster2014"],
+      "default": "ISDAMaster",
+      "description": "Type of master agreement governing the trade."
+    },
+    "clearingStatus": {
+      "type": "string",
+      "enum": ["CLEARED", "UNCLEARED", "INTENDED"],
+      "description": "Whether the trade is cleared, uncleared, or intended for clearing."
+    },
+
+    "optionType": {
+      "type": "string",
+      "enum": ["CALL", "PUT"],
+      "description": "For options/swaptions: call or put."
+    },
+    "optionExpiryDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Option expiration date."
+    },
+    "optionExerciseStyle": {
+      "type": "string",
+      "enum": ["EUROPEAN", "AMERICAN", "BERMUDAN"],
+      "description": "Option exercise style."
+    },
+    "strikeRate": {
+      "type": "number",
+      "description": "Strike rate for options/swaptions, as a decimal."
+    },
+    "premium": {
+      "type": "number",
+      "description": "Option premium amount."
+    },
+    "premiumCurrency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Currency of the premium payment."
+    },
+    "settlementType": {
+      "type": "string",
+      "enum": ["PHYSICAL", "CASH"],
+      "description": "Settlement type for options."
+    },
+
+    "fxRate": {
+      "type": "number",
+      "description": "FX exchange rate (for FX products)."
+    },
+    "fxFarDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Far leg settlement date (for FX swaps)."
+    },
+    "fxFarRate": {
+      "type": "number",
+      "description": "Far leg FX rate (for FX swaps)."
+    },
+
+    "capRate": {
+      "type": "number",
+      "description": "Cap strike rate (for cap/floor products)."
+    },
+    "floorRate": {
+      "type": "number",
+      "description": "Floor strike rate (for cap/floor products)."
+    },
+
+    "inflationIndex": {
+      "type": "string",
+      "description": "Inflation index name (e.g. CPI, HICP, IPCA) for inflation swaps."
+    },
+    "inflationInterpolation": {
+      "type": "string",
+      "enum": ["LINEAR", "NONE"],
+      "description": "Interpolation method for inflation index."
+    },
+
+    "cancelableFrom": {
+      "type": "string",
+      "format": "date",
+      "description": "Earliest cancellation date for cancelable swaps."
+    },
+
+    "novationNewParty": {
+      "$ref": "#/$defs/Party",
+      "description": "The stepping-in party for novation events."
+    },
+
+    "priorTradeId": {
+      "type": "string",
+      "description": "Trade ID of the trade being amended, corrected, or terminated."
+    },
+
+    "feeAmount": {
+      "type": "number",
+      "description": "Fee or premium amount for fee-only trades."
+    },
+    "feeCurrency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Currency of the fee payment."
+    }
+  },
+
+  "$defs": {
+    "Party": {
+      "type": "object",
+      "required": ["lei", "name"],
+      "properties": {
+        "lei": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{20}$",
+          "description": "Legal Entity Identifier (ISO 17442)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Party display name."
+        }
+      }
+    }
+  }
+}

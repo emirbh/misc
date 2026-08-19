@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.isda</groupId>
+    <artifactId>isda-cdm-trade-mapper</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <description>Maps internal swap trade format to CDM TradeState and DRR regulatory reports.</description>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <drr.version>5.20.1</drr.version>
+        <jackson.version>2.17.1</jackson.version>
+        <junit.version>5.9.1</junit.version>
+    </properties>
+
+    <dependencies>
+        <!-- DRR (brings in CDM 5.29.0 transitively) -->
+        <dependency>
+            <groupId>com.regnosys.drr</groupId>
+            <artifactId>rosetta-source</artifactId>
+            <version>${drr.version}</version>
+        </dependency>
+
+        <!-- Jackson for reading our internal JSON format -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>com.google.cloud.artifactregistry</groupId>
+                <artifactId>artifactregistry-maven-wagon</artifactId>
+                <version>2.2.1</version>
+            </extension>
+        </extensions>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>isda-maven</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/production-208613/isda-maven</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>isda-maven-snapshot</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/production-208613/isda-maven-snapshot</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>public-maven</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/production-208613/public-maven</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+</project>

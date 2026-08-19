@@ -1,0 +1,37 @@
+{
+  "tradeId": "TRD20260818A01",
+  "tradeVersion": 3,
+  "actionType": "NEWT",
+  "eventType": "NOVA",
+  "productType": "vanilla_swap",
+
+  "tradeDate": "2026-08-18",
+  "effectiveDate": "2026-08-20",
+  "terminationDate": "2031-08-20",
+
+  "notionalAmount": 75000000,
+  "notionalCurrency": "USD",
+
+  "fixedRate": 0.0340,
+  "fixedDayCount": "30/360",
+  "paymentFrequency": "6M",
+
+  "floatingRateIndex": "USD-SOFR",
+  "floatingRateIndexTenor": "3M",
+  "floatingDayCount": "ACT/360",
+  "resetFrequency": "3M",
+
+  "businessDayConvention": "MODFOLLOWING",
+  "businessCenters": ["USNY"],
+
+  "party1": { "lei": "549300EXAMPLE0LEI001", "name": "Alpha Bank" },
+  "party2": { "lei": "549300EXAMPLE0LEI002", "name": "Beta Capital" },
+  "novationNewParty": { "lei": "549300EXAMPLE0LEI006", "name": "Zeta Partners" },
+
+  "priorTradeId": "TRD20260818A01",
+
+  "executionVenue": "XXXX",
+  "confirmationMethod": "ELECTRONIC",
+  "masterAgreementType": "ISDAMaster",
+  "clearingStatus": "UNCLEARED"
+}

@@ -1,0 +1,42 @@
+{
+  "tradeId": "TRD20260818A04",
+  "tradeVersion": 1,
+  "actionType": "NEWT",
+  "eventType": "TRAD",
+  "productType": "swaption",
+
+  "tradeDate": "2026-08-18",
+  "effectiveDate": "2027-08-20",
+  "terminationDate": "2032-08-20",
+
+  "notionalAmount": 30000000,
+  "notionalCurrency": "USD",
+
+  "fixedRate": 0.0350,
+  "fixedDayCount": "30/360",
+  "paymentFrequency": "6M",
+
+  "floatingRateIndex": "USD-SOFR",
+  "floatingRateIndexTenor": "3M",
+  "floatingDayCount": "ACT/360",
+  "resetFrequency": "3M",
+
+  "optionType": "CALL",
+  "optionExpiryDate": "2027-08-18",
+  "optionExerciseStyle": "EUROPEAN",
+  "strikeRate": 0.0350,
+  "premium": 450000,
+  "premiumCurrency": "USD",
+  "settlementType": "PHYSICAL",
+
+  "businessDayConvention": "MODFOLLOWING",
+  "businessCenters": ["USNY"],
+
+  "party1": { "lei": "549300EXAMPLE0LEI001", "name": "Alpha Bank" },
+  "party2": { "lei": "549300EXAMPLE0LEI002", "name": "Beta Capital" },
+
+  "executionVenue": "XXXX",
+  "confirmationMethod": "ELECTRONIC",
+  "masterAgreementType": "ISDAMaster",
+  "clearingStatus": "UNCLEARED"
+}
