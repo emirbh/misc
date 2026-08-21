@@ -3,7 +3,7 @@ package org.isda.mapper;
 import cdm.base.staticdata.party.CounterpartyRoleEnum;
 import cdm.base.staticdata.party.metafields.ReferenceWithMetaParty;
 import com.google.inject.Injector;
-import drr.regulation.common.ReportingSide;
+import drr.base.trade.ReportingSide;
 import drr.enrichment.common.trade.functions.Create_TransactionReportInstruction;
 import drr.regulation.common.ReportableEvent;
 import drr.regulation.common.TransactionReportInstruction;

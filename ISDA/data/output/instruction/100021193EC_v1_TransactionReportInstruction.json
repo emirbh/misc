@@ -1,0 +1,811 @@
+{
+  "originatingWorkflowStep" : {
+    "businessEvent" : {
+      "intent" : "ContractFormation",
+      "eventDate" : "2021-09-29",
+      "instruction" : [ {
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "contractualParty" : [ {
+                "externalReference" : "Party1"
+              }, {
+                "externalReference" : "Party2"
+              } ]
+            } ]
+          },
+          "execution" : {
+            "product" : {
+              "taxonomy" : [ {
+                "source" : "ISDA",
+                "productQualifier" : "ForeignExchange_NDF"
+              } ],
+              "economicTerms" : {
+                "payout" : [ {
+                  "SettlementPayout" : {
+                    "payerReceiver" : {
+                      "payer" : "Party1",
+                      "receiver" : "Party2"
+                    },
+                    "settlementTerms" : {
+                      "settlementType" : "Cash",
+                      "settlementCurrency" : {
+                        "value" : "USD"
+                      },
+                      "settlementDate" : {
+                        "valueDate" : "2021-11-02"
+                      },
+                      "cashSettlementTerms" : [ {
+                        "cashSettlementMethod" : "CashPriceMethod"
+                      } ]
+                    },
+                    "underlier" : {
+                      "Observable" : {
+                        "value" : {
+                          "Asset" : {
+                            "Cash" : {
+                              "identifier" : [ {
+                                "identifier" : {
+                                  "value" : "CLP"
+                                },
+                                "identifierType" : "CurrencyCode"
+                              } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                } ]
+              }
+            },
+            "priceQuantity" : [ {
+              "price" : [ {
+                "value" : {
+                  "value" : 803.25,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "CLP"
+                    }
+                  },
+                  "perUnitOf" : {
+                    "currency" : {
+                      "value" : "USD"
+                    }
+                  },
+                  "priceType" : "ExchangeRate"
+                }
+              } ],
+              "quantity" : [ {
+                "value" : {
+                  "value" : 12048750000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "CLP",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              }, {
+                "value" : {
+                  "value" : 15000000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "USD",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              } ],
+              "observable" : {
+                "value" : {
+                  "Asset" : {
+                    "Cash" : {
+                      "identifier" : [ {
+                        "identifier" : {
+                          "value" : "USD"
+                        },
+                        "identifierType" : "CurrencyCode"
+                      } ]
+                    }
+                  }
+                }
+              }
+            } ],
+            "counterparty" : [ {
+              "role" : "Party1",
+              "partyReference" : {
+                "externalReference" : "Party1"
+              }
+            }, {
+              "role" : "Party2",
+              "partyReference" : {
+                "externalReference" : "Party2"
+              }
+            } ],
+            "parties" : [ {
+              "partyId" : [ {
+                "identifier" : {
+                  "value" : "FCLCCY"
+                },
+                "identifierType" : "LEI"
+              } ],
+              "name" : {
+                "value" : "CDS-LONG SWAPS"
+              },
+              "meta" : {
+                "externalKey" : "Party1"
+              }
+            }, {
+              "partyId" : [ {
+                "identifier" : {
+                  "value" : "EDLDNEM"
+                },
+                "identifierType" : "LEI"
+              } ],
+              "name" : {
+                "value" : "CITIBANK NA GB LONDON"
+              },
+              "meta" : {
+                "externalKey" : "Party2"
+              }
+            } ],
+            "executionDetails" : {
+              "executionType" : "OffFacility"
+            },
+            "tradeDate" : {
+              "value" : "2021-09-29"
+            },
+            "tradeIdentifier" : [ {
+              "issuer" : {
+                "value" : "FCLCCY"
+              },
+              "assignedIdentifier" : [ {
+                "identifier" : {
+                  "value" : "100021193EC"
+                },
+                "version" : 1
+              } ],
+              "identifierType" : "UniqueTransactionIdentifier"
+            } ]
+          }
+        },
+        "before" : {
+          "value" : {
+            "trade" : {
+              "product" : {
+                "taxonomy" : [ {
+                  "source" : "ISDA",
+                  "productQualifier" : "ForeignExchange_NDF"
+                } ],
+                "economicTerms" : {
+                  "payout" : [ {
+                    "SettlementPayout" : {
+                      "payerReceiver" : {
+                        "payer" : "Party1",
+                        "receiver" : "Party2"
+                      },
+                      "settlementTerms" : {
+                        "settlementType" : "Cash",
+                        "settlementCurrency" : {
+                          "value" : "USD"
+                        },
+                        "settlementDate" : {
+                          "valueDate" : "2021-11-02"
+                        },
+                        "cashSettlementTerms" : [ {
+                          "cashSettlementMethod" : "CashPriceMethod"
+                        } ]
+                      },
+                      "underlier" : {
+                        "Observable" : {
+                          "value" : {
+                            "Asset" : {
+                              "Cash" : {
+                                "identifier" : [ {
+                                  "identifier" : {
+                                    "value" : "CLP"
+                                  },
+                                  "identifierType" : "CurrencyCode"
+                                } ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } ]
+                }
+              },
+              "tradeLot" : [ {
+                "priceQuantity" : [ {
+                  "price" : [ {
+                    "value" : {
+                      "value" : 803.25,
+                      "unit" : {
+                        "currency" : {
+                          "value" : "CLP"
+                        }
+                      },
+                      "perUnitOf" : {
+                        "currency" : {
+                          "value" : "USD"
+                        }
+                      },
+                      "priceType" : "ExchangeRate"
+                    }
+                  } ],
+                  "quantity" : [ {
+                    "value" : {
+                      "value" : 12048750000,
+                      "unit" : {
+                        "currency" : {
+                          "value" : "CLP",
+                          "meta" : {
+                            "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                          }
+                        }
+                      }
+                    }
+                  }, {
+                    "value" : {
+                      "value" : 15000000,
+                      "unit" : {
+                        "currency" : {
+                          "value" : "USD",
+                          "meta" : {
+                            "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                          }
+                        }
+                      }
+                    }
+                  } ],
+                  "observable" : {
+                    "value" : {
+                      "Asset" : {
+                        "Cash" : {
+                          "identifier" : [ {
+                            "identifier" : {
+                              "value" : "USD"
+                            },
+                            "identifierType" : "CurrencyCode"
+                          } ]
+                        }
+                      }
+                    }
+                  }
+                } ]
+              } ],
+              "counterparty" : [ {
+                "role" : "Party1",
+                "partyReference" : {
+                  "externalReference" : "Party1"
+                }
+              }, {
+                "role" : "Party2",
+                "partyReference" : {
+                  "externalReference" : "Party2"
+                }
+              } ],
+              "tradeIdentifier" : [ {
+                "issuer" : {
+                  "value" : "FCLCCY"
+                },
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "value" : "100021193EC"
+                  },
+                  "version" : 1
+                } ],
+                "identifierType" : "UniqueTransactionIdentifier"
+              } ],
+              "tradeDate" : {
+                "value" : "2021-09-29"
+              },
+              "party" : [ {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "FCLCCY"
+                  },
+                  "identifierType" : "LEI"
+                } ],
+                "name" : {
+                  "value" : "CDS-LONG SWAPS"
+                },
+                "meta" : {
+                  "externalKey" : "Party1"
+                }
+              }, {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "EDLDNEM"
+                  },
+                  "identifierType" : "LEI"
+                } ],
+                "name" : {
+                  "value" : "CITIBANK NA GB LONDON"
+                },
+                "meta" : {
+                  "externalKey" : "Party2"
+                }
+              } ],
+              "executionDetails" : {
+                "executionType" : "OffFacility"
+              },
+              "contractDetails" : {
+                "documentation" : [ {
+                  "legalAgreementIdentification" : {
+                    "agreementName" : {
+                      "agreementType" : "MasterAgreement",
+                      "masterAgreementType" : {
+                        "value" : "ISDAMaster"
+                      }
+                    }
+                  }
+                } ]
+              }
+            }
+          }
+        }
+      } ],
+      "after" : [ {
+        "trade" : {
+          "product" : {
+            "taxonomy" : [ {
+              "source" : "ISDA",
+              "productQualifier" : "ForeignExchange_NDF"
+            } ],
+            "economicTerms" : {
+              "payout" : [ {
+                "SettlementPayout" : {
+                  "payerReceiver" : {
+                    "payer" : "Party1",
+                    "receiver" : "Party2"
+                  },
+                  "settlementTerms" : {
+                    "settlementType" : "Cash",
+                    "settlementCurrency" : {
+                      "value" : "USD"
+                    },
+                    "settlementDate" : {
+                      "valueDate" : "2021-11-02"
+                    },
+                    "cashSettlementTerms" : [ {
+                      "cashSettlementMethod" : "CashPriceMethod"
+                    } ]
+                  },
+                  "underlier" : {
+                    "Observable" : {
+                      "value" : {
+                        "Asset" : {
+                          "Cash" : {
+                            "identifier" : [ {
+                              "identifier" : {
+                                "value" : "CLP"
+                              },
+                              "identifierType" : "CurrencyCode"
+                            } ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } ]
+            }
+          },
+          "tradeLot" : [ {
+            "priceQuantity" : [ {
+              "price" : [ {
+                "value" : {
+                  "value" : 803.25,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "CLP"
+                    }
+                  },
+                  "perUnitOf" : {
+                    "currency" : {
+                      "value" : "USD"
+                    }
+                  },
+                  "priceType" : "ExchangeRate"
+                }
+              } ],
+              "quantity" : [ {
+                "value" : {
+                  "value" : 12048750000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "CLP",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              }, {
+                "value" : {
+                  "value" : 15000000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "USD",
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                      }
+                    }
+                  }
+                }
+              } ],
+              "observable" : {
+                "value" : {
+                  "Asset" : {
+                    "Cash" : {
+                      "identifier" : [ {
+                        "identifier" : {
+                          "value" : "USD"
+                        },
+                        "identifierType" : "CurrencyCode"
+                      } ]
+                    }
+                  }
+                }
+              }
+            } ]
+          } ],
+          "counterparty" : [ {
+            "role" : "Party1",
+            "partyReference" : {
+              "externalReference" : "Party1"
+            }
+          }, {
+            "role" : "Party2",
+            "partyReference" : {
+              "externalReference" : "Party2"
+            }
+          } ],
+          "tradeIdentifier" : [ {
+            "issuer" : {
+              "value" : "FCLCCY"
+            },
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "value" : "100021193EC"
+              },
+              "version" : 1
+            } ],
+            "identifierType" : "UniqueTransactionIdentifier"
+          } ],
+          "tradeDate" : {
+            "value" : "2021-09-29"
+          },
+          "party" : [ {
+            "partyId" : [ {
+              "identifier" : {
+                "value" : "FCLCCY"
+              },
+              "identifierType" : "LEI"
+            } ],
+            "name" : {
+              "value" : "CDS-LONG SWAPS"
+            },
+            "meta" : {
+              "externalKey" : "Party1"
+            }
+          }, {
+            "partyId" : [ {
+              "identifier" : {
+                "value" : "EDLDNEM"
+              },
+              "identifierType" : "LEI"
+            } ],
+            "name" : {
+              "value" : "CITIBANK NA GB LONDON"
+            },
+            "meta" : {
+              "externalKey" : "Party2"
+            }
+          } ],
+          "executionDetails" : {
+            "executionType" : "OffFacility"
+          },
+          "contractDetails" : {
+            "documentation" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                }
+              }
+            } ]
+          }
+        }
+      } ]
+    },
+    "messageInformation" : {
+      "messageId" : {
+        "value" : "100021193EC_v1"
+      }
+    },
+    "timestamp" : [ {
+      "dateTime" : "2021-09-29T08:00:00Z",
+      "qualification" : "eventCreationDateTime"
+    } ],
+    "eventIdentifier" : [ {
+      "issuer" : {
+        "value" : "UTI"
+      },
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "100021193EC"
+        },
+        "version" : 1
+      } ]
+    } ],
+    "action" : "New",
+    "party" : [ {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "FCLCCY"
+        },
+        "identifierType" : "LEI"
+      } ],
+      "name" : {
+        "value" : "CDS-LONG SWAPS"
+      },
+      "meta" : {
+        "externalKey" : "Party1"
+      }
+    }, {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "EDLDNEM"
+        },
+        "identifierType" : "LEI"
+      } ],
+      "name" : {
+        "value" : "CITIBANK NA GB LONDON"
+      },
+      "meta" : {
+        "externalKey" : "Party2"
+      }
+    } ]
+  },
+  "reportableTrade" : {
+    "trade" : {
+      "product" : {
+        "taxonomy" : [ {
+          "source" : "ISDA",
+          "productQualifier" : "ForeignExchange_NDF"
+        } ],
+        "economicTerms" : {
+          "payout" : [ {
+            "SettlementPayout" : {
+              "payerReceiver" : {
+                "payer" : "Party1",
+                "receiver" : "Party2"
+              },
+              "settlementTerms" : {
+                "settlementType" : "Cash",
+                "settlementCurrency" : {
+                  "value" : "USD"
+                },
+                "settlementDate" : {
+                  "valueDate" : "2021-11-02"
+                },
+                "cashSettlementTerms" : [ {
+                  "cashSettlementMethod" : "CashPriceMethod"
+                } ]
+              },
+              "underlier" : {
+                "Observable" : {
+                  "value" : {
+                    "Asset" : {
+                      "Cash" : {
+                        "identifier" : [ {
+                          "identifier" : {
+                            "value" : "CLP"
+                          },
+                          "identifierType" : "CurrencyCode"
+                        } ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } ]
+        }
+      },
+      "tradeLot" : [ {
+        "priceQuantity" : [ {
+          "price" : [ {
+            "value" : {
+              "value" : 803.25,
+              "unit" : {
+                "currency" : {
+                  "value" : "CLP"
+                }
+              },
+              "perUnitOf" : {
+                "currency" : {
+                  "value" : "USD"
+                }
+              },
+              "priceType" : "ExchangeRate"
+            }
+          } ],
+          "quantity" : [ {
+            "value" : {
+              "value" : 12048750000,
+              "unit" : {
+                "currency" : {
+                  "value" : "CLP",
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                  }
+                }
+              }
+            }
+          }, {
+            "value" : {
+              "value" : 15000000,
+              "unit" : {
+                "currency" : {
+                  "value" : "USD",
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                  }
+                }
+              }
+            }
+          } ],
+          "observable" : {
+            "value" : {
+              "Asset" : {
+                "Cash" : {
+                  "identifier" : [ {
+                    "identifier" : {
+                      "value" : "USD"
+                    },
+                    "identifierType" : "CurrencyCode"
+                  } ]
+                }
+              }
+            }
+          }
+        } ]
+      } ],
+      "counterparty" : [ {
+        "role" : "Party1",
+        "partyReference" : {
+          "externalReference" : "Party1"
+        }
+      }, {
+        "role" : "Party2",
+        "partyReference" : {
+          "externalReference" : "Party2"
+        }
+      } ],
+      "tradeIdentifier" : [ {
+        "issuer" : {
+          "value" : "FCLCCY"
+        },
+        "assignedIdentifier" : [ {
+          "identifier" : {
+            "value" : "100021193EC"
+          },
+          "version" : 1
+        } ],
+        "identifierType" : "UniqueTransactionIdentifier"
+      } ],
+      "tradeDate" : {
+        "value" : "2021-09-29"
+      },
+      "party" : [ {
+        "partyId" : [ {
+          "identifier" : {
+            "value" : "FCLCCY"
+          },
+          "identifierType" : "LEI"
+        } ],
+        "name" : {
+          "value" : "CDS-LONG SWAPS"
+        },
+        "meta" : {
+          "externalKey" : "Party1"
+        }
+      }, {
+        "partyId" : [ {
+          "identifier" : {
+            "value" : "EDLDNEM"
+          },
+          "identifierType" : "LEI"
+        } ],
+        "name" : {
+          "value" : "CITIBANK NA GB LONDON"
+        },
+        "meta" : {
+          "externalKey" : "Party2"
+        }
+      } ],
+      "executionDetails" : {
+        "executionType" : "OffFacility"
+      },
+      "contractDetails" : {
+        "documentation" : [ {
+          "legalAgreementIdentification" : {
+            "agreementName" : {
+              "agreementType" : "MasterAgreement",
+              "masterAgreementType" : {
+                "value" : "ISDAMaster"
+              }
+            }
+          }
+        } ]
+      }
+    }
+  },
+  "reportableInformation" : {
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "externalReference" : "Party1"
+      }
+    }, {
+      "partyReference" : {
+        "externalReference" : "Party2"
+      }
+    } ],
+    "confirmationMethod" : "NonElectronic",
+    "jurisdictionInformation" : [ {
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "CFTC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        },
+        "largeSizeTrade" : false
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "externalReference" : "Party1"
+        },
+        "mandatorilyClearable" : "ProductNotMandatory",
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "externalReference" : "Party2"
+        },
+        "mandatorilyClearable" : "ProductNotMandatory",
+        "reportingRole" : "Counterparty"
+      } ]
+    } ]
+  },
+  "reportingSide" : {
+    "reportingParty" : {
+      "externalReference" : "Party1"
+    },
+    "reportingCounterparty" : {
+      "externalReference" : "Party2"
+    }
+  }
+}

@@ -20,16 +20,16 @@ import java.math.BigDecimal;
 import static org.isda.mapper.util.CdmBuilderUtil.*;
 
 /**
- * Maps internal vanilla swap (fixed/float IRS) to CDM 5 product structure.
+ * Maps internal vanilla swap (fixed/float IRS) to CDM 6 product structure.
  * Also serves as the base for OIS, basis swap, and other IRS variants.
  */
 public final class VanillaSwapMapper {
 
     private VanillaSwapMapper() {}
 
-    public static ContractualProduct map(SwapTrade trade) {
-        return ContractualProduct.builder()
-                .setProductTaxonomy(java.util.Collections.singletonList(
+    public static NonTransferableProduct map(SwapTrade trade) {
+        return NonTransferableProduct.builder()
+                .setTaxonomy(java.util.Collections.singletonList(
                         cdm.base.staticdata.asset.common.ProductTaxonomy.builder()
                                 .setSource(cdm.base.staticdata.asset.common.TaxonomySourceEnum.ISDA)
                                 .setProductQualifier("InterestRate_IRSwap_FixedFloat")))
@@ -37,11 +37,16 @@ public final class VanillaSwapMapper {
                 .build();
     }
 
+    /**
+     * CDM 6 holds one payout per Payout wrapper, so the fixed and floating
+     * legs become two entries in the economic terms payout list.
+     */
     private static EconomicTerms buildEconomicTerms(SwapTrade trade) {
         return EconomicTerms.builder()
-                .setPayout(Payout.builder()
-                        .addInterestRatePayout(buildFixedLeg(trade))
-                        .addInterestRatePayout(buildFloatingLeg(trade)))
+                .addPayout(Payout.builder()
+                        .setInterestRatePayout(buildFixedLeg(trade)))
+                .addPayout(Payout.builder()
+                        .setInterestRatePayout(buildFloatingLeg(trade)))
                 .build();
     }
 
@@ -59,7 +64,7 @@ public final class VanillaSwapMapper {
                                                         .setCurrency(FieldWithMetaString.builder()
                                                                 .setValue(trade.getNotionalCurrency()))))))
                 .setRateSpecification(RateSpecification.builder()
-                        .setFixedRate(FixedRateSpecification.builder()
+                        .setFixedRateSpecification(FixedRateSpecification.builder()
                                 .setRateSchedule(RateSchedule.builder()
                                         .setPrice(cdm.observable.asset.metafields.ReferenceWithMetaPriceSchedule.builder()
                                                 .setValue(PriceSchedule.builder()
@@ -89,10 +94,11 @@ public final class VanillaSwapMapper {
 
         FloatingRateSpecification.FloatingRateSpecificationBuilder floatingRate =
                 FloatingRateSpecification.builder()
-                        .setRateOptionValue(FloatingRateOption.builder()
-                                .setFloatingRateIndexValue(FloatingRateIndexEnum.valueOf(
-                                        normalizeIndexName(trade.getFloatingRateIndex())))
-                                .setIndexTenor(parsePeriod(trade.getFloatingRateIndexTenor())));
+                        .setRateOptionValue(InterestRateIndex.builder()
+                                .setFloatingRateIndex(FloatingRateIndex.builder()
+                                        .setFloatingRateIndexValue(FloatingRateIndexEnum.valueOf(
+                                                normalizeIndexName(trade.getFloatingRateIndex())))
+                                        .setIndexTenor(parsePeriod(trade.getFloatingRateIndexTenor()))));
 
         if (trade.getSpread() != null) {
             floatingRate.setSpreadSchedule(SpreadSchedule.builder()
@@ -117,7 +123,7 @@ public final class VanillaSwapMapper {
                                                         .setCurrency(FieldWithMetaString.builder()
                                                                 .setValue(trade.getNotionalCurrency()))))))
                 .setRateSpecification(RateSpecification.builder()
-                        .setFloatingRate(floatingRate))
+                        .setFloatingRateSpecification(floatingRate))
                 .setDayCountFraction(dayCountField(
                         trade.getFloatingDayCount() != null ? trade.getFloatingDayCount() : "ACT/360"))
                 .setCalculationPeriodDates(buildCalcPeriodDates(trade, resetTenor))

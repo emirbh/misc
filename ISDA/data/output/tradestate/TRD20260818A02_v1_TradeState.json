@@ -1,5 +1,204 @@
 {
   "trade" : {
+    "product" : {
+      "taxonomy" : [ {
+        "source" : "ISDA",
+        "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+      } ],
+      "economicTerms" : {
+        "payout" : [ {
+          "InterestRatePayout" : {
+            "payerReceiver" : {
+              "payer" : "Party1",
+              "receiver" : "Party2"
+            },
+            "priceQuantity" : {
+              "quantitySchedule" : {
+                "value" : {
+                  "value" : 100000000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "USD"
+                    }
+                  }
+                }
+              }
+            },
+            "rateSpecification" : {
+              "FixedRateSpecification" : {
+                "rateSchedule" : {
+                  "price" : {
+                    "value" : {
+                      "value" : 0.041,
+                      "priceType" : "InterestRate"
+                    }
+                  }
+                }
+              }
+            },
+            "dayCountFraction" : {
+              "value" : "ACT/360"
+            },
+            "calculationPeriodDates" : {
+              "effectiveDate" : {
+                "adjustableDate" : {
+                  "adjustedDate" : {
+                    "value" : "2026-08-20"
+                  }
+                }
+              },
+              "terminationDate" : {
+                "adjustableDate" : {
+                  "adjustedDate" : {
+                    "value" : "2028-08-20"
+                  }
+                }
+              },
+              "calculationPeriodFrequency" : {
+                "periodMultiplier" : 1,
+                "period" : "Y"
+              }
+            },
+            "paymentDates" : {
+              "paymentFrequency" : {
+                "periodMultiplier" : 1,
+                "period" : "Y"
+              }
+            }
+          }
+        }, {
+          "InterestRatePayout" : {
+            "payerReceiver" : {
+              "payer" : "Party2",
+              "receiver" : "Party1"
+            },
+            "priceQuantity" : {
+              "quantitySchedule" : {
+                "value" : {
+                  "value" : 100000000,
+                  "unit" : {
+                    "currency" : {
+                      "value" : "USD"
+                    }
+                  }
+                }
+              }
+            },
+            "rateSpecification" : {
+              "FloatingRateSpecification" : {
+                "rateOption" : {
+                  "value" : {
+                    "FloatingRateIndex" : {
+                      "floatingRateIndex" : {
+                        "value" : "USD-SOFR"
+                      },
+                      "indexTenor" : {
+                        "periodMultiplier" : 1,
+                        "period" : "D"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "dayCountFraction" : {
+              "value" : "ACT/360"
+            },
+            "calculationPeriodDates" : {
+              "effectiveDate" : {
+                "adjustableDate" : {
+                  "adjustedDate" : {
+                    "value" : "2026-08-20"
+                  }
+                }
+              },
+              "terminationDate" : {
+                "adjustableDate" : {
+                  "adjustedDate" : {
+                    "value" : "2028-08-20"
+                  }
+                }
+              },
+              "calculationPeriodFrequency" : {
+                "periodMultiplier" : 1,
+                "period" : "D"
+              }
+            },
+            "paymentDates" : {
+              "paymentFrequency" : {
+                "periodMultiplier" : 1,
+                "period" : "D"
+              }
+            },
+            "resetDates" : {
+              "resetRelativeTo" : "CalculationPeriodStartDate",
+              "resetFrequency" : {
+                "periodMultiplier" : 1,
+                "period" : "D"
+              }
+            }
+          }
+        } ]
+      }
+    },
+    "tradeLot" : [ {
+      "priceQuantity" : [ {
+        "price" : [ {
+          "value" : {
+            "value" : 0.041,
+            "unit" : {
+              "currency" : {
+                "value" : "USD"
+              }
+            },
+            "perUnitOf" : {
+              "currency" : {
+                "value" : "USD"
+              }
+            },
+            "priceType" : "InterestRate"
+          }
+        } ],
+        "quantity" : [ {
+          "value" : {
+            "value" : 100000000,
+            "unit" : {
+              "currency" : {
+                "value" : "USD",
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                }
+              }
+            }
+          }
+        } ]
+      }, {
+        "quantity" : [ {
+          "value" : {
+            "value" : 100000000,
+            "unit" : {
+              "currency" : {
+                "value" : "USD",
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
+                }
+              }
+            }
+          }
+        } ]
+      } ]
+    } ],
+    "counterparty" : [ {
+      "role" : "Party1",
+      "partyReference" : {
+        "externalReference" : "Party1"
+      }
+    }, {
+      "role" : "Party2",
+      "partyReference" : {
+        "externalReference" : "Party2"
+      }
+    } ],
     "tradeIdentifier" : [ {
       "issuer" : {
         "value" : "549300EXAMPLE0LEI001"
@@ -14,205 +213,6 @@
     } ],
     "tradeDate" : {
       "value" : "2026-08-18"
-    },
-    "tradableProduct" : {
-      "product" : {
-        "contractualProduct" : {
-          "productTaxonomy" : [ {
-            "source" : "ISDA",
-            "productQualifier" : "InterestRate_IRSwap_FixedFloat"
-          } ],
-          "economicTerms" : {
-            "payout" : {
-              "interestRatePayout" : [ {
-                "payerReceiver" : {
-                  "payer" : "Party1",
-                  "receiver" : "Party2"
-                },
-                "priceQuantity" : {
-                  "quantitySchedule" : {
-                    "value" : {
-                      "value" : 100000000,
-                      "unit" : {
-                        "currency" : {
-                          "value" : "USD"
-                        }
-                      }
-                    }
-                  }
-                },
-                "rateSpecification" : {
-                  "fixedRate" : {
-                    "rateSchedule" : {
-                      "price" : {
-                        "value" : {
-                          "value" : 0.041,
-                          "priceType" : "InterestRate"
-                        }
-                      }
-                    }
-                  }
-                },
-                "dayCountFraction" : {
-                  "value" : "ACT/360"
-                },
-                "calculationPeriodDates" : {
-                  "effectiveDate" : {
-                    "adjustableDate" : {
-                      "adjustedDate" : {
-                        "value" : "2026-08-20"
-                      }
-                    }
-                  },
-                  "terminationDate" : {
-                    "adjustableDate" : {
-                      "adjustedDate" : {
-                        "value" : "2028-08-20"
-                      }
-                    }
-                  },
-                  "calculationPeriodFrequency" : {
-                    "periodMultiplier" : 1,
-                    "period" : "Y"
-                  }
-                },
-                "paymentDates" : {
-                  "paymentFrequency" : {
-                    "periodMultiplier" : 1,
-                    "period" : "Y"
-                  }
-                }
-              }, {
-                "payerReceiver" : {
-                  "payer" : "Party2",
-                  "receiver" : "Party1"
-                },
-                "priceQuantity" : {
-                  "quantitySchedule" : {
-                    "value" : {
-                      "value" : 100000000,
-                      "unit" : {
-                        "currency" : {
-                          "value" : "USD"
-                        }
-                      }
-                    }
-                  }
-                },
-                "rateSpecification" : {
-                  "floatingRate" : {
-                    "rateOption" : {
-                      "value" : {
-                        "floatingRateIndex" : {
-                          "value" : "USD-SOFR"
-                        },
-                        "indexTenor" : {
-                          "periodMultiplier" : 1,
-                          "period" : "D"
-                        }
-                      }
-                    }
-                  }
-                },
-                "dayCountFraction" : {
-                  "value" : "ACT/360"
-                },
-                "calculationPeriodDates" : {
-                  "effectiveDate" : {
-                    "adjustableDate" : {
-                      "adjustedDate" : {
-                        "value" : "2026-08-20"
-                      }
-                    }
-                  },
-                  "terminationDate" : {
-                    "adjustableDate" : {
-                      "adjustedDate" : {
-                        "value" : "2028-08-20"
-                      }
-                    }
-                  },
-                  "calculationPeriodFrequency" : {
-                    "periodMultiplier" : 1,
-                    "period" : "D"
-                  }
-                },
-                "paymentDates" : {
-                  "paymentFrequency" : {
-                    "periodMultiplier" : 1,
-                    "period" : "D"
-                  }
-                },
-                "resetDates" : {
-                  "resetRelativeTo" : "CalculationPeriodStartDate",
-                  "resetFrequency" : {
-                    "periodMultiplier" : 1,
-                    "period" : "D"
-                  }
-                }
-              } ]
-            }
-          }
-        }
-      },
-      "tradeLot" : [ {
-        "priceQuantity" : [ {
-          "price" : [ {
-            "value" : {
-              "value" : 0.041,
-              "unit" : {
-                "currency" : {
-                  "value" : "USD"
-                }
-              },
-              "perUnitOf" : {
-                "currency" : {
-                  "value" : "USD"
-                }
-              },
-              "priceType" : "InterestRate"
-            }
-          } ],
-          "quantity" : [ {
-            "value" : {
-              "value" : 100000000,
-              "unit" : {
-                "currency" : {
-                  "value" : "USD",
-                  "meta" : {
-                    "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
-                  }
-                }
-              }
-            }
-          } ]
-        }, {
-          "quantity" : [ {
-            "value" : {
-              "value" : 100000000,
-              "unit" : {
-                "currency" : {
-                  "value" : "USD",
-                  "meta" : {
-                    "scheme" : "http://www.fpml.org/coding-scheme/external/iso4217"
-                  }
-                }
-              }
-            }
-          } ]
-        } ]
-      } ],
-      "counterparty" : [ {
-        "role" : "Party1",
-        "partyReference" : {
-          "externalReference" : "Party1"
-        }
-      }, {
-        "role" : "Party2",
-        "partyReference" : {
-          "externalReference" : "Party2"
-        }
-      } ]
     },
     "party" : [ {
       "partyId" : [ {

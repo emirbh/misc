@@ -5,9 +5,10 @@ import cdm.base.staticdata.party.CounterpartyRoleEnum;
 import cdm.base.staticdata.party.Party;
 import cdm.event.common.Trade;
 import cdm.event.common.TradeState;
-import cdm.product.common.settlement.PriceQuantity;
+import cdm.observable.asset.PriceQuantity;
 import cdm.product.template.*;
 import com.rosetta.model.metafields.MetaFields;
+import org.isda.mapper.product.FxNdfMapper;
 import org.isda.mapper.product.VanillaSwapMapper;
 import org.isda.mapper.util.CdmBuilderUtil;
 
@@ -26,17 +27,21 @@ public final class TradeStateMapper {
     private TradeStateMapper() {}
 
     public static TradeState map(SwapTrade trade) {
-        ContractualProduct product = mapProduct(trade);
+        NonTransferableProduct product = mapProduct(trade);
 
         Party p1 = buildParty("Party1", trade.getParty1().getLei(), trade.getParty1().getName());
         Party p2 = buildParty("Party2", trade.getParty2().getLei(), trade.getParty2().getName());
 
-        TradableProduct tradableProduct = TradableProduct.builder()
-                .setProduct(Product.builder()
-                        .setContractualProduct(product))
-                .addTradeLot(TradeLot.builder()
-                        .addPriceQuantity(buildFixedLegPriceQuantity(trade))
-                        .addPriceQuantity(buildFloatingLegPriceQuantity(trade)))
+        // CDM 6 dissolves TradableProduct: product, trade lots and
+        // counterparties now sit directly on Trade.
+        Trade cdmTrade = Trade.builder()
+                .addTradeIdentifier(buildTradeIdentifier(
+                        trade.getParty1().getLei(),
+                        trade.getTradeId(),
+                        trade.getTradeVersion()))
+                .setTradeDate(toDateField(trade.getTradeDate()))
+                .setProduct(product)
+                .addTradeLot(buildTradeLot(trade))
                 .addCounterparty(Counterparty.builder()
                         .setRole(CounterpartyRoleEnum.PARTY_1)
                         .setPartyReference(cdm.base.staticdata.party.metafields.ReferenceWithMetaParty.builder()
@@ -45,15 +50,6 @@ public final class TradeStateMapper {
                         .setRole(CounterpartyRoleEnum.PARTY_2)
                         .setPartyReference(cdm.base.staticdata.party.metafields.ReferenceWithMetaParty.builder()
                                 .setExternalReference("Party2")))
-                .build();
-
-        Trade cdmTrade = Trade.builder()
-                .addTradeIdentifier(buildTradeIdentifier(
-                        trade.getParty1().getLei(),
-                        trade.getTradeId(),
-                        trade.getTradeVersion()))
-                .setTradeDate(toDateField(trade.getTradeDate()))
-                .setTradableProduct(tradableProduct)
                 .addParty(p1)
                 .addParty(p2)
                 .setExecutionDetails(cdm.event.common.ExecutionDetails.builder()
@@ -66,7 +62,7 @@ public final class TradeStateMapper {
                 .build();
     }
 
-    private static ContractualProduct mapProduct(SwapTrade trade) {
+    private static NonTransferableProduct mapProduct(SwapTrade trade) {
         switch (trade.getProductType()) {
             case "vanilla_swap":
             case "ois":
@@ -92,6 +88,9 @@ public final class TradeStateMapper {
             case "cancelable_swap":
                 return VanillaSwapMapper.map(trade);
 
+            case "fx_ndf":
+                return FxNdfMapper.map(trade);
+
             case "fx_leg":
             case "fx_swap":
             case "fx_reset":
@@ -110,6 +109,83 @@ public final class TradeStateMapper {
             default:
                 throw new IllegalArgumentException("Unsupported product type: " + trade.getProductType());
         }
+    }
+
+    /**
+     * The trade lot carries the economics DRR's report rules read. An FX
+     * forward states both exchanged amounts and the rate on a single
+     * PriceQuantity; a swap states one per leg.
+     */
+    private static TradeLot buildTradeLot(SwapTrade trade) {
+        if ("fx_ndf".equals(trade.getProductType())) {
+            return TradeLot.builder()
+                    .addPriceQuantity(buildFxPriceQuantity(trade))
+                    .build();
+        }
+        return TradeLot.builder()
+                .addPriceQuantity(buildFixedLegPriceQuantity(trade))
+                .addPriceQuantity(buildFloatingLegPriceQuantity(trade))
+                .build();
+    }
+
+    /**
+     * Both currency amounts plus the exchange rate, keyed on a cash observable
+     * in the settlement currency — the shape DRR's FX rules expect.
+     */
+    private static PriceQuantity buildFxPriceQuantity(SwapTrade trade) {
+        String settlementCurrency = trade.getSettlementCurrency() != null
+                ? trade.getSettlementCurrency() : trade.getNotionalCurrency();
+        String referenceCurrency = trade.getReferenceCurrency() != null
+                ? trade.getReferenceCurrency() : trade.getNotionalCurrency2();
+
+        PriceQuantity.PriceQuantityBuilder builder = PriceQuantity.builder()
+                .setObservable(cdm.observable.asset.metafields.FieldWithMetaObservable.builder()
+                        .setValue(cdm.observable.asset.Observable.builder()
+                                .setAsset(cdm.base.staticdata.asset.common.Asset.builder()
+                                        .setCash(cashInCurrency(settlementCurrency)))));
+
+        // Reference-currency amount first, settlement-currency second — the
+        // order DRR's leg1/leg2 assignment expects for a non-deliverable forward.
+        boolean firstIsReference = referenceCurrency != null
+                && referenceCurrency.equals(trade.getNotionalCurrency());
+
+        if (firstIsReference) {
+            builder.addQuantity(quantityField(trade.getNotionalAmount(), trade.getNotionalCurrency()));
+            if (trade.getNotionalAmount2() != null) {
+                builder.addQuantity(quantityField(trade.getNotionalAmount2(), trade.getNotionalCurrency2()));
+            }
+        } else {
+            if (trade.getNotionalAmount2() != null) {
+                builder.addQuantity(quantityField(trade.getNotionalAmount2(), trade.getNotionalCurrency2()));
+            }
+            builder.addQuantity(quantityField(trade.getNotionalAmount(), trade.getNotionalCurrency()));
+        }
+
+        if (trade.getFxRate() != null) {
+            builder.addPrice(cdm.observable.asset.metafields.FieldWithMetaPriceSchedule.builder()
+                    .setValue(cdm.observable.asset.PriceSchedule.builder()
+                            .setValue(trade.getFxRate())
+                            .setPriceType(cdm.observable.asset.PriceTypeEnum.EXCHANGE_RATE)
+                            .setUnit(cdm.base.math.UnitType.builder()
+                                    .setCurrency(com.rosetta.model.metafields.FieldWithMetaString.builder()
+                                            .setValue(referenceCurrency)))
+                            .setPerUnitOf(cdm.base.math.UnitType.builder()
+                                    .setCurrency(com.rosetta.model.metafields.FieldWithMetaString.builder()
+                                            .setValue(settlementCurrency)))));
+        }
+
+        return builder.build();
+    }
+
+    private static cdm.base.staticdata.asset.common.Cash cashInCurrency(String currency) {
+        cdm.base.staticdata.asset.common.Cash.CashBuilder cash =
+                cdm.base.staticdata.asset.common.Cash.builder();
+        if (currency != null) {
+            cash.addIdentifier(cdm.base.staticdata.asset.common.AssetIdentifier.builder()
+                    .setIdentifierValue(currency)
+                    .setIdentifierType(cdm.base.staticdata.asset.common.AssetIdTypeEnum.CURRENCY_CODE));
+        }
+        return cash.build();
     }
 
     private static PriceQuantity buildFixedLegPriceQuantity(SwapTrade trade) {

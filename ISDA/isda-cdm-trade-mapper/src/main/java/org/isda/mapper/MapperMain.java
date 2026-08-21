@@ -9,6 +9,7 @@ import com.regnosys.rosetta.common.serialisation.RosettaObjectMapper;
 import com.rosetta.model.lib.RosettaModelObject;
 import drr.regulation.common.ReportableEvent;
 import drr.regulation.common.TransactionReportInstruction;
+import org.isda.mapper.fpml.CitimlTradeReader;
 import org.isda.mapper.fpml.FpmlPreprocessor;
 import org.isda.mapper.fpml.FpmlSwapTradeReader;
 import org.isda.mapper.fpml.IdentityPreprocessor;
@@ -28,8 +29,9 @@ import java.util.Map;
  *
  *   java MapperMain                                      — JSON files from data/input/
  *   java MapperMain --csv trades.csv                     — stream rows from CSV
- *   java MapperMain --fpml data/input/fpml/              — FpML XML files from directory
- *   java MapperMain --fpml dir/ --preprocessor citiml    — proprietary XML via XSLT preprocessor
+ *   java MapperMain --fpml data/input/fpml/              — standard FpML XML from directory
+ *   java MapperMain --citiml data/input/citiml/          — CitiML XML (FpML + Citi extensions)
+ *   java MapperMain --fpml dir/ --preprocessor name      — any dialect via config/{name}-to-fpml.xslt
  */
 public class MapperMain {
 
@@ -59,6 +61,13 @@ public class MapperMain {
                 runFpml(args[1], preprocessor, instructionMapper, reportGenerator, projectionMapper);
                 break;
 
+            // CitiML wraps an FpML recordkeeping payload in a Citi envelope,
+            // so it needs its own reader rather than an XSLT normalisation.
+            case "--citiml":
+                requireArg(args, 1, "--citiml requires a directory path");
+                runCitiml(args[1], instructionMapper, reportGenerator, projectionMapper);
+                break;
+
             case "--json":
             default:
                 runJsonDir(instructionMapper, reportGenerator, projectionMapper);
@@ -79,10 +88,14 @@ public class MapperMain {
      */
     private static FpmlPreprocessor resolvePreprocessor(String[] args) {
         String name = getFlag(args, "--preprocessor");
-        if (name == null) {
-            return new IdentityPreprocessor();
-        }
+        return name == null ? new IdentityPreprocessor() : namedPreprocessor(name);
+    }
 
+    /**
+     * Loads the XSLT for a named dialect by convention:
+     * config/{name}-to-fpml.xslt.
+     */
+    private static FpmlPreprocessor namedPreprocessor(String name) {
         Path xsltPath = Path.of("config", name + "-to-fpml.xslt");
         if (!Files.exists(xsltPath)) {
             System.err.println("XSLT not found: " + xsltPath);
@@ -162,7 +175,7 @@ public class MapperMain {
                                 ReportInstructionMapper instructionMapper,
                                 ReportGenerator reportGenerator,
                                 ProjectionMapper projectionMapper) throws Exception {
-        System.out.println("Reading FpML from: " + fpmlDir
+        System.out.println("Reading XML from: " + fpmlDir
                 + " (preprocessor: " + preprocessor.name() + ")");
 
         FpmlSwapTradeReader reader = new FpmlSwapTradeReader(preprocessor);
@@ -179,6 +192,31 @@ public class MapperMain {
             String baseName = trade.getTradeId() != null
                     ? trade.getTradeId() + "_v" + trade.getTradeVersion()
                     : "fpml_" + (success + failed + 1);
+            Result r = processTrade(baseName, trade, instructionMapper, reportGenerator, projectionMapper);
+            if (r == Result.OK) success++;
+            else failed++;
+        }
+
+        printSummary(success, failed);
+    }
+
+    private static void runCitiml(String citimlDir,
+                                  ReportInstructionMapper instructionMapper,
+                                  ReportGenerator reportGenerator,
+                                  ProjectionMapper projectionMapper) throws Exception {
+        System.out.println("Reading CitiML from: " + citimlDir);
+
+        List<SwapTrade> trades = new CitimlTradeReader().readDirectory(Path.of(citimlDir));
+        if (trades.isEmpty()) {
+            System.out.println("No CitiML files found in " + citimlDir);
+            return;
+        }
+
+        int success = 0, failed = 0;
+        for (SwapTrade trade : trades) {
+            String baseName = trade.getTradeId() != null
+                    ? trade.getTradeId() + "_v" + trade.getTradeVersion()
+                    : "citiml_" + (success + failed + 1);
             Result r = processTrade(baseName, trade, instructionMapper, reportGenerator, projectionMapper);
             if (r == Result.OK) success++;
             else failed++;

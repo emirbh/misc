@@ -6,13 +6,16 @@ event types, trade IDs and versions) and producing a DRR regulatory report.
 Prerequisites: [`swap-cdm-mapping.md`](swap-cdm-mapping.md) for type mappings,
 [`trading-terminology.md`](trading-terminology.md) for glossary.
 
+For a worked example with real output at each step, see
+[`pipeline-walkthrough.md`](pipeline-walkthrough.md).
+
 ---
 
 ## Overview
 
 ```mermaid
 flowchart TD
-    src["Phase 1<br/>Your swap data<br/>(JSON / CSV / FpML XML)"]
+    src["Phase 1<br/>Your swap data<br/>(JSON / CSV / FpML / CitiML)"]
     cdm["Phase 2<br/>CDM TradeState<br/>(JSON)"]
     ws["Phase 3<br/>CDM WorkflowStep<br/>(wraps trade in lifecycle event)"]
     re["Phase 4<br/>DRR ReportableEvent<br/>(adds reportable context)"]
@@ -50,10 +53,10 @@ flowchart TD
    confirmation method, master agreement type/vintage.
 
 **Output:** Sample files in a `data/input/` directory (JSON — one file per trade for
-development, CSV — one row per trade for bulk processing, or FpML XML — standard
-confirmations or proprietary dialects), plus a field mapping spreadsheet showing
-source field → CDM target field. All formats produce the same `SwapTrade` POJO;
-all downstream phases are format-agnostic.
+development, CSV — one row per trade for bulk processing, FpML XML — standard
+confirmations, or CitiML XML — FpML plus Citi extension tags), plus a field mapping
+spreadsheet showing source field → CDM target field. All formats produce the same
+`SwapTrade` POJO; all downstream phases are format-agnostic.
 
 **CSV format notes:** Nested objects are flattened into separate columns (`party1Lei`,
 `party1Name` instead of a nested `party1` object). List fields use pipe delimiters
@@ -63,9 +66,15 @@ stays constant regardless of file size.
 **FpML format notes:** `FpmlSwapTradeReader` parses FpML 5.x confirmation XML using
 DOM, extracting trade economics from `<swap>`, `<swaption>`, `<fra>`, `<capFloor>`,
 and `<fxSwap>` elements. Party LEIs come from `<partyId>` with the `iso17442` scheme.
-For proprietary FpML dialects (e.g. CitiML), an XSLT preprocessor normalises the
-XML to standard FpML before parsing — see `config/citiml-to-fpml.xslt` for an
-example. New dialects require only a new XSLT stylesheet at
+
+**CitiML format notes:** CitiML wraps an FpML *recordkeeping* payload inside a
+Citi envelope rooted at `citiml:citimlTradeNotification`, across 15 proprietary
+namespaces. `CitimlTradeReader` parses it natively rather than normalising to
+FpML first, because the envelope carries lifecycle action/event/version, clearing
+status and execution venue — data standard FpML has nowhere to put, and which the
+plain FpML path therefore has to hardcode. Namespaces are matched by URI, not
+prefix. Dialects that are genuinely standard FpML with cosmetic differences can
+still use `--fpml dir --preprocessor {name}` with a stylesheet at
 `config/{name}-to-fpml.xslt`; no Java changes needed.
 
 ---
@@ -83,19 +92,18 @@ example. New dialects require only a new XSLT stylesheet at
    <dependency>
      <groupId>org.finos.cdm</groupId>
      <artifactId>cdm-java</artifactId>
-     <version>5.19.0</version>  <!-- pulled transitively by DRR 5.20.1 -->
+     <version>6.23.0</version>  <!-- pulled transitively by DRR 7.7.0 -->
    </dependency>
    <dependency>
      <groupId>com.regnosys</groupId>
      <artifactId>drr</artifactId>
-     <version>5.20.1</version>  <!-- or latest compatible -->
+     <version>7.7.0</version>   <!-- or latest compatible -->
    </dependency>
    ```
 
-   **Critical:** use CDM **5.x**, not 8.x. Note the published DRR 5.20.1 artifact
-   resolves CDM **5.19.0**, even though the `drr` source checkout (master) declares
-   `<finos.cdm.version>5.29.0</finos.cdm.version>`. Let DRR pull CDM transitively
-   rather than pinning it yourself — see
+   **Critical:** the CDM version is chosen by DRR and arrives transitively — do
+   not pin it yourself. DRR 6.x pins CDM 5.x (end of life); DRR 7.7.0 pins CDM
+   **6.23.0**. Verify with `mvn dependency:tree` after any DRR change — see
    [`CDM-DRR-integration-notes.md`](CDM-DRR-integration-notes.md).
 
 2. **Write a mapper** from your internal format to CDM builder objects. The mapping
@@ -103,20 +111,24 @@ example. New dialects require only a new XSLT stylesheet at
    correspond to each of your product types. For example, a vanilla swap:
 
    ```java
+   // CDM 6: TradableProduct is gone — product, lots and counterparties
+   // sit directly on Trade, and each Payout holds a single payout.
    TradeState.builder()
      .setTrade(Trade.builder()
-       .setTradableProduct(TradableProduct.builder()
-         .setProduct(ContractualProduct.builder()  // CDM 5 still has this
-           .setEconomicTerms(EconomicTerms.builder()
-             .addPayout(InterestRatePayout.builder()  // fixed leg
+       .setProduct(NonTransferableProduct.builder()
+         .setEconomicTerms(EconomicTerms.builder()
+           .addPayout(Payout.builder()
+             .setInterestRatePayout(InterestRatePayout.builder()   // fixed leg
                .setPayerReceiver(...)
-               .setRateSpecification(FixedRateSpecification.builder()...)
+               .setRateSpecification(RateSpecification.builder()
+                 .setFixedRateSpecification(...))
                .setDayCountFraction(...)
-               .setCalculationPeriodDates(...))
-             .addPayout(InterestRatePayout.builder()  // float leg
-               ...)))
+               .setCalculationPeriodDates(...)))
+           .addPayout(Payout.builder()
+             .setInterestRatePayout(InterestRatePayout.builder()   // float leg
+               ...))))
        .addTradeLot(TradeLot.builder()
-         .addPriceQuantity(...)))
+         .addPriceQuantity(...))
      .addTradeIdentifier(TradeIdentifier.builder()
        .setIdentifierType(TradeIdentifierTypeEnum.UNIQUE_TRANSACTION_IDENTIFIER)
        .addAssignedIdentifier(AssignedIdentifier.builder()
@@ -138,7 +150,7 @@ example. New dialects require only a new XSLT stylesheet at
 
    ```java
    // After post-processing, check:
-   tradeState.getTrade().getTradableProduct().getProduct()
+   tradeState.getTrade().getProduct()
      .getMeta().getQualifiedType()
    // → "InterestRate_IRSwap_FixedFloat"
    ```
@@ -347,12 +359,14 @@ ISO 20022 XML or DTCC RDS harmonised.
 
 **What to do:**
 
-> **Verified against DRR 5.20.1:** the published artifact contains
-> `Project_*ToIso20022` functions for **ESMA, FCA, ASIC, JFSA and MAS only**.
-> There is no CFTC projection function and no DTCC RDS Harmonized projection in
-> that release, so CFTC Part 43/45 stop at the Phase 6 report. The table below
-> describes DRR's projection design generally; check which functions your
-> pinned version actually ships before wiring one up.
+> **Verified against DRR 7.7.0 (pins CDM 6.23.0):** this release ships
+> `Project_*ToIso20022` for ESMA, FCA, ASIC, JFSA, MAS and HKMA, plus
+> `Project_*ToDtccRdsHarmonized` for CFTC, CSA and SEC — so all four regimes
+> used here project successfully.
+>
+> Note that DRR 5.20.1 (the previous pin) had **no** CFTC projection at all.
+> Projection coverage varies by release, so check which functions your pinned
+> version actually ships before wiring one up.
 
 DRR has projection pipelines for each regime:
 

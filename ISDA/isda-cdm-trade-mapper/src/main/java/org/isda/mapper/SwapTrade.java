@@ -56,6 +56,15 @@ public class SwapTrade {
     private LocalDate fxFarDate;
     private BigDecimal fxFarRate;
 
+    // Non-deliverable forward terms
+    private BigDecimal spotRate;
+    private LocalDate valueDate;
+    private String settlementCurrency;
+    private String referenceCurrency;
+    private String settlementRateOption;
+    private Integer fxFixingOffsetDays;
+    private List<String> fxFixingBusinessCenters;
+
     private BigDecimal capRate;
     private BigDecimal floorRate;
 
@@ -119,6 +128,14 @@ public class SwapTrade {
     public LocalDate getFxFarDate() { return fxFarDate; }
     public BigDecimal getFxFarRate() { return fxFarRate; }
 
+    public BigDecimal getSpotRate() { return spotRate; }
+    public LocalDate getValueDate() { return valueDate; }
+    public String getSettlementCurrency() { return settlementCurrency; }
+    public String getReferenceCurrency() { return referenceCurrency; }
+    public String getSettlementRateOption() { return settlementRateOption; }
+    public Integer getFxFixingOffsetDays() { return fxFixingOffsetDays; }
+    public List<String> getFxFixingBusinessCenters() { return fxFixingBusinessCenters; }
+
     public BigDecimal getCapRate() { return capRate; }
     public BigDecimal getFloorRate() { return floorRate; }
 
@@ -172,6 +189,13 @@ public class SwapTrade {
     public void setFxRate(BigDecimal fxRate) { this.fxRate = fxRate; }
     public void setFxFarDate(LocalDate fxFarDate) { this.fxFarDate = fxFarDate; }
     public void setFxFarRate(BigDecimal fxFarRate) { this.fxFarRate = fxFarRate; }
+    public void setSpotRate(BigDecimal spotRate) { this.spotRate = spotRate; }
+    public void setValueDate(LocalDate valueDate) { this.valueDate = valueDate; }
+    public void setSettlementCurrency(String settlementCurrency) { this.settlementCurrency = settlementCurrency; }
+    public void setReferenceCurrency(String referenceCurrency) { this.referenceCurrency = referenceCurrency; }
+    public void setSettlementRateOption(String settlementRateOption) { this.settlementRateOption = settlementRateOption; }
+    public void setFxFixingOffsetDays(Integer fxFixingOffsetDays) { this.fxFixingOffsetDays = fxFixingOffsetDays; }
+    public void setFxFixingBusinessCenters(List<String> fxFixingBusinessCenters) { this.fxFixingBusinessCenters = fxFixingBusinessCenters; }
     public void setCapRate(BigDecimal capRate) { this.capRate = capRate; }
     public void setFloorRate(BigDecimal floorRate) { this.floorRate = floorRate; }
     public void setInflationIndex(String inflationIndex) { this.inflationIndex = inflationIndex; }

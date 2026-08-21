@@ -1,40 +1,74 @@
 {
+  "effectiveDate" : "2026-11-20",
+  "reportingTimestamp" : "2026-08-20T20:21:40Z",
+  "expirationDate" : "2027-05-20",
   "cleared" : "N",
-  "customBasketIndicator" : false,
+  "leg1" : {
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "MNTH",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 6
+    },
+    "notionalAmount" : 25000000,
+    "notionalCurrency" : "EUR",
+    "fixedRate" : 0.0285
+  },
+  "leg2" : {
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRatePaymentFrequencyPeriod" : "MNTH",
+      "floatingRatePaymentFrequencyPeriodMultiplier" : 6,
+      "floatingRateResetFrequencyPeriod" : "MNTH",
+      "floatingRateResetFrequencyMultiplier" : 6
+    },
+    "notionalAmount" : 25000000,
+    "notionalCurrency" : "EUR"
+  },
   "actionType" : "NEWT",
   "eventType" : "TRAD",
   "eventTimestamp" : "2026-08-18T08:00:00Z",
-  "notionalAmountLeg1" : 25000000,
-  "notionalAmountLeg2" : 25000000,
-  "notionalCurrencyLeg1" : "EUR",
-  "notionalCurrencyLeg2" : "EUR",
-  "packageIndicator" : false,
-  "fixedRateDayCountConventionLeg1" : "A004",
-  "floatingRateDayCountConventionLeg2" : "A004",
-  "floatingRateResetFrequencyPeriodLeg2" : "MNTH",
-  "floatingRateResetFrequencyPeriodMultiplierLeg2" : 6,
-  "fixedRatePaymentFrequencyPeriodLeg1" : "MNTH",
-  "floatingRatePaymentFrequencyPeriodLeg2" : "MNTH",
-  "fixedRatePaymentFrequencyPeriodMultiplierLeg1" : 6,
-  "floatingRatePaymentFrequencyPeriodMultiplierLeg2" : 6,
-  "fixedRateLeg1" : 0.0285,
-  "postPricedSwapIndicator" : false,
   "nonStandardizedTermIndicator" : false,
-  "blockTradeElectionIndicator" : false,
-  "effectiveDate" : "2026-11-20",
-  "expirationDate" : "2027-05-20",
-  "reportingTimestamp" : "2026-08-19T18:47:30Z",
-  "primeBrokerageTransactionIndicator" : false,
-  "uniqueTransactionIdentifier" : "TRD20260818A03",
-  "cftcGuidebook" : {
-    "assetClass" : "InterestRate",
-    "largeNotionalOffFacilitySwapElectionIndicator" : false,
-    "sefOrDcmIndicator" : false,
-    "sefOrDcmAnonymousExecutionIndicator" : false,
-    "messageType" : "RT"
-  },
+  "packageIndicator" : false,
+  "customBasketIndicator" : false,
   "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Header" : {
+          "InstrumentType" : "Swap",
+          "UseCase" : "Fixed_Float",
+          "Level" : "UPI"
+        },
+        "Attributes" : {
+          "NotionalSchedule" : "Constant",
+          "UnderlierIDSource" : "FPML",
+          "DeliveryType" : "PHYS",
+          "UnderlierID" : "EUR-EURIBOR-Reuters",
+          "NotionalCurrency" : "EUR",
+          "ReferenceRateTermUnit" : "MNTH",
+          "ReferenceRateTermValue" : 6
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "notionalSchedule" : "Constant",
+    "instrumentType" : "Swap",
+    "deliveryType" : "PHYS",
     "counterparty1Format" : "Lei",
-    "counterparty2Format" : "Lei"
+    "counterparty2Format" : "Lei",
+    "executionVenueType" : "OffFacility"
+  },
+  "postPricedSwapIndicator" : false,
+  "blockTradeElectionIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "dtccAdditionalFields" : {
+    "primaryAssetClass" : "InterestRate",
+    "tradeParty1IDType" : "LEI",
+    "messageID" : "TRD20260818A03_v12026-08-20T20:21:41Z",
+    "changeInNotionalAmount1" : 25000000,
+    "changeInNotionalAmount2" : 25000000,
+    "largeNotionalOffFacilitySwapElectionIndicator" : false,
+    "messageType" : "RT",
+    "sefOrDcmIndicator" : false,
+    "version" : "PPD1.0"
   }
 }

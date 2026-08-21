@@ -7,12 +7,27 @@
       <Rpt>
         <New>
           <CtrPtySpcfcData>
-            <RptgTmStmp>2026-08-19T18:47:16Z</RptgTmStmp>
+            <CtrPty>
+              <RptgCtrPty>
+                <DrctnOrSd>
+                  <Drctn>
+                    <DrctnOfTheFrstLeg>MAKE</DrctnOfTheFrstLeg>
+                    <DrctnOfTheScndLeg>TAKE</DrctnOfTheScndLeg>
+                  </Drctn>
+                </DrctnOrSd>
+              </RptgCtrPty>
+            </CtrPty>
+            <RptgTmStmp>2026-08-20T20:21:10Z</RptgTmStmp>
           </CtrPtySpcfcData>
           <CmonTradData>
             <CtrctData>
               <CtrctTp>SWAP</CtrctTp>
               <AsstClss>INTR</AsstClss>
+              <UndrlygInstrm>
+                <Indx>
+                  <Nm>USD-SOFR</Nm>
+                </Indx>
+              </UndrlygInstrm>
               <DerivBasedOnCrptAsst>false</DerivBasedOnCrptAsst>
             </CtrctData>
             <TxData>
@@ -21,15 +36,16 @@
                   <NoPrtfl>NOAP</NoPrtfl>
                 </Prtfl>
               </CollPrtflCd>
+              <PltfmIdr>XXXX</PltfmIdr>
               <NtnlAmt>
                 <FrstLeg>
                   <Amt>
-                    <Amt Ccy="USD">30000000.00000</Amt>
+                    <Amt Ccy="USD">30000000</Amt>
                   </Amt>
                 </FrstLeg>
                 <ScndLeg>
                   <Amt>
-                    <Amt Ccy="USD">30000000.00000</Amt>
+                    <Amt Ccy="USD">30000000</Amt>
                   </Amt>
                 </ScndLeg>
               </NtnlAmt>
@@ -65,7 +81,7 @@
                 <FrstLeg>
                   <Fxd>
                     <Rate>
-                      <Rate>3.5000</Rate>
+                      <Rate>3.5</Rate>
                     </Rate>
                     <DayCnt>
                       <Cd>A001</Cd>
@@ -81,7 +97,7 @@
                 <ScndLeg>
                   <Fltg>
                     <Rate>
-                      <Cd>EONA</Cd>
+                      <Cd>SOFR</Cd>
                     </Rate>
                     <RefPrd>
                       <Unit>MNTH</Unit>

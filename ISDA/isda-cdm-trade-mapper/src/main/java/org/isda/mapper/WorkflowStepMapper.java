@@ -10,7 +10,7 @@ import cdm.base.staticdata.party.*;
 import cdm.base.staticdata.party.metafields.ReferenceWithMetaParty;
 import cdm.event.common.*;
 import cdm.event.workflow.*;
-import cdm.product.common.settlement.PriceQuantity;
+import cdm.observable.asset.PriceQuantity;
 import com.rosetta.model.lib.records.Date;
 import com.rosetta.model.metafields.FieldWithMetaString;
 import com.rosetta.model.metafields.MetaFields;
@@ -217,24 +217,23 @@ public final class WorkflowStepMapper {
     }
 
     /**
-     * ExecutionInstruction restates the trade's components flat rather than
-     * wrapping the TradableProduct, so they are copied across individually.
+     * ExecutionInstruction restates the trade's components flat. In CDM 6
+     * these already sit directly on Trade rather than under TradableProduct.
      */
     private static cdm.event.common.ExecutionInstruction buildExecutionInstruction(TradeState tradeState) {
         cdm.event.common.Trade cdmTrade = tradeState.getTrade();
-        cdm.product.template.TradableProduct tradableProduct = cdmTrade.getTradableProduct();
 
         cdm.event.common.ExecutionInstruction.ExecutionInstructionBuilder builder =
                 cdm.event.common.ExecutionInstruction.builder()
-                        .setProduct(tradableProduct.getProduct())
-                        .setCounterparty(tradableProduct.getCounterparty())
+                        .setProduct(cdmTrade.getProduct())
+                        .setCounterparty(cdmTrade.getCounterparty())
                         .setParties(cdmTrade.getParty())
                         .setExecutionDetails(cdmTrade.getExecutionDetails())
                         .setTradeDate(cdmTrade.getTradeDate())
                         .setTradeIdentifier(cdmTrade.getTradeIdentifier());
 
-        if (!tradableProduct.getTradeLot().isEmpty()) {
-            builder.setPriceQuantity(tradableProduct.getTradeLot().get(0).getPriceQuantity());
+        if (!cdmTrade.getTradeLot().isEmpty()) {
+            builder.setPriceQuantity(cdmTrade.getTradeLot().get(0).getPriceQuantity());
         }
 
         return builder.build();

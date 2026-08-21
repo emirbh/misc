@@ -2,13 +2,15 @@
 
 ## Overview
 
-This project takes internal swap trade data (JSON files, CSV, or FpML XML), models it using the FINOS Common Domain Model (CDM 5.19.0), and generates regulatory reports via ISDA's Digital Regulatory Reporting (DRR 5.20.1) for multiple regimes, then projects those reports to ISO 20022 XML for the regimes DRR supports. Proprietary FpML dialects (e.g. CitiML) are supported via XSLT preprocessors.
+This project takes internal swap trade data (JSON files, CSV, FpML XML, or CitiML XML), models it using the FINOS Common Domain Model (CDM 6.23.0), and generates regulatory reports via ISDA's Digital Regulatory Reporting (DRR 7.7.0) for multiple regimes, then projects those reports to submission formats (ISO 20022 Auth.030 XML for ESMA/FCA, DTCC RDS Harmonized for CFTC). CitiML — FpML extended with proprietary Citi tags — has its own input mode, and other dialects are supported via XSLT preprocessors.
 
 ```mermaid
 flowchart LR
     A1[JSON files] --> P[SwapTrade POJO]
     A2[CSV file] --> P
-    A3[FpML XML] --> PP[Preprocessor]
+    A3[FpML XML] --> P
+    A4[CitiML XML] --> PP[XSLT preprocessor]
+    A5[Other dialect] --> PP
     PP --> P
     P --> B[CDM TradeState]
     B --> C[WorkflowStep]
@@ -18,19 +20,22 @@ flowchart LR
     F --> G[Submission XML/JSON]
 ```
 
+> **See also:** [`pipeline-walkthrough.md`](pipeline-walkthrough.md) traces one
+> trade through all seven phases with the real artifacts and measured sizes.
+
 ---
 
 ## Phase Summary
 
 | Phase | Goal | Input | Output | Key Class |
 |-------|------|-------|--------|-----------|
-| 1 | Define input format | — | JSON schema + samples + CSV + FpML | `data/schema/swap-trade.json` |
+| 1 | Define input format | — | JSON schema + samples + CSV + FpML + CitiML | `data/schema/swap-trade.json` |
 | 2 | Map to CDM TradeState | `SwapTrade` JSON | CDM `TradeState` JSON | `TradeStateMapper` |
 | 3 | Wrap in WorkflowStep | `TradeState` + metadata | CDM `WorkflowStep` JSON | `WorkflowStepMapper` |
 | 4 | Create ReportableEvent | `WorkflowStep` + reporting info | DRR `ReportableEvent` JSON | `ReportableEventMapper` |
 | 5 | Create report instruction | `ReportableEvent` | DRR `TransactionReportInstruction` JSON | `ReportInstructionMapper` |
 | 6 | Generate regime reports | `TransactionReportInstruction` | Per-regime report JSON | `ReportGenerator` |
-| 7 | Project to submission format | Regime reports | ISO 20022 Auth.030 XML | `ProjectionMapper` |
+| 7 | Project to submission format | Regime reports | ISO 20022 XML / DTCC RDS JSON | `ProjectionMapper` |
 
 ---
 
@@ -38,11 +43,11 @@ flowchart LR
 
 ### Phase 1 — Input Data Model
 
-**Goal**: Define a JSON schema that captures all internal swap trade fields and create sample input files covering the key product types and lifecycle events. Support JSON files, bulk CSV input, and FpML XML confirmations (including proprietary dialects via XSLT preprocessors).
+**Goal**: Define a JSON schema that captures all internal swap trade fields and create sample input files covering the key product types and lifecycle events. Support JSON files, bulk CSV input, standard FpML XML confirmations, and CitiML (FpML extended with proprietary Citi tags).
 
 **Process**: The schema defines 23 product types, 6 action types (NEWT, MODI, CORR, EROR, TERM, REVI), and 5 event types (TRAD, NOVA, ETRM, ALOC, COMP). Each trade carries party information (LEI + name), notional, rate, frequency, dates, and optional sections for FX, options, cap/floor, inflation, and novation.
 
-Four input formats are supported — JSON (one file per trade, for development and testing), CSV (one row per trade, for bulk processing), FpML XML (standard FpML 5.x confirmations), and FpML with XSLT preprocessor (proprietary dialects like CitiML). All produce the same `SwapTrade` POJO; all downstream phases are format-agnostic.
+Five input modes are supported — JSON (one file per trade, for development and testing), CSV (one row per trade, for bulk processing), FpML XML (standard FpML 5.x confirmations), CitiML XML (FpML plus Citi extension tags), and FpML with a named XSLT preprocessor (any other dialect). All produce the same `SwapTrade` POJO; all downstream phases are format-agnostic.
 
 **Files produced**:
 
@@ -61,26 +66,28 @@ Four input formats are supported — JSON (one file per trade, for development a
 | `data/input/cap-floor-new.json` | NEWT/TRAD — USD 20M, 5.00% cap on SOFR 3M |
 | `data/input/sample-trades.csv` | All 9 trades above in a single CSV file |
 | `data/input/fpml/vanilla-swap.xml` | FpML 5.13 confirmation — USD 50M vanilla swap |
-| `data/input/citiml/citi-swap.xml` | Same trade in the CitiML proprietary dialect |
-| `config/citiml-to-fpml.xslt` | Sample XSLT for CitiML → FpML normalisation |
+| `data/input/citiml/citi-fx-ndf.xml` | Real CitiML — USD/CLP non-deliverable forward |
+| `data/reference/citiml/citi-fx-ndf.xml` | Reference copy of the same file |
 
 ### Phase 2 — CDM TradeState Mapping
 
-**Goal**: Parse internal JSON into a `SwapTrade` POJO, then build a CDM 5.19.0 `TradeState` with the correct product structure.
+**Goal**: Parse internal JSON into a `SwapTrade` POJO, then build a CDM 6.23.0 `TradeState` with the correct product structure.
 
 **Process**:
 1. `SwapTradeReader` deserialises the input JSON using Jackson (with `JavaTimeModule`).
 2. `TradeStateMapper.map()` dispatches on `productType` to a product-specific mapper (currently `VanillaSwapMapper` for all types as a baseline).
 3. The mapper builds:
-   - `ContractualProduct` with ISDA taxonomy and `EconomicTerms` containing fixed + floating `InterestRatePayout` legs inside a `Payout` object.
-   - `TradeLot` with `PriceQuantity` for the notional.
-   - `Counterparty` list (PARTY_1, PARTY_2).
+   - `NonTransferableProduct` with ISDA taxonomy and `EconomicTerms` holding the fixed and floating `InterestRatePayout` legs as two `Payout` entries.
+   - `TradeLot` with `PriceQuantity` for the notional, set directly on `Trade`.
+   - `Counterparty` list (PARTY_1, PARTY_2), set directly on `Trade`.
    - `Trade` with `tradeIdentifier` (UTI), `tradeDate`, `executionDetails`, `contractDetails`.
    - Wrapping `TradeState` with the `Trade`.
 
-**Key CDM 5 path**: `tradeState.trade.tradableProduct.product.contractualProduct.economicTerms.payout.interestRatePayout[]`
+**Key CDM 6 path**: `tradeState.trade.product.economicTerms.payout[].interestRatePayout`
 
-**Input**: `SwapTrade` (in-memory POJO from Phase 1 — JSON, CSV row, or FpML parse)
+CDM 6 dissolved `TradableProduct` — product, trade lots and counterparties now sit directly on `Trade`, `ContractualProduct` became `NonTransferableProduct`, and each `Payout` holds a single payout rather than a list.
+
+**Input**: `SwapTrade` (in-memory POJO from Phase 1 — JSON, CSV row, or FpML/CitiML parse)
 
 **Output**: `data/output/tradestate/{name}_TradeState.json`
 
@@ -92,7 +99,7 @@ Four input formats are supported — JSON (one file per trade, for development a
 1. `actionType` → `ActionEnum`: NEWT→New, MODI/CORR/REVI→Correct, EROR→Cancel, TERM→New
 2. `eventType` → `EventIntentEnum`: TRAD→ContractFormation, NOVA→Novation, ETRM→EarlyTerminationProvision, ALOC→Allocation, COMP→Compression
 3. `buildInstruction()` creates the appropriate `PrimitiveInstruction`:
-   - ContractFormation: `ContractFormationInstruction` + `execution` (the TradableProduct)
+   - ContractFormation: `ContractFormationInstruction` + `execution` (an `ExecutionInstruction` built from the trade's product, lots, counterparties and parties)
    - Novation: `SplitInstruction` with quantity-to-zero + party change
    - Early Termination / Compression: `QuantityChangeInstruction` with REPLACE to zero
    - Allocation: `SplitInstruction` with ContractFormation breakdown
@@ -109,10 +116,10 @@ Four input formats are supported — JSON (one file per trade, for development a
 1. Sets `originatingWorkflowStep`, `reportableTrade`, and `reportableInformation`.
 2. `ReportableInformation` includes:
    - `confirmationMethod` (ELECTRONIC / NON_ELECTRONIC)
-   - `executionVenueType` (OFF_FACILITY / SEF)
-   - `largeSizeTrade` (false)
-   - Two `PartyInformation` entries (Party1 as REPORTING_PARTY, Party2 as AS_COUNTERPARTY)
-   - `ReportingRegime` with supervisory body (CFTC) and mandatorily-clearable status
+   - `globalPartyInformation` — one entry per party
+   - `jurisdictionInformation` — a `ReportableJurisdictionInformation` carrying the regime name (DODD_FRANK_ACT), supervisory body (CFTC), a `TransactionInformation` with execution venue and large-size flag, and per-party `JurisdictionPartyInformation` (Party1 as REPORTING_PARTY, Party2 as COUNTERPARTY) with mandatorily-clearable status
+
+DRR 7 inverted this shape: jurisdictions are now top level with parties nested inside, rather than parties each carrying a list of regimes.
 
 **Input**: `SwapTrade` + `WorkflowStep` + `TradeState`
 
@@ -152,9 +159,7 @@ Each report is serialised to JSON using `RosettaObjectMapper`.
 
 ### Phase 7 — Projection to Submission Format
 
-**Goal**: Project regime reports to the format expected by trade repositories — ISO 20022 Auth.030 XML.
-
-**Important**: DRR 5.20.1 ships ISO 20022 projection functions for ESMA, FCA, ASIC, JFSA and MAS only. There is **no CFTC projection** in this release — no DTCC RDS Harmonized projection exists. CFTC Part 43/45 reports are still produced in Phase 6; they simply stop there. The pipeline logs this and continues.
+**Goal**: Project regime reports to the format expected by trade repositories — ISO 20022 Auth.030 XML for European regimes, DTCC RDS Harmonized for US.
 
 **Process**: `ProjectionMapper` calls DRR projection functions:
 
@@ -162,8 +167,8 @@ Each report is serialised to JSON using `RosettaObjectMapper`.
 |--------|---------------------|---------------|
 | ESMA EMIR | `Project_EsmaEmirTradeReportToIso20022` | ISO 20022 Auth030 XML |
 | FCA UK EMIR | `Project_FcaUkEmirTradeReportToIso20022` | ISO 20022 Auth030 XML |
-| CFTC Part 45 | *(none available in DRR 5.20.1)* | — |
-| CFTC Part 43 | *(none available in DRR 5.20.1)* | — |
+| CFTC Part 45 | `Project_CftcPart45TradeReportToDtccRdsHarmonized` | DTCC RDS JSON |
+| CFTC Part 43 | `Project_CftcPart43TradeReportToDtccRdsHarmonized` | DTCC RDS JSON |
 
 ISO 20022 output uses `RosettaObjectMapperCreator.forXML()` with the regime-specific Auth030 model config.
 
@@ -236,8 +241,8 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 | `data/input/*.json` | Sample input trade files (one per trade) |
 | `data/input/sample-trades.csv` | Sample CSV with all trades in one file |
 | `data/input/fpml/*.xml` | Sample FpML 5.x confirmation files |
-| `data/input/citiml/*.xml` | Sample proprietary-dialect files (for `--preprocessor citiml`) |
-| `config/*.xslt` | XSLT preprocessor stylesheets for proprietary FpML dialects |
+| `data/input/citiml/*.xml` | Sample CitiML files (for `--citiml`) |
+| `data/reference/citiml/*.xml` | Reference CitiML samples |
 | `data/output/` | All generated output (created at runtime) |
 | `isda-cdm-trade-mapper/pom.xml` | Maven project descriptor |
 | `isda-cdm-trade-mapper/src/main/java/org/isda/mapper/` | All mapper source code |
@@ -250,19 +255,21 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 | `SwapTrade.java` | 1 | Internal trade POJO |
 | `SwapTradeReader.java` | 1 | JSON deserialiser |
 | `CsvSwapTradeReader.java` | 1 | Streaming CSV reader (one row at a time) |
-| `fpml/FpmlSwapTradeReader.java` | 1 | Parses FpML 5.x XML into SwapTrade POJOs |
+| `fpml/FpmlSwapTradeReader.java` | 1 | Parses FpML 5.x confirmation XML into SwapTrade POJOs |
+| `fpml/CitimlTradeReader.java` | 1 | Parses CitiML envelope + FpML recordkeeping payload |
 | `fpml/FpmlPreprocessor.java` | 1 | Preprocessor interface for XML normalisation |
 | `fpml/IdentityPreprocessor.java` | 1 | Pass-through for standard FpML (no transform) |
 | `fpml/XsltPreprocessor.java` | 1 | Applies XSLT stylesheet for proprietary dialects |
 | `TradeStateMapper.java` | 2 | Dispatches to product mappers, builds CDM TradeState |
-| `product/VanillaSwapMapper.java` | 2 | Builds CDM ContractualProduct for IRS |
+| `product/VanillaSwapMapper.java` | 2 | Builds CDM product for IRS |
+| `product/FxNdfMapper.java` | 2 | Builds CDM SettlementPayout for FX non-deliverable forwards |
 | `util/CdmBuilderUtil.java` | 2 | Shared CDM builder helpers |
 | `WorkflowStepMapper.java` | 3 | Creates WorkflowStep with action/intent/instruction |
 | `ReportableEventMapper.java` | 4 | Adds DRR reporting metadata |
 | `ReportInstructionMapper.java` | 5 | DRR enrichment via Guice-injected functions |
 | `ReportGenerator.java` | 6 | Runs regime-specific report functions |
-| `ProjectionMapper.java` | 7 | Projects ESMA/FCA reports to ISO 20022 Auth.030 XML |
-| `MapperMain.java` | all | CLI entry point — `--json`, `--csv`, `--fpml`, `--preprocessor` |
+| `ProjectionMapper.java` | 7 | Projects reports to ISO 20022 Auth.030 XML / DTCC RDS JSON |
+| `MapperMain.java` | all | CLI entry point — `--json`, `--csv`, `--fpml`, `--citiml`, `--preprocessor` |
 
 ---
 
@@ -275,7 +282,7 @@ mvn -f isda-cdm-trade-mapper/pom.xml clean compile
 ```
 
 This will:
-1. Download DRR 5.20.1 and its transitive dependency CDM 5.19.0 from ISDA's Artifact Registry.
+1. Download DRR 7.7.0 and its transitive dependency CDM 6.23.0 from ISDA's Artifact Registry.
 2. Download the ISO 20022 model JAR (`org.iso20022:rosetta-source`).
 3. Compile all mapper source files.
 
@@ -333,16 +340,29 @@ mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.
 
 Default values for FpML confirmations: `tradeVersion=1`, `actionType=NEWT`, `eventType=TRAD`.
 
-### Mode 4 — FpML with preprocessor (proprietary dialects)
+### Mode 4 — CitiML XML directory
 
-For organisations using modified FpML schemas (e.g. CitiML, BofAML), an XSLT preprocessor normalises the proprietary XML to standard FpML before parsing. The XSLT file is resolved by convention: `config/{name}-to-fpml.xslt`.
+CitiML wraps an FpML **recordkeeping** payload (`http://www.fpml.org/FpML-5/recordkeeping`, elements explicitly `fpml:`-prefixed) inside a Citi envelope rooted at `citiml:citimlTradeNotification`, spanning 15 proprietary namespaces under `tradecapturesys.cmb.citigroup.net`.
+
+`--citiml` uses a dedicated `CitimlTradeReader` rather than an XSLT normalisation. The envelope is read natively because it carries data standard FpML cannot express — lifecycle action and event type, trade version, clearing status, execution venue — which a transform to FpML would necessarily discard.
+
+```bash
+mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.MapperMain \
+    -Dexec.args="--citiml data/input/citiml/"
+```
+
+Lifecycle data **is** consumed: `citiml:citimlAction` maps to the action code, `citiml:citimlEventType` to the event type, and `fpml:versionedTradeId/version` to the trade version — so a CitiML amendment reports as an amendment rather than defaulting to a new trade, which is what the plain FpML path has to do.
+
+### Mode 5 — Any other dialect via named preprocessor
+
+For other proprietary FpML variants, pass the stylesheet name explicitly. The XSLT is resolved by convention: `config/{name}-to-fpml.xslt`.
 
 ```bash
 mvn -f isda-cdm-trade-mapper/pom.xml exec:java -Dexec.mainClass=org.isda.mapper.MapperMain \
     -Dexec.args="--fpml data/input/citiml/ --preprocessor citiml"
 ```
 
-This applies `config/citiml-to-fpml.xslt` to each XML file before parsing. To add a new dialect, create a new XSLT stylesheet following the naming convention.
+To add a new dialect, create `config/{name}-to-fpml.xslt` — no Java changes needed. (`--citiml` is exactly this form with the name pre-wired.)
 
 ### From JAR
 
@@ -358,9 +378,9 @@ java -cp "isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:is
 java -cp "isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:isda-cdm-trade-mapper/target/dependency/*" \
      org.isda.mapper.MapperMain --fpml data/input/fpml/
 
-# or with FpML + preprocessor:
+# or with CitiML:
 java -cp "isda-cdm-trade-mapper/target/isda-cdm-trade-mapper-1.0-SNAPSHOT.jar:isda-cdm-trade-mapper/target/dependency/*" \
-     org.isda.mapper.MapperMain --fpml data/input/citiml/ --preprocessor citiml
+     org.isda.mapper.MapperMain --citiml data/input/citiml/
 ```
 
 To include all dependencies in the classpath, first run:
@@ -382,7 +402,7 @@ data/output/
 ├── reportableevent/     # Phase 4 — DRR ReportableEvent JSON
 ├── instruction/         # Phase 5 — TransactionReportInstruction JSON
 ├── reports/             # Phase 6 — Regime-specific report JSON
-└── projections/         # Phase 7 — ISO 20022 Auth.030 XML
+└── projections/         # Phase 7 — ISO 20022 Auth.030 XML / DTCC RDS JSON
 ```
 
 ### Example output for `vanilla-swap-new.json`
@@ -436,13 +456,20 @@ xmllint --format data/output/projections/vanilla-swap-new_ESMA_EMIR_Projection.x
 
 The FpML parser extracts trade data from `<swap>`, `<swaption>`, `<fra>`, `<capFloor>`, and `<fxSwap>` elements. Party LEIs are read from `<partyId>` elements with the `iso17442` scheme. See `data/input/fpml/vanilla-swap.xml` for a working example.
 
-### Adding a proprietary FpML dialect
+### CitiML mode
 
-1. Create an XSLT stylesheet at `config/{name}-to-fpml.xslt` that normalises the proprietary XML to standard FpML 5.x (namespace, element names, attribute schemes).
+1. Place CitiML XML files in a directory (e.g. `data/input/citiml/`).
+2. Run with `--citiml path/to/dir`.
+
+The reader resolves namespaces by URI, never by prefix — prefixes such as `ns6` are assigned by whatever generated the document and are not stable between files.
+
+### Adding another proprietary dialect
+
+1. Create an XSLT stylesheet at `config/{name}-to-fpml.xslt` that normalises the proprietary XML to standard FpML 5.x.
 2. Place the proprietary XML files in a directory.
 3. Run with `--fpml path/to/dir --preprocessor {name}`.
 
-See `config/citiml-to-fpml.xslt` for a sample stylesheet that normalises CitiML (renames elements, converts namespace, adds LEI scheme attributes).
+Use this for dialects that are genuinely standard FpML with cosmetic differences. A dialect that wraps FpML in its own envelope, as CitiML does, needs a dedicated reader instead — see `CitimlTradeReader`.
 
 ### CSV column format
 
@@ -488,9 +515,9 @@ Currently `ReportableEventMapper` hardcodes `SupervisoryBodyEnum.CFTC`. To suppo
 
 | Artifact | Version | Source |
 |----------|---------|--------|
-| `com.regnosys.drr:rosetta-source` | 5.20.1 | ISDA Artifact Registry |
-| CDM (transitive) | 5.19.0 | via DRR |
-| `org.iso20022:rosetta-source` (transitive) | 1.15.0 | via DRR |
+| `com.regnosys.drr:rosetta-source` | 7.7.0 | ISDA Artifact Registry |
+| CDM (transitive) | 6.23.0 | via DRR |
+| `org.iso20022:rosetta-source` (transitive) | 1.42.0 | via DRR |
 | Jackson Databind | 2.17.1 | Maven Central |
 | Jackson JSR310 | 2.17.1 | Maven Central |
 | Jackson CSV | 2.17.1 | Maven Central |
@@ -505,7 +532,7 @@ Currently `ReportableEventMapper` hardcodes `SupervisoryBodyEnum.CFTC`. To suppo
 | Problem | Fix |
 |---------|-----|
 | `401 Unauthorized` on Maven build | Run `gcloud auth application-default login` |
-| `ClassNotFoundException: DrrRuntimeModule` | Ensure `rosetta-source:5.20.1` resolved; check `mvn dependency:tree` |
+| `ClassNotFoundException: DrrRuntimeModule` | Ensure `rosetta-source:7.7.0` resolved; check `mvn dependency:tree` |
 | `NoSuchMethodError` at runtime | Verify JDK 21+; DRR bytecode requires it |
 | Empty `data/output/` directories | Ensure `data/input/` has `.json` files and you run from the project root |
 | Regime report `evaluate()` throws | Check that `ReportableEvent` has correct `reportableInformation` (party roles, supervisory body) |

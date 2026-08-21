@@ -1,53 +1,88 @@
 {
+  "effectiveDate" : "2026-08-20",
+  "reportingTimestamp" : "2026-08-20T20:21:14Z",
+  "expirationDate" : "2031-08-20",
   "cleared" : "N",
-  "customBasketIndicator" : false,
+  "finalContractualSettlementDate" : "2031-08-20",
+  "leg1" : {
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A001",
+      "fixedRatePaymentFrequencyPeriod" : "MNTH",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 6
+    },
+    "notionalAmount" : 75000000,
+    "notionalCurrency" : "USD",
+    "fixedRate" : 0.034,
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifierFormat" : "Lei"
+  },
+  "leg2" : {
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRatePaymentFrequencyPeriod" : "MNTH",
+      "floatingRatePaymentFrequencyPeriodMultiplier" : 3,
+      "floatingRateResetFrequencyPeriod" : "MNTH",
+      "floatingRateResetFrequencyMultiplier" : 3
+    },
+    "notionalAmount" : 75000000,
+    "notionalCurrency" : "USD",
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifierFormat" : "Lei"
+  },
   "actionType" : "NEWT",
   "eventType" : "NOVA",
   "eventIdentifier" : "TRD20260818A01",
   "eventTimestamp" : "2026-08-18T08:00:00Z",
-  "notionalAmountLeg1" : 75000000,
-  "notionalAmountLeg2" : 75000000,
-  "notionalCurrencyLeg1" : "USD",
-  "notionalCurrencyLeg2" : "USD",
-  "packageIndicator" : false,
-  "fixedRateDayCountConventionLeg1" : "A001",
-  "floatingRateDayCountConventionLeg2" : "A004",
-  "floatingRateResetFrequencyPeriodLeg2" : "MNTH",
-  "floatingRateResetFrequencyPeriodMultiplierLeg2" : 3,
-  "fixedRatePaymentFrequencyPeriodLeg1" : "MNTH",
-  "floatingRatePaymentFrequencyPeriodLeg2" : "MNTH",
-  "fixedRatePaymentFrequencyPeriodMultiplierLeg1" : 6,
-  "floatingRatePaymentFrequencyPeriodMultiplierLeg2" : 3,
-  "fixedRateLeg1" : 0.0340,
-  "postPricedSwapIndicator" : false,
-  "finalContractualSettlementDate" : "2031-08-20",
-  "allocationIndicator" : "UNAL",
   "nonStandardizedTermIndicator" : false,
-  "blockTradeElectionIndicator" : false,
-  "effectiveDate" : "2026-08-20",
-  "expirationDate" : "2031-08-20",
-  "reportingTimestamp" : "2026-08-19T18:47:19Z",
-  "primeBrokerageTransactionIndicator" : false,
-  "uniqueTransactionIdentifier" : "TRD20260818A01",
-  "jurisdiction" : "CFTC",
-  "newSDRIdentifier" : "Not Modelled",
-  "initialMarginCollateralPortfolioCode" : "Not Modelled",
-  "variationMarginCollateralPortfolioCode" : "Not Modelled",
-  "cftcGuidebook" : {
-    "assetClass" : "InterestRate",
-    "largeNotionalOffFacilitySwapElectionIndicator" : false,
-    "sefOrDcmIndicator" : false,
-    "sefOrDcmAnonymousExecutionIndicator" : false,
-    "messageType" : "Trade State"
-  },
+  "packageIndicator" : false,
+  "customBasketIndicator" : false,
   "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Header" : {
+          "InstrumentType" : "Swap",
+          "UseCase" : "Fixed_Float",
+          "Level" : "UPI"
+        },
+        "Attributes" : {
+          "NotionalSchedule" : "Constant",
+          "UnderlierIDSource" : "FPML",
+          "DeliveryType" : "PHYS",
+          "UnderlierID" : "USD-SOFR",
+          "NotionalCurrency" : "USD",
+          "ReferenceRateTermUnit" : "MNTH",
+          "ReferenceRateTermValue" : 6
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "notionalSchedule" : "Constant",
+    "instrumentType" : "Swap",
+    "deliveryType" : "PHYS",
     "counterparty1Format" : "Lei",
     "counterparty2Format" : "Lei",
+    "executionVenueType" : "OffFacility",
     "buyerIdentifierFormat" : "Lei",
-    "sellerIdentifierFormat" : "Lei",
-    "payerIdentifierLeg1Format" : "Lei",
-    "payerIdentifierLeg2Format" : "Lei",
-    "receiverIdentifierLeg1Format" : "Lei",
-    "receiverIdentifierLeg2Format" : "Lei"
-  }
+    "sellerIdentifierFormat" : "Lei"
+  },
+  "postPricedSwapIndicator" : false,
+  "blockTradeElectionIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "dtccAdditionalFields" : {
+    "primaryAssetClass" : "InterestRate",
+    "tradeParty1IDType" : "LEI",
+    "messageID" : "TRD20260818A01_v32026-08-20T20:21:15Z",
+    "changeInNotionalAmount1" : 0,
+    "changeInNotionalAmount2" : 0,
+    "largeNotionalOffFacilitySwapElectionIndicator" : false,
+    "messageType" : "Trade State",
+    "sefOrDcmIndicator" : false,
+    "version" : "CORE1.0"
+  },
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty1FederalEntityIndicator" : false,
+  "counterparty2FederalEntityIndicator" : false,
+  "allocationIndicator" : "UNAL",
+  "jurisdiction" : "CFTC"
 }

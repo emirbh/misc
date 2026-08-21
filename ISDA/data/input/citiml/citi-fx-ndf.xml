@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<citiml:citimlTradeNotification xmlns:citimlsn="http://tradecapturesys.cmb.citigroup.net/citiml-sn-extended-2-0" xmlns:ns13="http://tradecapturesys.cmb.citigroup.net/citiml-com-extended-2-0" xmlns:citimlird="http://tradecapturesys.cmb.citigroup.net/citiml-ird-extended-2-0" xmlns:citimlbo="http://tradecapturesys.cmb.citigroup.net/citiml-bond-option-extended-2-0" xmlns:citiml="http://tradecapturesys.cmb.citigroup.net/citiml-2-0" xmlns:citimlrs="http://tradecapturesys.cmb.citigroup.net/citiml-return-swaps-extended-2-0" xmlns:dtcc="http://www.dtcc.com/ext" xmlns:citimlcds="http://tradecapturesys.cmb.citigroup.net/citiml-cds-extended-2-0" xmlns:citimlcommon="http://tradecapturesys.cmb.citigroup.net/citiml-common-2-0" xmlns:citimleqd="http://tradecapturesys.cmb.citigroup.net/citiml-eqd-extended-2-0" xmlns:ns6="http://tradecapturesys.cmb.citigroup.net/citiml-payload-2-0" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns:citimlfx="http://tradecapturesys.cmb.citigroup.net/citiml-fx-extended-2-0" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:citimleq="http://tradecapturesys.cmb.citigroup.net/citiml-eq-shared-extended-2-0" xmlns:citimlirex="http://tradecapturesys.cmb.citigroup.net/citiml-irex-extended-2-0" xmlns:citisdrre="http://www.citi.com/citisdrre-fpml/recordkeeping">
+    <citiml:citimlTradeNotificationMessageHeader>
+        <citiml:citimlMessageId messageIdScheme="TPS">PROD-Msg273130060176535105635193241951733</citiml:citimlMessageId>
+        <citiml:citimlConversationId conversationIdScheme="TPS">C.CA58511_6972996630511214</citiml:citimlConversationId>
+        <citiml:citimlSentBy messageAddressScheme="TPS">TPS</citiml:citimlSentBy>
+        <citiml:citimlCreationTimestamp>2021-09-29T19:11:48.000Z</citiml:citimlCreationTimestamp>
+        <citiml:citimlExpiryTimestamp>2021-09-29T19:11:48.584Z</citiml:citimlExpiryTimestamp>
+        <citiml:citimlUserFullName>Camelia Amami</citiml:citimlUserFullName>
+        <citiml:citimlUserId>ca58511</citiml:citimlUserId>
+        <citiml:citimlUserRole>Trader</citiml:citimlUserRole>
+        <citiml:citimlOriginatingSystemName>eDealer</citiml:citimlOriginatingSystemName>
+        <citiml:citimlExecutingSystemName>TPS</citiml:citimlExecutingSystemName>
+        <citiml:isSDRReportable>true</citiml:isSDRReportable>
+        <citiml:citimlBackOffice>
+            <citimlcommon:citimlBypassBackOffice>false</citimlcommon:citimlBypassBackOffice>
+            <citimlcommon:citimlBackOfficeName>OASYS</citimlcommon:citimlBackOfficeName>
+        </citiml:citimlBackOffice>
+    </citiml:citimlTradeNotificationMessageHeader>
+    <citiml:citimlNotificationBundleDetails>
+        <citiml:citimlEvents>
+            <citiml:citimlEvent>
+                <citiml:nonpublicExecutionReport fpmlVersion="5-3">
+                    <fpml:header>
+                        <fpml:messageId messageIdScheme="TPS">Msg273130060168463002882156176934262</fpml:messageId>
+                        <fpml:sentBy messageAddressScheme="TPS">TPS</fpml:sentBy>
+                        <fpml:creationTimestamp>2021-09-29T19:11:48.000Z</fpml:creationTimestamp>
+                        <citisdrre:primaryAssetClass>ForeignExchange</citisdrre:primaryAssetClass>
+                        <citisdrre:productId productIdScheme="http://www.fpml.org/coding-scheme/product-taxonomy">ForeignExchange:NDF</citisdrre:productId>
+                    </fpml:header>
+                    <fpml:isCorrection>false</fpml:isCorrection>
+                    <fpml:correlationId correlationIdScheme="TPS">PROD100021193ET.100021193EC</fpml:correlationId>
+                    <fpml:sequenceNumber>1</fpml:sequenceNumber>
+                    <fpml:trade id="TPS.100021193EC.1"/>
+                    <fpml:tradingEvent>
+                        <fpml:eventType>TRADE</fpml:eventType>
+                    </fpml:tradingEvent>
+                    <fpml:quote>
+                        <fpml:value>803.25</fpml:value>
+                        <fpml:measureType>PriceNotation</fpml:measureType>
+                        <fpml:quoteUnits>Price</fpml:quoteUnits>
+                    </fpml:quote>
+                </citiml:nonpublicExecutionReport>
+            </citiml:citimlEvent>
+        </citiml:citimlEvents>
+        <citiml:citimlPostEventTrades>
+            <citiml:citimlPostEventTrade>
+                <citiml:postEventTrade id="Trade.100021193EC.1">
+                    <fpml:tradeHeader>
+                        <fpml:partyTradeIdentifier>
+                            <fpml:partyReference href="P.100021193EC.1.PartyA"/>
+                            <fpml:versionedTradeId>
+                                <fpml:tradeId tradeIdScheme="TPS">100021193EC</fpml:tradeId>
+                                <fpml:version>1</fpml:version>
+                                <fpml:effectiveDate>2021-09-29</fpml:effectiveDate>
+                            </fpml:versionedTradeId>
+                            <fpml:tradeId tradeIdScheme="Oasys.DealId">88870964</fpml:tradeId>
+                            <fpml:tradeId tradeIdScheme="UniqueInternalTradeID">150699:100021193ECR</fpml:tradeId>
+                            <fpml:versionedTradeId>
+                                <fpml:tradeId tradeIdScheme="InternalTradeID">100021193EC</fpml:tradeId>
+                                <fpml:version>1</fpml:version>
+                            </fpml:versionedTradeId>
+                            <fpml:linkId linkIdScheme="OpsfileId">CE3H23172192</fpml:linkId>
+                        </fpml:partyTradeIdentifier>
+                        <fpml:partyTradeIdentifier>
+                            <fpml:partyReference href="P.100021193EC.1.PartyA"/>
+                            <fpml:tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid">150699:100021193ECR</fpml:tradeId>
+                        </fpml:partyTradeIdentifier>
+                        <fpml:partyTradeInformation>
+                            <fpml:partyReference href="P.100021193EC.1.PartyA"/>
+                            <fpml:relatedParty>
+                                <fpml:partyReference href="P.100021193EC.1.PartyA"/>
+                                <fpml:role>ReportingParty</fpml:role>
+                            </fpml:relatedParty>
+                            <fpml:relatedParty>
+                                <fpml:partyReference href="P.100021193EC.1.PartyB"/>
+                                <fpml:role>Counterparty</fpml:role>
+                            </fpml:relatedParty>
+                            <fpml:relatedParty>
+                                <fpml:partyReference href="P.100021193EC.1.ExecutionFacility"/>
+                                <fpml:role>ExecutionFacility</fpml:role>
+                            </fpml:relatedParty>
+                            <fpml:relatedParty>
+                                <fpml:partyReference href="P.100021193EC.1.OriginalCounterparty.MASTER"/>
+                                <fpml:role>Client</fpml:role>
+                            </fpml:relatedParty>
+                            <fpml:relatedPerson>
+                                <fpml:personReference href="trader.100021193EC.1"/>
+                                <fpml:role>Trader</fpml:role>
+                            </fpml:relatedPerson>
+                            <fpml:category categoryScheme="http://www.dtcc.com/compressed_trade">false</fpml:category>
+                            <fpml:category categoryScheme="http://www.fpml.org/coding-scheme/external/esma/mifir/trading-capacity">DEAL</fpml:category>
+                            <fpml:executionDateTime executionDateTimeScheme="TPS">2021-09-29T19:11:45.805Z</fpml:executionDateTime>
+                            <fpml:timestamps/>
+                            <fpml:intentToClear>false</fpml:intentToClear>
+                            <fpml:clearingStatus>Uncleared</fpml:clearingStatus>
+                            <fpml:collateralizationType>Uncollateralized</fpml:collateralizationType>
+                            <fpml:reportingRegime>
+                                <fpml:supervisorRegistration>
+                                    <fpml:supervisoryBody>NONE</fpml:supervisoryBody>
+                                </fpml:supervisorRegistration>
+                            </fpml:reportingRegime>
+                            <fpml:nonStandardTerms>false</fpml:nonStandardTerms>
+                            <fpml:executionType>Voice</fpml:executionType>
+                            <fpml:executionVenueType>OffFacility</fpml:executionVenueType>
+                            <fpml:verificationMethod>Unverified</fpml:verificationMethod>
+                        </fpml:partyTradeInformation>
+                        <fpml:tradeDate>2021-09-29</fpml:tradeDate>
+                    </fpml:tradeHeader>
+                    <fpml:fxSingleLeg>
+                        <fpml:primaryAssetClass>ForeignExchange</fpml:primaryAssetClass>
+                        <fpml:productType productTypeScheme="TPS">FX Leg</fpml:productType>
+                        <fpml:productType productTypeScheme="FAS 133 Hedged Transaction">NONE</fpml:productType>
+                        <fpml:productType/>
+                        <fpml:productType productTypeScheme="Taxonomy2">Forward</fpml:productType>
+                        <fpml:productType productTypeScheme="Taxonomy1">ForeignExchange</fpml:productType>
+                        <fpml:productType productTypeScheme="FX.Taxonomy2">NDF</fpml:productType>
+                        <fpml:productType productTypeScheme="ISDA.2.0.Taxonomy1">ForeignExchange</fpml:productType>
+                        <fpml:productType productTypeScheme="ISDA.2.0.Taxonomy2">Forward</fpml:productType>
+                        <fpml:productType productTypeScheme="http://www.fpml.org/coding-scheme/esma-product-classification">FX:DeliverableForward</fpml:productType>
+                        <fpml:productType productTypeScheme="http://www.fpml.org/coding-scheme/product-type-simple">Forward</fpml:productType>
+                        <fpml:productId productIdScheme="UniqueMasterProductSourceSystem">TPS</fpml:productId>
+                        <fpml:productId productIdScheme="UniqueMasterProductID">11684</fpml:productId>
+                        <fpml:productId productIdScheme="UniqueMasterProductUnderlyingID">900</fpml:productId>
+                        <fpml:productId productIdScheme="http://www.fpml.org/coding-scheme/product-taxonomy">ForeignExchange:NDF</fpml:productId>
+                        <fpml:productId productIdScheme="http://www.fpml.org/coding-scheme/external/iso6166">EZ820Y15STS2</fpml:productId>
+                        <fpml:exchangedCurrency1>
+                            <fpml:payerPartyReference href="P.100021193EC.1.PartyB"/>
+                            <fpml:receiverPartyReference href="P.100021193EC.1.PartyA"/>
+                            <fpml:paymentAmount>
+                                <fpml:currency>USD</fpml:currency>
+                                <fpml:amount>15000000</fpml:amount>
+                            </fpml:paymentAmount>
+                            <fpml:paymentDate>
+                                <fpml:unadjustedDate>2021-11-02</fpml:unadjustedDate>
+                                <fpml:dateAdjustments>
+                                    <fpml:businessCenters>
+                                        <fpml:businessCenter>NYBANK</fpml:businessCenter>
+                                        <fpml:businessCenter>SANTIAGO_BANK</fpml:businessCenter>
+                                    </fpml:businessCenters>
+                                </fpml:dateAdjustments>
+                            </fpml:paymentDate>
+                        </fpml:exchangedCurrency1>
+                        <fpml:exchangedCurrency2>
+                            <fpml:payerPartyReference href="P.100021193EC.1.PartyA"/>
+                            <fpml:receiverPartyReference href="P.100021193EC.1.PartyB"/>
+                            <fpml:paymentAmount>
+                                <fpml:currency>CLP</fpml:currency>
+                                <fpml:amount>12048750000</fpml:amount>
+                            </fpml:paymentAmount>
+                            <fpml:paymentDate>
+                                <fpml:unadjustedDate>2021-11-02</fpml:unadjustedDate>
+                                <fpml:dateAdjustments>
+                                    <fpml:businessCenters>
+                                        <fpml:businessCenter>NYBANK</fpml:businessCenter>
+                                        <fpml:businessCenter>SANTIAGO_BANK</fpml:businessCenter>
+                                    </fpml:businessCenters>
+                                </fpml:dateAdjustments>
+                            </fpml:paymentDate>
+                        </fpml:exchangedCurrency2>
+                        <fpml:valueDate>2021-11-02</fpml:valueDate>
+                        <fpml:exchangeRate>
+                            <fpml:quotedCurrencyPair>
+                                <fpml:currency1 currencyScheme="http://www.fpml.org/ext/iso4217-2001-08-15">USD</fpml:currency1>
+                                <fpml:currency2 currencyScheme="http://www.fpml.org/ext/iso4217-2001-08-15">CLP</fpml:currency2>
+                                <fpml:quoteBasis>Currency2PerCurrency1</fpml:quoteBasis>
+                            </fpml:quotedCurrencyPair>
+                            <fpml:rate>803.25</fpml:rate>
+                            <fpml:spotRate>801</fpml:spotRate>
+                        </fpml:exchangeRate>
+                    </fpml:fxSingleLeg>
+                    <fpml:documentation>
+                        <fpml:masterAgreement>
+                            <fpml:masterAgreementType masterAgreementTypeScheme="ISDA"/>
+                        </fpml:masterAgreement>
+                        <fpml:contractualDefinitions>ISDA2006</fpml:contractualDefinitions>
+                    </fpml:documentation>
+                </citiml:postEventTrade>
+                <ns6:citimlFxExtendedTradeDetails>
+                    <citimlfx:BuySellInd>SELL</citimlfx:BuySellInd>
+                    <citimlfx:citimlSettlementProvision>
+                        <fpml:settlementCurrency>USD</fpml:settlementCurrency>
+                        <fpml:nonDeliverableSettlement>
+                            <fpml:referenceCurrency>CLP</fpml:referenceCurrency>
+                            <fpml:fxFixingDate>
+                                <fpml:periodMultiplier>-2</fpml:periodMultiplier>
+                                <fpml:period>D</fpml:period>
+                                <fpml:dayType>Business</fpml:dayType>
+                                <fpml:businessDayConvention>FOLLOWING</fpml:businessDayConvention>
+                                <fpml:businessCenters>
+                                    <fpml:businessCenter>SANTIAGO_BANK</fpml:businessCenter>
+                                    <fpml:businessCenter>NYBANK</fpml:businessCenter>
+                                </fpml:businessCenters>
+                            </fpml:fxFixingDate>
+                            <fpml:settlementRateOption>CLP_USD_FIXT2</fpml:settlementRateOption>
+                        </fpml:nonDeliverableSettlement>
+                    </citimlfx:citimlSettlementProvision>
+                </ns6:citimlFxExtendedTradeDetails>
+                <citiml:citimlTradeExtensionData>
+                    <citiml:citimlTradeProcessing>
+                        <citiml:citimlEventCorrelationId citimlCorrelationIdScheme="TPS">PROD100021193ET.100021193EC</citiml:citimlEventCorrelationId>
+                        <citiml:citimlEventCorrelationSeqNum>1</citiml:citimlEventCorrelationSeqNum>
+                        <citiml:citimlTradeState>ACTIVE</citiml:citimlTradeState>
+                        <citiml:citimlTerminationDate>2021-11-02</citiml:citimlTerminationDate>
+                        <citiml:citimlLifeCycleAction>
+                            <citiml:citimlAction>New</citiml:citimlAction>
+                            <citiml:citimlActionDefinition>PayloadTrade</citiml:citimlActionDefinition>
+                        </citiml:citimlLifeCycleAction>
+                        <citiml:citimlComment>FXSpotDate : 30/09/2021;FXInternal : NJH1 , FCLCCY;;20521</citiml:citimlComment>
+                        <citiml:citimlClearingDetails>
+                            <citiml:citimlAutoSendForClearing>false</citiml:citimlAutoSendForClearing>
+                            <citiml:citimlClearingHouse id="CH.100021193EC.1">
+                                <citimlcommon:citimlPartyId citimlPartyIdScheme="TPS">None</citimlcommon:citimlPartyId>
+                                <citimlcommon:citimlPartyName/>
+                            </citiml:citimlClearingHouse>
+                            <citiml:citimlClearingNotRequired>false</citiml:citimlClearingNotRequired>
+                            <citiml:citimlClearingStatus>UNCLEARED</citiml:citimlClearingStatus>
+                            <citiml:citimlInterOperableFlg>false</citiml:citimlInterOperableFlg>
+                            <citiml:citimlMandatoryClearingOverride>false</citiml:citimlMandatoryClearingOverride>
+                        </citiml:citimlClearingDetails>
+                        <citiml:citimlTraders>
+                            <citimlcommon:citimlName>Amami, Camelia</citimlcommon:citimlName>
+                            <citimlcommon:citimlSoeid>CA58511</citimlcommon:citimlSoeid>
+                            <citimlcommon:citimlRole>Trader</citimlcommon:citimlRole>
+                            <citimlcommon:citimlPrimaryBusiness>NA Rates</citimlcommon:citimlPrimaryBusiness>
+                        </citiml:citimlTraders>
+                        <citiml:citimlCustomerBusinessType>Direct</citiml:citimlCustomerBusinessType>
+                        <citiml:citimlNetPayIndicator>true</citiml:citimlNetPayIndicator>
+                        <citiml:citimlSettlementDate>2021-11-02</citiml:citimlSettlementDate>
+                        <citiml:citimlCustomTrade>false</citiml:citimlCustomTrade>
+                        <citiml:citimlRiskActiveUntil>2021-11-02</citiml:citimlRiskActiveUntil>
+                        <citiml:citimlSuppressConfirmation>false</citiml:citimlSuppressConfirmation>
+                        <citiml:citimlRatesTriOptima>false</citiml:citimlRatesTriOptima>
+                        <citiml:citimlUSPersonOverride>false</citiml:citimlUSPersonOverride>
+                        <citiml:citimlRtrOnly>false</citiml:citimlRtrOnly>
+                        <citiml:citimlPackageType>Not Packaged</citiml:citimlPackageType>
+                        <citiml:citimlContractualFixedTradeSize>
+                            <fpml:partyReference href="P.100021193EC.1.PartyB"/>
+                            <citiml:citimlFixedNotionalAmount>
+                                <fpml:currency>USD</fpml:currency>
+                                <fpml:amount>15000000</fpml:amount>
+                            </citiml:citimlFixedNotionalAmount>
+                        </citiml:citimlContractualFixedTradeSize>
+                        <citiml:citimlContractualFixedTradeSize>
+                            <fpml:partyReference href="P.100021193EC.1.PartyA"/>
+                            <citiml:citimlFixedNotionalAmount>
+                                <fpml:currency>CLP</fpml:currency>
+                                <fpml:amount>12048750000</fpml:amount>
+                            </citiml:citimlFixedNotionalAmount>
+                        </citiml:citimlContractualFixedTradeSize>
+                        <citiml:citimlContractualFixedTradePrice>
+                            <citiml:priceRate>803.25</citiml:priceRate>
+                            <citiml:priceType>ForwardRate</citiml:priceType>
+                        </citiml:citimlContractualFixedTradePrice>
+                        <citiml:citimlBusinessReportingDate>2021-09-29</citiml:citimlBusinessReportingDate>
+                        <citiml:citimlModelLimitationAdjustment/>
+                        <citiml:citimlIsCompressedTrade>false</citiml:citimlIsCompressedTrade>
+                        <citiml:citimlRiskActiveFrom>2021-09-29T19:11:45.805Z</citiml:citimlRiskActiveFrom>
+                        <citiml:citimlFirmSide>S</citiml:citimlFirmSide>
+                        <citiml:citimlEconomicChangeIndicator>true</citiml:citimlEconomicChangeIndicator>
+                        <citiml:citimlOasysTradeDate>2021-09-29</citiml:citimlOasysTradeDate>
+                        <citiml:citimlOrphanedFirmLeg>false</citiml:citimlOrphanedFirmLeg>
+                    </citiml:citimlTradeProcessing>
+                    <citiml:citimlAuditInfo>
+                        <citiml:citimlLastModifiedBy>ca58511</citiml:citimlLastModifiedBy>
+                        <citiml:citimlLastModificationTimeStamp>2021-09-29T19:11:45.805Z</citiml:citimlLastModificationTimeStamp>
+                        <citiml:citimlCreationTimeStamp>2021-09-29T19:11:45.805Z</citiml:citimlCreationTimeStamp>
+                        <citiml:citimlLastModifiedUserRole isSenior="false" isSalesTrader="false">Trader</citiml:citimlLastModifiedUserRole>
+                        <citiml:citimlSrcSysTrdCaptureTimeStamp>2021-09-29T19:11:45.805Z</citiml:citimlSrcSysTrdCaptureTimeStamp>
+                    </citiml:citimlAuditInfo>
+                    <citiml:citimlWorkflow>
+                        <citimlcommon:citimlMiddleOfficeStatus>Complete</citimlcommon:citimlMiddleOfficeStatus>
+                        <citimlcommon:citimlFrontOfficeStatus>Complete</citimlcommon:citimlFrontOfficeStatus>
+                        <citimlcommon:citimlBackOfficeStatus>Pending</citimlcommon:citimlBackOfficeStatus>
+                        <citimlcommon:workflowAction>Approve</citimlcommon:workflowAction>
+                        <citimlcommon:lifecycleStateDescription>NEW</citimlcommon:lifecycleStateDescription>
+                    </citiml:citimlWorkflow>
+                    <citiml:citimlCptyMultiAllocations>false</citiml:citimlCptyMultiAllocations>
+                    <citiml:citimlExecutingSystemEventId>100021193ET</citiml:citimlExecutingSystemEventId>
+                    <citiml:citimlExecutingSystemEventVersion>1</citiml:citimlExecutingSystemEventVersion>
+                    <citiml:citimlExecutingSystemEventVoided>false</citiml:citimlExecutingSystemEventVoided>
+                    <citiml:citimlEventType>NewTradeEvent</citiml:citimlEventType>
+                    <citiml:citimlEventSubType>New</citiml:citimlEventSubType>
+                    <citiml:linkId version="0" eventIdScheme="TPS.Match">100021193ET</citiml:linkId>
+                </citiml:citimlTradeExtensionData>
+            </citiml:citimlPostEventTrade>
+        </citiml:citimlPostEventTrades>
+        <citiml:citimlParties>
+            <citiml:party id="P.100021193EC.1.PartyA">
+                <fpml:partyId partyIdScheme="TPS">FCLCCY</fpml:partyId>
+                <fpml:partyId partyIdScheme="GFCID">0000047511</fpml:partyId>
+                <fpml:partyId partyIdScheme="ACTI">46190031</fpml:partyId>
+                <fpml:partyId partyIdScheme="AcctMnemonic">FCLCCY</fpml:partyId>
+                <fpml:partyName>CDS-LONG SWAPS</fpml:partyName>
+                <fpml:person id="trader.100021193EC.1">
+                    <fpml:firstName>Camelia</fpml:firstName>
+                    <fpml:surname>Amami</fpml:surname>
+                    <fpml:personId personIdScheme="SoeId">CA58511</fpml:personId>
+                    <fpml:personId personIdScheme="Role">Trader</fpml:personId>
+                </fpml:person>
+            </citiml:party>
+            <citiml:party id="P.100021193EC.1.PartyB">
+                <fpml:partyId partyIdScheme="TPS">EDLDNEM</fpml:partyId>
+                <fpml:partyId partyIdScheme="GFCID">1000101733</fpml:partyId>
+                <fpml:partyId partyIdScheme="ACTI">2373685</fpml:partyId>
+                <fpml:partyId partyIdScheme="AcctMnemonic">EDLDNEM</fpml:partyId>
+                <fpml:partyName>CITIBANK NA GB LONDON</fpml:partyName>
+            </citiml:party>
+            <citiml:party id="P.100021193EC.1.OriginalCounterparty.MASTER">
+                <fpml:partyId partyIdScheme="TPS">EDLDNEM</fpml:partyId>
+                <fpml:partyId partyIdScheme="AcctMnemonic">EDLDNEM</fpml:partyId>
+                <fpml:partyName>CITIBANK NA GB LONDON</fpml:partyName>
+            </citiml:party>
+            <citiml:party id="P.100021193EC.1.ExecutionFacility">
+                <fpml:partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso10383">XOFF</fpml:partyId>
+            </citiml:party>
+        </citiml:citimlParties>
+    </citiml:citimlNotificationBundleDetails>
+</citiml:citimlTradeNotification>
