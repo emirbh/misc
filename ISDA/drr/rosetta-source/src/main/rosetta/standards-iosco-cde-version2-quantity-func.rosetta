@@ -1,0 +1,97 @@
+namespace drr.standards.iosco.cde.version2.quantity
+version "${project.version}"
+
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version1.* as cdeV1
+
+func NotionalAmountLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmountLeg1 number (0..1)
+
+    alias payout:
+        quantity.GetProductForQuantity(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg1(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    set notionalAmountLeg1: NotionalAmountFormat(payout, defaultValue)
+
+func NotionalAmountLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmountLeg2 number (0..1)
+
+    alias payout:
+        quantity.GetProductForQuantity(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg2(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    set notionalAmountLeg2: NotionalAmountFormat(payout, defaultValue)
+
+func TotalNotionalQuantityLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        totalTotalNotionalQuantityLeg1 number (0..1)
+    set totalTotalNotionalQuantityLeg1:
+        cdeV1.quantity.TotalNotionalQuantityLeg1(transactionReportInstruction, defaultValue)
+
+func TotalNotionalQuantityLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        totalTotalNotionalQuantityLeg2 number (0..1)
+    set totalTotalNotionalQuantityLeg2:
+        cdeV1.quantity.TotalNotionalQuantityLeg2(transactionReportInstruction, defaultValue)
+
+func NotionalAmount:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount: cdeV1.quantity.NotionalAmount(payout, defaultValue)
+
+func NotionalAmountFormat:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount: cdeV1.quantity.NotionalAmountFormat(payout, defaultValue)
+
+func ExtractCallAmount: <"CDE Call Amount with error value provided as this can differ between jurisdiction.">
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        callAmount number (0..1)
+
+    set callAmount:
+        cdeV1.quantity.ExtractCallAmount(transactionReportInstruction, defaultValue)
+
+func ExtractPutAmount: <"CDE Put Amount with error value provided as this can differ between jurisdiction.">
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        putAmount number (0..1)
+
+    set putAmount:
+        cdeV1.quantity.ExtractPutAmount(transactionReportInstruction, defaultValue)

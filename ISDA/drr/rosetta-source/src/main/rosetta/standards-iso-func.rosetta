@@ -1,0 +1,362 @@
+namespace drr.standards.iso
+version "${project.version}"
+
+import cdm.base.datetime.*
+import cdm.base.math.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.util.string.*
+
+body Organisation ISO <"The International Organization for Standardization is an international standard-setting body composed of representatives from various national standards organizations. Founded on 23 February 1947, the organization promotes worldwide proprietary, industrial, and commercial standards. ">
+
+corpus ReportingStandard "ISO 20022" ISO_20022 <"ISO 20022 is a multi part International Standard prepared by ISO Technical Committee TC68 Financial Services.">
+
+func ConvertPeriodtoISOFrequencyPeriod:
+    inputs:
+        period PeriodExtendedEnum (0..1)
+    output:
+        periodValue FrequencyPeriodEnum (0..1)
+    set periodValue:
+        if period = PeriodExtendedEnum -> H
+        then FrequencyPeriodEnum -> HOUL
+        else if period = PeriodExtendedEnum -> D
+        then FrequencyPeriodEnum -> DAIL
+        else if period = PeriodExtendedEnum -> W
+        then FrequencyPeriodEnum -> WEEK
+        else if period = PeriodExtendedEnum -> M
+        then FrequencyPeriodEnum -> MNTH
+        else if period = PeriodExtendedEnum -> Y
+        then FrequencyPeriodEnum -> YEAR
+        else if period = PeriodExtendedEnum -> T
+        then FrequencyPeriodEnum -> EXPI
+
+func API_GetMicData: <"Function that looks up MIC (iso10383) data based on MIC code.">
+    [codeImplementation]
+    // external_api https://www.iso20022.org/sites/default/files/ISO10383_MIC/ISO10383_MIC.xml
+    inputs:
+        mic string (0..1)
+    output:
+        micData MicData (0..1)
+
+func GetOrFetchMicData: <"Return pre-enriched MIC data if present, otherwise attempt to fetch MCI data from API.">
+    inputs:
+        preEnriched MicData (0..*) <"Pre-enriched MIC data.">
+        mic string (0..1) <"MIC to be fetched from API.">
+    output:
+        micData MicData (0..1)
+
+    alias preEnrichedMicData:
+        preEnriched
+            filter item -> mic = mic
+            then only-element
+
+    alias isEnabled:
+        // if no MIC is provided, cannot get or fetch MCI data
+        mic exists
+            and ( // if pre-enrich data is provided for given MIC, then use the enabled flag from that data
+            (preEnrichedMicData exists and preEnrichedMicData -> micValidation default True)
+                    // if pre-enrich data is not provided for given MIC, then check if blank MIC data is provided with enabled flag
+                or (preEnrichedMicData is absent
+                    and (preEnriched
+                        filter item -> mic is absent
+                        then extract item -> micValidation
+                        then distinct only-element default True
+                        )))
+
+    set micData:
+        if isEnabled = False
+        then empty
+        else if preEnrichedMicData exists
+        then preEnrichedMicData
+        else API_GetMicData(mic)
+
+func ConvertNonISOToISOCurrency:
+    inputs:
+        nonISOCurrency string (0..1)
+    output:
+        isoCurrency ISOCurrencyCodeEnum (0..1)
+
+    set isoCurrency:
+        if nonISOCurrency = "CNH"
+        then (if nonISOCurrency = "CNH" then ISOCurrencyCodeEnum -> CNY)
+        else nonISOCurrency to-enum ISOCurrencyCodeEnum
+
+func IsMax32UpperCaseAlphanumericText:
+    inputs:
+        text string (1..1)
+    output:
+        result boolean (1..1)
+    set result: StringContains(text, "^[A-Z0-9]{18}[0-9]{2}[A-Z0-9]{0,32}$")
+
+func IsMax52UpperCaseAlphanumericTextWithSpecialChars: <"Maximum of 52 Uppercase Alphanumeric text. :, ., - and _ are the only special characters allowed.">
+    inputs:
+        text string (1..1)
+    output:
+        result boolean (1..1)
+    set result: StringContains(text, "^[A-Z0-9]{18}[0-9]{2}[A-Z0-9  \\:.\\-_]{0,32}$")
+
+func CapacityUnitToISO20022UnitOfMeasure:
+    inputs:
+        capacityUnit CapacityUnitEnum (1..1)
+    output:
+        result string (1..1)
+    set result:
+        if capacityUnit = CapacityUnitEnum -> ALW
+        then "ALOW"
+        else if capacityUnit = CapacityUnitEnum -> BBL
+        then "BARL"
+        else if capacityUnit = CapacityUnitEnum -> BCF
+        then "BCUF"
+        else if capacityUnit = CapacityUnitEnum -> BDFT
+        then "BDFT"
+        else if capacityUnit = CapacityUnitEnum -> GBBSH
+        then "BUSL"
+        else if capacityUnit = CapacityUnitEnum -> GBBTU
+        then "BRTU"
+        else if capacityUnit = CapacityUnitEnum -> CBM
+        then "CBME"
+        else if capacityUnit = CapacityUnitEnum -> CER
+        then "CEER"
+        else if capacityUnit = CapacityUnitEnum -> CRT
+        then "CLRT"
+        else if capacityUnit = CapacityUnitEnum -> DAG
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> DAY
+        then "DAYS"
+        else if capacityUnit = CapacityUnitEnum -> DMTU
+        then "DMET"
+        else if capacityUnit = CapacityUnitEnum -> ENVCRD
+        then "ENVC"
+        else if capacityUnit = CapacityUnitEnum -> ENVOFST
+        then "ENVO"
+        else if capacityUnit = CapacityUnitEnum -> FEU
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> G
+        then "GRAM"
+        else if capacityUnit = CapacityUnitEnum -> GBCWT
+        then "HUWG"
+        else if capacityUnit = CapacityUnitEnum -> GBGAL
+        then "GBGA"
+        else if capacityUnit = CapacityUnitEnum -> GBT
+        then "GBTN"
+        else if capacityUnit = CapacityUnitEnum -> GJ
+        then "GGJL"
+        else if capacityUnit = CapacityUnitEnum -> GW
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> GWH
+        then "GWHO"
+        else if capacityUnit = CapacityUnitEnum -> HL
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> J
+        then "JOUL"
+        else if capacityUnit = CapacityUnitEnum -> KG
+        then "KILO"
+        else if capacityUnit = CapacityUnitEnum -> KL
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> KW
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> KWD
+        then "KWDC"
+        else if capacityUnit = CapacityUnitEnum -> KWH
+        then "KWHO"
+        else if capacityUnit = CapacityUnitEnum -> KWH
+        then "KWHC"
+        else if capacityUnit = CapacityUnitEnum -> KWMIN
+        then "KMOC"
+        else if capacityUnit = CapacityUnitEnum -> KWM
+        then "KWMC"
+        else if capacityUnit = CapacityUnitEnum -> KWY
+        then "KWYC"
+        else if capacityUnit = CapacityUnitEnum -> L
+        then "LITR"
+        else if capacityUnit = CapacityUnitEnum -> LB
+        then "PUND"
+        else if capacityUnit = CapacityUnitEnum -> MB
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> MBF
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> MJ
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> MMBF
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> MMBBL
+        then "MIBA"
+        else if capacityUnit = CapacityUnitEnum -> USMMBTU
+        then "MBTU"
+        else if capacityUnit = CapacityUnitEnum -> MSF
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> MT
+        then "TONE"
+        else if capacityUnit = CapacityUnitEnum -> MW
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> MWD
+        then "MWDC"
+        else if capacityUnit = CapacityUnitEnum -> MWH
+        then "MWHO"
+        else if capacityUnit = CapacityUnitEnum -> MWH
+        then "MWHC"
+        else if capacityUnit = CapacityUnitEnum -> MWM
+        then "MMOC"
+        else if capacityUnit = CapacityUnitEnum -> MWMIN
+        then "MWMC"
+        else if capacityUnit = CapacityUnitEnum -> MWY
+        then "MWYC"
+        else if capacityUnit = CapacityUnitEnum -> OZT
+        then "OZTR"
+        else if capacityUnit = CapacityUnitEnum -> TEU
+        then empty
+        else if capacityUnit = CapacityUnitEnum -> USTHM
+        then "THMS"
+        else if capacityUnit = CapacityUnitEnum -> USCWT
+        then "UCWT"
+        else if capacityUnit = CapacityUnitEnum -> USGAL
+        then "USGA"
+        else if capacityUnit = CapacityUnitEnum -> UST
+        then "USTN"
+
+func WeatherUnitToISO20022UnitOfMeasure:
+    inputs:
+        weatherUnit WeatherUnitEnum (1..1)
+    output:
+        result string (1..1)
+    set result:
+        if weatherUnit = WeatherUnitEnum -> CDD
+        then "CDDA"
+        else if weatherUnit = WeatherUnitEnum -> CPD
+        then "CPDA"
+        else if weatherUnit = WeatherUnitEnum -> HDD
+        then "HDDA"
+
+func FinancialUnitToISO20022UnitOfMeasure:
+    inputs:
+        financialUnit FinancialUnitEnum (1..1)
+    output:
+        result string (1..1)
+    set result:
+        if financialUnit = FinancialUnitEnum -> Contract
+        then empty
+        else if financialUnit = FinancialUnitEnum -> ContractualProduct
+        then "ACCY"
+        else if financialUnit = FinancialUnitEnum -> IndexUnit
+        then "IPNT"
+        else if financialUnit = FinancialUnitEnum -> LogNormalVolatility
+        then empty
+        else if financialUnit = FinancialUnitEnum -> Share
+        then "SHAS"
+        else if financialUnit = FinancialUnitEnum -> ValuePerDay
+        then empty
+        else if financialUnit = FinancialUnitEnum -> ValuePerPercent
+        then empty
+
+func FormatToShortFraction5DecimalNumber: <"Rounds the number to fit within 25 digits, including up to 5 decimals. If the length of the integer part exceeds the allowed digit limit, the original value is returned without alteration.">
+    inputs:
+        inputNumber number (1..1)
+    output:
+        formattedNumber ShortFraction5DecimalNumber (1..1)
+    set formattedNumber:
+        if Abs(inputNumber) <= 9999999999999999999999999
+        then (RoundToPrecisionRemoveTrailingZeros(
+                inputNumber,
+                5,
+                RoundingDirectionEnum -> Nearest
+            )
+            then RoundToSignificantFigures(item, 25, RoundingDirectionEnum -> Nearest))
+        else inputNumber
+
+func FormatToBaseOne18Rate: <"Rounds the number to fit within 18 digits, including up to 13 decimals. If the length of the integer part exceeds the allowed digit limit, the original value is returned without alteration.">
+    inputs:
+        inputNumber number (1..1)
+    output:
+        formattedNumber number (1..1)
+    set formattedNumber:
+        if Abs(inputNumber) <= 999999999999999999
+        then (RoundToPrecisionRemoveTrailingZeros(
+                inputNumber,
+                13,
+                RoundingDirectionEnum -> Nearest
+            )
+            then RoundToSignificantFigures(item, 18, RoundingDirectionEnum -> Nearest))
+        else inputNumber
+
+func FormatToBaseOneRate: <"Rounds the number to fit within 11 digits, including up to 10 decimals. If the length of the integer part exceeds the allowed digit limit, the original value is returned without alteration.">
+    inputs:
+        inputNumber number (1..1)
+    output:
+        formattedNumber number (1..1)
+    set formattedNumber:
+        if Abs(inputNumber) <= 99999999999
+        then (RoundToPrecisionRemoveTrailingZeros(
+                inputNumber,
+                10,
+                RoundingDirectionEnum -> Nearest
+            )
+            then RoundToSignificantFigures(item, 11, RoundingDirectionEnum -> Nearest))
+        else inputNumber
+
+func FormatToMax5Number: <"Rounds the number to fit within 5 digits, with no decimals. If the length of the integer part exceeds the allowed limit, the original value is returned without alteration.">
+    inputs:
+        inputNumber number (1..1)
+    output:
+        formattedNumber number (1..1)
+    set formattedNumber:
+        if Abs(inputNumber) <= 99999
+        then (RoundToPrecisionRemoveTrailingZeros(
+                inputNumber,
+                0,
+                RoundingDirectionEnum -> Nearest
+            )
+            then RoundToSignificantFigures(item, 5, RoundingDirectionEnum -> Nearest))
+        else inputNumber
+
+func FormatToNonNegativeShortFraction5DecimalNumber: <"Sets the output type as a non-negative number, and rounds the number to fit within 25 digits, including up to 5 decimals. If the length of the integer part exceeds the allowed digit limit, the original value is returned without alteration.">
+    inputs:
+        inputNumber number (1..1)
+    output:
+        formattedNumber NonNegativeShortFraction5DecimalNumber (1..1)
+    set formattedNumber: <"The function handles the formatting while the output type handles the non-negativity check.">
+        FormatToShortFraction5DecimalNumber(inputNumber)
+
+func FormatToMax3Number: <"Rounds the number to fit within 3 digits, with no decimals. If the length of the integer part exceeds the allowed limit, the original value is returned without alteration.">
+    inputs:
+        inputNumber number (1..1)
+    output:
+        formattedNumber number (1..1)
+    set formattedNumber:
+        if Abs(inputNumber) <= 99999
+        then (RoundToPrecisionRemoveTrailingZeros(
+                inputNumber,
+                0,
+                RoundingDirectionEnum -> Nearest
+            )
+            then RoundToSignificantFigures(item, 3, RoundingDirectionEnum -> Nearest))
+        else inputNumber
+
+func FormatToLongFraction20DecimalNumber: <"Rounds the number to fit within 20 digits, including up to 19 decimals. If the length of the integer part exceeds the allowed digit limit, the original value is returned without alteration.">
+    inputs:
+        inputNumber number (1..1)
+    output:
+        formattedNumber number (1..1)
+    set formattedNumber:
+        if Abs(inputNumber) <= 99999999999999999999
+        then (RoundToPrecisionRemoveTrailingZeros(
+                inputNumber,
+                19,
+                RoundingDirectionEnum -> Nearest
+            )
+            then RoundToSignificantFigures(item, 20, RoundingDirectionEnum -> Nearest))
+        else inputNumber
+
+func UnitToISO20022UnitOfMeasure:
+    inputs:
+        unit UnitType (0..1)
+    output:
+        unitOfMeasure string (1..1)
+    set unitOfMeasure:
+        unit
+            extract
+                if capacityUnit exists
+                then CapacityUnitToISO20022UnitOfMeasure(capacityUnit)
+                else if weatherUnit exists
+                then WeatherUnitToISO20022UnitOfMeasure(weatherUnit)
+                else if financialUnit exists
+                then FinancialUnitToISO20022UnitOfMeasure(financialUnit)

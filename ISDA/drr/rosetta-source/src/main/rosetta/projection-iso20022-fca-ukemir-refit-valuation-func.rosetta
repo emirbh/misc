@@ -1,0 +1,791 @@
+namespace drr.projection.iso20022.fca.ukemir.refit.valuation
+version "${project.version}"
+
+import cdm.base.math.*
+
+import drr.regulation.fca.ukemir.refit.valuation.*
+import drr.standards.iso.* as iso
+
+import iso20022.auth030.fca.*
+
+func Project_FcaUkEmirValuationReportToIso20022:
+    [projection XML]
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        iso20022Report Document (1..1)
+
+    set iso20022Report -> derivsTradRpt -> rptHdr: Create_TradeReportHeader
+
+    set iso20022Report -> derivsTradRpt -> tradData -> rpt:
+        Create_TradeReport32Choice__1(drrReport)
+
+func Create_TradeReportHeader:
+    output:
+        rptHdr TradeReportHeader4__1 (1..1)
+
+    set rptHdr:
+        TradeReportHeader4__1 {
+            nbRcrds: 1
+        }
+
+func Create_TradeReport32Choice__1:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        rpt TradeReport32Choice__1 (1..1)
+
+    alias actionType: drrReport -> actionType
+    alias lvl: drrReport -> level
+
+    set rpt:
+        TradeReport32Choice__1 {
+            new: if actionType = NEWT
+                    then TradeData42__1 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__1(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__1(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code
+                    },
+            mod: if actionType = MODI
+                    then TradeData42__2 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__2(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__2(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code
+                    },
+            crrctn: if actionType = CORR
+                    then TradeData42__3 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__1(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__3(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code
+                    },
+            termntn: if actionType = TERM
+                    then TradeData42__4 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__3(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__4(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code
+                    },
+            posCmpnt: if actionType = POSC
+                    then TradeData42__5 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__4(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__5(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code__1
+                    },
+            valtnUpd: if actionType = VALU
+                    then TradeData42__6 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__5(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__6(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code
+                    },
+            err: if actionType = EROR
+                    then TradeData42__7 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__3(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__6(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code
+                    },
+            rvv: if actionType = REVI
+                    then TradeData42__8 {
+                        ctrPtySpcfcData: Create_CounterpartySpecificData36__1(drrReport),
+                        cmonTradData: Create_CommonTradeDataReport69__7(drrReport),
+                        lvl: lvl to-enum ModificationLevel1Code
+        }}
+
+// CounterpartySpecificData36
+func Create_CounterpartySpecificData36__1:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        ctrPtySpcfcData CounterpartySpecificData36__1 (1..1)
+
+    set ctrPtySpcfcData:
+        CounterpartySpecificData36__1 {
+            ctrPty: Create_TradeCounterpartyReport20__1(drrReport),
+            valtn:
+                ContractValuationData8__1 {
+                    ctrctVal:
+                        AmountAndDirection109__1 {
+                            amt:
+                                ActiveOrHistoricCurrencyAnd5DecimalAmount__1 {
+                                    value: Abs(drrReport -> valuationAmount),
+                                    ccy: drrReport -> valuationCurrency to-string
+                                },
+                            sgn: if drrReport -> valuationAmount < 0
+                                    then False
+                        },
+                    tmStmp: drrReport -> valuationTimestamp,
+                    tp: drrReport -> valuationMethod to-enum ValuationType1Code,
+                    dlta: drrReport -> delta
+                },
+            rptgTmStmp: drrReport -> reportingTimestamp
+        }
+
+func Create_CounterpartySpecificData36__2:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        ctrPtySpcfcData CounterpartySpecificData36__2 (1..1)
+
+    set ctrPtySpcfcData:
+        CounterpartySpecificData36__2 {
+            ctrPty: Create_TradeCounterpartyReport20__1(drrReport),
+            rptgTmStmp: drrReport -> reportingTimestamp
+        }
+
+func Create_CounterpartySpecificData36__3:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        ctrPtySpcfcData CounterpartySpecificData36__3 (1..1)
+
+    set ctrPtySpcfcData:
+        CounterpartySpecificData36__3 {
+            ctrPty: Create_TradeCounterpartyReport20__2(drrReport),
+            rptgTmStmp: drrReport -> reportingTimestamp
+        }
+
+func Create_CounterpartySpecificData36__4:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        ctrPtySpcfcData CounterpartySpecificData36__4 (1..1)
+
+    set ctrPtySpcfcData:
+        CounterpartySpecificData36__4 {
+            ctrPty: Create_TradeCounterpartyReport20__1(drrReport),
+            valtn:
+                ContractValuationData8__1 {
+                    ctrctVal:
+                        AmountAndDirection109__1 {
+                            amt:
+                                ActiveOrHistoricCurrencyAnd5DecimalAmount__1 {
+                                    value: Abs(drrReport -> valuationAmount),
+                                    ccy: drrReport -> valuationCurrency to-string
+                                },
+                            sgn: if drrReport -> valuationAmount < 0
+                                    then False
+                        },
+                    tmStmp: drrReport -> valuationTimestamp,
+                    tp: drrReport -> valuationMethod to-enum ValuationType1Code,
+                    dlta: drrReport -> delta
+                },
+            rptgTmStmp: drrReport -> reportingTimestamp
+        }
+
+func Create_CounterpartySpecificData36__5:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        ctrPtySpcfcData CounterpartySpecificData36__5 (1..1)
+
+    set ctrPtySpcfcData:
+        CounterpartySpecificData36__5 {
+            ctrPty: Create_TradeCounterpartyReport20__2(drrReport),
+            valtn:
+                ContractValuationData8__2 {
+                    ctrctVal:
+                        AmountAndDirection109__2 {
+                            amt:
+                                ActiveOrHistoricCurrencyAnd5DecimalAmount__1 {
+                                    value: Abs(drrReport -> valuationAmount),
+                                    ccy: drrReport -> valuationCurrency to-string
+                                },
+                            sgn: if drrReport -> valuationAmount < 0
+                                    then False
+                        },
+                    tmStmp: drrReport -> valuationTimestamp,
+                    tp: drrReport -> valuationMethod to-enum ValuationType1Code,
+                    dlta: drrReport -> delta
+                },
+            rptgTmStmp: drrReport -> reportingTimestamp
+        }
+
+// TradeCounterpartyReport20
+func Create_TradeCounterpartyReport20__1:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        ctrPty TradeCounterpartyReport20__1 (1..1)
+
+    set ctrPty:
+        TradeCounterpartyReport20__1 {
+            rptgCtrPty:
+                Counterparty45__1 {
+                    id: Create_PartyIdentification248Choice__1(drrReport -> counterparty1),
+                    ntr: empty,
+                    drctnOrSd: empty
+                },
+            othrCtrPty:
+                Counterparty46__1 {
+                    idTp: Create_PartyIdentification248Choice__2(drrReport),
+                    rptgOblgtn: empty,
+                    ...
+                },
+            submitgAgt: GetSubmitgAgt(drrReport),
+            ...
+        }
+
+func Create_TradeCounterpartyReport20__2:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        ctrPty TradeCounterpartyReport20__2 (1..1)
+
+    set ctrPty:
+        TradeCounterpartyReport20__2 {
+            rptgCtrPty:
+                Counterparty45__2 {
+                    id: Create_PartyIdentification248Choice__1(drrReport -> counterparty1)
+                },
+            othrCtrPty:
+                Counterparty46__2 {
+                    idTp: Create_PartyIdentification248Choice__3(drrReport)
+                },
+            submitgAgt: GetSubmitgAgt(drrReport),
+            nttyRspnsblForRpt: GetNttyRspnsblForRpt(drrReport)
+        }
+
+func GetSubmitgAgt:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        submitgAgt OrganisationIdentification15Choice__1 (1..1)
+
+    set submitgAgt:
+        Create_OrganisationIdentification15Choice__1(drrReport -> reportSubmittingEntityID)
+
+func GetNttyRspnsblForRpt:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        nttyRspnsblForRpt OrganisationIdentification15Choice__1 (1..1)
+
+    set nttyRspnsblForRpt:
+        Create_OrganisationIdentification15Choice__1(
+                drrReport -> entityResponsibleForReporting
+            )
+
+// PartyIdentification248Choice
+func Create_PartyIdentification248Choice__1:
+    inputs:
+        lei string (1..1)
+    output:
+        id PartyIdentification248Choice__1 (1..1)
+
+    set id:
+        PartyIdentification248Choice__1 {
+            lgl:
+                LegalPersonIdentification1__1 {
+                    id: Create_OrganisationIdentification15Choice__1(lei)
+        }}
+
+func Create_PartyIdentification248Choice__2:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        id PartyIdentification248Choice__2 (1..1)
+
+    set id:
+        PartyIdentification248Choice__2 {
+            lgl: if drrReport -> counterparty2IdentifierType = True
+                    then LegalPersonIdentification1__1 {
+                        id: Create_OrganisationIdentification15Choice__1(
+                                    drrReport -> counterparty2
+                                )
+                    },
+            ntrl: if drrReport -> counterparty2IdentifierType = False
+                    then NaturalPersonIdentification3__1 {
+                        id:
+                            NaturalPersonIdentification2__1 {
+                                id:
+                                    GenericIdentification175__2 {
+                                        id: drrReport -> counterparty2
+                        }},
+                        ctry: empty
+        }}
+
+func Create_PartyIdentification248Choice__3:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        id PartyIdentification248Choice__3 (1..1)
+
+    set id:
+        PartyIdentification248Choice__3 {
+            lgl: if drrReport -> counterparty2IdentifierType = True
+                    then LegalPersonIdentification1__1 {
+                        id: Create_OrganisationIdentification15Choice__1(
+                                    drrReport -> counterparty2
+                                )
+                    },
+            ntrl: if drrReport -> counterparty2IdentifierType = False
+                    then NaturalPersonIdentification3__2 {
+                        id:
+                            NaturalPersonIdentification2__1 {
+                                id:
+                                    GenericIdentification175__2 {
+                                        id: drrReport -> counterparty2
+                        }},
+                        ...
+        }}
+
+// OrganisationIdentification15Choice
+func Create_OrganisationIdentification15Choice__1:
+    inputs:
+        lei string (1..1)
+    output:
+        id OrganisationIdentification15Choice__1 (1..1)
+
+    set id:
+        OrganisationIdentification15Choice__1 {
+            lei: lei
+        }
+
+func Create_FinancialInstitutionSector1__1:
+    inputs:
+        corporateSectorOfCounterparty string (0..*)
+        clearingThresholdOfCounterparty boolean (0..1)
+    output:
+        out FinancialInstitutionSector1__1 (1..1)
+
+    set out:
+        FinancialInstitutionSector1__1 {
+            sctr: corporateSectorOfCounterparty
+                    extract
+                        FinancialPartyClassification2Choice__1 {
+                            cd: item to-enum FinancialPartySectorType3Code__1
+                        },
+            clrThrshld: clearingThresholdOfCounterparty
+        }
+
+func Create_NonFinancialInstitutionSector10__1:
+    inputs:
+        corporateSectorOfCounterparty string (0..*)
+        clearingThresholdOfCounterparty boolean (0..1)
+        directlyLinkedToCommercialActivityOrTreasuryFinancing boolean (0..1)
+    output:
+        out NonFinancialInstitutionSector10__1 (1..1)
+
+    set out:
+        NonFinancialInstitutionSector10__1 {
+            sctr: corporateSectorOfCounterparty
+                    extract
+                        GenericIdentification175__1 {
+                            id: item
+                        },
+            clrThrshld: clearingThresholdOfCounterparty,
+            drctlyLkdActvty: directlyLinkedToCommercialActivityOrTreasuryFinancing
+        }
+
+func Create_NonFinancialInstitutionSector10__2:
+    inputs:
+        corporateSectorOfCounterparty string (0..*)
+        clearingThresholdOfCounterparty boolean (0..1)
+    output:
+        out NonFinancialInstitutionSector10__2 (1..1)
+
+    set out:
+        NonFinancialInstitutionSector10__2 {
+            sctr: corporateSectorOfCounterparty
+                    extract
+                        GenericIdentification175__1 {
+                            id: item
+                        },
+            clrThrshld: clearingThresholdOfCounterparty
+        }
+
+// CommonTradeDataReport69
+func Create_CommonTradeDataReport69__1:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        cmonTradData CommonTradeDataReport69__1 (1..1)
+
+    set cmonTradData:
+        CommonTradeDataReport69__1 {
+            txData: Create_TradeTransaction49__1(drrReport),
+            ...
+        }
+
+func Create_CommonTradeDataReport69__2:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        cmonTradData CommonTradeDataReport69__2 (1..1)
+
+    set cmonTradData:
+        CommonTradeDataReport69__2 {
+            txData: Create_TradeTransaction49__2(drrReport),
+            ...
+        }
+
+func Create_CommonTradeDataReport69__3:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        cmonTradData CommonTradeDataReport69__3 (1..1)
+
+    set cmonTradData:
+        CommonTradeDataReport69__3 {
+            txData: Create_TradeTransaction49__3(drrReport),
+            ...
+        }
+
+func Create_CommonTradeDataReport69__4:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        cmonTradData CommonTradeDataReport69__4 (1..1)
+
+    set cmonTradData:
+        CommonTradeDataReport69__4 {
+            txData: Create_TradeTransaction49__4(drrReport)
+        }
+
+func Create_CommonTradeDataReport69__5:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        cmonTradData CommonTradeDataReport69__5 (1..1)
+
+    set cmonTradData:
+        CommonTradeDataReport69__5 {
+            txData: Create_TradeTransaction49__5(drrReport),
+            ...
+        }
+
+func Create_CommonTradeDataReport69__6:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        cmonTradData CommonTradeDataReport69__6 (1..1)
+
+    set cmonTradData:
+        CommonTradeDataReport69__6 {
+            txData: Create_TradeTransaction49__6(drrReport)
+        }
+
+func Create_CommonTradeDataReport69__7:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        cmonTradData CommonTradeDataReport69__7 (1..1)
+
+    set cmonTradData:
+        CommonTradeDataReport69__7 {
+            txData: Create_TradeTransaction49__7(drrReport),
+            ...
+        }
+
+// TradeTransaction49
+func Create_TradeTransaction49__1:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txData TradeTransaction49__1 (1..1)
+
+    set txData:
+        TradeTransaction49__1 {
+            txId:
+                UniqueTransactionIdentifier2Choice__1 {
+                    unqTxIdr: drrReport -> uniqueTransactionIdentifier
+                },
+            derivEvt: GetDerivEvt1(drrReport),
+            collPrtflCd: empty,
+            ntnlAmt: empty,
+            dlvryTp: empty,
+            exctnTmStmp: empty,
+            fctvDt: empty,
+            mstrAgrmt: empty,
+            tradClr: empty,
+            ...
+        }
+
+func Create_TradeTransaction49__2:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txData TradeTransaction49__2 (1..1)
+
+    set txData:
+        TradeTransaction49__2 {
+            txId: GetTxId(drrReport),
+            derivEvt: GetDerivEvt2(drrReport),
+            collPrtflCd: empty,
+            ntnlAmt: empty,
+            dlvryTp: empty,
+            exctnTmStmp: empty,
+            fctvDt: empty,
+            mstrAgrmt: empty,
+            tradClr: empty,
+            ...
+        }
+
+func Create_TradeTransaction49__3:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txData TradeTransaction49__3 (1..1)
+
+    set txData:
+        TradeTransaction49__3 {
+            txId: GetTxId(drrReport),
+            derivEvt: GetDerivEvt3(drrReport),
+            collPrtflCd: empty,
+            ntnlAmt: empty,
+            dlvryTp: empty,
+            exctnTmStmp: empty,
+            fctvDt: empty,
+            mstrAgrmt: empty,
+            tradClr: empty,
+            ...
+        }
+
+func Create_TradeTransaction49__4:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txData TradeTransaction49__4 (1..1)
+
+    set txData:
+        TradeTransaction49__4 {
+            txId: GetTxId(drrReport),
+            derivEvt: GetDerivEvt4(drrReport),
+            earlyTermntnDt: empty,
+            ...
+        }
+
+func Create_TradeTransaction49__5:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txData TradeTransaction49__5 (1..1)
+
+    set txData:
+        TradeTransaction49__5 {
+            txId:
+                UniqueTransactionIdentifier2Choice__1 {
+                    unqTxIdr: drrReport -> uniqueTransactionIdentifier
+                },
+            derivEvt: GetDerivEvt5(drrReport),
+            collPrtflCd: empty,
+            ntnlAmt: empty,
+            dlvryTp: empty,
+            exctnTmStmp: empty,
+            fctvDt: empty,
+            mstrAgrmt: empty,
+            tradClr: empty,
+            ...
+        }
+
+func Create_TradeTransaction49__6:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txData TradeTransaction49__6 (1..1)
+
+    set txData:
+        TradeTransaction49__6 {
+            txId: GetTxId(drrReport),
+            derivEvt: GetDerivEvt5(drrReport),
+            ...
+        }
+
+func Create_TradeTransaction49__7:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txData TradeTransaction49__7 (1..1)
+
+    set txData:
+        TradeTransaction49__7 {
+            txId: GetTxId(drrReport),
+            derivEvt: GetDerivEvt3(drrReport),
+            collPrtflCd: empty,
+            ntnlAmt: empty,
+            dlvryTp: empty,
+            exctnTmStmp: empty,
+            fctvDt: empty,
+            mstrAgrmt: empty,
+            tradClr: empty,
+            ...
+        }
+
+// TradeTransaction49 helper funcs
+func GetTxId:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        txId UniqueTransactionIdentifier2Choice__2 (1..1)
+
+    set txId:
+        UniqueTransactionIdentifier2Choice__2 {
+            unqTxIdr: drrReport -> uniqueTransactionIdentifier,
+            prtry:
+                GenericIdentification175__3 {
+                    id: drrReport -> uniqueTransactionIdentifierProprietary
+        }}
+
+// DerivativeEvent6
+func GetDerivEvt1:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        derivEvt DerivativeEvent6__1 (1..1)
+
+    set derivEvt:
+        DerivativeEvent6__1 {
+            tmStmp: GetDerivEvtTmStmp(drrReport),
+            tp: empty,
+            ...
+        }
+
+func GetDerivEvt2:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        derivEvt DerivativeEvent6__2 (1..1)
+
+    set derivEvt:
+        DerivativeEvent6__2 {
+            tmStmp: GetDerivEvtTmStmp(drrReport),
+            ...
+        }
+
+func GetDerivEvt3:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        derivEvt DerivativeEvent6__3 (1..1)
+
+    set derivEvt:
+        DerivativeEvent6__3 {
+            tmStmp: GetDerivEvtTmStmp(drrReport),
+            ...
+        }
+
+func GetDerivEvt4:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        derivEvt DerivativeEvent6__4 (1..1)
+
+    set derivEvt:
+        DerivativeEvent6__4 {
+            tmStmp: GetDerivEvtTmStmp(drrReport),
+            tp: empty,
+            ...
+        }
+
+func GetDerivEvt5:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        derivEvt DerivativeEvent6__5 (1..1)
+
+    set derivEvt:
+        DerivativeEvent6__5 {
+            tmStmp: GetDerivEvtTmStmp(drrReport)
+        }
+
+func GetDerivEvtTmStmp:
+    inputs:
+        drrReport FCAValuationReport (1..1)
+    output:
+        tmStmp DateAndDateTime2Choice__1 (1..1)
+
+    set tmStmp:
+        DateAndDateTime2Choice__1 {
+            dt: drrReport -> eventDate
+        }
+
+func Create_FixedRate:
+    inputs:
+        fixedRate iso.Max11Number (0..1)
+        fixedRateDayCountConvention InterestComputationMethod4Code (0..1)
+        fixedRatePaymentFrequencyPeriod Frequency13Code__1 (0..1)
+        fixedRatePaymentFrequencyPeriodMultiplier Max3Number (0..1)
+    output:
+        out FixedRate10__1 (1..1)
+
+    set out:
+        FixedRate10__1 {
+            rate:
+                SecuritiesTransactionPrice14Choice__1 {
+                    rate: fixedRate
+                },
+            dayCnt:
+                InterestComputationMethodFormat7__1 {
+                    cd: fixedRateDayCountConvention
+                },
+            pmtFrqcy:
+                InterestRateFrequency3Choice__1 {
+                    term:
+                        InterestRateContractTerm4__1 {
+                            unit: fixedRatePaymentFrequencyPeriod,
+                            val: fixedRatePaymentFrequencyPeriodMultiplier
+        }}}
+
+func Create_FloatingRate:
+    inputs:
+        identifierOfFloatingRate ISINOct2015Identifier (0..1)
+        nameOfTheFloatingRate iso.Max50AlphaNumericText (0..1)
+        indicatorOfTheFloatingRate string (0..1)
+        floatingRateReferencePeriodTimePeriod string (0..1)
+        floatingRateReferencePeriodMultiplier Max3Number (0..1)
+        spreadOfLeg1Monetary BaseOne18Rate (0..1)
+        spreadOfLeg1Percentage BaseOneRate (0..1)
+        spreadOfLeg1Basis iso.BasisFormat (0..1)
+        spreadCurrencyOfLeg1 string (0..1)
+        floatingRateDayCountConvention InterestComputationMethod4Code (0..1)
+        floatingRatePaymentFrequencyPeriod Frequency13Code__1 (0..1)
+        floatingRatePaymentFrequencyPeriodMultiplier Max3Number (0..1)
+        floatingRateResetFrequencyPeriod string (0..1)
+        floatingRateResetFrequencyPeriodMultiplier Max3Number (0..1)
+    output:
+        out FloatingRate13__1 (1..1)
+
+    set out:
+        FloatingRate13__1 {
+            id: identifierOfFloatingRate,
+            nm: nameOfTheFloatingRate,
+            rate:
+                FloatingRateIdentification8Choice__1 {
+                    cd: indicatorOfTheFloatingRate
+                },
+            refPrd:
+                InterestRateContractTerm4__2 {
+                    unit: floatingRateReferencePeriodTimePeriod to-enum Frequency13Code__1,
+                    val: floatingRateReferencePeriodMultiplier
+                },
+            sprd:
+                SecuritiesTransactionPrice20Choice__1 {
+                    mntryVal:
+                        AmountAndDirection106__1 {
+                            amt:
+                                ActiveOrHistoricCurrencyAnd13DecimalAmount__1 {
+                                    value: Abs(spreadOfLeg1Monetary),
+                                    ccy: spreadCurrencyOfLeg1 to-string
+                                },
+                            sgn: if spreadOfLeg1Monetary < 0
+                                    then False
+                        },
+                    pctg: spreadOfLeg1Percentage,
+                    bsisPtSprd: spreadOfLeg1Basis
+                },
+            dayCnt:
+                InterestComputationMethodFormat7__1 {
+                    cd: floatingRateDayCountConvention
+                },
+            pmtFrqcy:
+                InterestRateFrequency3Choice__2 {
+                    term:
+                        InterestRateContractTerm4__2 {
+                            unit: floatingRatePaymentFrequencyPeriod,
+                            val: floatingRatePaymentFrequencyPeriodMultiplier
+            }},
+            rstFrqcy:
+                InterestRateFrequency3Choice__2 {
+                    term:
+                        InterestRateContractTerm4__2 {
+                            unit: floatingRateResetFrequencyPeriod to-enum Frequency13Code__1,
+                            val: floatingRateResetFrequencyPeriodMultiplier
+        }}}

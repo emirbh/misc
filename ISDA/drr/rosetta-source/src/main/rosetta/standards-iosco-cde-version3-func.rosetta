@@ -1,0 +1,157 @@
+namespace drr.standards.iosco.cde.version3
+version "${project.version}"
+
+import drr.base.trade.*
+import drr.base.util.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.*
+
+func Leg1:
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+        spreadNotation price.PriceNotationEnum (0..1)
+        defaultValue number (0..1)
+    output:
+        leg Leg (0..1)
+
+    set leg:
+        transaction
+            extract
+                Leg {
+                    periodicPayment:
+                        payment.PeriodicPayment {
+                            fixedRateDayCountConvention: payment.DayCountConvention(
+                                        payment.FixedInterestRatePayoutFromPayout(
+                                                PayoutLeg1
+                                            )
+                                    ),
+                            floatingRateDayCountConvention: payment.DayCountConvention(
+                                        payment.FloatingInterestRatePayoutFromPayout(
+                                                PayoutLeg1
+                                            )
+                                    ),
+                            fixedRatePaymentFrequencyPeriod: payment.PaymentFrequencyPeriod(
+                                        payment.FixedInterestRatePayoutFromPayout(
+                                                PayoutLeg1
+                                            )
+                                    ),
+                            floatingRatePaymentFrequencyPeriod: payment.PaymentFrequencyPeriod(
+                                        payment.FloatingInterestRatePayoutFromPayout(
+                                                PayoutLeg1
+                                            )
+                                    ),
+                            fixedRatePaymentFrequencyPeriodMultiplier: payment.PaymentFrequencyPeriodMultiplier(
+                                        payment.FixedInterestRatePayoutFromPayout(
+                                                PayoutLeg1
+                                            )
+                                    ),
+                            floatingRatePaymentFrequencyPeriodMultiplier: payment.PaymentFrequencyPeriodMultiplier(
+                                        payment.FloatingInterestRatePayoutFromPayout(
+                                                PayoutLeg1
+                                            )
+                                    )
+                        },
+                    fixedRate: price.FixedRate(
+                                payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+                            ),
+                    notionalAmount: quantity.NotionalAmountLeg1(transaction, defaultValue),
+                    notionalCurrency: quantity.NotionalCurrencyLeg1,
+                    totalNotionalQuantity: quantity.TotalNotionalQuantityLeg1(
+                                transaction,
+                                defaultValue
+                            ),
+                    notionalAmountSchedule: quantity.NotionalAmountSchedule(PayoutLeg1),
+                    notionalQuantitySchedule: quantity.NotionalQuantitySchedule(PayoutLeg1),
+                    settlementCurrency: execution.SettlementCurrency(PayoutLeg1),
+                    spread: extract
+                            price.PriceFormatFromNotation(
+                                    price.SpreadValue(PayoutLeg1),
+                                    spreadNotation
+                                ),
+                    spreadNotation: spreadNotation,
+                    spreadCurrency: price.SpreadCurrency(PayoutLeg1),
+                    quantityUnitOfMeasure: quantity.QuantityUnitOfMeasure(PayoutLeg1),
+                    direction2: if party.Direction1 is absent
+                            then party.Direction2(
+                                    PayoutLeg1,
+                                    party.CounterpartyRoleFromLEI(
+                                            party.CounterpartiesForEvent,
+                                            party.Counterparty1(transaction)
+                                        )
+                                )
+                }
+
+func Leg2:
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+        spreadNotation price.PriceNotationEnum (0..1)
+        defaultValue number (0..1)
+    output:
+        leg Leg (0..1)
+
+    set leg:
+        transaction
+            extract
+                Leg {
+                    periodicPayment:
+                        payment.PeriodicPayment {
+                            fixedRateDayCountConvention: payment.DayCountConvention(
+                                        payment.FixedInterestRatePayoutFromPayout(
+                                                PayoutLeg2
+                                            )
+                                    ),
+                            floatingRateDayCountConvention: payment.DayCountConvention(
+                                        payment.FloatingInterestRatePayoutFromPayout(
+                                                PayoutLeg2
+                                            )
+                                    ),
+                            fixedRatePaymentFrequencyPeriod: payment.PaymentFrequencyPeriod(
+                                        payment.FixedInterestRatePayoutFromPayout(
+                                                PayoutLeg2
+                                            )
+                                    ),
+                            floatingRatePaymentFrequencyPeriod: payment.PaymentFrequencyPeriod(
+                                        payment.FloatingInterestRatePayoutFromPayout(
+                                                PayoutLeg2
+                                            )
+                                    ),
+                            fixedRatePaymentFrequencyPeriodMultiplier: payment.PaymentFrequencyPeriodMultiplier(
+                                        payment.FixedInterestRatePayoutFromPayout(
+                                                PayoutLeg2
+                                            )
+                                    ),
+                            floatingRatePaymentFrequencyPeriodMultiplier: payment.PaymentFrequencyPeriodMultiplier(
+                                        payment.FloatingInterestRatePayoutFromPayout(
+                                                PayoutLeg2
+                                            )
+                                    )
+                        },
+                    fixedRate: price.FixedRate(
+                                payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+                            ),
+                    notionalAmount: quantity.NotionalAmountLeg2(transaction, defaultValue),
+                    notionalCurrency: quantity.NotionalCurrencyLeg2,
+                    totalNotionalQuantity: quantity.TotalNotionalQuantityLeg2(
+                                transaction,
+                                defaultValue
+                            ),
+                    notionalAmountSchedule: quantity.NotionalAmountSchedule(PayoutLeg1),
+                    notionalQuantitySchedule: quantity.NotionalQuantitySchedule(PayoutLeg1),
+                    settlementCurrency: execution.SettlementCurrency(PayoutLeg2),
+                    spread: extract
+                            price.PriceFormatFromNotation(
+                                    price.SpreadValue(PayoutLeg2),
+                                    spreadNotation
+                                ),
+                    spreadNotation: spreadNotation,
+                    spreadCurrency: extract price.SpreadCurrency(PayoutLeg2),
+                    quantityUnitOfMeasure: quantity.QuantityUnitOfMeasure(PayoutLeg2),
+                    direction2: if party.Direction1 is absent
+                            then party.Direction2(
+                                    PayoutLeg2,
+                                    party.CounterpartyRoleFromLEI(
+                                            party.CounterpartiesForEvent,
+                                            party.Counterparty1(transaction)
+                                        )
+                                )
+                }

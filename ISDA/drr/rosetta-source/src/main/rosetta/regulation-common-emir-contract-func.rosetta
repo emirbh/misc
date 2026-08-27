@@ -1,0 +1,149 @@
+namespace drr.regulation.common.emir.contract
+version "${project.version}"
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version3.datetime.*
+import drr.standards.iso.*
+
+func ExecutionISIN:
+    inputs:
+        transaction TransactionReportInstruction (0..1)
+        regime RegimeNameEnum (0..1)
+    output:
+        isin string (0..1)
+    alias micDataForFacility: GetMicDataForFacility(transaction -> reportableInformation)
+    alias venueMic:
+        micDataForFacility
+            then extract
+                if (status = "EXPIRED" and expiryDate <= ExecutionTimestamp(transaction) -> date)
+                        or status <> "EXPIRED"
+                then if micType = MicTypeEnum -> SGMT
+                    then mic
+                    else operatingMic
+
+    alias productIsin: GetIsin(ProductForEvent(transaction))
+
+    alias transactionInformation:
+        if regime = UKEMIR
+        then GetTransactionInformationForRegime(transaction, UKEMIR, FCA)
+        else GetTransactionInformationForRegime(transaction, EMIR, ESMA)
+
+    alias isinTotv:
+        if regime = UKEMIR
+        then (transactionInformation -> fcaTransactionInformation -> tradableOnTradingVenue = Admitted) default False
+        else (transactionInformation -> esmaTransactionInformation -> tradableOnTradingVenue = Admitted) default False
+
+    set isin:
+        if venueMic exists
+        then (if productIsin exists and IsEmirTradingVenue(micDataForFacility)
+            then productIsin // And we assume it is ToTV since we traded on that venue
+            else if IsSI(micDataForFacility) and isinTotv
+            then productIsin)
+        else if productIsin exists and isinTotv // XOFF case
+        then productIsin
+
+func GetMicDataForFacility:
+    inputs:
+        reportableInformation ReportableInformation (1..1)
+    output:
+        micData MicData (0..1)
+    alias executionFacility: GetVenueOfExecution(reportableInformation)
+    set micData:
+        GetOrFetchMicData(reportableInformation -> enrichment -> micData, executionFacility)
+
+func IsEmirTradingVenue:
+    inputs:
+        micData MicData (0..1)
+    output:
+        result boolean (1..1)
+
+    set result:
+        if micData -> marketCategory exists
+        then [MicMarketCategoryEnum -> RMKT, MicMarketCategoryEnum -> MLTF, MicMarketCategoryEnum -> OTFS] contains micData -> marketCategory
+        else False
+
+func IsSI:
+    inputs:
+        micData MicData (0..1)
+    output:
+        result boolean (1..1)
+
+    set result: micData -> marketCategory = MicMarketCategoryEnum -> SINT
+
+func ExecutionVenue:
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+        regime RegimeNameEnum (0..1)
+    output:
+        venue string (0..1)
+
+    alias micDataForFacility: GetMicDataForFacility(transaction -> reportableInformation)
+
+    alias venueMic:
+        micDataForFacility
+            then extract
+                if (status = "EXPIRED" and expiryDate <= ExecutionTimestamp(transaction) -> date)
+                        or status <> "EXPIRED"
+                then if micType = MicTypeEnum -> SGMT
+                    then mic
+                    else operatingMic
+
+    alias transactionHasIsin: GetIsin(ProductForEvent(transaction)) exists
+
+    alias transactionInformation:
+        if regime = UKEMIR
+        then GetTransactionInformationForRegime(transaction, UKEMIR, FCA)
+        else GetTransactionInformationForRegime(transaction, EMIR, ESMA)
+
+    alias isinTotv:
+        if regime = UKEMIR
+        then (transactionInformation -> fcaTransactionInformation -> tradableOnTradingVenue = Admitted) default False
+        else (transactionInformation -> esmaTransactionInformation -> tradableOnTradingVenue = Admitted) default False
+
+    alias uIsinTotv:
+        if regime = UKEMIR
+        then transactionInformation -> fcaTransactionInformation -> underlierTradedOnTradingVenue default False
+        else transactionInformation -> esmaTransactionInformation -> underlierTradedOnTradingVenue default False
+
+    alias transactionValidMic:
+        if venueMic exists
+        then (if IsEmirTradingVenue(micDataForFacility)
+            then venueMic
+            else if IsSI(micDataForFacility)
+            then (if isinTotv or uIsinTotv then venueMic else "XXXX")
+            else venueMic)
+
+    set venue:
+        if transactionValidMic exists
+        then transactionValidMic
+        else if isinTotv
+        then "XOFF"
+        else "XXXX"
+
+func EMIRClearingObligation:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (0..1)
+        rgmName RegimeNameEnum (0..1)
+        sprvsryBody SupervisoryBodyEnum (0..1)
+    output:
+        result ClearingObligationEnum (0..1)
+    set result:
+        if IsCleared(transactionReportInstruction -> originatingWorkflowStep)
+        then ClearingObligationEnum -> UKWN
+        else if IsRegulatedMarketOrThirdCountryEquivalentMarket(
+                    transactionReportInstruction -> reportableInformation,
+                    rgmName
+                ) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then (transactionReportInstruction -> reportableInformation -> partyInformation -> regimeInformation
+            then filter supervisoryBody = sprvsryBody and regimeName = rgmName
+            then last
+            then extract
+                if (mandatorilyClearable = MandatorilyClearableEnum -> ProductAndCptyMandatory)
+                then TRUE
+                else if (mandatorilyClearable = MandatorilyClearableEnum -> ProductMandatoryButNotCpty)
+                then FLSE
+                else if (mandatorilyClearable = MandatorilyClearableEnum -> ProductNotMandatory)
+                then UKWN)

@@ -1,0 +1,23 @@
+namespace drr.standards.iosco.upi
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.trade.*
+import drr.regulation.common.*
+
+reporting rule UniqueProductIdentifier from TransactionReportInstruction: <"Unique product identifier">
+    extract TradeForEvent
+    then extract tradableProduct -> product -> contractualProduct -> productIdentifier
+    then filter source = ProductIdTypeEnum -> UPI
+    then only-element
+    then extract identifier
+
+reporting rule ProductClassification from TransactionReportInstruction: <"Product classification">
+    extract ProductForEvent
+    then extract [
+        [contractualProduct -> productTaxonomy, security -> productTaxonomy, basket -> productTaxonomy, index -> productTaxonomy, loan -> productTaxonomy]
+            filter source = TaxonomySourceEnum -> CFI
+            then only-element
+            then extract value -> name
+    ]

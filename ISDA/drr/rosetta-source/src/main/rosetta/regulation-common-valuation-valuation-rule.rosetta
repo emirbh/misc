@@ -1,0 +1,14 @@
+namespace drr.regulation.common.valuation.valuation
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version1.* as cde
+
+reporting rule ValuationAmount from ValuationReportInstruction: <"Valuation Amount">
+    extract cde.valuation.ValuationAmountFromValuation(valuationDetails -> valuation)
+
+reporting rule ValuationCurrency from ValuationReportInstruction: <"Valuation Currency">
+    extract cde.valuation.ValuationCurrencyFromValuation(valuationDetails -> valuation)
+
+reporting rule ValuationMethod from ValuationReportInstruction: <"Valuation Method">
+    extract cde.valuation.ValuationMethod(valuationDetails -> valuation)

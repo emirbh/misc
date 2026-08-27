@@ -1,0 +1,13 @@
+namespace drr.standards.iosco.cde.version1.datetime
+version "${project.version}"
+
+import cdm.base.datetime.*
+
+import drr.base.trade.*
+
+func ReportingTimestampFromReportableInformation: <"Report-agnostic extraction of the Reporting Timestamp">
+    inputs:
+        reportableInformation ReportableInformationBase (0..1)
+    output:
+        reportingTimestamp zonedDateTime (0..1)
+    set reportingTimestamp: Now

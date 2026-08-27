@@ -1,0 +1,483 @@
+namespace drr.standards.iosco.cde.version1.quantity
+version "${project.version}"
+
+import cdm.base.math.*
+import cdm.base.staticdata.asset.common.*
+import cdm.event.common.*
+import cdm.observable.asset.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.*
+import drr.standards.iso.*
+
+//import drr.regulation.common Will addressed in Leg1Leg2 work once removed from CDE
+func NotionalAmountLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+
+    alias payout:
+        quantity.GetProductForQuantity(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg1(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    set notionalAmount: NotionalAmountFormat(payout, defaultValue)
+
+func NotionalAmountLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+
+    alias payout:
+        quantity.GetProductForQuantity(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg2(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    set notionalAmount: NotionalAmountFormat(payout, defaultValue)
+
+func TotalNotionalQuantityLeg1:
+    inputs:
+        transaction TransactionReportInstructionBase (1..1)
+        defaultValue number (0..1)
+    output:
+        totalNotionalQuantity number (0..1)
+    set totalNotionalQuantity:
+        ProductForEvent(transaction)
+            then if product.IsEquity or product.IsCommodity
+                then TotalNotionalQuantity(common.PayoutLeg1(transaction), defaultValue)
+
+func TotalNotionalQuantityLeg2:
+    inputs:
+        transaction TransactionReportInstructionBase (1..1)
+        defaultValue number (0..1)
+    output:
+        totalNotionalQuantity number (0..1)
+    set totalNotionalQuantity:
+        ProductForEvent(transaction)
+            then if product.IsCommoditySwap or (product.IsEquity and InterestRateLeg2 -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists)
+                then TotalNotionalQuantity(common.PayoutLeg2(transaction), defaultValue)
+
+func ExtractCallAmount: <"CDE Call Amount with error value provided as this can differ between jurisdiction.">
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        callAmount number (0..1)
+
+    set callAmount:
+        ProductForTrade(quantity.GetTradeForQuantity(transactionReportInstruction))
+            extract
+                if product.IsCallOption
+                then (if Qualify_Commodity_Option(contractualProduct -> economicTerms)
+                    then CommodityOptionNotional(
+                                contractualProduct -> economicTerms -> payout -> optionPayout only-element
+                            )
+                    else if Qualify_Commodity_Swaption(contractualProduct -> economicTerms)
+                    then CommodityNotional(
+                                quantity.FixedPriceLeg1(underlier.UnderlierForProduct) -> priceQuantity -> quantitySchedule,
+                                quantity.FixedPriceLeg1(underlier.UnderlierForProduct) -> fixedPrice -> price
+                            )
+                    // Equity options with monetary quantity schedule
+                    else if product.IsEquityOption and contractualProduct -> economicTerms -> payout -> optionPayout -> priceQuantity -> quantitySchedule -> unit -> currency exists
+                    then contractualProduct -> economicTerms -> payout -> optionPayout only-element -> priceQuantity -> quantitySchedule -> value
+                    // Equity options with non-monetary quantity schedule
+                    else if product.IsEquityOption and contractualProduct -> economicTerms -> payout -> optionPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+                    then contractualProduct -> economicTerms -> payout -> optionPayout only-element -> priceQuantity -> quantitySchedule -> value * contractualProduct -> economicTerms -> payout -> optionPayout only-element -> exerciseTerms -> strike -> strikePrice -> value
+                    else if quantity.CallQuantity -> value = 0
+                            and Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct)
+                    then defaultValue
+                    else quantity.CallQuantity -> value)
+                else if quantity.CallQuantity -> value = 0
+                        and Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct)
+                then defaultValue
+                else quantity.CallQuantity -> value
+            then FormatToShortFraction5DecimalNumber
+
+func ExtractPutAmount: <"CDE Put Amount with error value provided as this can differ between jurisdiction.">
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        putAmount number (0..1)
+
+    set putAmount:
+        ProductForTrade(quantity.GetTradeForQuantity(transactionReportInstruction))
+            extract
+                if product.IsPutOption
+                then (if Qualify_Commodity_Option(contractualProduct -> economicTerms)
+                    then CommodityOptionNotional(
+                                contractualProduct -> economicTerms -> payout -> optionPayout only-element
+                            )
+                    else if Qualify_Commodity_Swaption(contractualProduct -> economicTerms)
+                    then CommodityNotional(
+                                quantity.FixedPriceLeg1(underlier.UnderlierForProduct) -> priceQuantity -> quantitySchedule,
+                                quantity.FixedPriceLeg1(underlier.UnderlierForProduct) -> fixedPrice -> price
+                            )
+                    // Equity options with monetary quantity schedule
+                    else if product.IsEquityOption and contractualProduct -> economicTerms -> payout -> optionPayout -> priceQuantity -> quantitySchedule -> unit -> currency exists
+                    then contractualProduct -> economicTerms -> payout -> optionPayout only-element -> priceQuantity -> quantitySchedule -> value
+                    // Equity options with non-monetary quantity schedule
+                    else if product.IsEquityOption and contractualProduct -> economicTerms -> payout -> optionPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+                    then contractualProduct -> economicTerms -> payout -> optionPayout only-element -> priceQuantity -> quantitySchedule -> value * contractualProduct -> economicTerms -> payout -> optionPayout only-element -> exerciseTerms -> strike -> strikePrice -> value
+                    else if quantity.PutQuantity -> value = 0
+                            and Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct)
+                    then defaultValue
+                    else quantity.PutQuantity -> value)
+                else if quantity.PutQuantity -> value = 0
+                        and Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct)
+                then defaultValue
+                else quantity.PutQuantity -> value
+            then FormatToShortFraction5DecimalNumber
+
+func NotionalAmount:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount:
+        payout
+            extract
+                if NotionalFromLeg -> value = 0 and zeroNotionalAmountDefaulting = True
+                then defaultValue
+                else NotionalFromLeg -> value
+
+func NotionalAmountFormat:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount:
+        FormatToNonNegativeShortFraction5DecimalNumber(NotionalAmount(payout, defaultValue))
+
+func CurrencyFromNotional:
+    inputs:
+        measure Measure (0..1)
+    output:
+        notionalCurrency ISOCurrencyCodeEnum (0..1)
+    set notionalCurrency: measure -> unit -> currency to-enum ISOCurrencyCodeEnum
+
+func TotalNotionalQuantity:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        totalTotalNotionalQuantity number (0..1)
+    set totalTotalNotionalQuantity:
+        payout
+            then extract
+                (if commodityPayout -> priceQuantity -> quantitySchedule exists
+                then commodityPayout -> priceQuantity -> quantitySchedule
+                else if fixedPricePayout -> priceQuantity -> quantitySchedule exists
+                then fixedPricePayout -> priceQuantity -> quantitySchedule
+                else if optionPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+                then optionPayout -> priceQuantity -> quantitySchedule
+                else if optionPayout -> priceQuantity -> quantitySchedule exists
+                then optionPayout -> priceQuantity -> quantitySchedule
+                else if forwardPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+                then forwardPayout -> priceQuantity -> quantitySchedule
+                else if performancePayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+                then performancePayout -> priceQuantity -> quantitySchedule
+                else if tradeLot -> priceQuantity -> quantity -> unit -> financialUnit exists
+                then (tradeLot only-element -> priceQuantity -> quantity
+                    then filter unit -> financialUnit exists
+                    then only-element)
+                    then extract
+                        (if datedValue exists
+                        then datedValue -> value sum
+                        else if multiplier exists
+                        then value * multiplier -> value
+                        else value)
+                    ) default defaultValue
+            then FormatToShortFraction5DecimalNumber
+
+func NotionalFromLeg:
+    inputs:
+        payoutLeg PayoutLegWithAuxiliary (0..1)
+    output:
+        measure Measure (0..1)
+
+    alias optionMultiplier:
+        if payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule -> multiplier exists
+                and payoutLeg -> optionPayout -> underlier -> security -> securityType <> SecurityTypeEnum -> Debt
+        then payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule -> multiplier -> value
+        else 1
+
+    alias optionNotional:
+        if payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule -> unit -> currency exists
+        then Measure {
+                unit: payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule -> unit,
+                value: payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule -> value * optionMultiplier
+            }
+        else if payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then Measure {
+                unit: payoutLeg -> optionPayout -> exerciseTerms -> strike -> strikePrice -> unit,
+                value: payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule -> value * optionMultiplier * payoutLeg -> optionPayout -> exerciseTerms -> strike -> strikePrice -> value
+            }
+
+    alias commodityOptionNotional:
+        if payoutLeg -> optionPayout -> exerciseTerms -> strike -> strikePrice exists
+        then Measure {
+                unit: payoutLeg -> optionPayout -> exerciseTerms -> strike -> strikePrice -> unit,
+                value: CommodityOptionNotional(payoutLeg -> optionPayout)
+            }
+        else if payoutLeg -> optionPayout -> exerciseTerms -> strike -> averagingStrikeFeature exists
+        then if payoutLeg -> lastAvailableSpotPrice exists
+            then Measure {
+                    unit: payoutLeg -> lastAvailableSpotPrice -> unit,
+                    value: CommodityNotional(
+                                payoutLeg -> optionPayout -> priceQuantity -> quantitySchedule,
+                                payoutLeg -> lastAvailableSpotPrice
+                            )
+                }
+            else payoutLeg -> tradeLot -> priceQuantity only-element -> quantity
+                filter unit -> currency exists
+            then only-element
+            then extract
+                Measure {
+                    unit: unit,
+                    value: value
+                }
+
+    alias creditDefaultNotional:
+        payoutLeg -> creditDefaultPayout -> priceQuantity -> quantitySchedule
+            then extract
+                Measure {
+                    unit: unit,
+                    value: value
+                }
+    alias interestRatePayout:
+        payoutLeg -> auxiliaryLeg -> interestRatePayout default payoutLeg -> interestRatePayout
+
+    alias interestRateMultiplier:
+        interestRatePayout -> priceQuantity -> quantitySchedule
+            then extract
+                if multiplier -> value exists
+                then multiplier -> value
+                else 1
+
+    alias interestRateNotional:
+        interestRatePayout -> priceQuantity
+            then extract
+                Measure {
+                    unit: if quantitySchedule exists
+                            then quantitySchedule -> unit
+                        else if quantityReference exists
+                        then quantityReference -> quantitySchedule -> unit,
+                    value: if quantitySchedule exists
+                            then quantitySchedule -> value * interestRateMultiplier
+                }
+
+    alias performanceMultiplier:
+        payoutLeg -> performancePayout -> priceQuantity -> quantitySchedule
+            then extract
+                if multiplier -> value exists
+                then multiplier -> value
+                else 1
+
+    alias performanceNotional:
+        if payoutLeg -> performancePayout -> priceQuantity -> quantitySchedule -> unit -> currency exists
+        then (payoutLeg -> performancePayout -> priceQuantity -> quantitySchedule
+            then extract
+                Measure {
+                    unit: unit,
+                    value: value * performanceMultiplier
+                })
+        else if payoutLeg -> tradeLot -> priceQuantity -> quantity -> unit -> currency exists
+        then (payoutLeg -> tradeLot -> priceQuantity -> quantity
+            then filter unit -> currency exists
+            then only-element
+            then extract
+                Measure {
+                    unit: unit,
+                    value: value
+                })
+
+    alias forwardNotional:
+        if payoutLeg -> auxiliaryLeg -> fixedPricePayout exists
+        then Measure {
+                unit: payoutLeg -> auxiliaryLeg -> fixedPricePayout -> fixedPrice -> price -> unit,
+                value: CommodityNotional(
+                            payoutLeg -> forwardPayout -> priceQuantity -> quantitySchedule,
+                            payoutLeg -> auxiliaryLeg -> fixedPricePayout -> fixedPrice -> price
+                        )
+            }
+        else if payoutLeg -> auxiliaryLeg -> commodityPayout exists
+        then (CommodityObservablePriceQuantity(
+                payoutLeg -> tradeLot,
+                payoutLeg -> auxiliaryLeg -> commodityPayout
+            ) -> quantity
+            filter unit -> currency exists
+            then only-element
+            then extract
+                Measure {
+                    unit: unit,
+                    value: value
+                })
+        else if payoutLeg -> lastAvailableSpotPrice exists
+        then Measure {
+                unit: payoutLeg -> lastAvailableSpotPrice -> unit,
+                value: CommodityNotional(
+                            payoutLeg -> forwardPayout -> priceQuantity -> quantitySchedule,
+                            payoutLeg -> lastAvailableSpotPrice
+                        )
+            }
+        else if payoutLeg -> forwardPayout -> priceQuantity -> quantitySchedule -> unit -> currency exists
+        then (payoutLeg -> forwardPayout -> priceQuantity -> quantitySchedule
+            then extract
+                Measure {
+                    unit: unit,
+                    value: value
+                })
+        else if payoutLeg -> forwardPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then (payoutLeg -> forwardPayout -> priceQuantity
+            then extract
+                Measure {
+                    unit: quantitySchedule -> unit,
+                    value: quantitySchedule -> value * priceSchedule only-element -> value
+                })
+
+    alias fixedPriceNotional:
+        payoutLeg -> fixedPricePayout
+            then extract
+                Measure {
+                    unit: fixedPrice -> price -> unit,
+                    value: CommodityNotional(
+                                priceQuantity -> quantitySchedule,
+                                fixedPrice -> price
+                            )
+                }
+
+    alias cashflowNotional:
+        payoutLeg -> cashflow -> priceQuantity
+            then extract
+                Measure {
+                    unit: if quantitySchedule exists
+                            then quantitySchedule -> unit
+                        else if quantityReference exists
+                        then quantityReference -> quantitySchedule -> unit,
+                    value: quantitySchedule -> value
+                }
+
+    alias commodityNotional:
+        if payoutLeg -> auxiliaryLeg -> fixedPricePayout exists
+        then Measure {
+                unit: payoutLeg -> auxiliaryLeg -> fixedPricePayout -> fixedPrice -> price -> unit,
+                value: CommodityNotional(
+                            payoutLeg -> commodityPayout -> priceQuantity -> quantitySchedule,
+                            payoutLeg -> auxiliaryLeg -> fixedPricePayout -> fixedPrice -> price
+                        )
+            }
+        else if payoutLeg -> lastAvailableSpotPrice exists
+        then Measure {
+                unit: payoutLeg -> lastAvailableSpotPrice -> unit,
+                value: CommodityNotional(
+                            payoutLeg -> commodityPayout -> priceQuantity -> quantitySchedule,
+                            payoutLeg -> lastAvailableSpotPrice
+                        )
+            }
+        else CommodityObservablePriceQuantity(
+                payoutLeg -> tradeLot,
+                payoutLeg -> commodityPayout
+            ) -> quantity
+            filter unit -> currency exists
+            then only-element
+            then extract
+                Measure {
+                    unit: unit,
+                    value: value
+                }
+
+    alias optionETDNotional:
+        ETDNotionalOption(payoutLeg -> optionPayout, payoutLeg -> tradeLot)
+
+    alias futureETDNotional: ETDNotionalFuture(payoutLeg -> tradeLot)
+
+    set measure:
+        if payoutLeg -> optionPayout exists
+        then if payoutLeg -> optionPayout -> underlier -> commodity exists
+            then commodityOptionNotional
+            else if payoutLeg -> isProductETD
+            then optionETDNotional
+            else optionNotional
+        else if payoutLeg -> creditDefaultPayout exists
+        then creditDefaultNotional
+        else if payoutLeg -> interestRatePayout exists
+        then interestRateNotional
+        else if payoutLeg -> performancePayout exists
+        then performanceNotional
+        else if payoutLeg -> fixedPricePayout exists
+        then fixedPriceNotional
+        else if payoutLeg -> cashflow exists
+        then cashflowNotional
+        else if payoutLeg -> commodityPayout exists
+        then commodityNotional
+        else if payoutLeg -> forwardPayout exists
+        then if payoutLeg -> isProductETD
+            then futureETDNotional
+            else forwardNotional
+
+func CommodityNotional: <"Commodity Notional">
+    inputs:
+        quantitySchedule NonNegativeQuantitySchedule (0..1)
+        price PriceSchedule (0..1)
+    output:
+        amount number (0..1)
+    set amount:
+        if price -> datedValue -> value exists
+        then VectorOperation(
+                ArithmeticOperationEnum -> Multiply,
+                price -> datedValue -> value,
+                quantitySchedule -> datedValue -> value
+            )
+            sum
+        else if price -> value exists
+        then if quantitySchedule -> value exists
+            then price -> value * quantitySchedule -> value
+            else if quantitySchedule -> datedValue exists
+            then price -> value * quantitySchedule -> datedValue -> value sum
+
+func DeltaFromValuation: <"Report-agnostic extraction of the Delta">
+    inputs:
+        valuation Valuation (1..1)
+    output:
+        delta ShortFraction5DecimalNumber (0..1)
+    set delta: valuation -> delta then FormatToShortFraction5DecimalNumber
+
+func QuantityUnitOfMeasure:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+    output:
+        quantityUnitOfMeasure string (0..1)
+    set quantityUnitOfMeasure:
+        payout -> commodityPayout -> priceQuantity -> quantitySchedule
+            then default payout -> fixedPricePayout -> priceQuantity -> quantitySchedule
+            then default payout -> performancePayout -> priceQuantity -> quantitySchedule
+            then default payout -> forwardPayout -> priceQuantity -> quantitySchedule
+            then default (payout -> tradeLot -> priceQuantity -> quantity
+                    then filter unit -> financialUnit exists
+                    then filter quantity.UnitOfMeasureFromQuantity exists
+                    then only-element
+                    )
+            then default if (payout -> tradeLot -> priceQuantity -> quantity
+                        extract quantity.UnitOfMeasureFromQuantity
+                        then distinct count = 1)
+                    then payout -> tradeLot -> priceQuantity -> quantity first
+            then extract quantity.UnitOfMeasureFromQuantity

@@ -1,0 +1,63 @@
+namespace drr.standards.iosco.cde.version1.payment
+version "${project.version}"
+
+import cdm.event.common.*
+import cdm.observable.asset.*
+import cdm.product.common.settlement.*
+
+import drr.base.trade.*
+import drr.base.util.datetime.*
+import drr.base.util.party.*
+
+func ExtractOtherPaymentPayer:
+    inputs:
+        transferState TransferState (0..1)
+        transactionReportInstruction TransactionReportInstructionBase (0..1)
+    output:
+        partyPersonLei string (0..1)
+    set partyPersonLei:
+        PartyLeiAndPersonByRoles(
+                transferState -> transfer -> payerReceiver -> payerPartyReference,
+                transactionReportInstruction -> reportingSide -> reportingParty
+            )
+
+func ExtractOtherPaymentReceiver:
+    inputs:
+        transferState TransferState (0..1)
+        transactionReportInstruction TransactionReportInstructionBase (0..1)
+    output:
+        partyPersonLei string (0..1)
+    set partyPersonLei:
+        PartyLeiAndPersonByRoles(
+                transferState -> transfer -> payerReceiver -> receiverPartyReference,
+                transactionReportInstruction -> reportingSide -> reportingParty
+            )
+
+func OptionPremiumOnEventDate:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        optionPremium Transfer (0..1)
+    alias eventDate:
+        reportableEvent -> originatingWorkflowStep -> businessEvent -> eventDate
+    alias premiums:
+        reportableEvent -> originatingWorkflowStep -> businessEvent -> after -> transferHistory
+            filter transfer -> transferExpression -> priceTransfer = FeeTypeEnum -> Premium
+            then transfer
+    set optionPremium:
+        if premiums count = 1
+        then premiums only-element
+        else if premiums count > 1
+        then (premiums max [ AdjustableOrAdjustedOrRelativeDateResolution(settlementDate) ])
+
+func IsOtherPayment:
+    inputs:
+        transferState TransferState (1..1)
+    output:
+        result boolean (1..1)
+    alias transferExpression: transferState -> transfer -> transferExpression
+    set result:
+        transferExpression -> priceTransfer = FeeTypeEnum -> Upfront
+            or transferExpression -> priceTransfer = FeeTypeEnum -> Termination
+            or transferExpression -> priceTransfer = FeeTypeEnum -> PartialTermination
+            or transferExpression -> scheduledTransfer -> transferType = ScheduledTransferEnum -> PrincipalPayment

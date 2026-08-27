@@ -1,0 +1,83 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "assetClass" : "CURR",
+  "bookingLocation" : "US",
+  "brokerID" : "549300OL8KL0WCQ34V31",
+  "cleared" : "I",
+  "collateralPortfolioIndicator" : false,
+  "confirmed" : "NCNF",
+  "contractType" : "SWAP",
+  "counterparty1" : "549300O5MFEP1XJ40B46",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "5493001RKR55V4X61F71",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierType" : true,
+  "countryOfTheCounterparty2" : "US",
+  "cryptoAssetUnderlyingIndicator" : false,
+  "customBasketIndicator" : false,
+  "deliveryType" : "PHYS",
+  "dtccAdditionalFields" : {
+    "messageID" : "BANKX00012024-04-29T00:00Z",
+    "primaryAssetClass" : "ForeignExchange",
+    "sefOrDcmAnonymousExecutionIndicator" : false,
+    "submittedForParty" : "549300O5MFEP1XJ40B46",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ]
+  },
+  "effectiveDate" : "2011-02-12",
+  "entityResponsibleForReporting" : "549300O5MFEP1XJ40B46",
+  "eventIdentifier" : "BANKX0001",
+  "eventTimestamp" : "2011-02-04T16:42:18Z",
+  "eventType" : "TRAD",
+  "exchangeRate" : 0.9175,
+  "exchangeRateBasis" : "EUR/USD",
+  "executionTimestamp" : "2011-02-04T16:21:47Z",
+  "expirationDate" : "2011-12-21",
+  "finalContractualSettlementDate" : "2011-12-21",
+  "intragroup" : true,
+  "jurisdiction" : "MIXX",
+  "leg1" : {
+    "notionalAmount" : 10000000,
+    "notionalCurrency" : "EUR",
+    "payerIdentifier" : "549300O5MFEP1XJ40B46",
+    "receiverIdentifier" : "5493001RKR55V4X61F71"
+  },
+  "leg2" : {
+    "notionalAmount" : 9175000,
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "5493001RKR55V4X61F71",
+    "receiverIdentifier" : "549300O5MFEP1XJ40B46"
+  },
+  "level" : "TCTN",
+  "masterAgreementType" : "ISDA",
+  "masterAgreementVersion" : 2002,
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "PHYS",
+          "OtherUnderlierID" : "USD",
+          "OtherUnderlierIDSource" : "CCY",
+          "UnderlierID" : "EUR",
+          "UnderlierIDSource" : "CCY"
+        },
+        "Header" : {
+          "AssetClass" : "Foreign_Exchange",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "FX_Swap"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "packageIndicator" : false,
+  "platformIdentifier" : "XNAS",
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "549300O5MFEP1XJ40B46",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "MOCKUPFXSWAPSPOTFO01"
+}

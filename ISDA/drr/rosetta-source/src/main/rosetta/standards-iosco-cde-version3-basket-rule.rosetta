@@ -1,0 +1,17 @@
+namespace drr.standards.iosco.cde.version3.basket
+version "${project.version}"
+
+import drr.base.*
+import drr.base.trade.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version2.* as cdeV2
+import drr.standards.iosco.cde.version3.* as cdeV3
+
+reporting rule CustomBasketCode from TransactionReportInstructionBase: <"Custom basket code">
+    [regulatoryReference CPMI_IOSCO cdeV3.CDE section "2" field "97"
+        provision "If the OTC derivative transaction is based on a custom basket, unique code assigned by the structurer of the custom basket to link its constituents. This data element is not applicable if no custom basket is involved or no unique code has been assigned to it.
+        - Allowable Values: ISO 17442 Legal Entity Identifier (LEI) code of the basket structurer followed by a unique identifier up to 52 alphanumeric characters."]
+    cdeV2.basket.CustomBasketCode
+
+reporting rule BasketConstituents from TransactionReportInstructionBase: <"Basket constituents">
+    cdeV2.basket.BasketConstituents

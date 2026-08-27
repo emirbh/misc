@@ -1,0 +1,245 @@
+namespace drr.regulation.esma.emir.refit.trade
+version "${project.version}"
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.emir.* as emir
+import drr.regulation.common.emir.contract.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.esma.*
+import drr.regulation.esma.emir.*
+import drr.regulation.esma.emir.refit.*
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+report ESMA EMIR Trade in T+1
+  	from TransactionReportInstruction
+  	when ReportableProduct
+  	with type ESMAEMIRTransactionReport
+
+//Eligibility Rules
+eligibility rule ReportableProduct from TransactionReportInstruction: <"When eligible for EMIR">
+    [regulatoryReference ESMA EMIR article "9" paragraph "1"
+        provision "Counterparties and CCPs shall ensure that the details of any derivative contract they have concluded and of any modification or termination of the contract are reported to a trade repository registered in accordance with Article 55 or recognised in accordance with Article 77. The details shall be reported no later than the working day following the conclusion, modification or termination of the contract."]
+    filter HasContract
+
+eligibility rule HasContract from TransactionReportInstruction: <"When eligible for EMIR">
+    [regulatoryReference ESMA EMIR article "2" paragraph "5"
+        provision "derivative or derivative contract means a financial instrument as set out in points (4) to (10) of Section C of Annex I to Directive 2004/39 EC as implemented by Article 38 and 39 of Regulation (EC) No 1287/2006"]
+    extract TradeForEvent
+    then extract tradableProduct -> product -> contractualProduct exists
+
+eligibility rule IsReportableEvent from TransactionReportInstruction: <"When eligible for Part45">
+    [regulatoryReference ESMA EMIR article "9" paragraph "1"
+        provision "Counterparties and CCPs shall ensure that the details of any derivative contract they have concluded and of any modification or termination of the contract are reported to a trade repository registered in accordance with Article 55 or recognised in accordance with Article 77. The details shall be reported no later than the working day following the conclusion, modification or termination of the contract."]
+    extract reportableInformation -> partyInformation -> regimeInformation
+    then extract
+        regimeName = RegimeNameEnum -> EMIR
+            and supervisoryBody = SupervisoryBodyEnum -> ESMA
+
+//EMIR Definitions
+reporting rule NatureOfCounterparty1 from TransactionReportInstruction: <"Nature of the Counterparty 1">
+    filter IsAllowableAction
+    then ExtractNatureOfCounterparty(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty
+                    ) -> esmaPartyInformation only-element -> natureOfParty
+            )
+
+reporting rule CorporateSectorOfTheCounterparty1 from TransactionReportInstruction: <"Corporate sector of the counterparty 1">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractPartySector(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty
+                    ) -> esmaPartyInformation -> natureOfParty
+                    distinct
+                    only-element,
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty
+                    ) -> esmaPartyInformation -> corporateSector
+            )
+
+reporting rule ClearingThresholdOfCounterparty1 from TransactionReportInstruction: <"Clearing Threshold of Counterparty 1">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(item, item -> reportingSide -> reportingParty)
+    then filter
+        ([NatureOfPartyEnum -> Financial, NatureOfPartyEnum -> NonFinancial] any = esmaPartyInformation -> natureOfParty)
+    then extract esmaPartyInformation -> exceedsClearingThreshold
+    then only-element
+
+reporting rule NatureOfCounterparty2 from TransactionReportInstruction: <"Nature of the Counterparty 2">
+    filter IsAllowableAction
+    then ExtractNatureOfCounterparty(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty
+                    ) -> esmaPartyInformation only-element -> natureOfParty
+            )
+
+reporting rule CorporateSectorOfTheCounterparty2 from TransactionReportInstruction: <"Corporate sector of the counterparty 2">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractPartySector(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty
+                    ) -> esmaPartyInformation -> natureOfParty
+                    distinct
+                    only-element,
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty
+                    ) -> esmaPartyInformation -> corporateSector
+            )
+
+reporting rule ClearingThresholdOfCounterparty2 from TransactionReportInstruction: <"Clearing Threshold of Counterparty 2">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingCounterparty
+            )
+    then filter
+        ([NatureOfPartyEnum -> Financial, NatureOfPartyEnum -> NonFinancial] any = esmaPartyInformation -> natureOfParty)
+    then extract esmaPartyInformation -> exceedsClearingThreshold
+
+reporting rule ReportingObligationOfTheCounterparty2 from TransactionReportInstruction: <"Reporting obligation of the counterparty 2">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingCounterparty
+            )
+    then filter
+        ([NatureOfPartyEnum -> Financial, NatureOfPartyEnum -> NonFinancial] any = esmaPartyInformation -> natureOfParty)
+    then extract
+        (esmaPartyInformation -> natureOfParty = NatureOfPartyEnum -> Financial
+            or (esmaPartyInformation -> natureOfParty = NatureOfPartyEnum -> NonFinancial
+                and esmaPartyInformation -> exceedsClearingThreshold = True))
+
+reporting rule DirectlyLinkedToCommercialActivityOrTreasuryFinancing from TransactionReportInstruction: <"Directly linked to commercial activity or treasury financing">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(item, item -> reportingSide -> reportingParty)
+    then filter esmaPartyInformation -> natureOfParty = NatureOfPartyEnum -> NonFinancial
+    then only-element
+    then extract esmaPartyInformation -> directlyLinkedActivity
+
+reporting rule EsmaUti from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC">
+    uti.UniqueTransactionIdentifierForTransaction(item, ESMA)
+
+reporting rule Uti from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC"> //do ESMA mean Trade or Transaction?
+    EsmaUti then filter IsMax32UpperCaseAlphanumericText = True
+
+reporting rule UtiProprietary from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC"> //do ESMA mean Trade or Transaction?
+    EsmaUti then filter IsMax32UpperCaseAlphanumericText = False
+
+reporting rule ReportTrackingNumber from TransactionReportInstruction: <"Report Tracking Number">
+    filter IsAllowableAction
+    then extract
+        if IsEU(
+                    GetOrFetchMicData(
+                            reportableInformation -> enrichment -> micData,
+                            GetVenueOfExecution(reportableInformation)
+                        ) -> countryCode
+                )
+        then emir.ReportTrackingNumber
+
+reporting rule IndicatorOfTheUnderlyingIndex from TransactionReportInstruction: <"Indicator of the underlying index">
+    filter IsAllowableAction
+    then extract emir.IndicatorOfTheUnderlyingIndex
+    // ESMA doesn't include as allowed values: "CORA", "HKIO", "TONA", "TORF", "SIBO", "SSOR", "SORA"
+    then extract
+        if [IndexEnum -> CORA, IndexEnum -> HKIO, IndexEnum -> TONA, IndexEnum -> TORF, IndexEnum -> SIBO, IndexEnum -> SSOR, IndexEnum -> SORA] any = item
+        then empty
+        else item
+
+reporting rule Confirmed from TransactionReportInstruction: <"Confirmed">
+    filter IsAllowableAction
+    then extract
+        if IsCleared(originatingWorkflowStep) = False
+                and IsRegulatedMarketOrThirdCountryEquivalentMarket(
+                        reportableInformation,
+                        EMIR
+                    ) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then cde.execution.Confirmed
+
+reporting rule ClearingObligation from TransactionReportInstruction: <"Clearing Obligation">
+    filter IsAllowableAction
+    then extract EMIRClearingObligation(item, EMIR, ESMA)
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index Factor">
+    filter IsAllowableAction
+    then extract common.index.IndexFactor
+    then FormatToBaseOneRate
+
+reporting rule VenueOfExecution from TransactionReportInstruction: <"Venue of Execution">
+    filter IsAllowableAction
+    then extract ExecutionVenue(item, EMIR)
+
+reporting rule ISIN from TransactionReportInstruction: <"ISIN">
+    filter IsAllowableAction
+    then extract ExecutionISIN(item, EMIR)
+
+reporting rule UPI from TransactionReportInstruction: <"UPI">
+    filter IsAllowableAction and ISIN is absent
+    then extract upi.UniqueProductIdentifier
+
+reporting rule FixedRateOrCouponPaymentFrequencyPeriodLeg1 from TransactionReportInstruction:
+    AdjustFrequencyPeriod(
+            emir.FixedRateOrCouponPaymentFrequencyPeriodLeg1,
+            emir.FixedRateOrCouponPaymentFrequencyPeriodMultiplierLeg1
+        ) -> period
+
+reporting rule FixedRateOrCouponPaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction:
+    AdjustFrequencyPeriod(
+            emir.FixedRateOrCouponPaymentFrequencyPeriodLeg1,
+            emir.FixedRateOrCouponPaymentFrequencyPeriodMultiplierLeg1
+        ) -> periodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction:
+    AdjustFrequencyPeriod(
+            emir.FixedRatePaymentFrequencyPeriodLeg2,
+            emir.FixedRatePaymentFrequencyPeriodMultiplierLeg2
+        ) -> period
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction:
+    AdjustFrequencyPeriod(
+            emir.FixedRatePaymentFrequencyPeriodLeg2,
+            emir.FixedRatePaymentFrequencyPeriodMultiplierLeg2
+        ) -> periodMultiplier
+
+reporting rule FloatingRateReferencePeriodOfLeg2TimePeriod from TransactionReportInstruction:
+    AdjustFrequencyPeriod(
+            emir.FloatingRateReferencePeriodOfLeg2TimePeriod,
+            emir.FloatingRateReferencePeriodOfLeg2Multiplier
+        ) -> period
+
+reporting rule FloatingRateReferencePeriodOfLeg2Multiplier from TransactionReportInstruction:
+    AdjustFrequencyPeriod(
+            emir.FloatingRateReferencePeriodOfLeg2TimePeriod,
+            emir.FloatingRateReferencePeriodOfLeg2Multiplier
+        ) -> periodMultiplier
+
+reporting rule FloatingRateIndicatorLeg1 from TransactionReportInstruction:
+    extract emir.FloatingRateIndicatorLeg1
+    // ESMA doesn't include as allowed values: "CORA", "HKIO", "TONA", "TORF", "SIBO", "SSOR", "SORA"
+    then filter
+        ([IndexEnum -> CORA, IndexEnum -> HKIO, IndexEnum -> TONA, IndexEnum -> TORF, IndexEnum -> SIBO, IndexEnum -> SSOR, IndexEnum -> SORA]) all <> item
+
+reporting rule FloatingRateIndicatorLeg2 from TransactionReportInstruction:
+    extract emir.FloatingRateIndicatorLeg2
+    // ESMA doesn't include as allowed values: "CORA", "HKIO", "TONA", "TORF", "SIBO", "SSOR", "SORA"
+    then filter
+        ([IndexEnum -> CORA, IndexEnum -> HKIO, IndexEnum -> TONA, IndexEnum -> TORF, IndexEnum -> SIBO, IndexEnum -> SSOR, IndexEnum -> SORA]) all <> item

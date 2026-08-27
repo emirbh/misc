@@ -1,0 +1,15 @@
+{
+  "id" : "pipeline-projection-cftc-valuation-report-to-dtcc-rds-harmonized",
+  "name" : "Cftc Valuation Report To Dtcc Rds Harmonized",
+  "transform" : {
+    "type" : "PROJECTION",
+    "function" : "drr.projection.dtcc.rds.harmonized.cftc.rewrite.valuation.functions.Project_CFTCValuationReportToDtccRdsHarmonized",
+    "inputType" : "drr.regulation.cftc.rewrite.valuation.CFTCValuationReport",
+    "outputType" : "iso20022.dtcc.rds.harmonized.Document"
+  },
+  "upstreamPipelineId" : "pipeline-report-cftc-valuation",
+  "outputSerialisation" : {
+    "format" : "XML",
+    "configPath" : "xml-config/dtcc-rds-rosetta-xml-config.json"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "assetClass" : "EQUI",
+  "basketConstituents" : [ {
+    "identifier" : "ANSS.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "AZPN.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "CA.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "CACI.N",
+    "source" : "RIC"
+  }, {
+    "identifier" : "CDW.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "CERN.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "DOX.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "233326107",
+    "source" : "CUSIP"
+  }, {
+    "identifier" : "FICO.N",
+    "source" : "RIC"
+  }, {
+    "identifier" : "IACI.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "IBM.N",
+    "source" : "RIC"
+  }, {
+    "identifier" : "LDOS.N",
+    "source" : "RIC"
+  }, {
+    "identifier" : "MANH.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "MDRX.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "MENT.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "NUAN.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "ORCL.N",
+    "source" : "RIC"
+  }, {
+    "identifier" : "SAIC.N",
+    "source" : "RIC"
+  }, {
+    "identifier" : "SNPS.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "SPLK.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "VRNT.OQ",
+    "source" : "RIC"
+  }, {
+    "identifier" : "VRSN.OQ",
+    "source" : "RIC"
+  } ],
+  "beneficiary1" : "TESTHOUSELEI00000001",
+  "beneficiary1IdentifierTypeIndicator" : true,
+  "bookingLocation" : "GB",
+  "cleared" : "N",
+  "collateralPortfolioIndicator" : false,
+  "confirmed" : "NCNF",
+  "contractType" : "SWAP",
+  "counterparty1" : "TESTHOUSELEI00000001",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "TESTCLIENTLEI0000009",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "cryptoAssetUnderlyingIndicator" : false,
+  "customBasketIndicator" : false,
+  "deliveryType" : "CASH",
+  "dtccAdditionalFields" : {
+    "messageID" : "envuatuatExt148a5f4c0a8484da5a2dc38fed2e31c7a2024-04-29T00:00Z",
+    "primaryAssetClass" : "Equity",
+    "sefOrDcmAnonymousExecutionIndicator" : false,
+    "submittedForParty" : "TESTHOUSELEI00000001",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "EQUITYPORTFOLIOSWA03",
+    "tradeParty2ExecutionAgentID" : "TESTCLIENTLEI0000009",
+    "tradeParty2ExecutionAgentIDType" : "LEI",
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ]
+  },
+  "effectiveDate" : "2021-04-16",
+  "entityResponsibleForReporting" : "TESTHOUSELEI00000001",
+  "eventIdentifier" : "envuatuatExt148a5f4c0a8484da5a2dc38fed2e31c7a",
+  "eventTimestamp" : "2021-04-14T10:27:32.886Z",
+  "eventType" : "TRAD",
+  "executionAgentCounterparty1" : "NOAP",
+  "executionAgentCounterparty2" : "TESTCLIENTLEI0000009",
+  "executionTimestamp" : "2021-04-14T10:01:05Z",
+  "expirationDate" : "2022-04-18",
+  "finalContractualSettlementDate" : "2022-04-18",
+  "intragroup" : false,
+  "leg1" : {
+    "notionalAmount" : 0.66,
+    "notionalCurrency" : "USD",
+    "settlementCurrency" : "USD"
+  },
+  "leg2" : {
+    "notionalAmount" : 0.66,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRatePaymentFrequencyPeriod" : "ADHO"
+    },
+    "settlementCurrency" : "USD"
+  },
+  "level" : "TCTN",
+  "masterAgreementType" : "ISDA",
+  "masterAgreementVersion" : 2002,
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "USD",
+          "UnderlierID" : "USD-LIBOR-BBA"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "TESTHOUSELEI00000001",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "EQUITYPORTFOLIOSWA01"
+}

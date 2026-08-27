@@ -1,0 +1,294 @@
+namespace drr.regulation.common.emir
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.trade.*
+import drr.base.trade.price.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iso.*
+
+type EMIRTransactionReport extends common.CommonTransactionReport:
+    override clearingAccountOrigin ClearingAccountOriginEnum (0..1)
+        [ruleReference empty]
+    override originalSwapUTI Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override originalSwapSDRIdentifier LEIIdentifier (0..1)
+        [ruleReference empty]
+    override clearingReceiptTimestamp zonedDateTime (0..1)
+        [ruleReference empty]
+    override buyerIdentifier Min20Max72AlphaNumericText (0..1)
+        [ruleReference empty]
+    override sellerIdentifier Min20Max72AlphaNumericText (0..1)
+        [ruleReference empty]
+    override priorUSI Max42AlphaNumericText (0..1)
+        [ruleReference empty]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override nonStandardizedTermIndicator boolean (0..1)
+        [ruleReference empty]
+    override amendmentIndicator boolean (0..1)
+        [ruleReference empty]
+    override packageIndicator boolean (0..1)
+        [ruleReference empty]
+    override secondaryTransactionIdentifier Max72AlphaNumericText (0..1)
+        [ruleReference empty]
+    override swapLinkID Max35AlphaNumericText (0..1)
+        [ruleReference empty]
+    override settlementLocation ISOCountryCodeEnum (0..1)
+        [ruleReference empty]
+    override counterparty2IdentifierSource Counterparty2IdentifierEnum (0..1)
+        [ruleReference empty]
+    override customBasketIndicator boolean (0..1)
+        [ruleReference empty]
+    override underlyingIdOther Max210Text (0..1)
+        [ruleReference empty]
+    override underlyingIdOtherSource ProductIdTypeEnum (0..1)
+        [ruleReference empty]
+    override embeddedOptionType EmbeddedOptionTypeEnum (0..1)
+        [ruleReference empty]
+    override bookingLocation ISOCountryCodeEnum (0..1)
+        [ruleReference empty]
+    override platformIdentifier Max4Text (0..1)
+        [ruleReference empty]
+    override eventTimestamp zonedDateTime (0..1)
+        [ruleReference empty]
+    override eventIdentifier Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override beneficiary1 Min20Max72AlphaNumericText (0..1)
+        [ruleReference empty]
+    override beneficiary1IdentifierTypeIndicator boolean (0..1)
+        [ruleReference empty]
+    override callAmount ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override callCurrency ISOCurrencyCodeEnum (0..1)
+        [ruleReference empty]
+    override putCurrency ISOCurrencyCodeEnum (0..1)
+        [ruleReference empty]
+    override putAmount ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override priceUnitOfMeasure Max4Text (0..1)
+        [ruleReference empty]
+    override firstExerciseDate date (0..1)
+        [ruleReference empty]
+    override executionAgentCounterparty1 LEIIdentifier (0..1)
+        [ruleReference empty]
+    override executionAgentCounterparty2 LEIIdentifier (0..1)
+        [ruleReference empty]
+    override countryOfTheCounterparty2 ISOCountryCodeEnum (0..1)
+        [ruleReference CountryOfTheCounterParty2]
+    override brokerID LEIIdentifier (0..1)
+        [ruleReference BrokerID]
+    override clearingMember LEIIdentifier (0..1)
+        [ruleReference ClearingMember]
+    override direction1 Direction1Enum (0..1)
+        [ruleReference Direction]
+    override priorUTI Max52AlphaNumericText (0..1)
+        [ruleReference PriorUti]
+    override priorUTIProprietary UTIProprietaryIDFormat (0..1)
+        [ruleReference PriorUtiProprietary]
+    override subsequentPositionUTI UTIIdentifierLegacy (0..1)
+        [ruleReference SubsequentPositionUti]
+    override packageIdentifier Max35AlphaNumericText (0..1)
+        [ruleReference PackageIdentifier]
+    override contractType CommonContractType (1..1)
+        [ruleReference ContractType]
+    override assetClass CommonAssetClass (1..1)
+        [ruleReference AssetClass]
+    override underlyingIdentificationType common.underlier.UnderlyingIdentificationTypeEnum (0..1)
+        [ruleReference UnderlyingIdentificationType]
+    override underlyingIdentification ISINOct2015Identifier (0..1)
+        [ruleReference UnderlyingIdentification]
+    override referenceEntity string (0..1)
+        [ruleReference ReferenceEntity]
+    override nameOfTheUnderlyingIndex Max50AlphaNumericTextWithSplChars (0..1)
+        [ruleReference NameOfTheUnderlyingIndex]
+    override customBasketCode Min20Max72AlphaNumericText (0..1)
+        [ruleReference CustomBasketCode]
+    override valuationAmount ShortFraction5DecimalNumber (0..1)
+        [ruleReference ValuationAmount]
+    override valuationCurrency ISOCurrencyCodeEnum (0..1)
+        [ruleReference ValuationCurrency]
+    override valuationTimestamp zonedDateTime (0..1)
+        [ruleReference ValuationTimestamp]
+    override valuationMethod ValuationType1Code (0..1)
+        [ruleReference ValuationMethod]
+    override delta ShortFraction5DecimalNumber (0..1)
+        [ruleReference Delta]
+    override collateralPortfolioIndicator boolean (0..1)
+        [ruleReference CollateralPortfolioIndicator]
+    override cleared ClearedEnum (1..1)
+        [ruleReference Cleared]
+    override clearingTimestamp zonedDateTime (0..1)
+        [ruleReference ClearingTimestamp]
+    override centralCounterparty LEIIdentifier (0..1)
+        [ruleReference CentralCounterparty]
+    override masterAgreementType common.contract.MasterAgreementEnum (1..1)
+        [ruleReference MasterAgreementType]
+    override masterAgreementVersion int (0..1)
+        [ruleReference MasterAgreementVersion]
+    override executionTimestamp zonedDateTime (1..1)
+        [ruleReference ExecutionTimestamp]
+    override effectiveDate ISODate (1..1)
+        [ruleReference EffectiveDate]
+    override expirationDate ISODate (0..1)
+        [ruleReference ExpirationDate]
+    override earlyTerminationDate date (0..1)
+        [ruleReference EarlyTerminationDate]
+    override finalContractualSettlementDate date (0..1)
+        [ruleReference FinalContractualSettlementDate]
+    override deliveryType DeliveryTypeEnum (1..1)
+        [ruleReference DeliveryType]
+    override optionPremiumAmount ShortFraction5DecimalNumber (0..1)
+        [ruleReference OptionPremiumAmount]
+    override optionPremiumCurrency ISOCurrencyCodeEnum (0..1)
+        [ruleReference OptionPremiumCurrency]
+    override optionPremiumPaymentDate date (0..1)
+        [ruleReference OptionPremiumPaymentDate]
+    override exchangeRate Max18D13Number (0..1)
+        [ruleReference ExchangeRate]
+    override exchangeRateBasis ExchangeRateBasisStringFormat (0..1)
+        [ruleReference ExchangeRateBasis]
+    override baseProduct string (0..1)
+        [ruleReference BaseProduct]
+    override subProduct string (0..1)
+        [ruleReference SubProduct]
+    override furtherSubProduct string (0..1)
+        [ruleReference FurtherSubProduct]
+    override optionType OptionTypeCode (0..1)
+        [ruleReference OptionType]
+    override optionStyle OptionStyleEnum (0..1)
+        [ruleReference OptionStyle]
+    override maturityDateOfTheUnderlying date (0..1)
+        [ruleReference MaturityDateOfTheUnderlying]
+    override seniority SeniorityEnum (0..1)
+        [ruleReference Seniority]
+    override series Max5Int (0..1)
+        [ruleReference Series]
+    override seriesVersion Max5Int (0..1)
+        [ruleReference Version]
+    override cdSIndexAttachmentPoint ShortFraction10DecimalNumber (0..1)
+        [ruleReference CDSIndexAttachmentPoint]
+    override cdSIndexDetachmentPoint ShortFraction10DecimalNumber (0..1)
+        [ruleReference CDSIndexDetachmentPoint]
+    override price PriceFormat (0..1)
+        [ruleReference Price]
+    override priceNotation PriceNotationEnum (0..1)
+        [ruleReference PriceNotation]
+    override priceCurrency ISOCurrencyCodeEnum (0..1)
+        [ruleReference PriceCurrency]
+    override priceSchedule PricePeriod (0..*)
+        [ruleReference ContractPriceSchedule]
+    override packageTransactionPrice PriceFormat (0..1)
+        [ruleReference PackageTransactionPrice]
+    override packageTransactionPriceNotation PriceNotationEnum (0..1)
+        [ruleReference PackageTransactionPriceNotation]
+    override packageTransactionPriceCurrency ISOCurrencyCodeEnum (0..1)
+        [ruleReference PackageTransactionPriceCurrency]
+    override strikePrice PriceFormat (0..1)
+        [ruleReference StrikePrice]
+    override strikePriceNotation PriceNotationEnum (0..1)
+        [ruleReference StrikePriceNotation]
+    override strikePriceCurrency string (0..1)
+        [ruleReference StrikePriceCurrencyCurrencyPair]
+    override strikePriceSchedule PricePeriod (0..*)
+        [ruleReference StrikePriceSchedule]
+    override packageTransactionSpread PriceFormat (0..1)
+        [ruleReference PackageTransactionSpread]
+    override packageTransactionSpreadNotation PriceNotationEnum (0..1)
+        [ruleReference PackageTransactionSpreadNotation]
+    override packageTransactionSpreadCurrency ISOCurrencyCodeEnum (0..1)
+        [ruleReference PackageTransactionSpreadCurrency]
+    override otherPayment payment.OtherPayment (0..*)
+		[ruleReference OtherPayment]
+    override basketConstituents basket.BasketConstituentsReport (0..*)
+        [ruleReference IdentifierOfBasketConstituents]
+    override leg1 common.CommonLeg (0..1)
+        [ruleReference for periodicPayment -> fixedRateDayCountConvention FixedRateOrCouponDayCountConventionLeg1]
+        [ruleReference for periodicPayment -> floatingRateDayCountConvention FloatingRateDayCountConventionOfLeg1]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriod FixedRateOrCouponPaymentFrequencyPeriodLeg1]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier FixedRateOrCouponPaymentFrequencyPeriodMultiplierLeg1]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriod FloatingRatePaymentFrequencyPeriodLeg1]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier FloatingRatePaymentFrequencyPeriodMultiplierLeg1]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyPeriod FloatingRateResetFrequencyPeriodOfLeg1]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyMultiplier FloatingRateResetFrequencyMultiplierOfLeg1]
+        [ruleReference for periodicPayment -> floatingRateIndicator FloatingRateIndicatorLeg1]
+        [ruleReference for periodicPayment -> floatingRateIdentifier IdentifierOfFloatingRateOfLeg1]
+        [ruleReference for periodicPayment -> floatingRateReferencePeriod FloatingRateReferencePeriodOfLeg1TimePeriod]
+        [ruleReference for periodicPayment -> floatingRateReferencePeriodMultiplier FloatingRateReferencePeriodOfLeg1Multiplier]
+        [ruleReference for periodicPayment -> nameOfTheFloatingRate NameOfTheFloatingRateOfLeg1]
+        [ruleReference for spread SpreadOfLeg1]
+        [ruleReference for spreadCurrency SpreadCurrencyOfLeg1]
+        [ruleReference for spreadNotation SpreadOfLeg1Notation]
+        [ruleReference for settlementCurrency SettlementCurrency1]
+        [ruleReference for fixedRate FixedRateOfLeg1OrCoupon]
+        [ruleReference for notionalAmount NotionalAmountOfLeg1]
+        [ruleReference for notionalCurrency NotionalCurrencyLeg1]
+        [ruleReference for notionalAmountSchedule NotionalAmountScheduleLeg1]
+        [ruleReference for totalNotionalQuantity TotalNotionalQuantityLeg1]
+        [ruleReference for direction2 DirectionOfLeg1]
+    override leg2 common.CommonLeg (0..1)
+        [ruleReference for periodicPayment -> fixedRateDayCountConvention FixedRateDayCountConventionLeg2]
+        [ruleReference for periodicPayment -> floatingRateDayCountConvention FloatingRateDayCountConventionOfLeg2]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriod FixedRatePaymentFrequencyPeriodLeg2]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier FixedRatePaymentFrequencyPeriodMultiplierLeg2]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriod FloatingRatePaymentFrequencyPeriodLeg2]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier FloatingRatePaymentFrequencyPeriodMultiplierLeg2]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyPeriod FloatingRateResetFrequencyPeriodOfLeg2]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyMultiplier FloatingRateResetFrequencyMultiplierOfLeg2]
+        [ruleReference for periodicPayment -> floatingRateIndicator FloatingRateIndicatorLeg2]
+        [ruleReference for periodicPayment -> floatingRateIdentifier IdentifierOfFloatingRateOfLeg1]
+        [ruleReference for periodicPayment -> floatingRateReferencePeriod FloatingRateReferencePeriodOfLeg2TimePeriod]
+        [ruleReference for periodicPayment -> floatingRateReferencePeriodMultiplier FloatingRateReferencePeriodOfLeg2Multiplier]
+        [ruleReference for periodicPayment -> nameOfTheFloatingRate NameOfTheFloatingRateOfLeg2]
+        [ruleReference for spread SpreadOfLeg2]
+        [ruleReference for spreadCurrency SpreadCurrencyOfLeg2]
+        [ruleReference for spreadNotation SpreadOfLeg2Notation]
+        [ruleReference for fixedRate FixedRateOfLeg2]
+        [ruleReference for notionalAmount NotionalAmountOfLeg2]
+        [ruleReference for notionalCurrency NotionalCurrencyLeg2]
+        [ruleReference for notionalAmountSchedule NotionalAmountScheduleLeg2]
+        [ruleReference for totalNotionalQuantity TotalNotionalQuantityLeg2]
+        [ruleReference for direction2 DirectionOfLeg2]
+    otherMasterAgreementType Max50AlphaNumericText (0..1)
+        [ruleReference OtherMasterAgreementType]
+    collateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference CollateralPortfolioCode]
+    ptrrId Max52UpperAlphaNumericText (0..1)
+        [ruleReference PTRRID]
+    clearingThresholdOfCounterparty1 boolean (0..1)
+    clearingThresholdOfCounterparty2 boolean (0..1)
+    reportingObligationOfTheCounterparty2 boolean (1..1)
+    directlyLinkedToCommercialActivityOrTreasuryFinancing boolean (0..1)
+    reportTrackingNumber Max52AlphaNumericText (0..1)
+    isin ISINOct2015Identifier (0..1)
+    productClassification CFIOct2015Identifier (1..1)
+        [ruleReference upi.ProductClassification]
+    indicatorOfTheUnderlyingIndex IndexEnum (0..*)
+    clearingObligation ClearingObligationEnum (0..1)
+    ptrr boolean (0..1)
+        [ruleReference PTRR]
+    typeOfPTRRTechnique RiskReductionTechniqueEnum (0..1)
+        [ruleReference TypeOfPTRRTechnique]
+    ptrrServiceProvider LEIIdentifier (0..1)
+        [ruleReference PTRRServiceProvider]
+    venueOfExecution string (0..1)
+    forwardExchangeRate Max18D13Number (0..1)
+        [ruleReference ForwardExchangeRate]
+    deliveryPoint EICIdentifier (0..*)
+        [ruleReference DeliveryPointOrZone]
+    interconnectionPoint EICIdentifier (0..1)
+        [ruleReference InterconnectionPoint]
+    loadType EnergyLoadType1Code (0..1)
+        [ruleReference LoadType]
+    deliveryReport ReportableDelivery (0..*)
+        [ruleReference Delivery]
+    tranche boolean (0..1)
+        [ruleReference Tranche]
+    eventDate ISODate (1..1)
+        [ruleReference EventDate]

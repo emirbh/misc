@@ -1,0 +1,18 @@
+namespace drr.base.trade.link
+version "${project.version}"
+
+import cdm.base.staticdata.identifier.*
+
+import drr.base.trade.*
+
+func PackageInformation: <"Find package IdentifiedList from TransactionReportInstruction">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        packageInformation IdentifiedList (0..1)
+
+    set packageInformation:
+        if reportableEvent -> originatingWorkflowStep -> businessEvent -> packageInformation exists
+        then reportableEvent -> originatingWorkflowStep -> businessEvent -> packageInformation
+        else if TradeForEvent(reportableEvent) -> executionDetails -> packageReference exists
+        then TradeForEvent(reportableEvent) -> executionDetails -> packageReference

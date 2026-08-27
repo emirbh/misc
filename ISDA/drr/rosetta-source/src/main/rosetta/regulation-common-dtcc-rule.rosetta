@@ -1,0 +1,443 @@
+namespace drr.regulation.common.dtcc
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.*
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iosco.cde.version3.* as cde
+
+//DTCC Definitions
+reporting rule DTCC_ClearingVenueIDType from TransactionReportInstruction: <"Clearing Venue - ID Type">
+    extract
+        if cde.execution.CentralCounterparty exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_Comment1 from TransactionReportInstruction: <"Comment 1">
+    empty
+
+reporting rule DTCC_CorporateActionNewTradeParty1LEI from TransactionReportInstruction: <"Corporate Action - New Trade Party 1 LEI">
+    empty
+
+reporting rule DTCC_DeliveryLocation from TransactionReportInstruction: <"Delivery Location">
+    extract EconomicTermsForProduct(ProductForEvent)
+    then filter Qualify_AssetClass_Commodity
+    then extract
+        if Qualify_Commodity_Swap_FixedFloat or Qualify_Commodity_Swap_Basis
+        then payout -> commodityPayout -> delivery first
+        else if Qualify_Commodity_Swaption
+        then EconomicTermsForProduct(payout -> optionPayout -> underlier only-element) -> payout -> commodityPayout -> delivery first
+        else if Qualify_Commodity_Option
+        then payout -> optionPayout -> delivery only-element
+        else if Qualify_Commodity_Forward
+        then payout -> forwardPayout only-element -> delivery
+        else payout -> commodityPayout only-element -> delivery
+    then extract item -> location
+    then filter locationIdentifierType = DeliveryPoint
+    then extract assignedIdentifier -> identifier
+    then flatten
+    then first
+
+reporting rule DTCC_Leg1CommodityInstrumentID from TransactionReportInstruction: <"Leg 1 - Commodity Instrument ID">
+    extract ProductForEvent
+    then extract
+        if Qualify_Commodity_Option(EconomicTermsForProduct)
+        then underlier.UnderlierForProduct -> commodity
+        else if Qualify_Commodity_Swaption(EconomicTermsForProduct)
+        then CommodityLeg1(underlier.UnderlierForProduct) -> underlier -> commodity
+        else if Qualify_Commodity_Swap_Basis(EconomicTermsForProduct)
+                or Qualify_Commodity_Forward(EconomicTermsForProduct) // For a Floating Price Forward, the commodityPayout contains the Commodity Reference Price.
+        then CommodityLeg1 -> underlier -> commodity
+    then extract productIdentifier
+    then filter source = ProductIdTypeEnum -> ISDACRP
+    then only-element
+    then extract identifier
+
+reporting rule DTCC_Leg2CommodityInstrumentID from TransactionReportInstruction: <"Leg 2 - Commodity Instrument ID">
+    extract ProductForEvent
+    then extract
+        if Qualify_Commodity_Swaption(EconomicTermsForProduct)
+        then CommodityLeg2(underlier.UnderlierForProduct) -> underlier -> commodity
+        else if Qualify_Commodity_Swap_Basis(EconomicTermsForProduct)
+                or Qualify_Commodity_Swap_FixedFloat(EconomicTermsForProduct)
+        then CommodityLeg2 -> underlier -> commodity
+    // For commodity forwards, the forwardPayout contains the physical quantity delivered and its associated conditions, not information pertaining to the price. Consequently, it will not contain a source = ISDACRP.
+    then extract productIdentifier
+    then filter source = ProductIdTypeEnum -> ISDACRP
+    then only-element
+    then extract identifier
+
+reporting rule DTCC_MaturityDateOfTheUnderlying from TransactionReportInstruction: <"Maturity Date of the Underlier">
+    common.datetime.MaturityDateOfTheUnderlier
+
+reporting rule DTCC_MessageTypeTransaction from TransactionReportInstruction: <"Message Type (Transaction)">
+    "Trade State"
+
+reporting rule DTCC_MessageTypePPD from TransactionReportInstruction: <"Message Type (PPD)">
+    "RT"
+
+reporting rule DTCC_OptionStyle from TransactionReportInstruction: <"Option Style">
+    filter Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+    then extract common.contract.OptionStyle
+
+reporting rule DTCC_OptionType from TransactionReportInstruction: <"Option Type">
+    extract ProductForEvent
+    then extract Product [
+        filter Qualify_AssetClass_Commodity(EconomicTermsForProduct)
+        then extract
+            EconomicTermsForProduct -> payout -> optionPayout only-element -> optionType
+        then extract
+            if item = OptionTypeEnum -> Put or IsFloor(Product)
+            then "Put"
+            else if item = OptionTypeEnum -> Call or IsCap(Product)
+            then "Call"
+            else if item = OptionTypeEnum -> Receiver
+            then "Receiver"
+            else if item = OptionTypeEnum -> Payer
+            then "Payer"
+            else if item = OptionTypeEnum -> Straddle
+            then "Straddle"
+            else if IsOption(Product)
+            then "Other"
+    ]
+
+reporting rule DTCC_OtherPaymentPayerIDType from TransactionReportInstruction: <"Other Payment Payer ID Type">
+    extract TradeStateForEvent -> transferHistory
+    then filter cde.payment.IsOtherPayment
+    then extract
+        if transfer -> payerReceiver -> payerPartyReference -> partyId -> identifierType any = LEI
+        then transfer -> payerReceiver -> payerPartyReference
+    then extract PartyIdentifierType
+    then flatten
+
+reporting rule DTCC_OtherPaymentReceiverIDType from TransactionReportInstruction: <"Other Payment Receiver ID Type">
+    extract TradeStateForEvent -> transferHistory
+    then filter cde.payment.IsOtherPayment
+    then extract
+        if transfer -> payerReceiver -> payerPartyReference -> partyId -> identifierType any = LEI
+        then transfer -> payerReceiver -> receiverPartyReference
+    then extract PartyIdentifierType
+    then flatten
+
+reporting rule DTCC_PrimaryAssetClass from TransactionReportInstruction: <"Primary Asset Class">
+    extract common.contract.AssetClass
+    then extract
+        if item = INTR
+        then AssetClassEnum -> InterestRate
+        else if item = CRDT
+        then AssetClassEnum -> Credit
+        else if item = EQUI
+        then AssetClassEnum -> Equity
+        else if item = COMM
+        then AssetClassEnum -> Commodity
+        else if item = CURR
+        then AssetClassEnum -> ForeignExchange
+
+reporting rule DTCC_ProductGrade from TransactionReportInstruction: <"Product Grade">
+    extract EconomicTermsForProduct(ProductForEvent)
+    then filter Qualify_AssetClass_Commodity
+    then extract payout -> commodityPayout
+    then extract
+        ProductGradeReport {
+            productGrade: delivery -> commodityGrade extract to-string
+        }
+
+reporting rule DTCC_ProductID from TransactionReportInstruction: <"Product ID">
+    extract ProductForEvent
+    then filter Qualify_AssetClass_Commodity(EconomicTermsForProduct)
+    then extract contractualProduct -> productTaxonomy
+    then filter source = ISDA and value -> name exists
+    then first
+    then extract value -> name
+
+reporting rule DTCC_ResponsibleDataSubmitterID from TransactionReportInstruction: <"Responsible Data Submitter - ID">
+    empty
+
+reporting rule DTCC_ResponsibleDataSubmitterIDType from TransactionReportInstruction: <"Responsible Data Submitter - ID Type">
+    empty
+
+reporting rule DTCC_SecondaryAssetClass from TransactionReportInstruction: <"Secondary Asset Class">
+    extract
+        ProductForEvent -> contractualProduct -> productTaxonomy -> secondaryAssetClass
+            distinct
+            only-element
+
+reporting rule DTCC_SettlementType from TransactionReportInstruction: <"Settlement Type">
+    // TH 05/05/25: When shall "Optional" be reported? Should Optional value be included in SettlementTypeEnum?
+    // Is "Not applicable" a plausible value regarding this field is optional? When should it be considered?
+    filter Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+    then extract common.execution.SettlementTerms
+    then extract
+        if (settlementType = Cash or cashSettlementTerms exists)
+        then "Cash"
+        else if (settlementType = Physical or physicalSettlementTerms exists)
+        then "Physical"
+        else if settlementType = CashOrPhysical
+        then "CashOrPhysical"
+        else if settlementType = Election
+        then "Election"
+
+reporting rule DTCC_SubmittedForParty from TransactionReportInstruction: <"Submitted For Party">
+    extract cde.party.Counterparty1
+
+reporting rule DTCC_SubmittingPartyIDType from TransactionReportInstruction: <"Submitting Party - ID Type">
+    extract
+        if common.party.ReportSubmittingEntity exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_TradeLegTypes from TransactionReportInstruction: <"Trade Leg Types">
+    extract ProductForEvent
+    then extract
+        // Option Cash
+        if Qualify_Commodity_Option_Cash(EconomicTermsForProduct)
+        then "O-:OPT:OPT"
+        // Swap Basis
+        else if Qualify_Commodity_Swap_Basis(EconomicTermsForProduct)
+        then "S-:FLT:FLT"
+        // Fixed Float
+        else if Qualify_Commodity_Swap_FixedFloat(EconomicTermsForProduct)
+        then "S-:FXD:FLT"
+        // Swaption on Basis
+        else if Qualify_Commodity_Swaption(EconomicTermsForProduct)
+                and Qualify_Commodity_Swap_Basis(
+                        EconomicTermsForProduct(underlier.UnderlierForProduct)
+                    )
+        then "SO:FLT:FLT"
+        // Swaption on Fixed Float
+        else if Qualify_Commodity_Swaption(EconomicTermsForProduct)
+                and Qualify_Commodity_Swap_FixedFloat(
+                        EconomicTermsForProduct(underlier.UnderlierForProduct)
+                    )
+        then "SO:FXD:FLT"
+        else if Qualify_Commodity_Forward(EconomicTermsForProduct)
+        then (if IsCommodityFloatingPriceForward
+            then // Averaging Forward Bullion: Forward Payout + Commodity payout
+                (if IsCommodityBullion
+                then "FO:AVG:BUL"
+                // Averaging Forward Metal
+                else if IsCommodityMetal
+                then "FO:AVG:MET")
+            // LOGIC WITH THE OLD FUNCTIONS:
+            // Averaging Forward Bullion: Forward Payout + Commodity payout
+            // (if IsCommodityBullion(EconomicTermsForProduct -> payout -> commodityPayout only-element -> underlier) then "FO:AVG:BUL"
+            // Averaging Forward Metal
+            // else if IsCommodityMetal(EconomicTermsForProduct -> payout -> commodityPayout only-element -> underlier) then "FO:AVG:MET")
+            else if IsCommodityFixedPriceForward
+            then // Fixed Price Forward Bullion: FixedPricePayout (doesn't have reference price ISDACRP as it is fixed) + Forward Payout
+                (if IsCommodityBullion
+                then "FO:FXD:BUL"
+                // Fixed Price Forward Metal
+                else if IsCommodityMetal
+                then "FO:FXD:MET"
+                // Fixed Price Forward Physical
+                else "FO:FXD:PHY"))
+        // Option physical
+        else if Qualify_Commodity_Option_Physical(EconomicTermsForProduct)
+        then // optionPayout only-element must exist
+            (if EconomicTermsForProduct -> payout -> optionPayout only-element -> exerciseTerms -> strike -> averagingStrikeFeature exists
+            then // forwardPayout must exist
+                (if IsCommodityBullion
+                then "OF:AVG:BUL"
+                // Averaging Physical Option on Metal
+                else if IsCommodityMetal
+                then "OF:AVG:MET")
+            // LOGIC WITH THE OLD FUNCTIONS
+            // Averaging Physical Option on Bullion
+            // (if IsCommodityBullion(EconomicTermsForProduct -> payout -> commodityPayout only-element -> underlier) then "OF:AVG:BUL"
+            // Averaging Physical Option on Metal
+            // else if IsCommodityMetal(EconomicTermsForProduct -> payout -> commodityPayout only-element -> underlier) then "OF:AVG:MET")
+            else if EconomicTermsForProduct -> payout -> optionPayout only-element -> exerciseTerms -> strike -> strikePrice exists
+            then // Fixed Price Physical Option on Bullion
+                (if IsCommodityBullion
+                then "OF:FXD:BUL"
+                // Fixed Price Physical Option on Metal
+                else if IsCommodityMetal
+                then "OF:FXD:MET"))
+
+reporting rule DTCC_TradeParty1ClearingBrokerIDType from TransactionReportInstruction: <"Trade Party 1 - Clearing Broker ID Type">
+    extract
+        if cde.execution.ClearingMember exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_TradeParty1ExecutionAgentID from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID">
+    extract reportableEvent [
+        reportableEvent -> reportableInformation -> partyInformation
+            then filter partyReference = reportableEvent -> reportingSide -> reportingParty
+            then distinct only-element
+            then extract ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+            then extract PartyLei(partyId)
+    ]
+
+reporting rule DTCC_TradeParty1ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID Type">
+    extract reportableEvent [
+        reportableEvent -> reportableInformation -> partyInformation
+            then filter partyReference = reportableEvent -> reportingSide -> reportingParty
+            then distinct only-element
+            then extract ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+            then extract
+                if PartyLei(partyId) exists
+                then PartyIdentifierTypeEnum -> LEI
+    ]
+
+reporting rule DTCC_TradeParty1ReportingDestination from TransactionReportInstruction: <"Trade Party 1 - Reporting Destination">
+    extract transactionReportInstruction [
+        reportableInformation -> partyInformation
+            then filter
+                item -> partyReference = transactionReportInstruction -> reportingSide -> reportingParty
+            then extract regimeInformation -> supervisoryBody distinct
+            then flatten
+            then extract
+                if csaTrade.SupervisoryBodyForCSA any = item
+                        or [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC] any = item
+                then item
+            then distinct
+    ]
+
+reporting rule DTCC_TradeParty1TransactionID from TransactionReportInstruction: <"Trade Party 1 - Transaction ID">
+    extract transactionReportInstruction [
+        TradeForEvent -> tradeIdentifier
+            then filter
+                issuerReference = transactionReportInstruction -> reportingSide -> reportingParty
+            then filter
+                identifierType <> UniqueTransactionIdentifier
+                    and identifierType <> UniqueSwapIdentifier
+            then extract assignedIdentifier -> identifier
+            then flatten
+            then distinct
+            then only-element
+    ]
+
+reporting rule DTCC_TradeParty2ExecutionAgentID from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID">
+    extract common.party.ExecutionAgentCounterparty2
+
+reporting rule DTCC_TradeParty2ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID Type">
+    extract
+        if common.party.ExecutionAgentCounterparty2 exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_TradeParty2ReportingDestination from TransactionReportInstruction: <"Trade Party 2 - Reporting Destination">
+    extract transactionReportInstruction [
+        reportableInformation -> partyInformation
+            then filter
+                item -> partyReference = transactionReportInstruction -> reportingSide -> reportingCounterparty
+            then extract regimeInformation -> supervisoryBody distinct
+            then flatten
+            then extract
+                if csaTrade.SupervisoryBodyForCSA all <> item
+                        and [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC] all <> item
+                then item
+            then distinct
+    ]
+
+reporting rule DTCC_VersionTransaction from TransactionReportInstruction: <"Version (Trade report)">
+    "CORE1.0"
+
+reporting rule DTCC_VersionPPD from TransactionReportInstruction: <"Version (PPD report)">
+    "PPD1.0"
+
+reporting rule DTCC_SEFOrDCMAnonymousExecutionIndicator from TransactionReportInstruction: <"SEF or DCM Anonymous Execution Indicator">
+    extract reportableInformation
+    then extract
+        if ((partyInformation
+                filter regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> CFTC
+                then exists
+                )
+                and (executionVenueType = ExecutionVenueTypeEnum -> SEF or executionVenueType = ExecutionVenueTypeEnum -> DCM))
+        then if sefOrDcmAnonymousIndicator exists
+            then sefOrDcmAnonymousIndicator
+            else False
+        else False
+
+reporting rule DTCC_ExecutionVenueID from TransactionReportInstruction: <"Execution Venue - ID">
+    filter TradeForEvent -> executionDetails -> executionType = Electronic
+    then extract reportableInformation -> partyInformation -> relatedParty
+    then filter role = ExecutionFacility
+    then extract partyReference -> partyId
+    then flatten
+    then filter identifierType = LEI
+    then extract identifier
+    then first
+
+reporting rule DTCC_Leg1FloatingRateIndex from TransactionReportInstruction: <"Leg 1 - Floating Rate Index">
+    extract ProductForEvent
+    then filter Qualify_AssetClass_InterestRate(EconomicTermsForProduct)
+    then extract ProductOrUnderlierProduct
+    then extract
+        if IsFRA
+        then InterestRateLeg1 -> rateSpecification -> floatingRate -> rateOption -> indexReferenceInformation -> indexId first
+        else if Qualify_BaseProduct_IRSwap(EconomicTermsForProduct)
+        then ([InterestRateLeg1 -> rateSpecification -> floatingRate -> rateOption -> indexReferenceInformation -> indexId first, InterestRateLeg1 -> rateSpecification -> inflationRate -> rateOption -> indexReferenceInformation -> indexId first] only-element)
+
+reporting rule DTCC_Leg2FloatingRateIndex from TransactionReportInstruction: <"Leg 2 - Floating Rate Index">
+    extract ProductForEvent
+    then filter Qualify_AssetClass_InterestRate(EconomicTermsForProduct)
+    then extract ProductOrUnderlierProduct
+    then extract
+        if IsFRA
+        then InterestRateLeg2 -> rateSpecification -> floatingRate -> rateOption -> indexReferenceInformation -> indexId first
+        else if Qualify_BaseProduct_IRSwap(EconomicTermsForProduct)
+        then ([InterestRateLeg2 -> rateSpecification -> floatingRate -> rateOption -> indexReferenceInformation -> indexId first, InterestRateLeg2 -> rateSpecification -> inflationRate -> rateOption -> indexReferenceInformation -> indexId first] only-element)
+
+reporting rule DTCC_UnderlyingAssetID from TransactionReportInstruction: <"Underlying Asset ID">
+    empty
+
+reporting rule DTCC_UnderlyingAssetIDType from ProductIdentifier: <"Underlying Asset ID Type">
+    if source = ISIN
+    then "ISIN"
+    else if [ProductIdTypeEnum -> BBGID, ProductIdTypeEnum -> BBGTICKER] any = source
+    then "Bloomberg"
+    else if source = CUSIP
+    then "CUSIP"
+    else if source = RIC
+    then "RIC"
+    else if source = SEDOL
+    then "SEDOL"
+    else if source = REDID
+    then "REDID"
+    else if source = Valoren
+    then "Valoren"
+    else "SingleOther"
+
+reporting rule DTCC_UnderlyingAssetName from TransactionReportInstruction: <"Underlying Asset Name">
+    extract
+        if reportableInformation -> partyInformation -> regimeInformation -> regimeName any = CSA and reportableInformation -> partyInformation -> regimeInformation count > 1
+        then ProductForEvent
+    then filter Qualify_AssetClass_Credit(EconomicTermsForProduct)
+    then extract ProductOrUnderlierProduct
+    then extract
+        if EconomicTermsForProduct -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then UnderlyingAssetNameReport {
+                underlyingAssetName: EconomicTermsForProduct -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation -> indexName
+            }
+        else if EconomicTermsForProduct(underlier.UnderlierForProduct) -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then UnderlyingAssetNameReport {
+                underlyingAssetName: EconomicTermsForProduct(underlier.UnderlierForProduct) -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation -> indexName
+            }
+        else if underlier.UnderlierProductIdentifier(item, empty) exists
+        then (underlier.UnderlierProductIdentifier(item, empty)
+            then filter source = Name
+            then UnderlyingAssetNameReport {
+                    underlyingAssetName: identifier
+                })
+        as "Underlying Asset Name"
+
+reporting rule DTCC_ExecutionVenueIDType from TransactionReportInstruction: <"Execution Venue - ID Type">
+    filter TradeForEvent -> executionDetails -> executionType = Electronic
+    then extract reportableInformation -> partyInformation -> relatedParty
+    then filter role = ExecutionFacility
+    then extract partyReference -> partyId
+    then flatten
+    then filter identifierType = LEI
+    then first
+    then extract
+        if identifier exists then PartyIdentifierTypeEnum -> LEI

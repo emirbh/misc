@@ -1,0 +1,94 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "blockTradeElectionIndicator" : false,
+  "buyerIdentifier" : "DUMMYLEI012345678903",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI012345678903",
+  "counterparty1FederalEntityIndicator" : false,
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI012345678904",
+  "counterparty2FederalEntityIndicator" : false,
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "changeInNotionalAmount1" : 0,
+    "messageID" : "DTDApproved2380513903EMIRRiskNewNewInterest2024-04-29T00:00Z",
+    "messageType" : "Trade State",
+    "physicalCommodityContractIndicator" : false,
+    "primaryAssetClass" : "InterestRate",
+    "sefOrDcmIndicator" : false,
+    "submittedForParty" : "DUMMYLEI012345678903",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty2ExecutionAgentID" : "DUMMYLEI012345678907",
+    "tradeParty2ExecutionAgentIDType" : "LEI",
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "version" : "CORE1.0"
+  },
+  "effectiveDate" : "2023-04-19",
+  "eventIdentifier" : "DTDApproved2380513903EMIRRiskNewNewInterest",
+  "eventTimestamp" : "2021-03-13T06:33:27Z",
+  "eventType" : "TRAD",
+  "executionAgentCounterparty1" : "NOAP",
+  "executionAgentCounterparty2" : "DUMMYLEI012345678907",
+  "executionTimestamp" : "2021-03-13T06:32:49Z",
+  "expirationDate" : "2023-04-19",
+  "finalContractualSettlementDate" : "2023-04-19",
+  "firstExerciseDate" : "2023-04-19",
+  "leg1" : {
+    "notionalAmount" : 600000000,
+    "notionalCurrency" : "USD",
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifierFormat" : "Lei"
+  },
+  "leg2" : {
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifierFormat" : "Lei"
+  },
+  "nonReportable" : {
+    "buyerIdentifierFormat" : "Lei",
+    "counterparty1Format" : "Lei",
+    "counterparty2Format" : "Lei",
+    "instrumentType" : "Option",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "PHYS",
+          "NotionalCurrency" : "USD",
+          "OptionExerciseStyle" : "EURO",
+          "OptionType" : "CALL",
+          "UnderlierID" : "US05367AAA16",
+          "UnderlierIDSource" : "ISIN",
+          "ValuationMethodorTrigger" : "Vanilla"
+        },
+        "Header" : {
+          "AssetClass" : "Rates",
+          "InstrumentType" : "Option",
+          "Level" : "UPI",
+          "UseCase" : "Debt_Option"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "sellerIdentifierFormat" : "Lei"
+  },
+  "nonStandardizedTermIndicator" : false,
+  "optionPremiumAmount" : 0,
+  "optionPremiumCurrency" : "USD",
+  "optionPremiumPaymentDate" : "2021-03-13",
+  "packageIndicator" : false,
+  "platformIdentifier" : "XXXX",
+  "postPricedSwapIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI012345678903",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "sellerIdentifier" : "DUMMYLEI012345678904",
+  "strikePrice" : {
+    "decimal" : 6
+  },
+  "strikePriceNotation" : "Decimal",
+  "uniqueTransactionIdentifier" : "IROPTIONDEBTOPTION03"
+}

@@ -1,0 +1,74 @@
+namespace drr.regulation.common.trade.execution
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version3.* as cde
+
+reporting rule BookingLocation from TransactionReportInstruction: <"Booking location">
+    extract
+        reportingSide -> reportingParty -> contactInformation -> address -> country
+            only-element
+            to-enum ISOCountryCodeEnum
+
+reporting rule TraderLocation from TransactionReportInstruction: <"Trader location">
+    extract reportInstruction [
+        reportableInformation -> partyInformation
+            then filter partyReference = reportInstruction -> reportingSide -> reportingParty
+            then only-element
+    ]
+    then filter relatedPerson -> role any = NaturalPersonRoleEnum -> Trader
+    then extract
+        relatedPerson -> personReference -> personId -> country
+            only-element
+            to-enum ISOCountryCodeEnum
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform identifier">
+    extract
+        if reportableInformation -> enrichment -> micData is absent
+                and reportableInformation -> transactionInformation -> masTransactionInformation exists
+        then (if reportableInformation -> transactionInformation -> masTransactionInformation only-element -> tradableOnTradingVenue = Admitted
+            then "XOFF"
+            else if reportableInformation -> transactionInformation -> masTransactionInformation only-element -> tradableOnTradingVenue = NotAdmitted
+            then "XXXX"
+            else if reportableInformation -> transactionInformation -> masTransactionInformation only-element -> tradableOnTradingVenue = Unknown
+            then "BILT")
+        else if reportableInformation -> enrichment -> micData exists
+                and ["XOFF", "XXXX", "BILT"] any = reportableInformation -> enrichment -> micData only-element -> mic
+        then reportableInformation -> enrichment -> micData only-element -> mic
+        else cde.execution.PlatformIdentifier
+
+reporting rule Confirmed from TransactionReportInstruction: <"Confirmed">
+    filter (IsCleared(originatingWorkflowStep) = False)
+    then extract cde.execution.Confirmed
+
+reporting rule ClearingAccountOrigin from TransactionReportInstruction: <"Clearing Account Origin">
+    extract
+        if IsCleared(originatingWorkflowStep) = True
+        then if Counterparties(TradeForEvent)
+                    any = ExtractPartyFromRelatedPartyByRole(
+                            reportableInformation -> partyInformation -> relatedParty,
+                            PartyRoleEnum -> ClearingFirm
+                        )
+            then ClearingAccountOriginEnum -> HOUS
+            else ClearingAccountOriginEnum -> CLIE
+
+reporting rule SettlementTerms from TransactionReportInstruction: <"Settlement terms">
+    cde.execution.SettlementTerms(trade.PayoutLeg1)
+        default cde.execution.SettlementTerms(trade.PayoutLeg2)
+
+reporting rule SettlementLocation from TransactionReportInstruction: <"Settlement Location">
+    [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Settlement Location"
+        provision "Improvement and cleaning of the logic by using the extraction of the SettlementTermsLeg1 and SettlementTermsLeg2."]
+    [
+        cde.execution.SettlementLocation(trade.PayoutLeg1),
+        cde.execution.SettlementLocation(trade.PayoutLeg2)
+    ]
+        then distinct only-element

@@ -1,0 +1,215 @@
+namespace drr.base.trade.price
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.math.*
+import cdm.base.staticdata.asset.common.*
+import cdm.event.common.*
+import cdm.observable.asset.*
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.trade.*
+import drr.base.util.*
+import drr.standards.iso.*
+
+func SingleTradeLot: <"Extracts a single trade lot from a trade, or returns null if the trade lot attribute is not unique.">
+    inputs:
+        trade Trade (1..1)
+    output:
+        singleTradeLot TradeLot (0..1)
+    set singleTradeLot: trade -> tradableProduct -> tradeLot only-element
+
+func NotationFromPrice: <"Notations are manners in which Price Values (Price, Rate or Spread) is expressed.
+                        Notation 1 - Represents Monetary Value;
+                        Notation 2 - Represents Percentage;
+                        Notation 3 - Represents Decimal;
+                        Notation 4 - Represents Spread
+                        ">
+    inputs:
+        price PriceSchedule (0..1)
+    output:
+        notation price.PriceNotationEnum (1..1)
+
+    set notation:
+        if price -> value exists or price -> datedValue exists
+        then if price -> priceType = PriceTypeEnum -> InterestRate
+                    and price -> arithmeticOperator = ArithmeticOperationEnum -> Add
+            then Basis // 4
+            else if (price -> priceType = PriceTypeEnum -> InterestRate
+                    or price -> priceType = PriceTypeEnum -> Variance
+                    or price -> priceType = PriceTypeEnum -> Volatility
+                    or (price -> priceType = PriceTypeEnum -> AssetPrice
+                        and price -> unit = price -> perUnitOf))
+                    or (price -> priceExpression = PriceExpressionEnum -> PercentageOfNotional)
+            then Percentage // 2
+            else if (price -> priceType = PriceTypeEnum -> ExchangeRate
+                    or price -> priceType = PriceTypeEnum -> AssetPrice
+                    or price -> priceType = PriceTypeEnum -> CashPrice)
+                    or (price -> unit -> currency exists
+                        or price -> priceExpression = PriceExpressionEnum -> AbsoluteTerms)
+            then Monetary // 1
+            else Decimal // 3
+
+func NotationStringFromEnum: <"This functions returns character notations for Business names e.g. This function returns '3' for Notation = 'Decimal'">
+    inputs:
+        notationEnum price.PriceNotationEnum (1..1)
+    output:
+        notationString NumericChar1to4 (0..1)
+
+    set notationString:
+        if notationEnum = Monetary
+        then "1"
+        else if notationEnum = Percentage
+        then "2"
+        else if notationEnum = Decimal
+        then "3"
+        else if notationEnum = Basis
+        then "4"
+
+func MultiplyPrice: <"This functions converts default Decimal values into required formats for Basis (x 10000) and Percentages (x 100)">
+    inputs:
+        value number (0..1)
+        notation PriceNotationEnum (0..1)
+    output:
+        multipliedValue number (0..1)
+
+    set multipliedValue:
+        if value exists
+        then (if notation = Basis
+            then RoundToPrecision(value * 10000, 0, RoundingDirectionEnum -> Nearest)
+            else if notation = Percentage
+            then RoundToPrecision(value * 100, 10, RoundingDirectionEnum -> Nearest)
+            else RoundToPrecision(value, 13, RoundingDirectionEnum -> Nearest))
+
+func Contract_Price: <"Price">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        prices PriceSchedule (0..*)
+    alias trade: TradeForEvent(reportableEvent)
+    alias position: PositionForEvent(reportableEvent)
+    add prices:
+        if trade exists
+        then SingleTradeLot(trade) -> priceQuantity -> price
+        else if position exists
+        then (position -> positionBase -> tradeLot only-element) -> priceQuantity -> price
+
+func ReportablePricePeriod: <"Extracts the period for a strike price schedule">
+    inputs:
+        priceSchedule PriceSchedule (1..1)
+        calculationSchedule CalculationSchedule (0..1)
+        notation PriceNotationEnum (1..1)
+    output:
+        pricePeriod PricePeriod (1..*)
+
+    add pricePeriod:
+        datetime.EnrichDatedValueWithEndDate(
+                priceSchedule -> datedValue,
+                calculationSchedule
+            )
+            extract
+                PricePeriod {
+                    price: PriceFormatFromNotation(value, notation),
+                    effectiveDate: effectiveDate,
+                    endDate: endDate
+                }
+
+func ExtractPriceValue:
+    inputs:
+        price PriceSchedule (0..1)
+        schedulePeriod SchedulePeriod (0..1)
+    output:
+        amount number (1..1)
+    set amount:
+        if price -> composite -> operandType = PriceOperandEnum -> AccruedInterest
+        then price -> composite -> baseValue
+        else if price -> value exists
+        then price -> value
+        else if price -> datedValue exists
+        then (price -> datedValue
+            filter item -> date = schedulePeriod -> calculationPeriod -> startDate
+            then extract item -> value
+            then only-element)
+
+func PriceFormatFromNotation:
+    inputs:
+        price number (1..1)
+        notation PriceNotationEnum (1..1)
+    output:
+        priceFormat PriceFormat (0..1)
+    set priceFormat:
+        PriceFormat {
+            monetary: if notation = Monetary
+                then MultiplyPrice(price, Monetary)
+                    then FormatToBaseOne18Rate,
+            decimal: if notation = Decimal
+                then MultiplyPrice(price, Decimal)
+                    then FormatToBaseOneRate,
+            percentage: if notation = Percentage
+                then MultiplyPrice(price, Percentage)
+                    then FormatToBaseOneRate,
+            basis: if notation = Basis
+                then MultiplyPrice(price, Basis)
+                    then FormatToMax5Number
+        }
+
+func CurrencyFromPrice:
+    inputs:
+        price PriceSchedule (0..1)
+    output:
+        currency ISOCurrencyCodeEnum (0..1)
+    set currency:
+        price
+            then extract
+                if NotationFromPrice = Monetary then unit -> currency
+            then extract ConvertNonISOToISOCurrency
+
+func CurrentSchedulePeriod:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        schedulePeriod SchedulePeriod (0..1)
+    alias eventDate:
+        reportableEvent -> originatingWorkflowStep -> businessEvent -> eventDate
+
+    alias product: EconomicTermsForProduct(ProductForEvent(reportableEvent))
+    alias schedule:
+        // Only applicable for commodity schedules
+        if Qualify_Commodity_Swap_FixedFloat(product)
+                or Qualify_Commodity_Swap_Basis(product)
+        then product -> payout -> commodityPayout -> schedule first
+        else if Qualify_Commodity_Option(product) or Qualify_Commodity_Swaption(product)
+        then product -> payout -> optionPayout only-element -> schedule
+        else if Qualify_Commodity_Forward(product)
+        then product -> payout -> forwardPayout only-element -> schedule
+
+    set schedulePeriod:
+        if eventDate <= schedule -> schedulePeriod -> calculationPeriod -> startDate min
+        then schedule -> schedulePeriod min [ item -> calculationPeriod -> startDate ]
+        else if eventDate >= schedule -> schedulePeriod -> calculationPeriod -> endDate max
+        then schedule -> schedulePeriod max [ item -> calculationPeriod -> startDate ]
+        else (schedule -> schedulePeriod
+            then filter
+                item -> calculationPeriod -> startDate <= eventDate and item -> calculationPeriod -> endDate >= eventDate
+            then only-element)
+
+func CurrencyPairOrCurrencyFromPrice:
+    inputs:
+        price PriceSchedule (0..1)
+        defaultSingleCurrency boolean (0..1)
+    output:
+        currency string (0..1)
+    set currency:
+        price
+            then extract if NotationFromPrice = Monetary then price
+            then extract
+                (if priceType = PriceTypeEnum -> ExchangeRate
+                        and perUnitOf -> currency exists
+                        and unit -> currency exists
+                then ConvertNonISOToISOCurrency(perUnitOf -> currency) to-string + "/" + ConvertNonISOToISOCurrency(
+                            unit -> currency
+                        )
+                        to-string
+                else if defaultSingleCurrency = True
+                then ConvertNonISOToISOCurrency(unit -> currency) to-string)

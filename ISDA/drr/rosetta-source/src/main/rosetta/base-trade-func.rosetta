@@ -1,0 +1,169 @@
+namespace drr.base.trade
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.identifier.*
+import cdm.event.common.*
+import cdm.event.position.*
+import cdm.event.qualification.*
+import cdm.product.asset.*
+import cdm.product.common.settlement.*
+import cdm.product.template.*
+
+import drr.base.qualification.product.*
+
+func ProductForTrade: <"Extracts the product from a trade.">
+    inputs:
+        trade Trade (1..1)
+    output:
+        product Product (0..1)
+    set product: trade -> tradableProduct -> product
+
+func EconomicTermsForProduct: <"Extracts the economic terms from a product.">
+    inputs:
+        product Product (1..1)
+    output:
+        economicTerms EconomicTerms (0..1)
+    set economicTerms:
+        if product -> contractualProduct -> economicTerms exists
+        then product -> contractualProduct -> economicTerms
+        else if IsProductETD(product) and product -> security -> economicTerms exists
+        then product -> security -> economicTerms
+
+func ProductForPosition:
+    inputs:
+        position CounterpartyPosition (0..1)
+    output:
+        product Product (0..1)
+    set product: position -> positionBase -> product
+
+func TradeStateForEvent:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        reportableTradeState TradeState (0..1)
+    set reportableTradeState:
+        if reportableEvent -> reportableTrade exists
+        then reportableEvent -> reportableTrade
+        else reportableEvent -> originatingWorkflowStep -> businessEvent -> after only-element
+
+func TradeForEvent:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        reportableTrade Trade (0..1)
+    set reportableTrade: TradeStateForEvent(reportableEvent) -> trade
+
+func BeforeTradeForEvent:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        reportableTrade Trade (0..1)
+    alias businessEvent: reportableEvent -> originatingWorkflowStep -> businessEvent
+    alias afterTradeUTI:
+        TradeForEvent(reportableEvent) -> tradeIdentifier
+            filter
+                item -> identifierType = TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+            then extract item -> assignedIdentifier -> identifier
+            then flatten
+            then only-element
+    set reportableTrade:
+        if Qualify_Compression(businessEvent) = True
+        then BeforeTradeByUTI(reportableEvent, afterTradeUTI)
+        else businessEvent -> instruction -> before -> trade only-element
+
+func PositionStateForEvent:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        reportablePositionState CounterpartyPositionState (0..1)
+    set reportablePositionState:
+        if reportableEvent -> reportablePosition exists
+        then reportableEvent -> reportablePosition
+        else reportableEvent -> originatingWorkflowStep -> counterpartyPositionBusinessEvent -> after only-element
+
+func PositionForEvent:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        reportablePosition CounterpartyPosition (0..1)
+    set reportablePosition: PositionStateForEvent(reportableEvent) -> counterpartyPosition
+
+func TradableProductForEvent: <"Extracts the tradableProduct from a reportableEvent.">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        tradableProduct TradableProduct (0..1)
+    set tradableProduct:
+        if TradeForEvent(reportableEvent) exists
+        then TradeForEvent(reportableEvent) -> tradableProduct
+        else if PositionForEvent(reportableEvent) exists
+        then PositionForEvent(reportableEvent) -> positionBase
+
+func ProductForEvent: <"Extracts the product from a reportableEvent.">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        product Product (0..1)
+    set product:
+        if TradeForEvent(reportableEvent) exists
+        then ProductForTrade(TradeForEvent(reportableEvent))
+        else if PositionForEvent(reportableEvent) exists
+        then ProductForPosition(PositionForEvent(reportableEvent))
+
+func BeforeTradeByUTI:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+        afterTradeUTI string (1..1)
+    output:
+        trade Trade (1..1)
+    set trade:
+        reportableEvent -> originatingWorkflowStep -> businessEvent -> instruction -> before -> trade
+            filter
+                item -> tradeIdentifier -> assignedIdentifier -> identifier any = afterTradeUTI
+            then only-element
+
+func GetCommodityKey:
+    [codeImplementation]
+    inputs:
+        commodityPayout CommodityPayout (1..1)
+    output:
+        key string (0..1)
+
+func GetQuantityKeys: <"Extract key from each quantity.">
+    [codeImplementation]
+    inputs:
+        priceQuantity PriceQuantity (0..1)
+    output:
+        keyValues string (0..*)
+
+func GetQuantityReference: <"Extract reference from quantity.">
+    [codeImplementation]
+    inputs:
+        resolvablePriceQuantity ResolvablePriceQuantity (0..1)
+    output:
+        referenceValue string (0..1)
+
+func Create_ContinuousPriceSchedule: <"Converts price schedule to a continuous price schedule, where the period end date is the date before the next period start date.">
+    [codeImplementation]
+    inputs:
+        reportablePeriod price.PricePeriod (0..*) <"Input schedule may only have start dates specified, or may be discontinous.">
+        endDate date (1..1) <"End date of the final period.">
+    output:
+        continuousReportablePeriod price.PricePeriod (0..*)
+
+func Create_ContinuousQuantitySchedule: <"Converts quantity schedule to a continuous quantity schedule, where the period end date is the date before the next period start date.">
+    [codeImplementation]
+    inputs:
+        reportablePeriod quantity.NotionalPeriod (0..*) <"Input schedule may only have start dates specified, or may be discontinous.">
+        endDate date (1..1) <"End date of the final period.">
+    output:
+        continuousReportablePeriod quantity.NotionalPeriod (0..*)
+
+func LimitBasketConstituents:
+    [codeImplementation]
+    inputs:
+        basketConstituents basket.BasketConstituentsReport (0..*)
+        maxNumber int (1..1)
+    output:
+        result basket.BasketConstituentsReport (0..*)

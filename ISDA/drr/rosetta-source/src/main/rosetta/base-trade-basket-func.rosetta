@@ -1,0 +1,130 @@
+namespace drr.base.trade.basket
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.math.*
+import cdm.event.common.*
+import cdm.product.asset.*
+import cdm.product.template.*
+
+import drr.base.trade.*
+import drr.standards.iso.*
+
+func GetBasketConstituents: <"Extracts a product identifier from each constituent of custom baskets. One product identifier per basket constituent.">
+    inputs:
+        trade Trade (1..1)
+    output:
+        result BasketConstituentsReport (0..*) <"Single product identifier per basket constituent.">
+
+    alias underliers:
+        EconomicTermsForProduct(ProductForTrade(trade)) -> payout
+            then if optionPayout exists
+                then optionPayout only-element -> underlier
+                else if forwardPayout exists
+                then forwardPayout only-element -> underlier
+                else if performancePayout exists
+                then performancePayout -> underlier
+                else if commodityPayout exists
+                then commodityPayout -> underlier
+
+    alias tradeLots: trade -> tradableProduct -> tradeLot
+
+    alias referencePoolItems:
+        if EconomicTermsForProduct(ProductForTrade(trade)) -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> referencePool -> referencePoolItem -> referencePair -> referenceObligation exists
+        then EconomicTermsForProduct(ProductForTrade(trade)) -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> referencePool -> referencePoolItem
+
+    add result:
+        underliers -> basket
+            then extract GetBasket
+            then flatten
+            then extract
+                if security exists
+                then security -> productIdentifier
+                else if loan exists
+                then loan -> productIdentifier
+                else if commodity exists
+                then commodity -> productIdentifier
+                else if index exists
+                then index -> productIdentifier
+            then extract underlier.FilterProductIdentifier(item, ISIN) default item
+            then extract
+                BasketConstituentsReport {
+                    identifier: item -> identifier,
+                    source: item -> source,
+                    numberOfUnits: GetQuantityForConstituent(item -> identifier, tradeLots) -> value,
+                    unitOfMeasure: GetQuantityForConstituent(item -> identifier, tradeLots) -> unit
+                            then extract
+                                if capacityUnit exists
+                                then CapacityUnitToISO20022UnitOfMeasure(capacityUnit)
+                                else if weatherUnit exists
+                                then WeatherUnitToISO20022UnitOfMeasure(weatherUnit)
+                                else if financialUnit exists
+                                then FinancialUnitToISO20022UnitOfMeasure(financialUnit)
+                }
+
+    add result:
+        referencePoolItems
+            then extract
+                if referencePair -> referenceObligation -> security exists
+                then referencePair -> referenceObligation -> security -> productIdentifier
+                else if referencePair -> referenceObligation -> loan exists
+                then referencePair -> referenceObligation -> loan -> productIdentifier
+            then extract
+                BasketConstituentsReport {
+                    identifier: underlier.FilterProductIdentifier(item, ISIN) -> identifier default item -> identifier,
+                    source: underlier.FilterProductIdentifier(item, ISIN) -> source default item -> source,
+                    numberOfUnits: GetQuantityForReferencePoolItem(
+                                referencePoolItems only-element
+                            ) -> value,
+                    unitOfMeasure: GetQuantityForReferencePoolItem(
+                                referencePoolItems only-element
+                            ) -> unit
+                            then extract
+                                if capacityUnit exists
+                                then CapacityUnitToISO20022UnitOfMeasure(capacityUnit)
+                                else if weatherUnit exists
+                                then WeatherUnitToISO20022UnitOfMeasure(weatherUnit)
+                                else if financialUnit exists
+                                then FinancialUnitToISO20022UnitOfMeasure(financialUnit)
+                }
+
+func GetQuantityForReferencePoolItem: <"Extracts the quantity from the Credit basket reference pool item constituents">
+    inputs:
+        constituent ReferencePoolItem (0..1)
+    output:
+        result NonNegativeQuantitySchedule (0..1)
+
+    set result:
+        NonNegativeQuantitySchedule {
+            value: constituent -> constituentWeight -> basketPercentage,
+            unit:
+                UnitType {
+                    financialUnit: FinancialUnitEnum -> Weight,
+                    ...
+                },
+            ...
+        }
+
+func GetQuantityForConstituent: <"Extract the quantity from the tradeLots for custom basket constituents">
+    inputs:
+        identifier string (0..1)
+        tradeLots TradeLot (0..*)
+    output:
+        result NonNegativeQuantitySchedule (0..1)
+
+    set result:
+        tradeLots -> priceQuantity
+            filter item -> observable -> productIdentifier -> identifier any = identifier
+            then extract quantity
+            then flatten only-element
+
+func GetBasket:
+    inputs:
+        basket Basket (0..1)
+    output:
+        basketConstituent Product (0..*)
+
+    set basketConstituent:
+        if basket -> basketConstituent exists
+        then basket -> basketConstituent
+        else basket -> portfolioBasketConstituent

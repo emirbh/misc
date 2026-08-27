@@ -1,0 +1,181 @@
+namespace drr.regulation.sec.rewrite
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.party.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.base.util.string.*
+import drr.regulation.common.*
+
+func PartyPersonIdExists:
+    inputs:
+        party Party (1..1)
+    output:
+        partyPersonIdExists boolean (1..1)
+
+    alias partyPersonId: // Returns a Person Id from a Party
+        party
+            filter [
+                personRole -> role // role is multi-cardinality
+                    extract r [ PartyIdentifierNaturalPersonRoles contains r ]
+                any = True
+            ]
+            then extract person -> personId -> identifier
+            then only-element
+
+    set partyPersonIdExists:
+        if partyPersonId exists then True else False
+
+func PayerPartyLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+    output:
+        party Party (0..1)
+
+    alias counterpartyRole:
+        if product.IsCommoditySwapFloatFloat(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then CommodityLeg1(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> payer
+        else if product.IsCommoditySwapFixedFloat(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+                and ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> fixedPricePayout exists
+        then quantity.FixedPriceLeg1(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                ) -> payerReceiver -> payer
+        else if product.IsFXForward(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXLeg1(ProductForEvent(transactionReportInstruction)) -> payerReceiver -> payer
+        else if product.IsFXSwap(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXSwapLeg1(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> payer
+        else if product.IsEquitySwap(TradableProductForEvent(transactionReportInstruction))
+        then ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> performancePayout only-element -> payerReceiver -> payer
+        else if Qualify_InterestRate_Option_Swaption(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and Qualify_InterestRate_CapFloor(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout is absent
+        then InterestRateLeg1(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> payer
+    set party:
+        ExtractCounterpartyByRole(
+                TradeForEvent(transactionReportInstruction) -> tradableProduct -> counterparty,
+                counterpartyRole
+            ) -> partyReference
+
+func PayerPartyLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+    output:
+        party Party (0..1)
+
+    alias counterpartyRole:
+        if product.IsCommoditySwap(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then CommodityLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> payer
+        else if product.IsFXForward(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> payer
+        else if product.IsFXSwap(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXSwapLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> payer
+        else if Qualify_InterestRate_Option_Swaption(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and Qualify_InterestRate_CapFloor(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout is absent
+        then InterestRateLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> payer
+    set party:
+        ExtractCounterpartyByRole(
+                TradeForEvent(transactionReportInstruction) -> tradableProduct -> counterparty,
+                counterpartyRole
+            ) -> partyReference
+
+func ReceiverPartyLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+    output:
+        party Party (0..1)
+
+    alias counterpartyRole:
+        if product.IsCommoditySwapFloatFloat(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then CommodityLeg1(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> receiver
+        else if product.IsCommoditySwapFixedFloat(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+                and ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> fixedPricePayout exists
+        then quantity.FixedPriceLeg1(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                ) -> payerReceiver -> receiver
+        else if product.IsFXForward(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXLeg1(ProductForEvent(transactionReportInstruction)) -> payerReceiver -> receiver
+        else if product.IsFXSwap(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXSwapLeg1(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> receiver
+        else if product.IsEquitySwap(TradableProductForEvent(transactionReportInstruction))
+        then ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> performancePayout only-element -> payerReceiver -> receiver
+        else if Qualify_InterestRate_Option_Swaption(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and Qualify_InterestRate_CapFloor(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout is absent
+        then InterestRateLeg1(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> receiver
+    set party:
+        ExtractCounterpartyByRole(
+                TradeForEvent(transactionReportInstruction) -> tradableProduct -> counterparty,
+                counterpartyRole
+            ) -> partyReference
+
+func ReceiverPartyLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+    output:
+        party Party (0..1)
+
+    alias counterpartyRole:
+        if product.IsCommoditySwap(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then CommodityLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> receiver
+        else if product.IsFXForward(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> receiver
+        else if product.IsFXSwap(
+                    ProductForTrade(TradeForEvent(transactionReportInstruction))
+                )
+        then FXSwapLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> receiver
+        else if Qualify_InterestRate_Option_Swaption(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and Qualify_InterestRate_CapFloor(
+                        ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms
+                    ) = False
+                and ProductForTrade(TradeForEvent(transactionReportInstruction)) -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout is absent
+        then InterestRateLeg2(ProductForTrade(TradeForEvent(transactionReportInstruction))) -> payerReceiver -> receiver
+    set party:
+        ExtractCounterpartyByRole(
+                TradeForEvent(transactionReportInstruction) -> tradableProduct -> counterparty,
+                counterpartyRole
+            ) -> partyReference

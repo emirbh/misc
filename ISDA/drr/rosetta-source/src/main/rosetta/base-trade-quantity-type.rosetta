@@ -1,0 +1,8 @@
+namespace drr.base.trade.quantity
+version "${project.version}"
+
+import drr.base.util.datetime.*
+import drr.standards.iso.*
+
+type NotionalPeriod extends ValuePeriod:
+    override value ShortFraction5DecimalNumber (1..1)

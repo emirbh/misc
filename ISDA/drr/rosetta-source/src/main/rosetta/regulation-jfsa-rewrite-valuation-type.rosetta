@@ -1,0 +1,178 @@
+namespace drr.regulation.jfsa.rewrite.valuation
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.jfsa.*
+import drr.regulation.jfsa.rewrite.*
+import drr.standards.iso.*
+
+type JFSAValuationReport extends valuation.CommonValuationReport:
+    [rootType]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "4 Reporting Timestamp"]
+        [regulatoryReference JFSA Valuation dataElement "4" field "Reporting Timestamp"
+            provision "Date and time of the submission of the report to the trade repository"]
+        [regulatoryReference JFSA Valuation dataElement "4" field "Reporting timestamp - Remark"
+            provision "System input time, data generation time, and system connection time are to be considered as acceptable values. In addition, if determining the time up to the seconds is impossible due to system restrictions, setting the seconds to 00 shall be acceptable. If it can be determined that the reporting date and time are the same as the trade date, then Trade Date, may be used as a substitute value. (If different, substitution will not be permitted.)"]
+    override entityResponsibleForReporting LEIIdentifier (1..1)
+        [label  "6 Entity Responsible for Reporting"]
+        [regulatoryReference JFSA Valuation dataElement "6" field "Entity Responsible for Reporting"
+            provision "The identifier of the financial institution that is the reporting obligation."]
+        [regulatoryReference JFSA Valuation dataElement "6" field "Entity Responsible for Reporting - Remark"
+            provision "Reporting party of the trades will be determined based on the identifier reported for 'Entity responsible for reporting' and by 'Submitter identifier'. Examples of who the reporting party is:
+            [Case 1] Where a party to a transaction is other than a fund (normal case):
+            'Entity responsible for reporting' = Financial institution with reporting obligation and involved in the transaction as Counterparty 1
+            'Counterparty 1 (reporting counterparty)' = Same as above
+            'Submitter identifier' = Same as above
+            [Case 2] Where a trading party is a fund:
+            'Entity responsible for reporting' = Trust Bank LEI
+            'Counterparty 1 (reporting counterparty)' = Fund LEI
+            'Submitter identifier' = Trust bank LEI 
+            [Case 3] Reporting party is an agent, etc. (where a regional bank requests the Trust Bank, etc. to report):
+            'Entity responsible for reporting' = Financial institution with reporting obligation and involved in the transaction as Counterparty 1
+            'Counterparty 1 (reporting counterparty)' = Same as above
+            'Submitter identifier' = LEI of the agent acting as the service provider for reporting"]
+        [ruleReference EntityResponsibleForReporting]
+    override counterparty1 LEIIdentifier (1..1)
+        [label  "7 Counterparty 1 (reporting counterparty)"]
+        [regulatoryReference JFSA Valuation dataElement "7" field "Counterparty 1 (reporting counterparty)"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question. In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty."]
+        [regulatoryReference JFSA Valuation dataElement "7" field "Counterparty 1 (reporting counterparty) - Remark"
+            provision "Reporting using branch/international branch LEI is not allowed."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label  "8 Counterparty 2"]
+        [regulatoryReference JFSA Valuation dataElement "8" field "Counterparty 2"
+            provision "Identifier of the second counterparty to an OTC derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund, and not the fund manager is reported as the counterparty."]
+        [regulatoryReference JFSA Valuation dataElement "8" field "Counterparty 2 - Remark"
+            provision "If LEI cannot be obtained, a tentative LEI is permitted. Tentative LEI must have a unique alphanumeric string to ensure the party can be uniquely identified.
+            Examples for assigning tentative LEI: [In the case of financial institutions] Tentative LEI = Party LEI + Counterparty BIC Code
+            [In the case of corporations and individuals] Tentative LEI = Trading Party LEI + Unique Alphanumeric Code (Control number assigned by the financial institution, etc.)
+            If a fund LEI is yet to be obtained, the Trust Bank must share a tentative LEI for the fund (Trust Bank LEI + Unique Alphanumeric Code) with its counterparty financial institution.
+            Enter the LEI of the clearing organization if the company transacts with a clearing organization prescribed in JFSA Notification No.105.
+            Reporting using branch/international branch LEI is not allowed."]
+    override counterparty2IdentifierType boolean (1..1)
+        [label  "9 Counterparty 2 Identifier Type"]
+        [regulatoryReference JFSA Valuation dataElement "9" field "Counterparty 2 Identifier Type"
+            provision "Indicator of whether LEI was used to identify the Counterparty 2."]
+        [regulatoryReference JFSA Valuation dataElement "9" field "Counterparty 2 Identifier Type - Remark"
+            provision "Under the CDE Guidance, legal entity is to be reported as True and individual as False. However, for cases where a tentative LEI is used to report for a legal entity, it should be reported as False."]
+        [regulatoryReference ISDA PeerReviewGroup date "20220307"
+            provision "Peer review recommnended to detect private individual party representations (instead of LEI scheme)."]
+    override reportSubmittingEntityID string (1..1)
+        [label  "12 Submitter Identifier"]
+        [regulatoryReference JFSA Valuation dataElement "12" field "Submitter Identifier"
+            provision "Identifier of the entity submitting the data to the swap data repository (SDR). The Submitter identifier will be the same as the reporting counterparty, unless they use a third-party service provider to submit the data to SDR in which case, report the identifier of the third-party service provider."]
+        [regulatoryReference JFSA Valuation dataElement "12" field "Submitter Identifier - Remark"
+            provision "See 'Entity responsible for reporting'. Applicable for central counterparty and financial institutions. If reporting is conducted using a platform, then the platform is deemed to be the submitter."]
+        [regulatoryReference ISDA PeerReviewGroup date "20220309"
+            provision "Check whether trade is executed in a SEF first. If it is, SEF is obliged to be the Submitter. Then check for Reporting Party and Data Submitter."]
+    override uniqueTransactionIdentifier Max52AlphaNumericText (1..1)
+        [label "25 Unique transaction identifier (UTI)"]
+        [regulatoryReference JFSA Valuation dataElement "25" field "UTI"
+            provision "A unique identifier assigned to all swap transactions which identifies the swap uniquely throughout its lifecycle."]
+        [ruleReference UniqueTransactionIdentifier]
+    override uniqueTransactionIdentifierProprietary UTIProprietaryIDFormat (0..1)
+        [label "25 Unique Transaction Identifier (UTI Proprietary)"]
+        [regulatoryReference JFSA Valuation dataElement "25" field "UTI Proprietary"
+            provision "A unique identifier assigned to all swap transactions which identifies the swap uniquely throughout its lifecycle. (Trade identifier expressed in a proprietary notation)"]
+        [ruleReference UniqueTransactionIdentifierProprietary]
+    override valuationAmount ShortFraction5DecimalNumber (1..1)
+        [label "39 Valuation Amount"]
+        [regulatoryReference JFSA Valuation dataElement "39" field "Valuation Amount"
+            provision "Current value of the outstanding contract without applying any valuation adjustments.
+                Valuation amount is expressed as the exit cost of the contract or components of the contract, i.e. the price that would be received to sell the contract (in the market in an orderly transaction at the valuation date)."]
+        [regulatoryReference JFSA Valuation dataElement "39" field "Valuation Amount - Remark"
+            provision "Valuation amount does not take into account the various valuation adjustments such as CVA (Credit Valuation Adjustment). Amount to be reported is to be the preadjusted valuation amount."]
+    override valuationCurrency ISOCurrencyCodeEnum (1..1)
+        [label "40 Valuation Currency"]
+        [regulatoryReference JFSA Valuation dataElement "40" field "Valuation Currency"
+            provision "Currency in which the valuation amount is denominated."]
+    override valuationTimestamp zonedDateTime (1..1)
+        [label "41 Valuation Timestamp"]
+        [regulatoryReference JFSA Valuation dataElement "41" field "Valuation Timestamp"
+            provision "Date and time of the last valuation marked to market, provided by the central counterparty (CCP) or calculated using the current or last available market price of the inputs. If for example a currency exchange rate is the basis for a transactions valuation, then the valuation timestamp reflects the moment in time that exchange rate was current."]
+        [regulatoryReference JFSA Valuation dataElement "41" field "Valuation Timestamp - Remark"
+            provision "Valuation time period specified by each financial institution is permitted."]
+    override valuationMethod ValuationType1Code (1..1)
+        [label "42 Valuation Method"]
+        [regulatoryReference JFSA Valuation dataElement "42" field "Valuation Method"
+            provision "Source and method used for the valuation of the transaction by the reporting counterparty.
+            If at least one valuation input is used that is classified as mark-to-model in appendix D of CFTC Technical Specification, then the whole valuation is classified as mark-to-model.
+            If only inputs are used that are classified as mark-to-market in appendix D of CFTC Technical Specification then the whole valuation is classified as mark-to-market."]
+    override delta ShortFraction5DecimalNumber (0..1)
+        [label "43 Delta"]
+        [regulatoryReference JFSA Valuation dataElement "43" field "Delta"
+            provision "The ratio of the change in the price of an OTC derivative transaction to the change in the price of the underlier, at the time a new transaction is reported or when a change in the notional amount is reported."]
+        [regulatoryReference JFSA Valuation dataElement "43" field "Delta"
+            provision "Reporting (including any amendments made on an existing trade), is required from April 7, 2025."]
+    override actionType ActionTypeEnum (1..1)
+        [label "101 Action Type"]
+        [regulatoryReference JFSA Valuation dataElement "101" field "Action Type"
+            provision "Type of action taken on the swap transaction or type of end-of-day reporting.
+            Actions may include, but are not limited to, new, modify, correct, error, terminate, revive, transfer out, valuation, and collateral.
+            New: An action that reports a new swap transaction. It applies to the first message relating to a new UTI.
+            Modify: An action that modifies the state of a previously submitted transaction (e.g., credit event) or changes a term of a previously submitted transaction due to a newly negotiated modification (amendment) or updates previously missing information (e.g., post price swap). It does not include correction of a previous transaction.
+            Correct: An action that corrects erroneous data of a previously submitted transaction.
+            Error: An action of cancellation of a wrongly submitted entire transaction in case it never came into existence or was not subject to the reporting requirements but was reported erroneously, or a cancellation of duplicate report.
+            Terminate: An action that closes an existing transaction because of a new event (e.g., Compression, Novation). This does not apply to transactions that terminate at contractual maturity date.
+            Revive: An action that reinstates a swap transaction that was reported as error or terminated by mistake.
+            Transfer out: An action that transfers swap transaction from one SDR to another SDR (change of swap data repository).
+            Valuation: An update to valuation data. There will be no corresponding Event type.
+            Collateral: An update to collateral margin data. There will be no corresponding Event type."]
+        [regulatoryReference JFSA Valuation dataElement "101" field "Action Type - Remark"
+            provision "Status for reporting items such as 'LEI' and 'Confirm' could change during contract period. For those updates which does not involve contractual changes or error corrections, use Action Type: Modify.
+            If New, Correct, or Modify occurs on the same day as the valuation for a same transaction, report the correction and valuation separately.
+            [Specific example] (Specific example 1) Where an equity option transaction is knocked-out (currently reported as modify with a notional amount of 0)
+            Report 'ACTION TYPE' as 'Terminate (TERM)' and 'EVENT TYPE' as 'Early Termination (EART)'.
+            (Specific Example 2) Where a customer cancels an equity option transaction (currently reported as cancel) Report 'ACTION TYPE' as 'Terminate (TERM)' and 'EVENT TYPE' as 'Early Termination (EART)'.
+            (Specific example 3) Exercise of equity option transactions (previously excluded from reporting) Report 'ACTION TYPE' as 'Terminate (TERM)' 'EVENT TYPE' as 'Exercise (EXER)'.
+            In cases where the rights are exercised, it is expectd to be reported as 'Terminate' and 'Exercise'."]
+    override level ReportLevelEnum (0..1)
+        [ruleReference empty]
+    override eventDate ISODate (0..1)
+        [ruleReference empty]
+    newSDRIdentifier LEIIdentifier (0..1)
+        [label "13 New SDR identifier"]
+        [regulatoryReference JFSA Valuation dataElement "13" field "New SDR Identifier"
+            provision "Identifier of the new swap data repository where the swap transaction is transferred to."]
+        [regulatoryReference JFSA Valuation dataElement "13" field "New SDR Identifier - Remark"
+            provision "If unapplicable, leave it blank."]
+        [ruleReference NewSDRIdentifier]
+    technicalRecordId string (1..1)
+        [label "[Internal] Technical Record Id (ISO)"]
+        [regulatoryReference JFSA Valuation dataElement "[Internal]" field "Technical Record Id (ISO)"
+            provision "Unique technical identification of the original data for which the status is provided for the BDR. Not sent to JFSA."]
+        [ruleReference TechnicalRecordId]
+
+    condition DTCC_JFSA_VR_0004_01: <"Reporting Timestamp">
+        [docReference JFSA Valuation DTCC_Specs dataElement "4" field "Reporting Timestamp"
+            provision "[Reporting timestamp] must be equal to or before the [Message Received timestamp] derived by the TR.
+                Reject if the date value of the [Reporting timestamp] is more than 2 days before the date value of the [Message Received timestamp].
+                [Reporting timestamp] must be equal to or greater than the [Valuation timestamp]."]
+        // The logic regarding the [Message Received timestamp] is not included as this data is known post submission.
+        reportingTimestamp >= valuationTimestamp
+
+    condition DTCC_JFSA_VR_0007_01: <"Counterparty 1 (reporting counterparty)">
+        [docReference JFSA Valuation DTCC_Specs dataElement "7" field "Counterparty 1 (reporting counterparty)"
+            provision "[Counterparty 1] must NOT = [Counterparty 2] if [Counterparty 2 identifier type] is = LEI."]
+        common.party.Counterparty_Validation(
+                actionType,
+                counterparty2IdentifierType,
+                counterparty1,
+                counterparty2
+            )
+
+    condition DTCC_JFSA_VR_0008_01: <"Counterparty 2">
+        [docReference JFSA Valuation DTCC_Specs dataElement "8" field "Counterparty 2"
+            provision "[Counterparty 1] must NOT = [Counterparty 2] if [Counterparty 2 identifier type] is = LEI."]
+        common.party.Counterparty_Validation(
+                actionType,
+                counterparty2IdentifierType,
+                counterparty1,
+                counterparty2
+            )

@@ -1,0 +1,98 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "assetClass" : "CRDT",
+  "beneficiary1" : "DUMMYLEI123456789001",
+  "beneficiary1IdentifierTypeIndicator" : true,
+  "bookingLocation" : "GB",
+  "buyerIdentifier" : "DUMMYLEI123456789002",
+  "cleared" : "N",
+  "collateralPortfolioIndicator" : false,
+  "confirmed" : "NCNF",
+  "contractType" : "SWAP",
+  "counterparty1" : "DUMMYLEI123456789001",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI123456789002",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "counterparty2IdentifierType" : true,
+  "cryptoAssetUnderlyingIndicator" : false,
+  "customBasketIndicator" : false,
+  "deliveryType" : "OPTL",
+  "direction1" : "SLLR",
+  "dtccAdditionalFields" : {
+    "messageID" : "DTDUnapproved11370814201DFCFTCRiskNewNewCre2024-04-29T00:00Z",
+    "primaryAssetClass" : "Credit",
+    "sefOrDcmAnonymousExecutionIndicator" : false,
+    "submittedForParty" : "DUMMYLEI123456789001",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CFTC", "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "1370814201P1P1YU87UJ",
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "underlyingAssetName" : {
+      "underlyingAssetName" : [ "CDX.NA.HY.18" ]
+    }
+  },
+  "effectiveDate" : "2022-02-11",
+  "entityResponsibleForReporting" : "DUMMYLEI123456789001",
+  "eventIdentifier" : "DTDUnapproved11370814201DFCFTCRiskNewNewCre",
+  "eventTimestamp" : "2022-02-11T07:32:32Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2022-02-11T07:32:14Z",
+  "expirationDate" : "2023-07-20",
+  "finalContractualSettlementDate" : "2023-07-20",
+  "indexFactor" : 0.02,
+  "intragroup" : false,
+  "jurisdiction" : "CFTC",
+  "leg1" : {
+    "fixedRate" : 0.05,
+    "notionalAmount" : 10000000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "MNTH",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 3
+    }
+  },
+  "level" : "TCTN",
+  "masterAgreementType" : "ISDA",
+  "masterAgreementVersion" : 1992,
+  "nameOfTheUnderlyingIndex" : "CDX.NA.HY.18",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "OPTL",
+          "Underlying" : {
+            "UnderlierIDSource" : "CRIDX",
+            "UnderlyingCreditIndexSeries" : 2,
+            "UnderlyingCreditIndexVersion" : 3,
+            "UnderlyingInstrumentIndexTermUnit" : "YEAR"
+          },
+          "UnderlyingIssuerType" : "Corporate"
+        },
+        "Header" : {
+          "AssetClass" : "Credit",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Index"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI123456789001",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "secondaryTransactionIdentifier" : "1370814201P1P1YU87UJ",
+  "sellerIdentifier" : "DUMMYLEI123456789001",
+  "seniority" : "SBOD",
+  "series" : 2,
+  "seriesVersion" : 3,
+  "underlyingIdOther" : "USM17X16X151",
+  "underlyingIdOtherSource" : "REDID",
+  "uniqueTransactionIdentifier" : "CREDITINDEXCDXEXXM02"
+}

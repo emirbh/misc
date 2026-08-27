@@ -1,0 +1,38 @@
+namespace drr.base.util.string
+version "${project.version}"
+
+func StringLength: <"Returns number of characters in the given string.">
+    [codeImplementation]
+    inputs:
+        str string (0..1)
+    output:
+        result int (1..1)
+
+func StringContains:
+    [codeImplementation]
+    inputs:
+        input string (1..1)
+        regex string (1..1)
+    output:
+        result boolean (1..1)
+
+func SubString: <"Function that returns a characters from the given string from the start index for the specified length.">
+    [codeImplementation]
+    inputs:
+        text string (1..1)
+        startIndex int (0..1) <"Position of the first character you want to extract. The first character is index 1.">
+        length int (1..1) <"The number of characters to extract.">
+    output:
+        subString string (1..1)
+
+    condition StartIndexNonZero: <"Minimum start index should be 1.">
+        startIndex <> 0
+
+func ReplaceAll:
+    [codeImplementation]
+    inputs:
+        input string (1..1)
+        regex string (1..1)
+        replacement string (1..1)
+    output:
+        result string (1..1)

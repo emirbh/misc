@@ -1,0 +1,12 @@
+namespace drr.regulation.common.valuation.event
+version "${project.version}"
+
+import drr.regulation.common.*
+
+reporting rule ActionType from ValuationReportInstruction: <"Action Type">
+    extract
+        if valuationDetails -> tradeInformation -> action = VALU
+        then valuationDetails -> tradeInformation -> action
+
+reporting rule Level from ValuationReportInstruction: <"Level">
+    extract if level exists then level

@@ -1,0 +1,459 @@
+namespace drr.projection.dtcc.rds.harmonized.csa.rewrite.trade
+version "${project.version}"
+
+import drr.base.trade.*
+import drr.base.util.string.*
+import drr.regulation.csa.rewrite.trade.*
+
+import iso20022.dtcc.rds.harmonized.*
+
+func Project_CSATradeReportToDtccRdsHarmonized:
+    [projection XML]
+    inputs:
+        drrReport CSATransactionReport (1..1)
+    output:
+        harmonizedReport Document (1..1)
+
+    set harmonizedReport -> submission -> header: Create_SubmissionHeader(drrReport)
+
+    set harmonizedReport -> submission -> core: Create_SubmissionCore(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedData:
+        Create_SubmissionHarmonizedData(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedRepeatableData:
+        Create_SubmissionHarmonizedRepeatableData(drrReport)
+
+    set harmonizedReport -> submission -> schedules: Create_SubmissionSchedules(drrReport)
+
+func Project_CsaPpdReportToDtccRdsHarmonized:
+    [projection XML]
+    inputs:
+        drrReport CSATransactionReport (1..1)
+    output:
+        harmonizedReport Document (1..1)
+
+    set harmonizedReport -> submission -> header: Create_SubmissionHeader(drrReport)
+
+    set harmonizedReport -> submission -> core: Create_SubmissionCore(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedData:
+        Create_SubmissionHarmonizedData(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedRepeatableData:
+        Create_SubmissionHarmonizedRepeatableData(drrReport)
+
+    set harmonizedReport -> submission -> schedules: Create_SubmissionSchedules(drrReport)
+
+func Create_SubmissionHeader:
+    inputs:
+        drrReport CSATransactionReport (1..1)
+    output:
+        header Header (1..1)
+
+    set header:
+        Header {
+            sender: drrReport -> reportSubmittingEntityID,
+            documentTrackingId: drrReport -> dtccAdditionalFields -> messageID,
+            documentCreationTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            ...
+        }
+
+func Create_SubmissionCore:
+    inputs:
+        drrReport CSATransactionReport (1..1)
+    output:
+        core Core (1..1)
+
+    set core:
+        Core {
+            tradeLegTypes: drrReport -> dtccAdditionalFields -> tradeLegTypes,
+            latestExecutionDatetime: drrReport -> eventTimestamp,
+            messageId: drrReport -> dtccAdditionalFields -> messageID,
+            messageType: if drrReport -> dtccAdditionalFields -> messageTypeTransaction exists
+                    then drrReport -> dtccAdditionalFields -> messageTypeTransaction
+                else if drrReport -> dtccAdditionalFields -> messageTypePPD exists
+                then drrReport -> dtccAdditionalFields -> messageTypePPD,
+            primaryAssetClass: drrReport -> dtccAdditionalFields -> primaryAssetClass to-string,
+            productId: drrReport -> dtccAdditionalFields -> productID,
+            submittedForParty: drrReport -> dtccAdditionalFields -> submittedForParty,
+            submittingPartyId: drrReport -> reportSubmittingEntityID,
+            submittingPartyIdType: drrReport -> dtccAdditionalFields -> submittingPartyIDType to-string,
+            tradeParty1Id: drrReport -> counterparty1,
+            tradeParty1IdType: drrReport -> dtccAdditionalFields -> tradeParty1IDType to-string,
+            tradeParty1ReportingDestination: drrReport -> dtccAdditionalFields -> tradeParty1ReportingDestination
+                    extract to-string,
+            tradeParty1TransactionId: drrReport -> dtccAdditionalFields -> tradeParty1TransactionID,
+            tradeParty2Id: drrReport -> counterparty2,
+            tradeParty2IdType: drrReport -> counterparty2IdentifierSource to-string,
+            tradeParty2ReportingDestination: drrReport -> dtccAdditionalFields -> tradeParty2ReportingDestination
+                    extract to-string,
+            usiId: drrReport -> dtccAdditionalFields -> usiID,
+            usiIdPrefix: drrReport -> dtccAdditionalFields -> usiIDPrefix,
+            utiId: drrReport -> uniqueTransactionIdentifier,
+            tradeParty1ExecutionAgentId: drrReport -> dtccAdditionalFields -> tradeParty1ExecutionAgentID,
+            tradeParty1ExecutionAgentIdType: drrReport -> dtccAdditionalFields -> tradeParty1ExecutionAgentIDType to-string,
+            tradeParty2ExecutionAgentId: drrReport -> dtccAdditionalFields -> tradeParty2ExecutionAgentID,
+            tradeParty2ExecutionAgentIdType: drrReport -> dtccAdditionalFields -> tradeParty2ExecutionAgentIDType to-string,
+            reportingTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            upi: drrReport -> uniqueProductIdentifier,
+            utiIdPrefix: empty, // See rationale at DTCC_CSA_VR_0017_01 condition. Decision agreed by EU/UK/NA PeerReview WG on 2025/03/27 about Prior UTI field
+            corporateActionNewTradeParty1Lei: drrReport -> dtccAdditionalFields -> corporateActionNewTradeParty1Lei,
+            noaActionType: drrReport -> actionType to-string,
+            noaEventType: drrReport -> eventType to-string,
+            initialMarginCollateralPortfolioCode: drrReport -> initialMarginCollateralPortfolioCode,
+            variationMarginCollateralPortfolioCode: drrReport -> variationMarginCollateralPortfolioCode,
+            ...
+        }
+
+func Create_SubmissionHarmonizedData:
+    inputs:
+        drrReport CSATransactionReport (1..1)
+    output:
+        harmonized HarmonizedData (1..1)
+
+    set harmonized:
+        HarmonizedData {
+            amendmentIndicator: drrReport -> amendmentIndicator,
+            cdePackageTransactionSpreadCurrency: drrReport -> packageTransactionSpreadCurrency to-string,
+            clearingVenueIdType: drrReport -> dtccAdditionalFields -> clearingVenueIDType to-string,
+            clearingVenueId: drrReport -> centralCounterparty,
+            tradeParty1ClearingBrokerId: drrReport -> clearingMember,
+            tradeParty1ClearingBrokerIdType: drrReport -> dtccAdditionalFields -> tradeParty1ClearingBrokerIDType to-string,
+            buyerPayer1: drrReport -> buyerIdentifier,
+            cdeCallAmountLeg1: drrReport -> callAmount,
+            cdeCallCurrencyLeg1: drrReport -> callCurrency to-string,
+            cdeEffectiveDate: drrReport -> effectiveDate,
+            customBasketIndicator: drrReport -> customBasketIndicator,
+            cdeExpirationDate: drrReport -> expirationDate,
+            cdeFinalContractualSettlementDate: drrReport -> finalContractualSettlementDate,
+            cdeFirstExerciseDate: drrReport -> firstExerciseDate,
+            cdeFixedRateDayCountConventionLeg1: drrReport -> leg1 -> periodicPayment -> fixedRateDayCountConvention to-string,
+            cdeFixedRateDayCountConventionLeg2: drrReport -> leg2 -> periodicPayment -> fixedRateDayCountConvention to-string,
+            cdeFixedRatePaymentFrequencyPeriodMultiplierLeg1: drrReport -> leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier,
+            cdeFixedRatePaymentFrequencyPeriodMultiplierLeg2: drrReport -> leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier,
+            cdeFixedRatePaymentFrequencyPeriodLeg1: drrReport -> leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriod to-string,
+            cdeFixedRatePaymentFrequencyPeriodLeg2: drrReport -> leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriod to-string,
+            cdeFloatingRateDayCountConventionLeg1: drrReport -> leg1 -> periodicPayment -> floatingRateDayCountConvention to-string,
+            cdeFloatingRateDayCountConventionLeg2: drrReport -> leg2 -> periodicPayment -> floatingRateDayCountConvention to-string,
+            cdeFloatingRatePaymentFrequencyPeriodMultiplierLeg1: drrReport -> leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier,
+            cdeFloatingRatePaymentFrequencyPeriodMultiplierLeg2: drrReport -> leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier,
+            cdeFloatingRatePaymentFrequencyPeriodLeg1: drrReport -> leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriod to-string,
+            cdeFloatingRatePaymentFrequencyPeriodLeg2: drrReport -> leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriod to-string,
+            cdePlatformIdentifier: if drrReport -> platformIdentifier exists
+                    then drrReport -> platformIdentifier
+                else if (drrReport -> cleared = N or drrReport -> cleared = I)
+                then "BILT",
+            cdePriceCurrency: drrReport -> priceCurrency to-string,
+            cdePriceNotation: drrReport -> priceNotation then price.NotationStringFromEnum,
+            cdePutAmountLeg1: drrReport -> putAmount,
+            cdePutCurrencyLeg1: drrReport -> putCurrency to-string,
+            cdeQuantityUnitOfMeasureLeg1: drrReport -> leg1 -> quantityUnitOfMeasure,
+            cdeQuantityUnitOfMeasureLeg2: drrReport -> leg2 -> quantityUnitOfMeasure,
+            cdeReceiverIdentifierLeg2: drrReport -> leg2 -> receiverIdentifier,
+            cdeSettlementLocationLeg1: drrReport -> settlementLocation to-string, // (LEG AGNOSTIC)
+            cdeSpreadNotationLeg1: drrReport -> leg1 -> spreadNotation
+                    then price.NotationStringFromEnum,
+            cdeSpreadNotationLeg2: drrReport -> leg2 -> spreadNotation
+                    then price.NotationStringFromEnum,
+            clearingStatus: drrReport -> cleared to-string,
+            eventType: drrReport -> eventType to-string,
+            fixingDateLeg1: drrReport -> leg1 -> fixingDate -> date,
+            fixingDateLeg2: drrReport -> leg2 -> fixingDate -> date,
+            indexFactor: drrReport -> indexFactor,
+            exchangeRate: drrReport -> exchangeRate,
+            leg1FixedRateInitial: drrReport -> leg1 -> fixedRate,
+            leg1NotionalQuantity: drrReport -> leg1 -> notionalQuantity,
+            leg1SpreadCurrency: drrReport -> leg1 -> spreadCurrency to-string,
+            leg1TotalNotionalQuantity: drrReport -> leg1 -> totalNotionalQuantity,
+            leg2FixedRateInitial: drrReport -> leg2 -> fixedRate,
+            leg2NotionalQuantity: drrReport -> leg2 -> notionalQuantity,
+            leg2QuantityFrequency: drrReport -> leg2 -> quantityFrequency to-string,
+            leg2ResetFrequencyPeriod: drrReport -> leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod
+                    // TH Sprint 2025-13: ADHO is an allowable value, but it does not have a conversion to 1 character. This leads to a possible validation error. The conversion of ADHO to 1 character needs to be investigated.
+                    then if item = DAIL
+                        then "D"
+                        else if item = WEEK
+                        then "W"
+                        else if item = MNTH
+                        then "M"
+                        else if item = YEAR
+                        then "Y"
+                        else if item = EXPI
+                        then "T"
+                        else item to-string,
+            leg2ResetFrequencyPeriodMultiplier: drrReport -> leg2 -> periodicPayment -> floatingRateResetFrequencyMultiplier,
+            leg2SettlementCurrency: drrReport -> leg2 -> settlementCurrency to-string,
+            leg2SpreadCurrency: drrReport -> leg2 -> spreadCurrency to-string,
+            leg2TotalNotionalQuantity: drrReport -> leg2 -> totalNotionalQuantity,
+            newSdrIdentifier: drrReport -> dtccAdditionalFields -> newSDRIdentifier,
+            noaActionType: drrReport -> actionType to-string,
+            nonStandardTradeIndicator: drrReport -> nonStandardizedTermIndicator,
+            notionalAmount1: drrReport -> leg1 -> notionalAmount,
+            notionalAmount2: drrReport -> leg2 -> notionalAmount,
+            notionalCurrency1: drrReport -> leg1 -> notionalCurrency to-string,
+            notionalCurrency2: drrReport -> leg2 -> notionalCurrency to-string,
+            optionStyle: if drrReport -> dtccAdditionalFields -> optionStyle = EURO
+                    then "European"
+                else if drrReport -> dtccAdditionalFields -> optionStyle = AMER
+                then "American"
+                else if drrReport -> dtccAdditionalFields -> optionStyle = BERM
+                then "Bermudan"
+                else if drrReport -> dtccAdditionalFields -> optionStyle = ASIA
+                then "Asian",
+            optionType: drrReport -> dtccAdditionalFields -> optionType,
+            originalExecutionTimestamp: drrReport -> executionTimestamp,
+            payment1Payer: drrReport -> leg1 -> payerIdentifier,
+            payment1Receiver: drrReport -> leg1 -> receiverIdentifier,
+            payment2Payer: drrReport -> leg2 -> payerIdentifier,
+            premiumAmount: drrReport -> optionPremiumAmount,
+            premiumCurrency: drrReport -> optionPremiumCurrency to-string,
+            premiumPaymentDateUnadjusted: drrReport -> optionPremiumPaymentDate,
+            price1Price: [drrReport -> price -> monetary, drrReport -> price -> decimal]
+                    only-element,
+            price1Units: drrReport -> priceUnitOfMeasure,
+            priorUtiId: drrReport -> priorUTI,
+            quantityFrequencyMultiplierLeg1: drrReport -> leg1 -> quantityFrequencyMultiplier,
+            quantityFrequencyMultiplierLeg2: drrReport -> leg2 -> quantityFrequencyMultiplier,
+            resetFrequencyPeriod1: drrReport -> leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod
+                    // TH Sprint 2025-13: ADHO is an allowable value, but it does not have a conversion to 1 character. This leads to a possible validation error. The conversion of ADHO to 1 character needs to be investigated.
+                    then if item = DAIL
+                        then "D"
+                        else if item = WEEK
+                        then "W"
+                        else if item = MNTH
+                        then "M"
+                        else if item = YEAR
+                        then "Y"
+                        else if item = EXPI
+                        then "T"
+                        else item to-string,
+            resetFrequencyPeriodMultiplier1: drrReport -> leg1 -> periodicPayment -> floatingRateResetFrequencyMultiplier,
+            sellerPayer2: drrReport -> sellerIdentifier,
+            settlementCurrency1: drrReport -> leg1 -> settlementCurrency to-string,
+            strikePrice: if drrReport -> strikePriceNotation = Monetary
+                    then drrReport -> strikePrice -> monetary
+                else if drrReport -> strikePriceNotation = Decimal
+                then drrReport -> strikePrice -> decimal
+                else if drrReport -> strikePriceNotation = Basis
+                then drrReport -> strikePrice -> basis
+                else if drrReport -> strikePriceNotation = Percentage
+                then drrReport -> strikePrice -> percentage,
+            strikePriceCurrency: if drrReport -> strikePriceNotation = Monetary
+                    then SubString(drrReport -> strikePriceCurrency, 1, 3),
+            cdeStrikePriceCurrency2: if drrReport -> dtccAdditionalFields -> primaryAssetClass = ForeignExchange
+                    then SubString(drrReport -> strikePriceCurrency, 5, 3),
+            cdeStrikePriceNotation: drrReport -> strikePriceNotation
+                    then price.NotationStringFromEnum,
+            settlementType: drrReport -> dtccAdditionalFields -> settlementType,
+            leg1CommodityInstrumentId: drrReport -> dtccAdditionalFields -> leg1CommodityInstrumentID,
+            leg2CommodityInstrumentId: drrReport -> dtccAdditionalFields -> leg2CommodityInstrumentID,
+            leg1FloatingRateIndex: drrReport -> dtccAdditionalFields -> leg1FloatingRateIndex,
+            leg2FloatingRateIndex: drrReport -> dtccAdditionalFields -> leg2FloatingRateIndex,
+            leg1CommodityUnderlyerId: drrReport -> dtccAdditionalFields -> leg1CommodityUnderlyerID,
+            leg2CommodityUnderlyerId: drrReport -> dtccAdditionalFields -> leg2CommodityUnderlyerID,
+            responsibleDataSubmitterId: drrReport -> dtccAdditionalFields -> responsibleDataSubmitterID,
+            responsibleDataSubmitterIdType: drrReport -> dtccAdditionalFields -> responsibleDataSubmitterIDType to-string,
+            secondaryAssetClass: drrReport -> dtccAdditionalFields -> secondaryAssetClass to-string,
+            tradeParty1BrokerIdType: drrReport -> dtccAdditionalFields -> tradeParty1BrokerIDType to-string,
+            tradeParty1BrokerId: drrReport -> brokerID,
+            leg2SpreadAmount: [drrReport -> leg2 -> spread -> monetary, drrReport -> leg2 -> spread -> decimal, drrReport -> leg2 -> spread -> percentage, drrReport -> leg2 -> spread -> basis]
+                    only-element,
+            cdeCryptoAssetUnderlyingIndicatorLeg1: drrReport -> leg1 -> cryptoAssetUnderlyingIndicator,
+            cdeCryptoAssetUnderlyingIndicatorLeg2: drrReport -> leg2 -> cryptoAssetUnderlyingIndicator,
+            cdeCustomBasketCode: drrReport -> customBasketCode,
+            underlierIdOtherLeg1: drrReport -> leg1 -> underlierIDOther,
+            underlierIdOtherLeg2: drrReport -> leg2 -> underlierIDOther,
+            underlierIdOtherSourceLeg1: drrReport -> leg1 -> underlierIDOtherSource to-string,
+            underlierIdOtherSourceLeg2: drrReport -> leg2 -> underlierIDOtherSource to-string,
+            cdeUnderlyingAssetTradingPlatformIdLeg1: drrReport -> leg1 -> underlyingAssetTradingPlatformIdentifier,
+            cdeUnderlyingAssetTradingPlatformIdLeg2: drrReport -> leg2 -> underlyingAssetTradingPlatformIdentifier,
+            cdeUnderlyingAssetPriceSourceLeg1: drrReport -> leg1 -> underlyingAssetPriceSource,
+            cdeUnderlyingAssetPriceSourceLeg2: drrReport -> leg2 -> underlyingAssetPriceSource,
+            leg1SpreadAmount: [drrReport -> leg1 -> spread -> monetary, drrReport -> leg1 -> spread -> decimal, drrReport -> leg1 -> spread -> percentage, drrReport -> leg1 -> spread -> basis]
+                    only-element,
+            leg1PartyReceiver: drrReport -> leg1 -> receiverIdentifier,
+            leg2PartyReceiver: drrReport -> leg2 -> receiverIdentifier,
+            loadType: drrReport -> dtccAdditionalFields -> loadType,
+            deliveryLocation: drrReport -> dtccAdditionalFields -> deliveryLocation,
+            exchangeRateBasisCurrency1: SubString(drrReport -> exchangeRateBasis, 1, 3),
+            exchangeRateBasisCurrency2: SubString(drrReport -> exchangeRateBasis, 5, 3),
+            expirationDate: drrReport -> expirationDate,
+            version: if drrReport -> dtccAdditionalFields -> versionTransaction exists
+                    then drrReport -> dtccAdditionalFields -> versionTransaction
+                else if drrReport -> dtccAdditionalFields -> versionPPD exists
+                then drrReport -> dtccAdditionalFields -> versionPPD,
+            comment1: drrReport -> dtccAdditionalFields -> comment1,
+            executionVenueId: drrReport -> dtccAdditionalFields -> executionVenueID,
+            executionVenueIdType: drrReport -> dtccAdditionalFields -> executionVenueIDType to-string,
+            masterAgreementType: drrReport -> masterAgreementType to-string,
+            masterAgreementVersion: drrReport -> masterAgreementVersion to-string,
+            maturityDateOfTheUnderlying: drrReport -> maturityDateOfTheUnderlying,
+            productIdentification: drrReport -> dtccAdditionalFields -> productID,
+            level: drrReport -> level to-string,
+            allocationType: drrReport -> dtccAdditionalFields -> allocationType,
+            interaffiliate: drrReport -> interAffiliateIndicator,
+            floatingRatePaymentFrequencyLeg1Multiplier: drrReport -> leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier,
+            floatingRatePaymentFrequencyLeg2Multiplier: drrReport -> leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier,
+            paymentFrequencyPeriodLeg1: [
+                    drrReport -> leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriod to-string,
+                    drrReport -> leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriod to-string
+                ]
+                    only-element,
+            paymentFrequencyPeriodLeg2: [
+                    drrReport -> leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriod to-string,
+                    drrReport -> leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriod to-string
+                ]
+                    only-element,
+            paymentFrequencyPeriodMultiplierLeg1: [drrReport -> leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier, drrReport -> leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier]
+                    only-element,
+            paymentFrequencyPeriodMultiplierLeg2: [drrReport -> leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier, drrReport -> leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier]
+                    only-element,
+            eventIdentifier: drrReport -> eventIdentifier,
+            packageIndicator: drrReport -> packageIndicator,
+            cdePackageIdentifier: drrReport -> packageIdentifier,
+            cdePackageTransactionPrice: [drrReport -> packageTransactionPrice -> monetary, drrReport -> packageTransactionPrice -> decimal, drrReport -> packageTransactionPrice -> percentage, drrReport -> packageTransactionPrice -> basis]
+                    only-element,
+            cdePackageTransactionPriceCurrency: drrReport -> packageTransactionPriceCurrency to-string,
+            cdePackageTransactionPriceNotation: drrReport -> packageTransactionPriceNotation
+                    then price.NotationStringFromEnum,
+            cdePackageTransactionSpread: [drrReport -> packageTransactionSpread -> monetary, drrReport -> packageTransactionSpread -> decimal, drrReport -> packageTransactionSpread -> percentage, drrReport -> packageTransactionSpread -> basis]
+                    only-element,
+            cdePackageTransactionSpreadNotation: drrReport -> packageTransactionSpreadNotation
+                    then price.NotationStringFromEnum,
+            initialMarginCollateralPortfolioCode: drrReport -> initialMarginCollateralPortfolioCode,
+            variationMarginCollateralPortfolioCode: drrReport -> variationMarginCollateralPortfolioCode,
+            sefOrDcmAnonymousExecutionIndicator: drrReport -> platformAnonymousExecutionIndicator,
+            priorUsiId: drrReport -> priorUSI,
+            price1Currency: drrReport -> priceCurrency to-string,
+            attachmentPoint: drrReport -> cdSIndexAttachmentPoint,
+            exhaustionPoint: drrReport -> cdSIndexDetachmentPoint,
+            clearingExceptionType: drrReport -> clearingExceptionsAndExemptionsCounterparty1
+                    then extract item to-string
+                    then join ";",
+            embeddedOptionOnSwap: drrReport -> embeddedOptionType to-string,
+            priorUsiIdPrefix: empty, // See rationale at DTCC_CSA_VR_0019_01 condition. Decision agreed by EU/UK/NA PeerReview WG on 2025/03/27 about Prior USI field
+            priorUtiIdPrefix: empty, // See rationale at DTCC_CSA_VR_0017_01 condition. Decision agreed by EU/UK/NA PeerReview WG on 2025/03/27 about Prior UTI field
+            tradeParty2CountryOfTheOtherCounterparty: drrReport -> countryAndProvinceOrTerritoryOfIndividual,
+            clearingReceiptDatetime: drrReport -> clearingReceiptTimestamp,
+            leg1SettlementPeriod: drrReport -> dtccAdditionalFields -> leg1SettlementPeriod,
+            origin: drrReport -> clearingAccountOrigin to-string,
+            ...
+        }
+
+func Create_SubmissionHarmonizedRepeatableData:
+    inputs:
+        drrReport CSATransactionReport (1..1)
+    output:
+        harmonized HarmonizedRepeatableData (1..1)
+
+    alias needsUpfrontFee:
+        drrReport -> otherPayment -> paymentType is absent
+            and drrReport -> dtccAdditionalFields -> primaryAssetClass to-string = "Credit"
+            and drrReport -> leg1 -> fixedRate is absent
+            and drrReport -> leg1 -> spread is absent
+
+    set harmonized:
+        HarmonizedRepeatableData {
+            underlyingAssetId: drrReport -> dtccAdditionalFields -> underlyingAsset -> underlyingAssetID,
+            underlyingAssetIdType: drrReport -> dtccAdditionalFields -> underlyingAsset -> underlyingAssetIDType,
+            underlyingAssetName: drrReport -> dtccAdditionalFields -> underlyingAssetName -> underlyingAssetName,
+            cdeOtherPaymentPayer: drrReport -> otherPayment -> payer,
+            cdeOtherPaymentReceiver: drrReport -> otherPayment -> receiver,
+            cdeOtherPaymentAmount: drrReport -> otherPayment -> amount,
+            cdeOtherPaymentCurrency: drrReport -> otherPayment -> currency extract to-string,
+            cdeOtherPaymentDate: drrReport -> otherPayment -> date,
+            cdeOtherPaymentType: drrReport -> otherPayment -> paymentType extract to-string,
+            otherPaymentPayerIdType: drrReport -> dtccAdditionalFields -> otherPaymentPayerIDType,
+            otherPaymentReceiverIdType: drrReport -> dtccAdditionalFields -> otherPaymentReceiverIDType,
+            tradeParty1ReportingDestination: drrReport -> dtccAdditionalFields -> tradeParty1ReportingDestination
+                    extract to-string,
+            tradeParty2ReportingDestination: drrReport -> dtccAdditionalFields -> tradeParty2ReportingDestination
+                    extract to-string,
+            cdeEffectiveDateOfNotionalQuantityOfLeg1: drrReport -> leg1 -> notionalQuantitySchedule -> effectiveDate,
+            cdeEffectiveDateOfNotionalQuantityOfLeg2: drrReport -> leg2 -> notionalQuantitySchedule -> effectiveDate,
+            cdeEndDateOfNotionalQuantityOfLeg1: drrReport -> leg1 -> notionalQuantitySchedule -> endDate,
+            cdeEndDateOfNotionalQuantityOfLeg2: drrReport -> leg2 -> notionalQuantitySchedule -> endDate,
+            cdeNotionalQuantityInEffectOnAssociatedEffectiveDateOfLeg1: drrReport -> leg1 -> notionalQuantitySchedule -> value,
+            cdeNotionalQuantityInEffectOnAssociatedEffectiveDateOfLeg2: drrReport -> leg2 -> notionalQuantitySchedule -> value,
+            cdeBasketConstituentsIdentifier: drrReport -> basketConstituents -> identifier,
+            cdeBasketConstituentsIdentifierSource: drrReport -> basketConstituents
+                    then extract source to-string,
+            cdeBasketConstituentsNumberOfUnits: drrReport -> basketConstituents -> numberOfUnits,
+            cdeBasketConstituentsUnitOfMeasure: drrReport -> basketConstituents -> unitOfMeasure,
+            productGrade: drrReport -> dtccAdditionalFields -> productGrade -> productGrade,
+            clearingExceptionTypeParty2: drrReport -> clearingExceptionsAndExemptionsCounterparty2
+                    extract to-string,
+            leg1QuantityFrequency: drrReport -> leg1 -> quantityFrequency to-string,
+            tradeParty1LocalCounterpartyJurisdiction: drrReport -> jurisdictionOfCounterparty1,
+            tradeParty2LocalCounterpartyJurisdiction: drrReport -> jurisdictionOfCounterparty2,
+            ...
+        }
+
+    // Add Upfront payment if no other payment or else we get rejected on Credit
+    add harmonized -> cdeOtherPaymentPayer:
+        if needsUpfrontFee then drrReport -> buyerIdentifier
+    add harmonized -> cdeOtherPaymentReceiver:
+        if needsUpfrontFee then drrReport -> sellerIdentifier
+    add harmonized -> cdeOtherPaymentType:
+        if needsUpfrontFee then "UFRO"
+    add harmonized -> cdeOtherPaymentAmount: if needsUpfrontFee then 0
+    add harmonized -> cdeOtherPaymentCurrency:
+        if needsUpfrontFee
+        then drrReport -> leg1 -> notionalCurrency to-string
+    add harmonized -> cdeOtherPaymentDate:
+        if needsUpfrontFee then drrReport -> effectiveDate
+    add harmonized -> otherPaymentPayerIdType:
+        if needsUpfrontFee then "LEI"
+    add harmonized -> otherPaymentReceiverIdType:
+        if needsUpfrontFee then "LEI"
+
+func Create_SubmissionSchedules:
+    inputs:
+        drrReport CSATransactionReport (1..1)
+    output:
+        schedules Schedules (0..1)
+
+    add schedules -> cdeNotionalSchedule1:
+        drrReport -> leg1 -> notionalAmountSchedule
+            then extract
+                CdeSchedule1 {
+                    cdeEffectiveDateOfTheNotionalAmountLeg1: effectiveDate,
+                    cdeNotionalAmountInEffectOnAssociatedEffectiveDateLeg1: value,
+                    cdeEndDateOfTheNotionalAmountLeg1: empty
+                }
+
+    add schedules -> cdeNotionalSchedule2:
+        drrReport -> leg2 -> notionalAmountSchedule
+            then extract
+                CdeSchedule2 {
+                    cdeEffectiveDateOfTheNotionalAmountLeg2: effectiveDate,
+                    cdeNotionalAmountInEffectOnAssociatedEffectiveDateLeg2: value,
+                    cdeEndDateOfTheNotionalAmountLeg2: empty
+                }
+
+    add schedules -> cdePriceSchedule:
+        drrReport -> priceSchedule
+            then extract
+                CdePriceSchedule {
+                    cdeUnadjustedEffectiveDateOfPrice: effectiveDate,
+                    cdeUnadjustedEndDateOfPrice: endDate,
+                    cdePrice: if price -> monetary exists
+                            then price -> monetary
+                        else if price -> decimal exists
+                        then price -> decimal
+                }
+
+    add schedules -> cdeStrikePriceSchedule:
+        drrReport -> strikePriceSchedule
+            then extract
+                CdeStrikePriceSchedule {
+                    cdeUnadjustedEffectiveDateOfStrikePrice: effectiveDate,
+                    cdeUnadjustedEndDateOfStrikePrice: endDate,
+                    cdeStrikePrice: if price -> monetary exists
+                            then price -> monetary
+                        else if price -> decimal exists
+                        then price -> decimal
+                }

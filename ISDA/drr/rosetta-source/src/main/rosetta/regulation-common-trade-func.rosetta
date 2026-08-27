@@ -1,0 +1,384 @@
+namespace drr.regulation.common.trade
+version "${project.version}"
+
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iso.*
+
+func LegEnrichment:
+    inputs:
+        leg cde.Leg (1..1)
+        notionalAmountSchedule quantity.NotionalPeriod (0..*)
+        notionalQuantitySchedule quantity.NotionalPeriod (0..*)
+        notionalQuantity ShortFraction5DecimalNumber (0..1)
+        floatingRateResetFrequencyPeriod FrequencyPeriodEnum (0..1)
+        floatingRateResetFrequencyMultiplier Max3Number (0..1)
+        fixingDate zonedDateTime (0..1)
+        quantityFrequency FrequencyPeriodEnum (0..1)
+        quantityFrequencyMultiplier Max3Number (0..1)
+        floatingRateIndicator IndexEnum (0..1)
+        floatingRateIdentifier ISINOct2015Identifier (0..1)
+        floatingRateReferencePeriod FrequencyPeriodEnum (0..1)
+        floatingRateReferencePeriodMultiplier Max3Number (0..1)
+        nameOfTheFloatingRate string (0..1)
+    output:
+        enrichedLeg CommonLeg (1..1)
+
+    set enrichedLeg: LegToCommonLeg(leg)
+    set enrichedLeg -> notionalAmountSchedule: notionalAmountSchedule
+    set enrichedLeg -> notionalQuantitySchedule: notionalQuantitySchedule
+    set enrichedLeg -> notionalQuantity: notionalQuantity
+    set enrichedLeg -> fixingDate: fixingDate
+    set enrichedLeg -> quantityFrequency: quantityFrequency
+    set enrichedLeg -> quantityFrequencyMultiplier: quantityFrequencyMultiplier
+    set enrichedLeg -> periodicPayment -> floatingRateResetFrequencyPeriod:
+        floatingRateResetFrequencyPeriod
+    set enrichedLeg -> periodicPayment -> floatingRateResetFrequencyMultiplier:
+        floatingRateResetFrequencyMultiplier
+    set enrichedLeg -> periodicPayment -> floatingRateIndicator: floatingRateIndicator
+    set enrichedLeg -> periodicPayment -> floatingRateIdentifier: floatingRateIdentifier
+    set enrichedLeg -> periodicPayment -> floatingRateReferencePeriod:
+        floatingRateReferencePeriod
+    set enrichedLeg -> periodicPayment -> floatingRateReferencePeriodMultiplier:
+        floatingRateReferencePeriodMultiplier
+    set enrichedLeg -> periodicPayment -> nameOfTheFloatingRate: nameOfTheFloatingRate
+
+func LegToCommonLeg:
+    inputs:
+        leg cde.Leg (1..1)
+    output:
+        commonLeg CommonLeg (1..1)
+
+    set commonLeg:
+        CommonLeg {
+            periodicPayment: payment.PeriodicPaymentToCommonPeriodicPayment(
+                        leg -> periodicPayment
+                    ),
+            fixedRate: leg -> fixedRate,
+            notionalAmount: leg -> notionalAmount,
+            notionalCurrency: leg -> notionalCurrency,
+            notionalAmountSchedule: leg -> notionalAmountSchedule,
+            totalNotionalQuantity: leg -> totalNotionalQuantity,
+            notionalQuantitySchedule: leg -> notionalQuantitySchedule,
+            settlementCurrency: leg -> settlementCurrency,
+            spread: leg -> spread,
+            spreadNotation: leg -> spreadNotation,
+            spreadCurrency: leg -> spreadCurrency,
+            quantityUnitOfMeasure: leg -> quantityUnitOfMeasure,
+            direction2: leg -> direction2,
+            ...
+        }
+
+// Payout extraction
+reporting rule PayoutLeg1 from ReportableEventBase:
+    extract
+        PayoutFromProductLeg1(
+                ProductForEvent(item),
+                TradeForEvent -> tradableProduct -> tradeLot,
+                item -> reportableInformation
+            )
+
+reporting rule PayoutLeg2 from ReportableEventBase:
+    extract
+        PayoutFromProductLeg2(
+                ProductForEvent(item),
+                TradeForEvent -> tradableProduct -> tradeLot,
+                item -> reportableInformation
+            )
+
+func PayoutFromProductLeg1:
+    inputs:
+        product Product (1..1)
+        tradeLot TradeLot (0..1)
+        reportableInformation ReportableInformationBase (0..1)
+    output:
+        payoutLeg PayoutLegWithAuxiliary (0..1)
+
+    alias payout: EconomicTermsForProduct(product) -> payout
+
+    set payoutLeg:
+        if IsCreditSwaption(product)
+        then PayoutLegWithAuxiliary {
+                creditDefaultPayout: EconomicTermsForProduct(
+                            underlier.UnderlierForProduct(product)
+                        ) -> payout -> creditDefaultPayout,
+                auxiliaryLeg:
+                    PayoutLeg {
+                        interestRatePayout: InterestRateLeg1(
+                                    underlier.UnderlierForProduct(product)
+                                ),
+                        ...
+                    },
+                settlementTerms: payout -> optionPayout only-element -> settlementTerms,
+                ...
+            }
+        else if IsCreditDefaultSwap(product)
+        then PayoutLegWithAuxiliary {
+                creditDefaultPayout: payout -> creditDefaultPayout,
+                auxiliaryLeg:
+                    PayoutLeg {
+                        interestRatePayout: payout -> interestRatePayout only-element,
+                        ...
+                    },
+                ...
+            }
+        else if IsEquityOption(product)
+                or IsInterestRateDebtOption(product)
+                or (IsProductETD(product) and payout -> optionPayout exists)
+        then PayoutLegWithAuxiliary {
+                optionPayout: payout -> optionPayout only-element,
+                tradeLot: tradeLot,
+                isProductETD: IsProductETD(product),
+                ...
+            }
+        else if Qualify_Equity_OtherOption(EconomicTermsForProduct(product))
+                or Qualify_Credit_OptionOther(EconomicTermsForProduct(product))
+                or Qualify_Commodity_OptionOther(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                optionPayout: payout -> optionPayout only-element,
+                tradeLot: tradeLot,
+                ...
+            }
+        else if Qualify_InterestRate_Option_Swaption(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                interestRatePayout: InterestRateLeg1(underlier.UnderlierForProduct(product)),
+                settlementTerms: payout -> optionPayout only-element -> settlementTerms,
+                ...
+            }
+        else if IsEquityForward(product)
+                or (IsProductETD(product) and payout -> forwardPayout exists)
+        then PayoutLegWithAuxiliary {
+                forwardPayout: payout -> forwardPayout only-element,
+                tradeLot: tradeLot,
+                isProductETD: IsProductETD(product),
+                ...
+            }
+        else if IsEquity(product)
+                or IsTotalReturnSwapDebtUnderlier(product)
+                or IsCreditTotalReturnSwap(product)
+        then PayoutLegWithAuxiliary {
+                performancePayout: payout -> performancePayout only-element,
+                tradeLot: tradeLot,
+                ...
+            }
+        else if IsFXForward(product) or IsFXOption(product)
+        then PayoutLegWithAuxiliary {
+                cashflow: FXLeg1(product),
+                settlementTerms: payout -> optionPayout only-element -> settlementTerms default payout -> forwardPayout only-element -> settlementTerms,
+                zeroNotionalAmountDefaulting: True,
+                ...
+            }
+        else if IsFXSwap(product)
+        then PayoutLegWithAuxiliary {
+                cashflow: FXSwapLeg1(product),
+                settlementTerms: FXFarLeg(product) -> settlementTerms,
+                zeroNotionalAmountDefaulting: True,
+                ...
+            }
+        else if IsCommodityOption(product)
+        then PayoutLegWithAuxiliary {
+                optionPayout: payout -> optionPayout only-element,
+                tradeLot: tradeLot,
+                lastAvailableSpotPrice: LastAvailableSpotPrice(reportableInformation),
+                isProductETD: IsProductETD(product),
+                ...
+            }
+        else if Qualify_Commodity_Swap_FixedFloat(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                fixedPricePayout: payout -> fixedPricePayout only-element,
+                tradeLot:
+                    TradeLot {
+                        priceQuantity: tradeLot -> priceQuantity
+                                filter item -> observable is absent
+                                then only-element,
+                        ...
+                    },
+                ...
+            }
+        else if (Qualify_Commodity_Swaption(EconomicTermsForProduct(product))
+                and Qualify_Commodity_Swap_FixedFloat(
+                        EconomicTermsForProduct(underlier.UnderlierForProduct(product))
+                    ))
+        then PayoutLegWithAuxiliary {
+                fixedPricePayout: EconomicTermsForProduct(
+                            underlier.UnderlierForProduct(product)
+                        ) -> payout -> fixedPricePayout only-element,
+                settlementTerms: payout -> optionPayout only-element -> settlementTerms,
+                ...
+            }
+        else if (Qualify_Commodity_Swaption(EconomicTermsForProduct(product))
+                and Qualify_Commodity_Swap_Basis(
+                        EconomicTermsForProduct(underlier.UnderlierForProduct(product))
+                    ))
+        then PayoutLegWithAuxiliary {
+                commodityPayout: if LastAvailableSpotPrice(reportableInformation) exists
+                        then CommodityBasisLegWithNoSpread(
+                                underlier.UnderlierForProduct(product)
+                            )
+                    else CommodityLeg1(underlier.UnderlierForProduct(product)),
+                tradeLot: tradeLot,
+                lastAvailableSpotPrice: LastAvailableSpotPrice(reportableInformation),
+                auxiliaryLeg: if LastAvailableSpotPrice(reportableInformation) exists
+                        then PayoutLeg {
+                            commodityPayout: CommodityLeg1(product),
+                            ...
+                        },
+                ...
+            }
+        else if Qualify_Commodity_Swap_Basis(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                commodityPayout: CommodityLeg1(product),
+                tradeLot: tradeLot,
+                lastAvailableSpotPrice: LastAvailableSpotPrice(reportableInformation),
+                auxiliaryLeg: if LastAvailableSpotPrice(reportableInformation) exists
+                        then PayoutLeg {
+                            commodityPayout: CommodityBasisLegWithNoSpread(product),
+                            ...
+                        },
+                ...
+            }
+        else if IsSingleCommodityPayoutProduct(product)
+        then PayoutLegWithAuxiliary {
+                commodityPayout: payout -> commodityPayout only-element,
+                tradeLot: tradeLot,
+                lastAvailableSpotPrice: LastAvailableSpotPrice(reportableInformation),
+                ...
+            }
+        else if IsCommodityFixedPriceForward(product)
+        then PayoutLegWithAuxiliary {
+                fixedPricePayout: payout -> fixedPricePayout only-element,
+                ...
+            }
+        else if IsCommodityFloatingPriceForward(product)
+        then PayoutLegWithAuxiliary {
+                commodityPayout: payout -> commodityPayout only-element,
+                tradeLot: tradeLot,
+                lastAvailableSpotPrice: LastAvailableSpotPrice(reportableInformation),
+                ...
+            }
+        else if IsCommodityForward(product) and payout -> forwardPayout only-element exists
+        then PayoutLegWithAuxiliary {
+                forwardPayout: payout -> forwardPayout only-element,
+                ...
+            }
+        else if IsFixedFloatZeroCouponSwapKnownAmount(product)
+        then PayoutLegWithAuxiliary {
+                interestRatePayout: InterestRateLeg1ZeroCouponSwapKnownAmount(product),
+                auxiliaryLeg:
+                    PayoutLeg {
+                        interestRatePayout: InterestRateLeg2FixedFloatSingleCurrency(
+                                    product
+                                ),
+                        ...
+                    },
+                ...
+            }
+        else if Qualify_InterestRate_Forward_Debt(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                forwardPayout: payout -> forwardPayout only-element,
+                ...
+            }
+        else if Qualify_AssetClass_InterestRate(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                interestRatePayout: InterestRateLeg1(product),
+                ...
+            }
+
+func PayoutFromProductLeg2:
+    inputs:
+        product Product (1..1)
+        tradeLot TradeLot (0..1)
+        reportableInformation ReportableInformationBase (0..1)
+    output:
+        payoutLeg PayoutLegWithAuxiliary (0..1)
+
+    alias payout: EconomicTermsForProduct(product) -> payout
+
+    set payoutLeg:
+        if Qualify_InterestRate_Option_Swaption(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                interestRatePayout: InterestRateLeg2(underlier.UnderlierForProduct(product)),
+                ...
+            }
+        else if IsFXForward(product) or IsFXOption(product)
+        then PayoutLegWithAuxiliary {
+                cashflow: FXLeg2(product),
+                zeroNotionalAmountDefaulting: True,
+                ...
+            }
+        else if IsFXSwap(product)
+        then PayoutLegWithAuxiliary {
+                cashflow: FXSwapLeg2(product),
+                settlementTerms: FXFarLeg(product) -> settlementTerms,
+                zeroNotionalAmountDefaulting: True,
+                ...
+            }
+        else if Qualify_Commodity_Swap_FixedFloat(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                commodityPayout: CommodityLeg2(product),
+                tradeLot:
+                    TradeLot {
+                        priceQuantity: tradeLot -> priceQuantity
+                                filter item -> observable is absent
+                                then only-element,
+                        ...
+                    },
+                auxiliaryLeg:
+                    PayoutLeg {
+                        fixedPricePayout: quantity.FixedPriceLeg1(product),
+                        ...
+                    },
+                ...
+            }
+        else if Qualify_Commodity_Swap_Basis(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                commodityPayout: CommodityLeg2(product),
+                tradeLot: tradeLot,
+                lastAvailableSpotPrice: LastAvailableSpotPrice(reportableInformation),
+                auxiliaryLeg: if LastAvailableSpotPrice(reportableInformation) exists
+                        then PayoutLeg {
+                            commodityPayout: CommodityBasisLegWithNoSpread(product),
+                            ...
+                        },
+                ...
+            }
+        else if IsCommodityFixedPriceForward(product)
+        then PayoutLegWithAuxiliary {
+                forwardPayout: payout -> forwardPayout only-element,
+                auxiliaryLeg:
+                    PayoutLeg {
+                        fixedPricePayout: payout -> fixedPricePayout only-element,
+                        ...
+                    },
+                ...
+            }
+        else if IsCommodityFloatingPriceForward(product)
+        then PayoutLegWithAuxiliary {
+                forwardPayout: payout -> forwardPayout only-element,
+                auxiliaryLeg:
+                    PayoutLeg {
+                        commodityPayout: payout -> commodityPayout only-element,
+                        ...
+                    },
+                tradeLot: tradeLot,
+                lastAvailableSpotPrice: LastAvailableSpotPrice(reportableInformation),
+                ...
+            }
+        else if Qualify_AssetClass_InterestRate(EconomicTermsForProduct(product))
+                or Qualify_AssetClass_Equity(EconomicTermsForProduct(product))
+                or Qualify_AssetClass_Credit(EconomicTermsForProduct(product))
+        then PayoutLegWithAuxiliary {
+                interestRatePayout: InterestRateLeg2(product),
+                auxiliaryLeg: if payout -> fixedPricePayout -> payerReceiver distinct count = 1
+                        then PayoutLeg {
+                            fixedPricePayout: payout -> fixedPricePayout first,
+                            ...
+                        },
+                settlementTerms: payout -> performancePayout only-element -> settlementTerms,
+                ...
+            }

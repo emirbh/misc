@@ -1,0 +1,17 @@
+namespace drr.base.trade.price
+version "${project.version}"
+
+import drr.base.util.datetime.*
+import drr.standards.iso.*
+
+type PriceFormat:
+    monetary BaseOne18Rate (0..1)
+    decimal BaseOneRate (0..1)
+    percentage BaseOneRate (0..1)
+    basis BasisFormat (0..1)
+
+    condition:
+        one-of
+
+type PricePeriod extends ValuePeriodBase:
+    price PriceFormat (1..1)

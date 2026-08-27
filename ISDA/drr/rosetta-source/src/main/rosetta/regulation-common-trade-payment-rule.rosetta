@@ -1,0 +1,13 @@
+namespace drr.regulation.common.trade.payment
+version "${project.version}"
+
+import cdm.product.asset.*
+
+import drr.standards.iso.*
+
+//Leg agnostic rules
+reporting rule FloatingRateResetFrequencyPeriod from InterestRatePayout: <"Floating rate reset frequency period">
+    ConvertPeriodtoISOFrequencyPeriod(resetDates -> resetFrequency -> period)
+
+reporting rule FloatingRateResetFrequencyPeriodMultiplier from InterestRatePayout: <"Floating rate reset frequency period muliplier">
+    resetDates -> resetFrequency -> periodMultiplier then FormatToMax3Number
