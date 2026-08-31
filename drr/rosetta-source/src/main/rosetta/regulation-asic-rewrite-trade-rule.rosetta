@@ -1,0 +1,529 @@
+namespace drr.regulation.asic.rewrite.trade
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.observable.asset.*
+import cdm.product.* as product
+
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.*
+import drr.regulation.asic.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+report ASIC Trade in T+1
+    from TransactionReportInstruction
+    when ReportableProduct
+    with type ASICTransactionReport
+
+eligibility rule ReportableProduct from TransactionReportInstruction: <"When eligible for ASIC">
+    True
+
+//ASIC Definitions
+reporting rule UniqueTransactionIdentifier from TransactionReportInstruction: <"Unique transaction identifier">
+    uti.UniqueTransactionIdentifierForTransaction(item, ASIC)
+        then filter IsMax32UpperCaseAlphanumericText = True
+
+reporting rule UtiProprietary from TransactionReportInstruction: <"Unique transaction identifier">
+    uti.UniqueTransactionIdentifierForTransaction(item, ASIC)
+        then filter IsMax32UpperCaseAlphanumericText = False
+
+reporting rule UniqueProductIdentifier from TransactionReportInstruction: <"Unique product identifier">
+    filter
+        IsAllowableActionForASIC or IsActionTypeTERM or IsActionTypePRTO or IsActionTypeEROR
+    then extract upi.UniqueProductIdentifier
+
+reporting rule Counterparty2 from TransactionReportInstruction: <"Counterparty 2">
+    extract common.party.Counterparty2
+
+reporting rule CountryOfCounterparty2 from TransactionReportInstruction: <"Country of Counterparty 2">
+    filter IsAllowableActionForASIC
+    then extract reportInstruction [
+        extract reportableInformation -> partyInformation
+        then filter
+            partyReference = reportInstruction -> reportingSide -> reportingCounterparty
+        then only-element
+        then extract
+            if partyReference -> partyId -> identifierType all <> staticdata.party.PartyIdentifierTypeEnum -> LEI
+            then (partyReference -> contactInformation -> address -> country only-element
+                    default partyReference -> person -> contactInformation -> address -> country only-element)
+        then extract to-enum staticdata.asset.common.ISOCountryCodeEnum
+    ]
+
+reporting rule Beneficiary1 from TransactionReportInstruction: <"Beneficiary 1">
+    filter IsAllowableActionForASIC
+    then extract cde.party.Beneficiary1
+
+reporting rule Beneficiary1IdentifierTypeIndicator from TransactionReportInstruction: <"Beneficiary 1 identifier type indicator">
+    filter IsAllowableActionForASIC
+    then extract cde.party.Beneficiary1IdentifierTypeIndicator
+
+reporting rule Broker from TransactionReportInstruction: <"Broker">
+    filter IsAllowableActionForASIC
+    then extract common.party.BrokerID
+
+reporting rule ExecutionAgentCounterparty1 from TransactionReportInstruction: <"Execution agent of the Counterparty 1">
+    filter
+        IsAllowableActionForASIC or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO or IsActionTypeVALU
+    then extract common.party.ExecutionAgentCounterparty1
+
+reporting rule Direction1 from TransactionReportInstruction: <"Direction 1">
+    filter IsAllowableActionForASIC
+    then extract cde.party.Direction1
+
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective date">
+    filter IsAllowableActionForASIC
+    then extract common.datetime.EffectiveDate
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"Expiration date">
+    filter IsAllowableActionForASIC
+    then extract common.datetime.ExpirationDate
+
+reporting rule ExecutionTimestamp from TransactionReportInstruction: <"Execution timestamp">
+    filter IsAllowableActionForASIC or IsActionTypeTERM
+    then cde.datetime.ExecutionTimestamp
+
+reporting rule EventTimestamp from TransactionReportInstruction: <"Event timestamp">
+    filter
+        IsAllowableActionForASIC or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO
+    then extract cde.datetime.EventTimestamp
+
+reporting rule ClearingTimestamp from TransactionReportInstruction: <"Clearing timestamp">
+    filter IsAllowableActionForASIC
+    then extract common.datetime.ClearingTimestamp
+
+reporting rule Cleared from TransactionReportInstruction: <"Cleared ">
+    filter IsAllowableActionForASIC
+    then extract
+        if IsCleared(originatingWorkflowStep)
+        then ClearedEnum -> Y
+        else ClearedEnum -> N
+
+reporting rule CentralCounterparty from TransactionReportInstruction: <"Central counterparty">
+    filter IsAllowableActionForASIC
+    then cde.execution.CentralCounterparty
+
+reporting rule ClearingMember from TransactionReportInstruction: <"Clearing member">
+    filter IsAllowableActionForASIC
+    then extract cde.execution.ClearingMember
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform identifier">
+    filter IsAllowableActionForASIC
+    then extract common.execution.PlatformIdentifier
+
+reporting rule Leg1Report from TransactionReportInstruction: <"Leg 1 Report">
+    filter IsAllowableActionForASIC
+    then if item exists
+        then ASICLegEnrichment(
+                    common.LegEnrichment(
+                            cde.Leg1(item, SpreadLeg1Notation, 9999999999999999999999999),
+                            cde.quantity.NotionalAmountSchedule(common.PayoutLeg1),
+                            empty,
+                            common.quantity.NotionalQuantityLeg1,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            empty
+                        ),
+                    NextFloatingReferenceResetDateLeg1
+                )
+
+reporting rule Leg2Report from TransactionReportInstruction: <"Leg 2 Report">
+    filter IsAllowableActionForASIC
+    then if item exists
+        then ASICLegEnrichment(
+                    common.LegEnrichment(
+                            cde.Leg2(item, SpreadLeg2Notation, 9999999999999999999999999),
+                            cde.quantity.NotionalAmountSchedule(common.PayoutLeg2),
+                            empty,
+                            common.quantity.NotionalQuantityLeg2,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            empty,
+                            IndicatorOfTheFloatingRateLeg2,
+                            empty,
+                            FloatingRateReferencePeriodLeg2,
+                            FloatingRateReferencePeriodMultiplierLeg2,
+                            empty
+                        ),
+                    NextFloatingReferenceResetDateLeg2
+                )
+
+reporting rule CallAmount from TransactionReportInstruction: <"Call amount">
+    filter IsAllowableActionForASIC
+    then filter IsFXOption(ProductForEvent)
+    then cde.quantity.ExtractCallAmount(item, 9999999999999999999999999)
+
+reporting rule PutAmount from TransactionReportInstruction: <"Put amount">
+    filter IsAllowableActionForASIC
+    then filter IsFXOption(ProductForEvent)
+    then cde.quantity.ExtractPutAmount(item, 9999999999999999999999999)
+
+reporting rule CallCurrency from TransactionReportInstruction: <"Call currency">
+    filter IsAllowableActionForASIC
+    then filter IsFXOption(ProductForEvent)
+    then cde.quantity.CallCurrency
+
+reporting rule PutCurrency from TransactionReportInstruction: <"Put currency">
+    filter IsAllowableActionForASIC
+    then filter IsFXOption(ProductForEvent)
+    then cde.quantity.PutCurrency
+
+reporting rule PriceNotation from TransactionReportInstruction: <"Price notation">
+    filter IsAllowableActionForASIC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.PriceNotation,
+                common.price.IsDefaultPrice
+            )
+
+reporting rule Price from TransactionReportInstruction: <"Price">
+    filter IsAllowableActionForASIC
+    then extract
+        price.PriceFormatFromNotation(
+                if common.price.IsDefaultPrice
+                then 99999999999
+                else cde.price.PriceValue,
+                PriceNotation
+            )
+
+reporting rule PriceCurrency from TransactionReportInstruction: <"Price currency">
+    filter IsAllowableActionForASIC
+    then extract
+        if common.price.IsDefaultPrice or cde.price.PriceNotation = Percentage
+        then empty
+        else cde.price.PriceCurrency
+
+reporting rule PriceUnitOfMeasure from TransactionReportInstruction: <"Price unit of measure">
+    filter IsAllowableActionForASIC
+    then extract
+        if (cde.price.Price -> priceType = PriceTypeEnum -> CashPrice
+                and (cde.price.Price -> priceExpression = PriceExpressionEnum -> PercentageOfNotional
+                    or cde.price.Price -> priceExpression = PriceExpressionEnum -> AbsoluteTerms))
+        then "ACCY"
+        else cde.price.PriceUnitOfMeasure
+
+reporting rule SpreadLeg1Notation from TransactionReportInstruction: <"Spread Notation - Leg 1">
+    filter IsAllowableActionForASIC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.SpreadNotationEnum(common.PayoutLeg1),
+                False
+            )
+
+reporting rule SpreadLeg2Notation from TransactionReportInstruction: <"Spread Notation - Leg 2">
+    filter IsAllowableActionForASIC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.SpreadNotationEnum(common.PayoutLeg2),
+                False
+            )
+
+reporting rule StrikePriceNotation from TransactionReportInstruction: <"Strike price notation">
+    filter IsAllowableActionForASIC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.StrikePriceNotationEnum,
+                cde.price.StrikePriceNotationEnum = Monetary
+                    and (IsVarianceSwap(ProductForEvent) or IsVolatilitySwap(ProductForEvent))
+            )
+
+reporting rule StrikePrice from TransactionReportInstruction: <"Strike price">
+    filter IsAllowableActionForASIC
+    then extract
+        price.PriceFormatFromNotation(cde.price.StrikePriceValue, StrikePriceNotation)
+
+reporting rule StrikePriceCurrencyCurrencyPair from TransactionReportInstruction: <"Strike price currency/currency pair">
+    filter IsAllowableActionForASIC
+    then cde.price.StrikePriceCurrency
+
+reporting rule SingleOrUpperAndLowerBarrier from TransactionReportInstruction: <"Single or Upper barrier and Lower barrier">
+    filter IsAllowableActionForASIC
+    then common.price.SingleOrUpperAndLowerBarrier
+
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option premium amount">
+    filter IsAllowableActionForASIC
+    then filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then common.price.OptionPremiumAmount
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction: <"Option premium currency">
+    filter IsAllowableActionForASIC
+    then filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then common.price.OptionPremiumCurrency
+
+reporting rule OptionPremiumPaymentDate from TransactionReportInstruction: <"Option premium payment date">
+    filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then cde.price.OptionPremiumPaymentDate
+
+reporting rule ExchangeRate from TransactionReportInstruction: <"Exchange rate">
+    filter IsAllowableActionForASIC
+    then filter IsFXOption(ProductForEvent) = False
+    then cde.price.ExchangeRate
+
+reporting rule ExchangeRateBasis from TransactionReportInstruction: <"Exchange rate basis">
+    filter IsAllowableActionForASIC
+    then cde.price.ExchangeRateBasis
+
+//end of fixed-float fields
+// Other Payment Report
+reporting rule OtherPayment from TransactionReportInstruction:
+    filter IsAllowableActionForASIC or IsActionTypeTERM
+    then extract cde.payment.OtherPayment
+
+// Other Payment Report
+reporting rule CustomBasketCodeIdentifier from TransactionReportInstruction: <"Custom Basket Code Identifier">
+    filter IsAllowableActionForASIC
+    then reportableInformation -> customBasket -> customBasketCode default cde.basket.CustomBasketCode
+
+reporting rule BasketStructurer from TransactionReportInstruction: <"Basket Structurer">
+    filter IsAllowableActionForASIC
+    then extract reportableInformation -> customBasket -> basketStructurerLei
+    then filter item -> identifierType = staticdata.party.PartyIdentifierTypeEnum -> LEI
+    then extract item -> identifier
+
+reporting rule BasketConstituents from TransactionReportInstruction:
+    filter IsAllowableActionForASIC
+    then extract cde.basket.BasketConstituents
+    then extract
+        basket.BasketConstituentsReport {
+            identifier: identifier,
+            source: source,
+            ...
+        }
+
+reporting rule UnderlyingIdentification from TransactionReportInstruction: <"Underlying Identification">
+    filter IsAllowableActionForASIC
+    then common.underlier.UnderlyingIdentification
+
+reporting rule UnderlyingIdentificationType from TransactionReportInstruction: <"Underlying Identification Type (DTCC)">
+    filter IsAllowableActionForASIC
+    then ProductForEvent
+    then extract
+        if underlier.UnderlierForProduct -> basket exists
+                or EconomicTermsForProduct -> payout -> performancePayout -> underlier -> basket exists
+                or EconomicTermsForProduct -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+                or EconomicTermsForProduct(underlier.UnderlierForProduct) -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+                    // Commodities: only for ETDs
+                or (IsProductETD
+                    and EconomicTermsForProduct -> payout -> commodityPayout -> underlier -> basket exists
+                    and IsSingleCommodityPayoutProduct = False)
+        then common.underlier.UnderlyingIdentificationTypeEnum -> B
+        else if underlier.UnderlierProductIdentifier(item, ISIN) exists
+        then I
+        else if underlier.UnderlierProductIdentifier(item, empty) exists
+                and underlier.UnderlierProductIdentifier(item, ISIN) is absent
+        then O
+
+reporting rule UnderlyingIdOther from TransactionReportInstruction: <"Underlying ID (Other) (DTCC)">
+    filter IsAllowableActionForASIC
+    then extract cde.underlier.UnderlierProductIdentifierOther
+    then ExtractProductIdentifierBySource
+    then identifier
+
+reporting rule UnderlyingIdOtherSource from TransactionReportInstruction: <"Underlying ID (Other) Source (DTCC)">
+    filter IsAllowableActionForASIC
+    then extract cde.underlier.UnderlierProductIdentifierOther
+    then ExtractProductIdentifierBySource
+    then source
+
+reporting rule MaturityDateOfTheUnderlier from TransactionReportInstruction: <"Maturity date of the underlier">
+    filter IsAllowableActionForASIC
+    then common.datetime.MaturityDateOfTheUnderlier
+
+reporting rule IndicatorOfTheFloatingRateLeg2 from TransactionReportInstruction: <"Indicator of the floating rate  Leg 2">
+    filter IsAllowableActionForASIC
+    then filter
+        (common.contract.AssetClass = CommonAssetClass -> COMM or common.contract.AssetClass = EQUI or common.contract.AssetClass = CRDT)
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then extract common.underlier.FloatingRateIndicator
+
+reporting rule FloatingRateReferencePeriodLeg2 from TransactionReportInstruction: <"Floating rate reference period - Leg 2">
+    filter IsAllowableActionForASIC
+    then filter
+        (common.contract.AssetClass = CommonAssetClass -> COMM or common.contract.AssetClass = EQUI or common.contract.AssetClass = CRDT)
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriod
+
+reporting rule FloatingRateReferencePeriodMultiplierLeg2 from TransactionReportInstruction: <"Floating rate reference period muliplier- Leg 2">
+    filter IsAllowableActionForASIC
+    then filter
+        (common.contract.AssetClass = CommonAssetClass -> COMM or common.contract.AssetClass = EQUI or common.contract.AssetClass = CRDT)
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriodMultiplier
+
+reporting rule CDSIndexAttachmentPoint from TransactionReportInstruction: <"CDS index attachment point">
+    filter IsAllowableActionForASIC
+    then cde.index.CDSIndexAttachmentPoint
+
+reporting rule CDSIndexDetachmentPoint from TransactionReportInstruction: <"CDS index detachment point">
+    filter IsAllowableActionForASIC
+    then cde.index.CDSIndexDetachmentPoint
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index factor">
+    filter IsAllowableActionForASIC
+    then extract common.index.IndexFactor
+
+reporting rule PackageIdentifier from TransactionReportInstruction: <"Package identifier">
+    filter IsAllowableActionForASIC
+    then extract cde.link.PackageIdentifier
+
+reporting rule PackageTransactionPriceNotation from TransactionReportInstruction: <"Package transaction price notation">
+    filter IsAllowableActionForASIC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionPriceNotationEnum,
+                cde.link.PackageIdentifier exists
+                    and cde.price.PackageTransactionPriceNotationEnum is absent
+            )
+
+reporting rule PackageTransactionPrice from TransactionReportInstruction: <"Package transaction price">
+    filter IsAllowableActionForASIC
+    then extract
+        price.PriceFormatFromNotation(
+                if cde.link.PackageIdentifier exists
+                        and cde.price.PackageTransactionPriceNotationEnum is absent
+                then 99999999999
+                else cde.price.PackageTransactionPriceValue,
+                PackageTransactionPriceNotation
+            )
+
+reporting rule PackageTransactionPriceCurrency from TransactionReportInstruction: <"Package transaction price currency">
+    filter IsAllowableActionForASIC
+    then extract cde.price.PackageTransactionPriceCurrency
+
+reporting rule PackageTransactionSpreadNotation from TransactionReportInstruction: <"Package transaction spread notation">
+    filter IsAllowableActionForASIC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionSpreadNotationEnum,
+                False
+            )
+
+reporting rule PackageTransactionSpread from TransactionReportInstruction: <"Package transaction spread">
+    filter IsAllowableActionForASIC
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionSpreadValue,
+                PackageTransactionSpreadNotation
+            )
+
+reporting rule PackageTransactionSpreadCurrency from TransactionReportInstruction: <"Package transaction spread currency">
+    filter IsAllowableActionForASIC
+    then extract cde.price.PackageTransactionSpreadCurrency
+
+reporting rule PriorUTI from TransactionReportInstruction: <"Prior UTI">
+    filter IsAllowableActionForASIC
+    then common.link.GetPriorTransactionIdentifier(item, ASIC)
+    then filter IsMax32UpperCaseAlphanumericText = True
+
+reporting rule PriorUTIProprietary from TransactionReportInstruction: <"Prior UTI">
+    filter IsAllowableActionForASIC
+    then common.link.GetPriorTransactionIdentifier(item, ASIC)
+    then filter IsMax32UpperCaseAlphanumericText = False
+
+reporting rule EventIdentifier from TransactionReportInstruction: <"Event identifier">
+    filter IsAllowableActionForASIC or IsActionTypeTERM
+    then extract cde.event.EventIdentifier
+
+reporting rule NewDerivativeTradeRepository from TransactionReportInstruction: <"New Derivative Trade Repository">
+    extract
+        party.ExtractPartyFromRelatedPartyByRole(
+                reportableInformation -> partyInformation -> relatedParty,
+                staticdata.party.PartyRoleEnum -> TradeRepository
+            )
+    then extract party.PartyLei(partyId)
+
+reporting rule SmallScaleBuySideEntityIndicator from TransactionReportInstruction: <"Small-scale buy-side Entity indicator">
+    filter IsAllowableActionForASIC
+    then extract
+        common.party.ExtractRegimeInformation(item, item -> reportingSide -> reportingParty) -> asicPartyInformation
+    then only-element
+    then extract if smallScaleBuySideIndicator = True then "SSBS"
+
+reporting rule ValuationTimestamp from TransactionReportInstruction: <"Valuation Timestamp">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then cde.datetime.ValuationTimestamp
+
+reporting rule ValuationAmount from TransactionReportInstruction: <"Valuation amount">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then cde.valuation.ValuationAmount
+
+reporting rule ValuationCurrency from TransactionReportInstruction: <"Valuation currency">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then cde.valuation.ValuationCurrency
+
+reporting rule ValuationMethod from TransactionReportInstruction: <"Valuation method">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then extract cde.valuation.ValuationMethod(valuation.GetValuation)
+
+reporting rule Delta from TransactionReportInstruction: <"Delta">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then extract cde.quantity.Delta
+
+reporting rule NextFloatingReferenceResetDateLeg1 from TransactionReportInstruction: <"Next floating reference reset date - Leg 1">
+    extract GetNextFloatingReferenceResetDate(item, InterestRateLeg1(ProductForEvent))
+
+reporting rule NextFloatingReferenceResetDateLeg2 from TransactionReportInstruction: <"Next floating reference reset date - Leg 2">
+    extract GetNextFloatingReferenceResetDate(item, InterestRateLeg2(ProductForEvent))
+
+reporting rule TechnicalRecordId from TransactionReportInstruction: <"Technical Record Id (ISO)">
+    extract common.link.TechnicalRecordId(item -> reportableInformation, ASIC)
+
+reporting rule CollateralPortfolioIndicator from TransactionReportInstruction: <"Collateral Portfolio Indicator">
+    filter IsAllowableActionForASIC
+    then extract cde.collateral.CollateralPortfolioIndicator
+
+reporting rule CollateralPortfolioCodeInitialMargin from TransactionReportInstruction: <"Collateral portfolio code (initial margin)">
+    filter IsAllowableActionForASIC
+    then extract TradeForEvent -> collateral -> collateralPortfolio
+    then filter
+        legalAgreement -> legalAgreementIdentification -> agreementName -> creditSupportAgreementMarginType = product.collateral.CollateralMarginTypeEnum -> InitialMargin
+    then only-element
+    then portfolioIdentifier -> assignedIdentifier -> identifier last
+
+reporting rule CollateralPortfolioCodeVariationMargin from TransactionReportInstruction: <"Collateral portfolio code (variation margin)">
+    filter IsAllowableActionForASIC
+    then extract
+        if TradeForEvent -> collateral -> collateralPortfolio -> portfolioIdentifier exists
+        then (TradeForEvent -> collateral -> collateralPortfolio
+            then filter
+                legalAgreement -> legalAgreementIdentification -> agreementName -> creditSupportAgreementMarginType = product.collateral.CollateralMarginTypeEnum -> VariationMargin
+            then only-element
+            then portfolioIdentifier -> assignedIdentifier -> identifier last)
+        else if TradeForEvent -> collateral -> portfolioIdentifier exists
+        then cde.collateral.CollateralPortfolioCode
+
+reporting rule ExecutionAgentCounterparty2DTCC from TransactionReportInstruction: <"Execution Agent of Counterparty 2">
+    filter
+        IsAllowableActionForASIC or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO or IsActionTypeVALU
+    then common.party.ExecutionAgentCounterparty2
+
+func IsAllowableActionForASIC:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isAllowableAction boolean (1..1)
+
+    set isAllowableAction:
+        IsActionTypeNEWT(reportableEvent)
+            or IsActionTypeMODI(reportableEvent)
+            or IsActionTypePositionMODI(reportableEvent)
+            or IsActionTypeCORR(reportableEvent)
+            or IsActionTypeREVI(reportableEvent)
+            or IsActionTypePOSC(reportableEvent)

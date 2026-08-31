@@ -1,0 +1,12 @@
+namespace drr.base.util.math
+version "${project.version}"
+
+func EmptyOrAllMatch: <"Checks that the list of booleans is either empty or all match the expected result.">
+    inputs:
+        list boolean (0..*)
+        expectedResult boolean (1..1)
+    output:
+        result boolean (1..1)
+
+    set result:
+        if list is absent then True else list all = expectedResult

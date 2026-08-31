@@ -1,0 +1,180 @@
+namespace drr.base.trade.underlier
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.qualification.*
+import drr.base.trade.*
+
+func UnderlierForProduct: <"Extracts the underlier product.">
+    inputs:
+        product Product (1..1)
+    output:
+        underlierProduct Product (0..1)
+    set underlierProduct:
+        if EconomicTermsForProduct(product) -> payout -> optionPayout exists
+        then EconomicTermsForProduct(product) -> payout -> optionPayout only-element -> underlier
+        else if EconomicTermsForProduct(product) -> payout -> forwardPayout exists
+        then EconomicTermsForProduct(product) -> payout -> forwardPayout only-element -> underlier
+
+func FilterProductIdentifier:
+    inputs:
+        productIdentifiers ProductIdentifier (0..*) <"List of product identifiers">
+        productIdentificationType ProductIdTypeEnum (0..1)
+    output:
+        productIdentifier ProductIdentifier (0..1) <"Single product identifier">
+
+    set productIdentifier: <"Extract ISIN identifier if exists, else return the first."> // take two arguments 2nd type of productIdTypeEnum inputs 
+        if productIdentifiers -> source any = productIdentificationType
+        then (productIdentifiers
+            filter source = productIdentificationType
+            then first)
+
+func UnderlierProductIdentifier: <"Extracts a product identifier from the product underlier using an ISIN filtering.">
+    inputs:
+        product Product (1..1)
+        identifierType ProductIdTypeEnum (0..1)
+    output:
+        productId ProductIdentifier (0..*)
+
+    alias productPayout: EconomicTermsForProduct(product) -> payout
+    alias underlierPayout:
+        EconomicTermsForProduct(underlier.UnderlierForProduct(product)) -> payout
+    alias cdsProduct:
+        productPayout -> creditDefaultPayout -> generalTerms -> referenceInformation -> referenceObligation
+    alias cdsUnderlying:
+        underlierPayout -> creditDefaultPayout -> generalTerms -> referenceInformation -> referenceObligation
+    alias cdsIndexUnderlying:
+        underlierPayout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation
+    alias cdsIndex:
+        productPayout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation
+    alias floatingRateIndex:
+        productPayout -> interestRatePayout -> rateSpecification -> floatingRate -> rateOption -> indexReferenceInformation
+    alias inflationRateIndex:
+        productPayout -> interestRatePayout -> rateSpecification -> inflationRate -> rateOption -> indexReferenceInformation
+
+    alias cdsProductID:
+        if cdsProduct exists
+        then cdsProduct
+        else if cdsUnderlying exists
+        then cdsUnderlying
+            then extract
+                if security exists
+                then security -> productIdentifier
+                else if loan exists
+                then loan -> productIdentifier
+            then flatten
+
+    alias underlierProductID:
+        if underlier.UnderlierForProduct(product) exists
+        then underlier.UnderlierForProduct(product)
+        else if productPayout -> performancePayout -> underlier exists
+        then productPayout -> performancePayout -> underlier
+            then extract
+                if security exists
+                then security -> productIdentifier
+                else if loan exists
+                then loan -> productIdentifier
+                else if index exists
+                then index -> productIdentifier
+                else if commodity exists and product.IsProductETD(product)
+                then commodity -> productIdentifier
+            then flatten
+
+    alias etdProductID:
+        // ETD
+        if product.IsProductETD(product)
+        then (if underlier.UnderlierForProduct(product) -> commodity -> productIdentifier exists
+            then underlier.UnderlierForProduct(product) -> commodity -> productIdentifier
+            else if (productPayout -> commodityPayout -> underlier -> commodity -> productIdentifier exists
+                    and product.IsSingleCommodityPayoutProduct(product) = False)
+            then productPayout -> commodityPayout -> underlier -> commodity -> productIdentifier
+            // Commodities Index: only for ETDs
+            else if (productPayout -> commodityPayout -> underlier -> index exists
+                    and product.IsSingleCommodityPayoutProduct(product) = False)
+            then productPayout -> commodityPayout -> underlier -> index -> productIdentifier
+            // ETD Option on Futures on Index
+            else if underlier.UnderlierForProduct(underlier.UnderlierForProduct(product)) -> index exists
+            then underlier.UnderlierForProduct(underlier.UnderlierForProduct(product)) -> index -> productIdentifier)
+
+    alias otcProductID:
+        // OTC
+        // Swaptions
+        if underlier.UnderlierForProduct(product) -> contractualProduct -> productIdentifier exists
+        then underlier.UnderlierForProduct(product) -> contractualProduct -> productIdentifier
+        else if underlier.UnderlierForProduct(product) -> contractualProduct -> productIdentifier exists
+        then underlier.UnderlierForProduct(product) -> contractualProduct -> productIdentifier
+        // IR on bond
+        else if productPayout -> interestRatePayout -> bondReference -> bond exists
+        then productPayout -> interestRatePayout -> bondReference -> bond
+        // FRA on Commodity
+        else if productPayout -> forwardPayout -> underlier -> commodity -> productIdentifier exists
+        then productPayout -> forwardPayout -> underlier -> commodity -> productIdentifier
+
+    // Indices
+    alias indexProductId:
+        if cdsIndex -> productIdentifier exists
+        then cdsIndex -> productIdentifier
+        else if cdsIndexUnderlying -> productIdentifier exists
+        then cdsIndexUnderlying -> productIdentifier
+        else if (product.IsFRA(product) and floatingRateIndex -> productIdentifier exists)
+        then floatingRateIndex -> productIdentifier
+        // FROM MAS & JFSA
+        else if Qualify_BaseProduct_IRSwap(EconomicTermsForProduct(product))
+        then ([floatingRateIndex -> productIdentifier, floatingRateIndex -> productIdentifier])
+        else if Qualify_BaseProduct_IRSwap(EconomicTermsForProduct(product))
+        then ([floatingRateIndex -> productIdentifier, inflationRateIndex -> productIdentifier])
+
+    // No Product Identifier for indices 
+    alias indexNoProductId:
+        if cdsIndex -> indexName exists and cdsIndex -> productIdentifier is absent
+        then ProductIdentifier {
+                identifier: cdsIndex -> indexName,
+                source: Name
+            }
+        else if cdsIndexUnderlying -> indexName exists
+                and cdsIndexUnderlying -> productIdentifier is absent
+        then ProductIdentifier {
+                identifier: cdsIndexUnderlying -> indexName,
+                source: Name
+            }
+        else if floatingRateIndex -> indexName exists
+                and floatingRateIndex -> productIdentifier is absent
+        then ProductIdentifier {
+                identifier: floatingRateIndex -> indexName only-element,
+                source: Name
+            }
+
+    // Basket        
+    alias basketProductId:
+        if underlier.UnderlierForProduct(product) -> basket exists
+        then underlier.UnderlierForProduct(product) -> basket -> productIdentifier
+        else if productPayout -> performancePayout -> underlier -> basket exists
+        then productPayout -> performancePayout -> underlier -> basket -> productIdentifier
+        else if productPayout -> commodityPayout -> underlier -> basket exists
+        then productPayout -> commodityPayout -> underlier -> basket -> productIdentifier
+
+    alias basketNoProductId:
+        if productPayout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId exists
+        then productPayout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId
+            extract
+                ProductIdentifier {
+                    identifier: item,
+                    source: Other
+                }
+        else if underlierPayout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId exists
+        then underlierPayout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId
+            extract
+                ProductIdentifier {
+                    identifier: item,
+                    source: Other
+                }
+
+    add productId:
+        [cdsProductID, underlierProductID, etdProductID, otcProductID, indexProductId, indexNoProductId, basketProductId, basketNoProductId]
+            then if identifierType exists
+                then FilterProductIdentifier(item, identifierType)
+                else item

@@ -1,0 +1,33 @@
+namespace drr.regulation.fca.ukemir.refit.valuation
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.regulation.fca.*
+import drr.regulation.fca.ukemir.*
+import drr.standards.iosco.uti.*
+import drr.standards.iso.*
+
+corpus Dissemination Valuation
+
+report FCA UKEMIR Valuation in T+1
+  	from ValuationReportInstruction
+  	when ReportableProduct
+  	with type FCAValuationReport
+
+eligibility rule ReportableProduct from ValuationReportInstruction: <"When eligible for FCA UKEMIR">
+    [regulatoryReference FCA UKEMIR Valuation
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+reporting rule EntityResponsibleForReporting from ValuationReportInstruction: <"Entity Responsible for Reporting">
+    extract
+        if IsRegulatedMarketOrThirdCountryEquivalentMarket(reportableInformation, UKEMIR) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule UniqueTransactionIdentifier from ValuationReportInstruction: <"Unique Transaction Identifier">
+    UniqueTransactionIdentifierForValuation(item, FCA)
+        then filter IsMax32UpperCaseAlphanumericText = True
+
+reporting rule UtiProprietary from ValuationReportInstruction: <"Unique Transaction Identifier (Proprietary)">
+    UniqueTransactionIdentifierForValuation(item, FCA)
+        then filter IsMax32UpperCaseAlphanumericText = False

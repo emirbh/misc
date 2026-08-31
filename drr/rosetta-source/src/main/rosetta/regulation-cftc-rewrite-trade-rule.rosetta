@@ -1,0 +1,798 @@
+namespace drr.regulation.cftc.rewrite.trade
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.identifier.*
+import cdm.event.common.*
+import cdm.event.qualification.*
+import cdm.product.* as product
+import cdm.product.qualification.*
+
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.cftc.*
+import drr.regulation.cftc.rewrite.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version2.* as cde
+import drr.standards.iosco.cde.version3.* as cdeV3
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+report CFTC Part43 in T+1
+    from TransactionReportInstruction
+    when IsReportableEvent
+  	with type CFTCPart43TransactionReport
+
+report CFTC Part45 in T+1
+    from TransactionReportInstruction
+    when IsReportableEvent
+  	with type CFTCPart45TransactionReport
+
+reporting rule Cleared from TransactionReportInstruction: <"Cleared">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.execution.Cleared
+
+reporting rule CentralCounterparty from TransactionReportInstruction: <"Central Counterparty">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.execution.CentralCounterparty
+
+reporting rule ClearingAccountOrigin from TransactionReportInstruction: <"Clearing Account Origin">
+    filter IsAllowableActionForCFTC
+    then extract common.execution.ClearingAccountOrigin
+
+reporting rule ClearingMember from TransactionReportInstruction: <"Clearing Member">
+    filter IsAllowableActionForCFTC
+    then extract cde.execution.ClearingMember
+
+reporting rule ClearingSwapUSIs from TransactionReportInstruction: <"Clearing Swap USIs">
+    filter IsAllowableActionForCFTC
+    then extract
+        if ((IsCleared(originatingWorkflowStep) or (IntendedToClear(originatingWorkflowStep) and IsActionTypeTERM))
+                and cdeV3.event.EventType = CLRG)
+        then originatingWorkflowStep -> businessEvent
+    then extract businessEvent [
+        businessEvent -> after -> trade -> tradeIdentifier
+            filter
+                businessEvent -> instruction -> before -> trade -> tradeIdentifier all <> item
+            then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+            then extract FindLatestAssignedIdentifier
+    ]
+    then extract identifier
+
+reporting rule ClearingSwapUTIs from TransactionReportInstruction: <"Clearing Swap UTIs">
+    filter IsAllowableActionForCFTC
+    then extract
+        if ((IsCleared(originatingWorkflowStep) or (IntendedToClear(originatingWorkflowStep) and IsActionTypeTERM))
+                and cdeV3.event.EventType = CLRG)
+        then originatingWorkflowStep -> businessEvent
+    then extract businessEvent [
+        businessEvent -> after -> trade -> tradeIdentifier
+            filter
+                businessEvent -> instruction -> before -> trade -> tradeIdentifier all <> item
+            then filter
+                identifierType = TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+            then extract FindLatestAssignedIdentifier
+    ]
+    then extract identifier
+
+reporting rule OriginalSwapUSI from TransactionReportInstruction: <"Original Swap USI">
+    filter IsAllowableActionForCFTC
+    then extract
+        if (IsCleared(originatingWorkflowStep) = True and IsActionTypeNEWT = True and cdeV3.event.EventType = CLRG)
+        then BeforeTradeForEvent
+    then extract tradeIdentifier
+    then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+    then only-element
+    then extract assignedIdentifier -> identifier
+    then last
+
+reporting rule OriginalSwapUTI from TransactionReportInstruction: <"Original Swap UTI">
+    filter IsAllowableActionForCFTC
+    then extract common.link.OriginalSwapUTI
+    then last
+
+reporting rule OriginalSwapSDRIdentifier from TransactionReportInstruction: <"Original Swap SDR Identifier">
+    filter IsAllowableActionForCFTC
+    then extract common.link.OriginalSwapSDRIdentifier
+
+reporting rule ClearingReceiptTimestamp from TransactionReportInstruction: <"Clearing Receipt Timestamp">
+    filter
+        IsAllowableActionForCFTC and (IsActionTypeEROR = False and IsActionTypePRTO = False)
+    then extract common.datetime.ClearingReceiptTimestamp
+
+reporting rule ClearingExceptionsAndExemptionsCounterparty1 from TransactionReportInstruction: <"Clearing Exceptions And Exemptions Counterparty 1">
+    filter IsAllowableActionForCFTC
+    then filter
+        IsCleared(originatingWorkflowStep) = False
+            and IntendedToClear(originatingWorkflowStep) = False
+    then extract reportInstruction [
+        reportInstruction -> reportableInformation -> partyInformation
+            filter partyReference = reportInstruction -> reportingSide -> reportingParty
+            then filter
+                regimeInformation -> clearingException -> clearingException any = True
+            then extract regimeInformation
+            then flatten
+            then filter supervisoryBody = SupervisoryBodyEnum -> CFTC
+            then extract clearingException -> clearingExceptionReason
+            then flatten
+            then extract ClearingExceptionsAndExemptions
+    ]
+
+reporting rule ClearingExceptionsAndExemptionsCounterparty2 from TransactionReportInstruction: <"Clearing Exceptions And Exemptions Counterparty 2">
+    filter IsAllowableActionForCFTC
+    then filter
+        IsCleared(originatingWorkflowStep) = False
+            and IntendedToClear(originatingWorkflowStep) = False
+    then extract reportInstruction [
+        reportInstruction -> reportableInformation -> partyInformation
+            filter
+                partyReference = reportInstruction -> reportingSide -> reportingCounterparty
+            then filter
+                regimeInformation -> clearingException -> clearingException any = True
+            then extract regimeInformation
+            then flatten
+            then filter supervisoryBody = SupervisoryBodyEnum -> CFTC
+            then extract clearingException -> clearingExceptionReason
+            then flatten
+            then extract ClearingExceptionsAndExemptions
+    ]
+
+reporting rule Counterparty1 from TransactionReportInstruction: <"Counterparty 1 (reporting counterparty)">
+    extract PartyLeiAndPersonByRoles(reportingSide -> reportingParty, empty)
+
+reporting rule Counterparty1Format from TransactionReportInstruction: <"Expected Counterparty 1 Format - LEI, or LEI and Person ID.">
+    extract PartyIdentifierFormat(reportingSide -> reportingParty)
+
+reporting rule Counterparty2Format from TransactionReportInstruction: <"Expected Counterparty 2 Format - LEI, or LEI and Person ID.">
+    extract PartyIdentifierFormat(reportingSide -> reportingCounterparty)
+
+reporting rule BuyerIdentifierFormat from TransactionReportInstruction: <"Expected Buyer Identifier Format - LEI, or LEI and Person ID.">
+    filter IsAllowableActionForCFTC
+    then extract PartyIdentifierFormat(cde.party.Direction1BuyerParty(TradeForEvent))
+
+reporting rule SellerIdentifierFormat from TransactionReportInstruction: <"Expected Seller Identifier Format - LEI, or LEI and Person ID.">
+    filter IsAllowableActionForCFTC
+    then extract PartyIdentifierFormat(cde.party.Direction1SellerParty(TradeForEvent))
+
+reporting rule PayerLeg1IdentifierFormat from TransactionReportInstruction: <"Expected Payer Leg 1 Identifier Format - LEI, or LEI and Person ID.">
+    filter IsAllowableActionForCFTC
+    // We should also restrict this to only populate if we have a Identifier otherwise we populate based on a default value of PartyIdentifierFormat
+    then extract PartyIdentifierFormat(PayerPartyLeg1)
+
+reporting rule PayerLeg2IdentifierFormat from TransactionReportInstruction: <"Expected Payer Leg 2 Identifier Format - LEI, or LEI and Person ID.">
+    filter IsAllowableActionForCFTC
+    // We should also restrict this to only populate if we have a Identifier otherwise we populate based on a default value of PartyIdentifierFormat
+    then extract PartyIdentifierFormat(PayerPartyLeg2)
+
+reporting rule ReceiverLeg1IdentifierFormat from TransactionReportInstruction: <"Expected Receiver Leg 1 Identifier Format - LEI, or LEI and Person ID.">
+    filter IsAllowableActionForCFTC
+    // We should also restrict this to only populate if we have a Identifier otherwise we populate based on a default value of PartyIdentifierFormat
+    then extract PartyIdentifierFormat(ReceiverPartyLeg1)
+
+reporting rule ReceiverLeg2IdentifierFormat from TransactionReportInstruction: <"Expected Receiver Leg 2 Identifier Format - LEI, or LEI and Person ID.">
+    filter IsAllowableActionForCFTC
+    // We should also restrcit this to only populate if we have a Identifier otherwise we populate based on a default value of PartyIdentifierFormat
+    then extract PartyIdentifierFormat(ReceiverPartyLeg2)
+
+reporting rule Counterparty1FinancialEntityIndicator from TransactionReportInstruction: <"Counterparty 1 Financial Entity Indicator">
+    filter IsAllowableActionForCFTC
+    then (if IsCleared(item -> originatingWorkflowStep) = False
+        then (extract
+            common.party.ExtractRegimeInformation(
+                    item,
+                    item -> reportingSide -> reportingParty
+                )
+        then if cftcPartyInformation -> financialEntity exists
+            then True
+            else False))
+
+reporting rule Counterparty2FinancialEntityIndicator from TransactionReportInstruction: <"Counterparty 2 Financial Entity  Indicator">
+    filter IsAllowableActionForCFTC
+    then (extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingCounterparty
+            )
+    then if cftcPartyInformation -> financialEntity exists
+        then True
+        else False)
+
+reporting rule PayerIdentifierLeg1 from TransactionReportInstruction: <"Payer Identifier Leg1">
+    filter IsAllowableActionForCFTC
+    then if BuyerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        // Ascent Uplift analysis - We are making an exception for IsVarianceSwap(ProductForEvent) or IsVolatilitySwap(ProductForEvent) as to mimic current behvaiour as still populate even if we only have a single leg
+        then extract
+            PartyLeiAndPersonByRoles(PayerPartyLeg1, reportingSide -> reportingParty)
+
+reporting rule PayerIdentifierLeg2 from TransactionReportInstruction: <"Payer Identifier Leg2">
+    filter IsAllowableActionForCFTC
+    then if BuyerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        then extract
+            PartyLeiAndPersonByRoles(PayerPartyLeg2, reportingSide -> reportingParty)
+
+reporting rule ReceiverIdentifierLeg1 from TransactionReportInstruction: <"Receiver Identifier Leg1">
+    filter IsAllowableActionForCFTC
+    then if SellerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        then extract
+            PartyLeiAndPersonByRoles(ReceiverPartyLeg1, reportingSide -> reportingParty)
+
+reporting rule ReceiverIdentifierLeg2 from TransactionReportInstruction: <"Receiver Identifier Leg2">
+    filter IsAllowableActionForCFTC
+    then if SellerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        then extract
+            PartyLeiAndPersonByRoles(ReceiverPartyLeg2, reportingSide -> reportingParty)
+
+reporting rule Counterparty1FederalEntityIndicator from TransactionReportInstruction: <"Counterparty 1 Federal Entity Indicator">
+    filter IsAllowableActionForCFTC
+    then extract
+        common.party.ExtractRegimeInformation(item, item -> reportingSide -> reportingParty)
+    then if cftcPartyInformation -> federalEntity exists
+        then True
+        else False
+
+reporting rule Counterparty2FederalEntityIndicator from TransactionReportInstruction: <"Counterparty 2 Federal Entity Indicator">
+    filter IsAllowableActionForCFTC
+    then extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingCounterparty
+            )
+    then if cftcPartyInformation -> federalEntity exists
+        then True
+        else False
+
+reporting rule BuyerIdentifier from TransactionReportInstruction: <"Buyer Identifier">
+    filter IsAllowableActionForCFTC
+    then extract cde.party.Direction1BuyerIdentifier
+
+reporting rule SellerIdentifier from TransactionReportInstruction: <"Seller Identifier">
+    filter IsAllowableActionForCFTC
+    then extract cde.party.Direction1SellerIdentifier
+
+reporting rule CustomBasketIndicator from TransactionReportInstruction: <"Custom Basket Indicator">
+    filter IsAllowableActionForCFTC
+    then extract common.basket.CustomBasketIndicator
+
+reporting rule EventType from TransactionReportInstruction: <"Event Type">
+    filter IsAllowableActionForCFTC
+    then if Qualify_PartialTermination(item -> originatingWorkflowStep -> businessEvent) = True
+                and cdeV3.event.EventType = ETRM
+        then EventTypeEnum -> TRAD
+        else extract cdeV3.event.EventType
+
+reporting rule AmendmentIndicator from TransactionReportInstruction: <"Amendment Indicator">
+    filter
+        IsAllowableActionForCFTC and (IsActionTypeTERM = False and IsActionTypeEROR = False and IsActionTypePRTO = False)
+    then extract common.event.AmendmentIndicator
+
+reporting rule EventIdentifier from TransactionReportInstruction: <"Event Identifier">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.event.EventIdentifier
+
+reporting rule NotionalAmountLeg1 from TransactionReportInstruction: <"Notional Amount Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.NotionalAmountLeg1(item, 99999999999999999999.99999)
+
+reporting rule NotionalAmountLeg2 from TransactionReportInstruction: <"Notional Amount Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.NotionalAmountLeg2(item, 99999999999999999999.99999)
+
+reporting rule NotionalCurrencyLeg1 from TransactionReportInstruction: <"Notional Currency Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.NotionalCurrencyLeg1
+
+reporting rule NotionalCurrencyLeg2 from TransactionReportInstruction: <"Notional Currency Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.NotionalCurrencyLeg2
+
+reporting rule NotionalAmountScheduleLeg1 from TransactionReportInstruction: <"Notional Amount Schedule Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.NotionalAmountSchedule(common.PayoutLeg1)
+
+reporting rule NotionalAmountScheduleLeg2 from TransactionReportInstruction: <"Notional Amount Schedule Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.NotionalAmountSchedule(common.PayoutLeg2)
+
+reporting rule CallAmount from TransactionReportInstruction: <"Call Amount">
+    filter IsAllowableActionForCFTC
+    then if IsFXOption(ProductForEvent)
+        then extract cde.quantity.ExtractCallAmount(item, 99999999999999999999.99999)
+
+reporting rule PutAmount from TransactionReportInstruction: <"Put Amount">
+    filter IsAllowableActionForCFTC
+    then if IsFXOption(ProductForEvent)
+        then extract cde.quantity.ExtractPutAmount(item, 99999999999999999999.99999)
+
+reporting rule CallCurrency from TransactionReportInstruction: <"Call Currency">
+    filter IsAllowableActionForCFTC
+    then if IsFXOption(ProductForEvent) then cde.quantity.CallCurrency
+
+reporting rule PutCurrency from TransactionReportInstruction: <"Put Currency">
+    filter IsAllowableActionForCFTC
+    then if IsFXOption(ProductForEvent) then cde.quantity.PutCurrency
+
+reporting rule NotionalQuantityLeg1 from TransactionReportInstruction: <"Notional Quantity Leg 1">
+    filter IsAllowableActionForCFTC
+    then if IsEquity(ProductForTrade(TradeForEvent)) = False
+        then common.quantity.NotionalQuantityLeg1
+
+reporting rule NotionalQuantityLeg2 from TransactionReportInstruction: <"Notional Quantity Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract common.quantity.NotionalQuantityLeg2
+
+reporting rule QuantityFrequencyLeg1 from TransactionReportInstruction: <"Quantity Frequency Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract common.quantity.QuantityFrequencyLeg1(item) -> period
+
+reporting rule QuantityFrequencyLeg2 from TransactionReportInstruction: <"Quantity Frequency Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract common.quantity.QuantityFrequencyLeg2(item) -> period
+
+reporting rule QuantityFrequencyMultiplierLeg1 from TransactionReportInstruction: <"Quantity Frequency Multiplier Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract common.quantity.QuantityFrequencyLeg1(item) -> periodMultiplier
+
+reporting rule QuantityFrequencyMultiplierLeg2 from TransactionReportInstruction: <"Quantity Frequency Multiplier Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract common.quantity.QuantityFrequencyLeg2(item) -> periodMultiplier
+
+reporting rule QuantityUnitOfMeasureLeg1 from TransactionReportInstruction: <"Quantity Unit Of Measure Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg1)
+
+reporting rule QuantityUnitOfMeasureLeg2 from TransactionReportInstruction: <"Quantity Unit Of Measure Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg2)
+
+reporting rule TotalNotionalQuantityLeg1 from TransactionReportInstruction: <"Total Notional Quantity Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.TotalNotionalQuantityLeg1(item, empty)
+
+reporting rule TotalNotionalQuantityLeg2 from TransactionReportInstruction: <"Total Notional Quantity Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract cde.quantity.TotalNotionalQuantityLeg2(item, empty)
+
+reporting rule PackageIndicator from TransactionReportInstruction: <"Package Indicator">
+    filter IsAllowableActionForCFTC
+    then extract common.link.PackageIndicator
+
+reporting rule PackageIdentifier from TransactionReportInstruction: <"Package Identifier">
+    filter IsAllowableActionForCFTC
+    then extract cde.link.PackageIdentifier
+
+reporting rule PackageTransactionPrice from TransactionReportInstruction: <"Package Transaction Price">
+    filter IsAllowableActionForCFTC
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionPriceValue,
+                PackageTransactionPriceNotation
+            )
+
+reporting rule PackageTransactionPriceCurrency from TransactionReportInstruction: <"Package Transaction Price Currency">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.PackageTransactionPriceCurrency
+
+reporting rule PackageTransactionPriceNotation from TransactionReportInstruction: <"Package Transaction Price Notation Enum">
+    filter IsAllowableActionForCFTC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionPriceNotationEnum,
+                False
+            )
+
+reporting rule PackageTransactionSpread from TransactionReportInstruction: <"Package Transaction Spread">
+    filter IsAllowableActionForCFTC
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionSpreadValue,
+                PackageTransactionSpreadNotation
+            )
+
+reporting rule PackageTransactionSpreadCurrency from TransactionReportInstruction: <"Package Transaction Spread Currency">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.PackageTransactionSpreadCurrency
+
+reporting rule PackageTransactionSpreadNotation from TransactionReportInstruction: <"Package Transaction Spread Notation Enum">
+    filter IsAllowableActionForCFTC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionSpreadNotationEnum,
+                False
+            )
+
+reporting rule FixedRateDayCountConventionLeg1 from TransactionReportInstruction: <"Fixed rate day count convention-leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRateDayCountConventionLeg2 from TransactionReportInstruction: <"Fixed rate day count convention-leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg1 from TransactionReportInstruction: <"Floating rate day count convention-leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg2 from TransactionReportInstruction: <"Floating rate day count convention-leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FixingDateLeg1 from TransactionReportInstruction: <"Fixing Date Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract common.datetime.FixingDateLeg1
+
+reporting rule FixingDateLeg2 from TransactionReportInstruction: <"Fixing Date Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract common.datetime.FixingDateLeg2
+
+reporting rule FloatingRateResetFrequencyPeriodLeg1 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period - Leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.payment.FloatingRateResetFrequencyPeriod
+
+reporting rule FloatingRateResetFrequencyPeriodLeg2 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period - Leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.payment.FloatingRateResetFrequencyPeriod
+
+reporting rule FloatingRateResetFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period Multiplier - Leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.payment.FloatingRateResetFrequencyPeriodMultiplier
+
+reporting rule FloatingRateResetFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period Multiplier - Leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.payment.FloatingRateResetFrequencyPeriodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Fixed Rate Payment Frequency Period - Leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Fixed Rate Payment Frequency Period - Leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period - Leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period - Leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Fixed Rate Payment Frequency Period Multiplier - Leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Fixed Rate Payment Frequency Period Multiplier - Leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period Multiplier - Leg 1">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period Multiplier - Leg 2">
+    filter IsAllowableActionForCFTC
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule OtherPayment from TransactionReportInstruction: <"Other Payment">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.payment.OtherPayment
+
+reporting rule ExchangeRate from TransactionReportInstruction: <"Exchange Rate">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.ExchangeRate
+
+reporting rule ExchangeRateBasis from TransactionReportInstruction: <"Exchange Rate Basis">
+    filter IsAllowableActionForCFTC
+    then extract cde.price.ExchangeRateBasis
+
+reporting rule FixedRateLeg1 from TransactionReportInstruction: <"Fixed Rate - Leg 1">
+    filter IsAllowableActionForCFTC
+    then cde.price.FixedRate(InterestRateLeg1(ProductForEvent))
+
+reporting rule FixedRateLeg2 from TransactionReportInstruction: <"Fixed Rate - Leg 2">
+    filter IsAllowableActionForCFTC
+    then cde.price.FixedRate(InterestRateLeg2(ProductForEvent))
+
+reporting rule PostPricedSwapIndicator from TransactionReportInstruction: <"Post-priced swap indicator">
+    filter IsAllowableActionForCFTC
+    then extract reportableInformation -> partyInformation -> regimeInformation
+    then filter supervisoryBody = SupervisoryBodyEnum -> CFTC
+    then only-element
+    then if postPricedIndicator exists
+        then postPricedIndicator
+        else False
+
+reporting rule Price from TransactionReportInstruction: <"Price">
+    filter IsAllowableActionForCFTC
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+            or IsFixedFloatZeroCouponSwapKnownAmount(ProductForEvent)
+    then extract price.PriceFormatFromNotation(cde.price.PriceValue, PriceNotation)
+
+reporting rule PriceCurrency from TransactionReportInstruction: <"Price Currency">
+    filter IsAllowableActionForCFTC
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+            or IsFixedFloatZeroCouponSwapKnownAmount(ProductForEvent)
+    then extract cde.price.PriceCurrency
+
+reporting rule PriceNotation from TransactionReportInstruction: <"Price Notation">
+    filter IsAllowableActionForCFTC
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+            or IsFixedFloatZeroCouponSwapKnownAmount(ProductForEvent)
+    then extract common.price.DefaultPercentageToDecimal(cde.price.PriceNotation, False)
+
+reporting rule PriceUnitOfMeasure from TransactionReportInstruction: <"Price Unit Of Measure">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.PriceUnitOfMeasure
+
+//---------------------------------------------- Spread Leg 1 Starts------------------------------------------------
+reporting rule SpreadLeg1 from TransactionReportInstruction: <"SpreadLeg1">
+    filter IsAllowableActionForCFTC
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg1),
+                SpreadNotationLeg1
+            )
+
+reporting rule SpreadNotationLeg1 from TransactionReportInstruction: <"Spread Notation Leg 1 Enum">
+    filter IsAllowableActionForCFTC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.SpreadNotationEnum(common.PayoutLeg1),
+                False
+            )
+
+reporting rule SpreadCurrencyLeg1 from TransactionReportInstruction: <"Spread currency Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract cde.price.SpreadCurrency(common.PayoutLeg1)
+
+//----------------------------------------------  Spread Leg 1 Ends ------------------------------------------------
+//---------------------------------------------- Spread Leg 2 Starts------------------------------------------------
+reporting rule SpreadLeg2 from TransactionReportInstruction: <"SpreadLeg2">
+    filter IsAllowableActionForCFTC
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg2),
+                SpreadNotationLeg2
+            )
+
+reporting rule SpreadNotationLeg2 from TransactionReportInstruction: <"Spread Notation Leg 2 Enum">
+    filter IsAllowableActionForCFTC
+    then common.price.DefaultPercentageToDecimal(
+                cde.price.SpreadNotationEnum(common.PayoutLeg2),
+                False
+            )
+
+reporting rule SpreadCurrencyLeg2 from TransactionReportInstruction: <"Spread currency Leg2">
+    filter IsAllowableActionForCFTC
+    then extract cde.price.SpreadCurrency(common.PayoutLeg2)
+
+//---------------------------------------------- Spread Leg 2 Ends------------------------------------------------
+reporting rule StrikePrice from TransactionReportInstruction: <"Strike Price">
+    filter IsAllowableActionForCFTC
+    then extract
+        price.PriceFormatFromNotation(cde.price.StrikePriceValue, StrikePriceNotation)
+
+reporting rule StrikePriceCurrencyCurrencyPair from TransactionReportInstruction: <"Strike Price Currency/Currency Pair">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.StrikePriceCurrency
+
+reporting rule StrikePriceNotation from TransactionReportInstruction: <"Strike Price Notation Enum">
+    filter IsAllowableActionForCFTC
+    then common.price.DefaultPercentageToDecimal(cde.price.StrikePriceNotationEnum, False)
+
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option Premium Amount">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.OptionPremiumAmount
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction: <"Option Premium Currency">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.OptionPremiumCurrency
+
+reporting rule OptionPremiumPaymentDate from TransactionReportInstruction: <"Option Premium Payment Date">
+    filter IsAllowableActionForCFTC
+    then extract cde.price.OptionPremiumPaymentDate
+
+reporting rule FirstExerciseDate from TransactionReportInstruction: <"First Exercise Date">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.price.FirstExerciseDate
+
+reporting rule CDSIndexAttachmentPoint from TransactionReportInstruction: <"CDS Index Attachment Point">
+    filter IsAllowableActionForCFTC
+    then extract cde.index.CDSIndexAttachmentPoint
+
+reporting rule CDSIndexDetachmentPoint from TransactionReportInstruction: <"CDS Index Detachment Point">
+    filter IsAllowableActionForCFTC
+    then extract cde.index.CDSIndexDetachmentPoint
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index Factor">
+    filter IsAllowableActionForCFTC
+    then extract common.index.IndexFactor
+
+reporting rule EmbeddedOptionType from TransactionReportInstruction: <"Embedded Option Type">
+    filter IsAllowableActionForCFTC
+    then extract common.contract.EmbeddedOptionType
+
+reporting rule UniqueProductIdentifier from TransactionReportInstruction: <"Unique Product Identifier">
+    filter IsAllowableActionForCFTC
+    then extract upi.UniqueProductIdentifier
+
+reporting rule FinalContractualSettlementDate from TransactionReportInstruction: <"Final Contractual Settlement Date">
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.execution.FinalContractualSettlementDate
+
+reporting rule SettlementCurrencyLeg1 from TransactionReportInstruction: <"Settlement Currency Leg 1">
+    filter IsAllowableActionForCFTC
+    then extract cde.execution.SettlementCurrency(common.PayoutLeg1)
+
+reporting rule SettlementCurrencyLeg2 from TransactionReportInstruction: <"Settlement Currency Leg 2">
+    filter IsAllowableActionForCFTC
+    then extract cde.execution.SettlementCurrency(common.PayoutLeg2)
+
+reporting rule SettlementLocation from TransactionReportInstruction: <"Settlement Location">
+    filter IsAllowableActionForCFTC
+    then extract common.execution.SettlementLocation
+
+reporting rule AllocationIndicator from TransactionReportInstruction: <"Allocation Indicator">
+    filter IsAllowableActionForCFTC
+    then extract
+        if Qualify_Allocation(originatingWorkflowStep -> businessEvent)
+        then AllocationIndicatorEnum -> POST
+        else if originatingWorkflowStep -> nextEvent -> intent = EventIntentEnum -> Allocation
+        then AllocationIndicatorEnum -> PREA
+        else AllocationIndicatorEnum -> UNAL
+
+reporting rule NonStandardizedTermIndicator from TransactionReportInstruction: <"Non-standardized Term Indicator">
+    filter IsAllowableActionForCFTC
+    then extract
+        if IsCleared(originatingWorkflowStep) = False
+                and originatingWorkflowStep -> nextEvent -> intent <> EventIntentEnum -> Clearing
+        then common.contract.NonStandardizedTermIndicator
+
+reporting rule BlockTradeElectionIndicator from TransactionReportInstruction: <"Block Trade Election Indicator">
+    filter IsAllowableActionForCFTC
+    then extract
+        if reportableInformation -> largeSizeTrade exists
+        then reportableInformation -> largeSizeTrade
+        else False
+
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective Date">
+    filter IsAllowableActionForCFTC
+    then cdeV3.datetime.EffectiveDate
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"Expiration Date">
+    filter IsAllowableActionForCFTC
+    then extract ProductForEvent
+    then extract cde.datetime.ExpirationDate
+
+reporting rule ExecutionTimestamp from TransactionReportInstruction: <"Execution Timestamp">
+    filter IsAllowableActionForCFTC
+    then cdeV3.datetime.ExecutionTimestamp
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform Identifier">
+    filter IsAllowableActionForCFTC
+    then cde.execution.PlatformIdentifier
+
+reporting rule PrimeBrokerageTransactionIndicator from TransactionReportInstruction: <"Prime brokerage transaction indicator">
+    filter IsAllowableActionForCFTC
+    then filter IsCleared(originatingWorkflowStep) = False
+    then extract PrimeBrokerageTransactionIndicatorFunc
+
+reporting rule PriorUTI from TransactionReportInstruction: <"Prior UTI">
+    filter
+        IsAllowableActionForCFTC and (IsActionTypeTERM = False or IsActionTypeEROR = False or IsActionTypePRTO = False)
+    then extract common.link.GetPriorTransactionIdentifier(item, DoddFrankAct)
+
+reporting rule UniqueSwapIdentifier from TransactionReportInstruction: <"Unique Swap Identifier (USI)">
+    filter IsAllowableActionForCFTC
+    then extract TradeForEvent
+    then extract tradeIdentifier
+    then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+    then only-element
+    then extract assignedIdentifier -> identifier
+    then only-element
+
+reporting rule UniqueTransactionIdentifier from TransactionReportInstruction: <"Unique Transaction Identifier (UTI)">
+    filter IsAllowableActionForCFTC
+    then extract uti.UniqueTransactionIdentifierForTransaction(item, CFTC)
+    then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True
+
+reporting rule Jurisdiction from TransactionReportInstruction: <"Jurisdiction">
+    filter IsAllowableActionForCFTC
+    then extract
+        if reportableInformation -> partyInformation -> regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> CFTC
+                and reportableInformation -> partyInformation -> regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> SEC
+        then JurisdictionEnum -> MIXX
+        else if reportableInformation -> partyInformation -> regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> SEC
+        then JurisdictionEnum -> SECH
+        else if reportableInformation -> partyInformation -> regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> CFTC
+        then JurisdictionEnum -> CFTC
+
+reporting rule NewSDRIdentifier from TransactionReportInstruction: <"New SDR Identifier">
+    filter IsActionTypePRTO
+    then extract common.link.NewSDRIdentifier
+
+reporting rule InstrumentType from TransactionReportInstruction: <"Instrument Type (non-reportable)">
+    extract GetInstrumentType
+
+reporting rule InitialMarginCollateralPortfolioCode from TransactionReportInstruction: <"Initial Margin Collateral Portfolio Code">
+    filter IsAllowableActionForCFTC
+    then extract common.collateral.InitialMarginCollateralPortfolioCode
+
+reporting rule VariationMarginCollateralPortfolioCode from TransactionReportInstruction: <"Variation Margin Collateral Portfolio Code">
+    filter IsAllowableActionForCFTC
+    then extract common.collateral.VariationMarginCollateralPortfolioCode
+
+reporting rule OtherPaymentP43 from TransactionReportInstruction: <"Other Payment for Part 43">
+// TH Sprint 2025-18: extracts paymentType, amount, and currency for Part 43 (fields 57–59), leaving date, payer, and receiver fields empty to reflect Part 43 scope.
+    filter IsAllowableActionForCFTC
+    then extract cdeV3.payment.OtherPayment
+    then extract
+        payment.OtherPayment {
+            paymentType: paymentType,
+            amount: amount,
+            currency: currency,
+            date: empty,
+            payer: empty,
+            payerFormat: empty,
+            receiver: empty,
+            receiverFormat: empty,
+            payerSchemeName: empty,
+            receiverSchemeName: empty
+        }
+
+reporting rule ExecutionVenueType from TransactionReportInstruction: <"Execution Venue Type">
+    filter IsAllowableActionForCFTC
+    then extract reportableInformation
+    then extract
+        if (partyInformation
+            filter regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> CFTC
+            then exists)
+        then executionVenueType
+
+func IsAllowableActionForCFTC: <"Indicates the allowable actions for CFTC">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isAllowableAction boolean (1..1)
+
+    set isAllowableAction:
+        IsActionTypeNEWT(reportableEvent)
+            or IsActionTypeMODI(reportableEvent)
+            or IsActionTypePositionMODI(reportableEvent)
+            or IsActionTypeCORR(reportableEvent)
+            or IsActionTypeREVI(reportableEvent)
+            or IsActionTypeTERM(reportableEvent)
+            or IsActionTypeEROR(reportableEvent)
+            or IsActionTypePRTO(reportableEvent)

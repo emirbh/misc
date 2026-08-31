@@ -1,0 +1,10 @@
+namespace drr.regulation.common.trade.basket
+version "${project.version}"
+
+import drr.regulation.*
+import drr.regulation.common.*
+import drr.standards.*
+import drr.standards.iosco.cde.version3.* as cde
+
+reporting rule CustomBasketIndicator from TransactionReportInstruction: <"Custom Basket Indicator">
+    extract cde.basket.CustomBasketCode exists

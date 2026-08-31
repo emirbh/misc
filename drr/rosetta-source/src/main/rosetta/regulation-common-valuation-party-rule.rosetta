@@ -1,0 +1,25 @@
+namespace drr.regulation.common.valuation.party
+version "${project.version}"
+
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version1.* as cde
+
+reporting rule Counterparty1 from ValuationReportInstruction: <"Counterparty 1 (reporting counterparty)">
+    extract cde.party.Counterparty1FromReportingSide(reportingSide)
+
+reporting rule Counterparty2 from ValuationReportInstruction: <"Counterparty 2">
+    extract cde.party.Counterparty2FromReportingSide(reportingSide)
+
+reporting rule Counterparty2IdentifierType from ValuationReportInstruction: <"Counterparty 2 Identifier Type">
+    extract reportingSide -> reportingCounterparty
+    then extract
+        if personRole -> role any = Buyer
+                or personRole -> role any = Seller
+                or partyId -> identifierType all <> LEI
+        then False
+        else if PartyLei(partyId) exists
+        then True
+
+reporting rule ReportSubmittingEntityID from ValuationReportInstruction: <"Report Submitting Entity ID">
+    extract ExtractReportSubmittingPartyIdentifier(reportingSide)

@@ -1,0 +1,146 @@
+namespace drr.base.trade.quantity
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.math.*
+import cdm.event.common.*
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+
+func FixedPriceLeg1: // Function will eventually be moved out of drr.base (Once Direction2 gets re-written in CDE)
+    inputs:
+        product Product (1..1)
+    output:
+        fixedPrice FixedPricePayout (0..1)
+
+    set fixedPrice:
+        if IsCommoditySwapFixedFloat(product) or IsCommodityFixedPriceForward(product)
+        then EconomicTermsForProduct(product) -> payout -> fixedPricePayout only-element
+
+func CallQuantity: <"Call Quantity - Utility function">
+    inputs:
+        product Product (1..1)
+    output:
+        quantitySchedule NonNegativeQuantitySchedule (0..1)
+
+    alias optionPayout:
+        product -> contractualProduct -> economicTerms -> payout -> optionPayout only-element
+
+    alias resolvablePriceQuantity:
+        if IsFXOption(product)
+        then (if optionPayout -> buyerSeller -> buyer = optionPayout -> underlier -> foreignExchange -> exchangedCurrency1 -> payerReceiver -> receiver
+            then optionPayout -> underlier -> foreignExchange -> exchangedCurrency1 -> priceQuantity
+            else optionPayout -> underlier -> foreignExchange -> exchangedCurrency2 -> priceQuantity)
+        else if IsCallOption(product)
+                and Qualify_CreditDefaultSwaption(
+                        product -> contractualProduct -> economicTerms
+                    ) = True
+        then underlier.UnderlierForProduct(product)
+            extract
+                contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> priceQuantity
+        else if IsPutOption(product)
+                and Qualify_CreditDefaultSwaption(
+                        product -> contractualProduct -> economicTerms
+                    ) = True
+        then (underlier.UnderlierForProduct(product)
+            extract
+                contractualProduct -> economicTerms -> payout -> interestRatePayout -> priceQuantity
+            then only-element)
+        else if Qualify_InterestRate_Option_Swaption(
+                    product -> contractualProduct -> economicTerms
+                ) = True
+        then (optionPayout -> underlier -> contractualProduct -> economicTerms -> payout -> interestRatePayout
+            filter rateSpecification -> fixedRate exists
+            then filter payerReceiver -> receiver = optionPayout -> buyerSeller -> buyer
+            then only-element
+            then extract priceQuantity)
+        else if IsCap(product)
+        then product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only-element -> priceQuantity
+        else if IsCallOption(product)
+                and Qualify_Commodity_Swaption(
+                        product -> contractualProduct -> economicTerms
+                    ) = True
+        then product -> contractualProduct -> economicTerms -> payout -> fixedPricePayout only-element -> priceQuantity
+
+    // added support for cases where put/call amount is unknown and so modelled as zero]
+    set quantitySchedule:
+        if resolvablePriceQuantity -> quantitySchedule exists and resolvablePriceQuantity -> quantitySchedule -> value >= 0
+        then resolvablePriceQuantity -> quantitySchedule
+        else if resolvablePriceQuantity -> quantityReference exists and resolvablePriceQuantity -> quantityReference -> quantitySchedule -> value >= 0
+        then resolvablePriceQuantity -> quantityReference -> quantitySchedule
+
+func PutQuantity: <"Put Quantity - Utility function">
+    inputs:
+        product Product (1..1)
+    output:
+        quantitySchedule NonNegativeQuantitySchedule (0..1)
+
+    alias optionPayout:
+        product -> contractualProduct -> economicTerms -> payout -> optionPayout only-element
+
+    alias resolvablePriceQuantity:
+        if IsFXOption(product)
+        then (if optionPayout -> buyerSeller -> buyer = optionPayout -> underlier -> foreignExchange -> exchangedCurrency1 -> payerReceiver -> receiver
+            then optionPayout -> underlier -> foreignExchange -> exchangedCurrency2 -> priceQuantity
+            else optionPayout -> underlier -> foreignExchange -> exchangedCurrency1 -> priceQuantity)
+        else if IsPutOption(product)
+                and Qualify_CreditDefaultSwaption(
+                        product -> contractualProduct -> economicTerms
+                    ) = True
+        then underlier.UnderlierForProduct(product)
+            extract
+                contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> priceQuantity
+        else if IsCallOption(product)
+                and Qualify_CreditDefaultSwaption(
+                        product -> contractualProduct -> economicTerms
+                    ) = True
+        then (underlier.UnderlierForProduct(product)
+            extract
+                contractualProduct -> economicTerms -> payout -> interestRatePayout -> priceQuantity
+            then only-element)
+        else if Qualify_InterestRate_Option_Swaption(
+                    product -> contractualProduct -> economicTerms
+                ) = True
+        then (optionPayout -> underlier -> contractualProduct -> economicTerms -> payout -> interestRatePayout
+            filter rateSpecification -> fixedRate exists
+            then filter payerReceiver -> payer = optionPayout -> buyerSeller -> buyer
+            then only-element
+            then extract priceQuantity)
+        else if IsFloor(product)
+        then product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only-element -> priceQuantity
+        else if IsPutOption(product)
+                and Qualify_Commodity_Swaption(
+                        product -> contractualProduct -> economicTerms
+                    ) = True
+        then product -> contractualProduct -> economicTerms -> payout -> fixedPricePayout only-element -> priceQuantity
+
+    // added support for cases where put/call amount is unknown and so modelled as zero]
+    set quantitySchedule:
+        if resolvablePriceQuantity -> quantitySchedule exists and resolvablePriceQuantity -> quantitySchedule -> value >= 0
+        then resolvablePriceQuantity -> quantitySchedule
+        else if resolvablePriceQuantity -> quantityReference exists and resolvablePriceQuantity -> quantityReference -> quantitySchedule -> value >= 0
+        then resolvablePriceQuantity -> quantityReference -> quantitySchedule
+
+func GetTradeForQuantity:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        trade Trade (1..1)
+    set trade:
+        if IsActionTypeTERM(reportableEvent)
+        then BeforeTradeForEvent(reportableEvent)
+        else TradeForEvent(reportableEvent)
+
+func GetProductForQuantity:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        product TradableProduct (1..1)
+    set product:
+        if IsActionTypeTERM(reportableEvent)
+        then BeforeTradeForEvent(reportableEvent) -> tradableProduct
+        else TradableProductForEvent(reportableEvent)

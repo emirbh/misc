@@ -1,0 +1,106 @@
+namespace drr.projection.dtcc.rds.harmonized.csa.rewrite.valuation
+version "${project.version}"
+
+import drr.regulation.csa.rewrite.valuation.*
+
+import iso20022.dtcc.rds.harmonized.*
+
+func Project_CSAValuationReportToDtccRdsHarmonized:
+    [projection XML]
+    inputs:
+        drrReport CSAValuationReport (1..1)
+    output:
+        harmonizedReport Document (1..1)
+
+    set harmonizedReport -> submission -> header: Create_SubmissionHeader(drrReport)
+
+    set harmonizedReport -> submission -> core: Create_SubmissionCore(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedData:
+        Create_SubmissionHarmonizedData(drrReport)
+
+func Create_SubmissionHeader:
+    inputs:
+        drrReport CSAValuationReport (1..1)
+    output:
+        header Header (1..1)
+
+    set header:
+        Header {
+            sender: drrReport -> submitterIdentifier,
+            documentTrackingId: drrReport -> messageID,
+            documentCreationTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            ...
+        }
+
+func Create_SubmissionCore:
+    inputs:
+        drrReport CSAValuationReport (1..1)
+    output:
+        core Core (1..1)
+
+    set core:
+        Core {
+            messageId: drrReport -> messageID,
+            messageType: drrReport -> messageType,
+            primaryAssetClass: drrReport -> primaryAssetClass to-string,
+            submittedForParty: drrReport -> submittedForParty,
+            submittingPartyId: drrReport -> submitterIdentifier,
+            submittingPartyIdType: drrReport -> submittingPartyIDType to-string,
+            tradeParty1Id: drrReport -> counterparty1,
+            tradeParty1IdType: drrReport -> tradeParty1IDType to-string,
+            tradeParty1ReportingDestination: drrReport -> tradeParty1ReportingDestination
+                    extract to-string,
+            tradeParty1TransactionId: drrReport -> tradeParty1TransactionID,
+            tradeParty2Id: drrReport -> counterparty2,
+            tradeParty2IdType: drrReport -> counterparty2IdentifierSource,
+            tradeParty2ReportingDestination: drrReport -> tradeParty2ReportingDestination
+                    extract to-string,
+            usiId: drrReport -> usiID,
+            usiIdPrefix: drrReport -> usiIDPrefix,
+            utiId: drrReport -> uniqueTransactionIdentifier,
+            tradeParty1ExecutionAgentId: drrReport -> tradeParty1ExecutionAgentID,
+            tradeParty1ExecutionAgentIdType: drrReport -> tradeParty1ExecutionAgentIDType to-string,
+            tradeParty2ExecutionAgentId: drrReport -> tradeParty2ExecutionAgentID,
+            tradeParty2ExecutionAgentIdType: drrReport -> tradeParty2ExecutionAgentIDType to-string,
+            reportingTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            upi: drrReport -> uniqueProductIdentifier,
+            utiIdPrefix: empty, // See rationale at DTCC_CSA_VR_0017_01 condition. Decision agreed by EU/UK/NA PeerReview WG on 2025/03/27 about Prior UTI field
+            noaActionType: drrReport -> actionType to-string,
+            ...
+        }
+
+func Create_SubmissionHarmonizedData:
+    inputs:
+        drrReport CSAValuationReport (1..1)
+    output:
+        harmonized HarmonizedData (1..1)
+
+    set harmonized:
+        HarmonizedData {
+            noaActionType: drrReport -> actionType to-string,
+            version: drrReport -> version,
+            comment1: drrReport -> comment1,
+            initialMarginCollateralPortfolioCode: drrReport -> initialMarginCollateralPortfolioCode,
+            variationMarginCollateralPortfolioCode: drrReport -> variationMarginCollateralPortfolioCode,
+            ccpValuationAmount: drrReport -> valuationAmount,
+            ccpValuationCurrency: drrReport -> valuationCurrency to-string,
+            ccpValuationDatetime: drrReport -> valuationTimestamp,
+            ccpValuationType: drrReport -> valuationMethod to-string,
+            priorUsiIdPrefix: empty, // See rationale at DTCC_CSA_VR_0019_01 condition. Decision agreed by EU/UK/NA PeerReview WG on 2025/03/27 about Prior USI field
+            priorUtiIdPrefix: empty, // See rationale at DTCC_CSA_VR_0017_01 condition. Decision agreed by EU/UK/NA PeerReview WG on 2025/03/27 about Prior UTI field
+            tradeParty1ValuationAmount: drrReport -> valuationAmount,
+            tradeParty1ValuationCurrency: drrReport -> valuationCurrency to-string,
+            tradeParty1ValuationDatetime: drrReport -> valuationTimestamp,
+            tradeParty1ValuationType: drrReport -> valuationMethod to-string,
+            nextFloatingReferenceResetDateLeg1: drrReport -> nextFloatingReferenceResetDateLeg1,
+            lastFloatingReferenceValueLeg1: drrReport -> lastFloatingReferenceValueLeg1,
+            lastFloatingReferenceResetDateLeg1: drrReport -> lastFloatingReferenceResetDateLeg1,
+            nextFloatingReferenceResetDateLeg2: drrReport -> nextFloatingReferenceResetDateLeg2,
+            lastFloatingReferenceValueLeg2: drrReport -> lastFloatingReferenceValueLeg2,
+            lastFloatingReferenceResetDateLeg2: drrReport -> lastFloatingReferenceResetDateLeg2,
+            cdeDelta: drrReport -> delta,
+            ...
+        }

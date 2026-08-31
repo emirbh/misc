@@ -1,0 +1,113 @@
+namespace drr.standards.iosco.cde.version1.execution
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.base.qualification.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version1.* as cdeV1
+import drr.standards.iso.*
+
+//import drr.regulation.common is required due to RelatedParty
+reporting rule Cleared from TransactionReportInstructionBase: <"Cleared">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "14"
+        provision "Indicator of whether the transaction has been cleared, or is intended to be cleared, by a central counterparty."]
+    if event.IsCleared(originatingWorkflowStep)
+    then ClearedEnum -> Y
+    else if originatingWorkflowStep -> nextEvent -> intent = Clearing
+    then I
+    else N
+
+reporting rule CentralCounterparty from TransactionReportInstruction: <"Central Counterparty">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "15"
+        provision "Identifier of the central counterparty (CCP) that cleared the transaction. This data element is not applicable if the value of the data element Cleared is N (No, not centrally cleared) or I (Intent to clear)."]
+    if event.IsCleared(originatingWorkflowStep)
+    then ExtractPartyFromRelatedPartyByRole(
+            reportableInformation -> partyInformation -> relatedParty,
+            PartyRoleEnum -> ClearingOrganization
+        )
+        extract PartyLei(partyId)
+
+reporting rule ClearingMember from TransactionReportInstruction: <"Clearing Member">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "16"
+        provision "Identifier of the clearing member through which a derivative transaction was cleared at a central counterparty.
+		This data element is applicable to cleared transactions under both the agency clearing model and the principal clearing model.
+			- In the case of the principal clearing model, the clearing member is identified as clearing member and also as a counterparty in both transactions resulting from clearing: (i) in the transaction between the central counterparty and the clearing member; and (ii) in the transaction between the clearing member and the counterparty to the original alpha transaction.
+			- In the case of the agency clearing model, the clearing member is identified as clearing member but not as the counterparty to transactions resulting from clearing. Under this model, the counterparties are the central counterparty and the client.
+		This data element is not applicable if the value of the data element Cleared is N (No, not centrally cleared) or I (Intent to clear)."]
+    if event.IsCleared(originatingWorkflowStep)
+    then ExtractPartyFromRelatedPartyByRole(
+            reportableInformation -> partyInformation -> relatedParty,
+            PartyRoleEnum -> ClearingFirm
+        )
+        extract PartyLei(partyId)
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform Identifier">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "17"
+        provision "Identifier  of  the  trading  facility  (eg  exchange,  multilateral  trading  facility,  swap  execution facility) on which the transaction was executed."]
+    reportableInformation -> partyInformation -> relatedParty
+        filter role = ExecutionFacility
+        then extract partyReference -> partyId
+        then flatten
+        then filter identifierType = MIC
+        then extract identifier
+        then first
+
+reporting rule Confirmed from TransactionReportInstructionBase: <"Confirmed">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "18"
+        provision "For new reportable transactions (as defined by the CPMI-IOSCO Technical Guidance: Harmonisation of the Unique Transaction Identifier), whether the legally binding terms of an OTC derivatives contract were documented and agreed upon (confirmed) or not (unconfirmed). If documented and agreed, whether such confirmation was done:  via a shared confirmation facility or platform, or a private/bilateral electronic system (electronic);  via a human-readable written document, such as fax, paper or manually processed e-mails (non-electronic)."]
+    if originatingWorkflowStep -> timestamp -> qualification all <> confirmationDateTime
+            or reportableInformation -> confirmationMethod = NotConfirmed
+    then ConfirmationEnum -> NCNF
+    else extract
+        if reportableInformation -> confirmationMethod = Electronic
+        then ECNF
+        else if reportableInformation -> confirmationMethod = NonElectronic
+        then YCNF
+
+reporting rule SettlementTerms from PayoutLegWithAuxiliary: <"Settlement Currency">
+    extract payout [
+        payout -> interestRatePayout -> settlementTerms
+            then default payout -> creditDefaultPayout -> settlementTerms
+            then default payout -> performancePayout -> settlementTerms
+            then default payout -> forwardPayout -> settlementTerms
+            then default payout -> commodityPayout -> settlementTerms
+            then default payout -> fixedPricePayout -> settlementTerms
+            then default payout -> optionPayout -> settlementTerms
+            then default payout -> forwardPayout -> settlementTerms
+            then default payout -> auxiliaryLeg ->> settlementTerms
+            then default payout -> settlementTerms
+    ]
+
+reporting rule SettlementCurrency from PayoutLegWithAuxiliary: <"Settlement Currency">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "20"
+        provision "Currency for the cash settlement of the transaction when applicable. For multicurrency products that do not net, the settlement currency of each leg. This data element is not applicable for physically settled products (eg physically settled swaptions)."]
+    SettlementTerms
+        then extract
+            if settlementType = Cash or cashSettlementTerms exists
+            then settlementCurrency
+        then extract ConvertNonISOToISOCurrency
+
+reporting rule SettlementLocation from PayoutLegWithAuxiliary: <"Settlement Location from payout">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "21"
+        provision "Place of settlement of the transaction as stipulated in the contract. This data element is only aplicable for transactions that involve an offshore currency (i.e. a currency which is not included in the ISO 4217 currency list, for example CNH)."]
+    SettlementTerms
+        extract
+            if (settlementType = Cash or cashSettlementTerms exists)
+                    and settlementCurrency = "CNH"
+            then ISOCountryCodeEnum -> HK
+
+reporting rule FinalContractualSettlementDate from TransactionReportInstructionBase: <"Final Contractual Settlement Date">
+    [regulatoryReference CPMI_IOSCO cdeV1.CDE section "2" field "19"
+        provision "Unadjusted date as per the contract, by which all transfer of cash or assets should take place and the counterparties should no longer have any outstanding obligations to each other under that contract. For products that may not have a final contractual settlement date (eg American options), this data element reflects the date by which the transfer of cash or asset would take place if termination were to occur on the expiration date."]
+    [regulatoryReference ISDA PeerReviewGroup date "20220811"
+        provision "Model should contain a fall back for unadjustedDate when adjustedDate is only available. If an adjusted date is only provided then fields requiring an unadjusted date are left blank which will result in a NACK from the TR.  Functional rules should be updated to fall back on adjusted date if available."]
+    [regulatoryReference ISDA PeerReviewGroup date "20230426"
+        provision "This rule must take into account the possibility of having a customizable schedule for commodity products"]
+    ExtractFinalContractualSettlementDate(reportableInformation, ProductForEvent)

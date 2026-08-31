@@ -1,0 +1,172 @@
+namespace drr.regulation.cftc.rewrite
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.math.*
+import cdm.base.staticdata.party.*
+
+import drr.base.qualification.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.base.util.string.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version2.* as cde
+import drr.standards.iosco.cde.version2.quantity.*
+
+func PayerPartyLeg1:
+    inputs:
+        transaction TransactionReportInstruction (0..1)
+    output:
+        party Party (0..1)
+    set party:
+        cde.party.PayerParty(
+                common.PayoutLeg1(transaction),
+                CounterpartiesForEvent(transaction)
+            )
+
+func PayerPartyLeg2:
+    inputs:
+        transaction TransactionReportInstruction (0..1)
+    output:
+        party Party (0..1)
+    set party:
+        cde.party.PayerParty(
+                common.PayoutLeg2(transaction),
+                CounterpartiesForEvent(transaction)
+            )
+
+func ReceiverPartyLeg1:
+    inputs:
+        transacion TransactionReportInstruction (0..1)
+    output:
+        party Party (0..1)
+    set party:
+        cde.party.ReceiverParty(
+                common.PayoutLeg1(transacion),
+                CounterpartiesForEvent(transacion)
+            )
+
+func ReceiverPartyLeg2:
+    inputs:
+        transacion TransactionReportInstruction (0..1)
+    output:
+        party Party (0..1)
+    set party:
+        cde.party.ReceiverParty(
+                common.PayoutLeg2(transacion),
+                CounterpartiesForEvent(transacion)
+            )
+
+func PrimeBrokerageTransactionIndicatorFunc:
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+    output:
+        indicator boolean (0..1)
+    alias primeBrokerExists:
+        ExtractPartyFromRelatedPartyByRole(
+                transaction -> reportableInformation -> partyInformation -> relatedParty,
+                PartyRoleEnum -> PrimeBroker
+            )
+            exists
+    alias executingBrokerPartyInfo:
+        transaction -> reportableInformation -> partyInformation
+            filter
+                partyReference = ExtractPartyFromRelatedPartyByRole(
+                        relatedParty,
+                        PartyRoleEnum -> ExecutingBroker
+                    )
+    alias executingBrokerIsUSPerson:
+        executingBrokerPartyInfo -> regimeInformation -> cftcPartyInformation -> isUSPerson
+    set indicator: primeBrokerExists and executingBrokerIsUSPerson
+
+func ValidatePartyIdentifierFormat:
+    inputs:
+        partyIdentifier string (0..1)
+        format PartyIdentifierFormatEnum (1..1)
+    output:
+        validOrEmpty boolean (1..1)
+
+    set validOrEmpty:
+        if partyIdentifier is absent
+        then True
+        else if format = PartyIdentifierFormatEnum -> Lei
+        then StringLength(partyIdentifier) = 20
+        else if format = PartyIdentifierFormatEnum -> LeiAndPerson
+        then StringLength(partyIdentifier) > 20 and StringLength(partyIdentifier) <= 72
+        else False
+
+func PartyPersonIdExists:
+    inputs:
+        party Party (1..1)
+    output:
+        partyPersonIdExists boolean (1..1)
+
+    alias partyPersonId: // Returns a Person Id from a Party
+        party
+            filter [
+                personRole -> role // role is multi-cardinality
+                    extract r [ PartyIdentifierNaturalPersonRoles contains r ]
+                any = True
+            ]
+            then extract person -> personId -> identifier
+            then only-element
+
+    set partyPersonIdExists:
+        if partyPersonId exists then True else False
+
+func ChangeInNotionalAmountLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        defaultValue number (1..1)
+    output:
+        change number (0..1)
+
+    alias payoutBefore:
+        BeforeTradeForEvent(transactionReportInstruction) -> tradableProduct
+            then extract
+                common.PayoutFromProductLeg1(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    alias NotionalAmountBefore: NotionalAmountFormat(payoutBefore, defaultValue)
+
+    alias NotionalAmountAfter:
+        cde.quantity.NotionalAmountLeg1(transactionReportInstruction, defaultValue)
+
+    set change:
+        if NotionalAmountBefore = defaultValue or NotionalAmountAfter = defaultValue
+        then defaultValue
+        else if event.IsActionTypeTERM(transactionReportInstruction)
+        then NotionalAmountAfter
+        else Abs(NotionalAmountAfter - NotionalAmountBefore)
+
+func ChangeInNotionalAmountLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        defaultValue number (1..1)
+    output:
+        change number (0..1)
+
+    alias payoutBefore:
+        BeforeTradeForEvent(transactionReportInstruction) -> tradableProduct
+            then extract
+                common.PayoutFromProductLeg2(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    alias NotionalAmountBefore: NotionalAmountFormat(payoutBefore, defaultValue)
+
+    alias NotionalAmountAfter:
+        cde.quantity.NotionalAmountLeg2(transactionReportInstruction, defaultValue)
+
+    set change:
+        if NotionalAmountBefore = defaultValue or NotionalAmountAfter = defaultValue
+        then defaultValue
+        else if event.IsActionTypeTERM(transactionReportInstruction)
+        then NotionalAmountAfter
+        else Abs(NotionalAmountAfter - NotionalAmountBefore)

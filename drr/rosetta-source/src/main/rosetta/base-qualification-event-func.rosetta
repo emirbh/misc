@@ -1,0 +1,241 @@
+namespace drr.base.qualification.event
+version "${project.version}"
+
+import cdm.base.staticdata.identifier.*
+import cdm.event.common.*
+import cdm.event.position.*
+import cdm.event.qualification.*
+import cdm.event.workflow.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.standards.iso.*
+
+func IsCleared: <"Qualifies a transaction that has been cleared by a CCP.">
+    inputs:
+        originatingWorkflowStep WorkflowStep (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        originatingWorkflowStep -> workflowState -> workflowStatus = WorkflowStatusEnum -> Cleared
+            or (( // Trade already cleared in a previous WorkflowStep
+                originatingWorkflowStep -> timestamp -> qualification any = EventTimestampQualificationEnum -> clearingDateTime
+                        // There's an ongoing clearing process - CDM-native
+                    or Qualify_ClearedTrade(originatingWorkflowStep -> businessEvent) = True
+                        // There's an ongoing clearing process - ingested event
+                    or originatingWorkflowStep -> businessEvent -> intent = Clearing)
+                        // The Trade is not intended to clear (alpha TERM discarded)
+                and IntendedToClear(originatingWorkflowStep) = False)
+
+func IntendedToClear:
+    inputs:
+        originatingWorkflowStep WorkflowStep (1..1)
+    output:
+        isIntendedToClear boolean (1..1)
+    set isIntendedToClear:
+        if originatingWorkflowStep -> nextEvent -> intent = EventIntentEnum -> Clearing
+        then True
+        else False
+
+func IsActionTypeNEWT:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypeNewt boolean (1..1)
+    set isActionTypeNewt:
+        IsActionTypeTERM(reportableEvent) = False
+            and IsActionTypeMODI(reportableEvent) = False
+            and IsActionTypePositionMODI(reportableEvent) = False
+            and IsActionTypePOSC(reportableEvent) = False
+            and (reportableEvent -> originatingWorkflowStep -> action = ActionEnum -> New
+                or reportableEvent -> originatingWorkflowStep -> action is absent)
+
+func IsActionTypeCORR:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypeCorr boolean (1..1)
+
+    alias workflowStepAction: reportableEvent -> originatingWorkflowStep -> action
+    alias reportingAction: reportableEvent -> reportableInformation -> reportableAction
+    set isActionTypeCorr:
+        (reportingAction exists and reportingAction = ReportableActionEnum -> Correct)
+            or (workflowStepAction = ActionEnum -> Correct)
+
+func IsActionTypeMODI:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        result boolean (1..1)
+
+    alias businessEvent: reportableEvent -> originatingWorkflowStep -> businessEvent
+    alias primitiveInstruction: businessEvent -> instruction -> primitiveInstruction
+    alias beforeTradeState: businessEvent -> instruction -> before only-element
+    alias afterTradeStateOpen:
+        FilterOpenTradeStates(TradeStateForEvent(reportableEvent)) only-element
+    alias prevUTI:
+        BeforeTradeForEvent(reportableEvent) -> tradeIdentifier
+            filter
+                item -> identifierType = TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+            then only-element
+            then extract item -> assignedIdentifier -> identifier
+    alias currUTI:
+        TradeForEvent(reportableEvent) -> tradeIdentifier
+            filter
+                item -> identifierType = TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+            then only-element
+            then extract item -> assignedIdentifier -> identifier
+    alias product: ProductForTrade(TradeForEvent(reportableEvent))
+    alias reportableAction: reportableEvent -> reportableInformation -> reportableAction
+
+    set result:
+        if IsProductETD(product) = False
+                and reportableEvent -> originatingWorkflowStep -> counterpartyPositionBusinessEvent is absent
+        then if (reportableEvent -> originatingWorkflowStep -> action <> ActionEnum -> Correct
+                    and reportableAction <> ReportableActionEnum -> Error
+                    and IsActionTypeTERM(reportableEvent) = False)
+            then if reportableAction = ReportableActionEnum -> Modification
+                then True
+                else if businessEvent -> intent = EventIntentEnum -> ContractTermsAmendment
+                then True
+                else if (Qualify_Exercise(businessEvent)
+                        or [EventIntentEnum -> OptionExercise, EventIntentEnum -> OptionalExtension, EventIntentEnum -> OptionalCancellation, EventIntentEnum -> CorporateActionAdjustment, EventIntentEnum -> CreditEvent, EventIntentEnum -> Decrease, EventIntentEnum -> IndexTransition] any = businessEvent -> intent
+                        or Qualify_CorporateActionDetermined(businessEvent)
+                        or Qualify_CreditEventDetermined(businessEvent)
+                        or QuantityDecreased(beforeTradeState, afterTradeStateOpen)
+                        or Qualify_IndexTransition(businessEvent))
+                then (if prevUTI = currUTI then True else False)
+                else if Qualify_Increase(businessEvent)
+                        or businessEvent -> intent = EventIntentEnum -> Increase
+                then True
+                else if primitiveInstruction -> termsChange exists
+                then True
+                else if reportableAction = ReportableActionEnum -> Update
+                then True
+                else False
+            else False
+        else False
+
+func IsActionTypeVALU:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypeValu boolean (1..1)
+    set isActionTypeValu:
+        Qualify_ValuationUpdate(reportableEvent -> originatingWorkflowStep -> businessEvent)
+
+func IsActionTypeEROR:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypeEror boolean (1..1)
+
+    alias workflowStepAction: reportableEvent -> originatingWorkflowStep -> action
+    alias reportingAction: reportableEvent -> reportableInformation -> reportableAction
+    set isActionTypeEror:
+        (reportingAction exists and reportingAction = ReportableActionEnum -> Error)
+
+func IsActionTypeREVI:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypeRevi boolean (1..1)
+    alias action: reportableEvent -> reportableInformation -> reportableAction
+    set isActionTypeRevi: action exists and action = ReportableActionEnum -> Revive
+
+func IsEventTypeUPDT: <"The qualification of the Update event as an upgrade of an outstanding transaction performed in order to ensure its conformity with the amended reporting requirements.">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isEventTypeUpdt boolean (1..1)
+    alias event: reportableEvent -> reportableInformation -> reportableAction
+    set isEventTypeUpdt: event exists and event = ReportableActionEnum -> Update
+
+func IsActionTypePRTO: <"The qualification of the Transfer Out action that transfers swap transaction from one SDR to another SOR (change of swap data repository).">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypePrto boolean (1..1)
+    alias action: reportableEvent -> reportableInformation -> reportableAction
+    set isActionTypePrto: action exists and action = ReportableActionEnum -> TransferOut
+
+func IsEventTypePTNG: <"The qualification of the Transfer In event by which a swap is transferred to another SDR that has the effect of the closing of the suap transaction at one 50 or opening of the same swap transaction using the same UTI/USI in a different SDR (new).">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isEventTypePtng boolean (1..1)
+    alias event: reportableEvent -> reportableInformation -> reportableAction
+    set isEventTypePtng: event exists and event = ReportableActionEnum -> TransferIn
+
+func IsActionTypePOSC:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypePosc boolean (1..1)
+    alias product: ProductForTrade(TradeForEvent(reportableEvent))
+    set isActionTypePosc:
+        reportableEvent -> originatingWorkflowStep -> action = ActionEnum -> New
+            and reportableEvent -> originatingWorkflowStep -> counterpartyPositionBusinessEvent is absent
+            and IsProductETD(product)
+
+func IsActionTypeTERM:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypeTerm boolean (1..1)
+    set isActionTypeTerm:
+        if (QuantityDecreasedToZero(
+                        reportableEvent -> originatingWorkflowStep -> businessEvent -> instruction -> before,
+                        reportableEvent -> originatingWorkflowStep -> businessEvent -> after
+                    ) = True
+                or (TradeStateForEvent(reportableEvent) -> state -> positionState = PositionStatusEnum -> Closed)
+                or (reportableEvent -> originatingWorkflowStep -> counterpartyPositionBusinessEvent -> after -> state -> positionState only-element = PositionStatusEnum -> Closed) // TODO to be revisted once counterpartyPositionBusinessEvent supports more than one after state
+                or reportableEvent -> originatingWorkflowStep -> businessEvent -> intent = EarlyTerminationProvision)
+        then True
+        else False
+
+func IsActionTypePositionMODI:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isActionTypePositionModi boolean (1..1)
+    alias product: ProductForTrade(TradeForEvent(reportableEvent))
+    alias openPositionDate:
+        reportableEvent -> originatingWorkflowStep -> counterpartyPositionBusinessEvent -> after -> counterpartyPosition -> openDateTime -> date
+            distinct
+            only-element // opentDateTime always the same
+    alias eventDate:
+        reportableEvent -> originatingWorkflowStep -> counterpartyPositionBusinessEvent -> eventDate
+    set isActionTypePositionModi:
+        if reportableEvent -> originatingWorkflowStep -> action = ActionEnum -> New
+                and reportableEvent -> originatingWorkflowStep -> counterpartyPositionBusinessEvent exists
+                and (openPositionDate < eventDate)
+                and IsActionTypeTERM(reportableEvent) = False
+        then True
+        else False
+
+func IsAllowableAction:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isAllowableAction boolean (1..1)
+
+    set isAllowableAction:
+        IsActionTypeNEWT(reportableEvent)
+            or IsActionTypeMODI(reportableEvent)
+            or IsActionTypePositionMODI(reportableEvent)
+            or IsActionTypeCORR(reportableEvent)
+            or IsActionTypeREVI(reportableEvent)
+            or IsActionTypePOSC(reportableEvent)
+
+func IsVRAllowedForActionType:
+    inputs:
+        actionTypefromTrade ActionTypeEnum (1..1)
+    output:
+        validActionType boolean (1..1)
+    set validActionType:
+        actionTypefromTrade = ActionTypeEnum -> NEWT
+            or actionTypefromTrade = ActionTypeEnum -> MODI
+            or actionTypefromTrade = ActionTypeEnum -> CORR
+            or actionTypefromTrade = ActionTypeEnum -> REVI
+            or actionTypefromTrade = ActionTypeEnum -> POSC

@@ -1,0 +1,91 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "assetClass" : "EQUI",
+  "basketConstituents" : [ {
+    "identifier" : "BHP.AX",
+    "source" : "RIC"
+  } ],
+  "beneficiary1" : "DUMMYLEI123456789001",
+  "beneficiary1IdentifierTypeIndicator" : true,
+  "bookingLocation" : "US",
+  "cleared" : "N",
+  "collateralPortfolioIndicator" : false,
+  "confirmationTimestamp" : "2022-02-10T09:14:32Z",
+  "confirmed" : "ECNF",
+  "contractType" : "SWAP",
+  "counterparty1" : "DUMMYLEI123456789001",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI123456789002",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "counterparty2IdentifierType" : true,
+  "cryptoAssetUnderlyingIndicator" : false,
+  "customBasketIndicator" : false,
+  "deliveryType" : "CASH",
+  "dtccAdditionalFields" : {
+    "messageID" : "PrimeSwpConfirmed1P657190100DFCFTCRiskNewNe2024-04-29T00:00Z",
+    "primaryAssetClass" : "Equity",
+    "sefOrDcmAnonymousExecutionIndicator" : false,
+    "submittedForParty" : "DUMMYLEI123456789001",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CFTC", "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "EQUITYPORTFOLIOSWA01",
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ]
+  },
+  "effectiveDate" : "2022-02-14",
+  "entityResponsibleForReporting" : "DUMMYLEI123456789001",
+  "eventIdentifier" : "PrimeSwpConfirmed1P657190100DFCFTCRiskNewNe",
+  "eventTimestamp" : "2022-02-10T09:14:38Z",
+  "eventType" : "ALOC",
+  "executionTimestamp" : "2022-02-10T09:14:32Z",
+  "intragroup" : false,
+  "jurisdiction" : "CFTC",
+  "leg1" : {
+    "notionalAmount" : 90000,
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "DUMMYLEI123456789002",
+    "settlementCurrency" : "USD"
+  },
+  "leg2" : {
+    "payerIdentifier" : "DUMMYLEI123456789001",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004"
+    },
+    "settlementCurrency" : "USD"
+  },
+  "level" : "TCTN",
+  "masterAgreementType" : "ISDA",
+  "masterAgreementVersion" : 2002,
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "USD",
+          "UnderlierID" : "USD-SOFR-COMPOUND"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "price" : {
+    "monetary" : 3000
+  },
+  "priceCurrency" : "USD",
+  "priceNotation" : "Monetary",
+  "priceUnitOfMeasure" : "SHAS",
+  "reportSubmittingEntityID" : "DUMMYLEI123456789001",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "secondaryTransactionIdentifier" : "EQUITYPORTFOLIOSWA01",
+  "uniqueTransactionIdentifier" : "EQUITYPORTFOLIOSWA03"
+}

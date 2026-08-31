@@ -1,0 +1,10 @@
+{
+  "id" : "pipeline-report-sec-trade",
+  "name" : "SEC / Trade",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.sec.rewrite.trade.reports.SECTradeReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.sec.rewrite.trade.SECTransactionReport"
+  }
+}

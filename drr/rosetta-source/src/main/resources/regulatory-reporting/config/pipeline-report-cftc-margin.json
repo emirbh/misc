@@ -1,0 +1,10 @@
+{
+  "id" : "pipeline-report-cftc-margin",
+  "name" : "CFTC / Margin",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.cftc.rewrite.margin.reports.CFTCMarginReportFunction",
+    "inputType" : "drr.regulation.common.CollateralReportInstruction",
+    "outputType" : "drr.regulation.cftc.rewrite.margin.CFTCMarginReport"
+  }
+}

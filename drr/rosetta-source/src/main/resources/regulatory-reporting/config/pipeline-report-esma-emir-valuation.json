@@ -1,0 +1,10 @@
+{
+  "id" : "pipeline-report-esma-emir-valuation",
+  "name" : "ESMA / EMIR Valuation",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.esma.emir.refit.valuation.reports.ESMAEMIRValuationReportFunction",
+    "inputType" : "drr.regulation.common.ValuationReportInstruction",
+    "outputType" : "drr.regulation.esma.emir.refit.valuation.ESMAValuationReport"
+  }
+}

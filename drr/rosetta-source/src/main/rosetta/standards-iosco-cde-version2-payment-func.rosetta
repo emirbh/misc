@@ -1,0 +1,43 @@
+namespace drr.standards.iosco.cde.version2.payment
+version "${project.version}"
+
+import cdm.event.common.*
+
+import drr.base.trade.*
+import drr.standards.iosco.cde.version1.* as cdeV1
+
+func ExtractOtherPaymentPayer:
+    inputs:
+        transferState TransferState (0..1)
+        transactionReportInstruction TransactionReportInstructionBase (0..1)
+    output:
+        partyPersonLei string (0..1)
+    set partyPersonLei:
+        cdeV1.payment.ExtractOtherPaymentPayer(transferState, transactionReportInstruction)
+
+func ExtractOtherPaymentReceiver:
+    inputs:
+        transferState TransferState (0..1)
+        transactionReportInstruction TransactionReportInstructionBase (0..1)
+    output:
+        partyPersonLei string (0..1)
+    set partyPersonLei:
+        cdeV1.payment.ExtractOtherPaymentReceiver(
+                transferState,
+                transactionReportInstruction
+            )
+
+func OptionPremiumOnEventDate:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        optionPremium Transfer (0..1)
+    set optionPremium: cdeV1.payment.OptionPremiumOnEventDate(reportableEvent)
+
+func IsOtherPayment:
+    inputs:
+        transferState TransferState (1..1)
+    output:
+        result boolean (1..1)
+    alias transferExpression: transferState -> transfer -> transferExpression
+    set result: cdeV1.payment.IsOtherPayment(transferState)

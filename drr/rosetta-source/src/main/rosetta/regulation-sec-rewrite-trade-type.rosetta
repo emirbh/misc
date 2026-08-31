@@ -1,0 +1,1630 @@
+namespace drr.regulation.sec.rewrite.trade
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.sec.*
+import drr.regulation.sec.rewrite.*
+import drr.regulation.sec.rewrite.dtcc.*
+import drr.standards.iosco.cde.version2.* as cde
+import drr.standards.iosco.upi.*
+import drr.standards.iso.*
+
+type SECTransactionReport extends common.CommonTransactionReport:
+    [rootType]
+    override cleared ClearedEnum (1..1)
+        [label "901.c.6 Clearing Status"]
+        [regulatoryReference SEC SBSR dataElement "901.c.6" field "Clearing Status"
+            provision "Indicator of whether the transaction has been cleared, or is intended to be cleared, by a central counterparty."]
+        [ruleReference ClearingStatus]
+    override centralCounterparty LEIIdentifier (0..1)
+        [label "901.c.6; 901.d.6 Clearing Venue - ID"]
+        [regulatoryReference SEC SBSR dataElement "901.c.6; 901.d.6" field "Clearing Venue - ID"
+            provision "Identifier of the central counterparty (CCP) that cleared the transaction. This data element is not applicable if the value of the data element 'Cleared' is 'N' (No, not centrally cleared) or 'I' (Intent to clear)."]
+    [ruleReference ClearingVenueID]
+    override clearingAccountOrigin ClearingAccountOriginEnum (0..1)
+        [label "Origin"]
+        [regulatoryReference SEC SBSR field "Origin"
+            provision "Indicator of whether the clearing member acted as principal for a house trade or an agent for a customer trade."]
+        [ruleReference Origin]
+    override clearingMember Min20Max72AlphaNumericText (0..1)
+        [label "Trade Party 1 - Clearing Broker ID"]
+        [regulatoryReference SEC SBSR field "Trade Party 1 - Clearing Broker ID"
+            provision "Identifier of the clearing member through which a derivative transaction was cleared at a central counterparty. This data element is applicable to cleared transactions under both the agency clearing model and the principal clearing model.
+           	     - In the case of the principal clearing model, the clearing member is identified as clearing member and also as a counterparty in both transactions resulting from clearing:
+                    (i) in the transaction between the central counterparty and the clearing member; and
+                    (ii) in the transaction between the clearing member and the counterparty to the original alpha transaction.
+           	    - In the case of the agency clearing model, the clearing member is identified as clearing member but not as the counterparty to transactions resulting from clearing. Under this model, the counterparties are the central counterparty and the client.This data element is not applicable if the value of the data element 'Cleared' is 'N' (No, not centrally cleared) or 'I' (Intent to clear)"]
+        [ruleReference TradeParty1ClearingBrokerID]
+    override originalSwapUTI Max52AlphaNumericText (0..1)
+        [label "901.g Original Swap UTI"]
+        [regulatoryReference SEC SBSR dataElement "901.g" field "Original Swap UTI"
+            provision "The unique transaction identifier (UTI) of the original swap submitted for clearing to the derivatives clearing organization that is replaced by clearing swaps."]
+        [ruleReference OriginalSwapUTI]
+    override originalSwapSDRIdentifier LEIIdentifier (0..1)
+        [label "Original Swap SDR - ID"]
+        [regulatoryReference SEC SBSR field "Original Swap SDR - ID"
+            provision "Identifier of the swap data repository (SDR) to which the original swap was reported."]
+        [ruleReference OriginalSwapSDRID]
+    override clearingReceiptTimestamp zonedDateTime (0..1)
+        [label "901.e.1.ii Clearing Receipt DateTime"]
+        [regulatoryReference SEC SBSR dataElement "901.e.1.ii" field "Clearing Receipt DateTime"
+            provision "The date and time, expressed in UTC, the original swap was received by the derivatives clearing organization (DCO) for clearing and recorded by the DCOs system"]
+        [ruleReference ClearingReceiptDateTime]
+    override clearingExceptionsAndExemptionsCounterparty1 ClearingExceptionsAndExemptionsEnum (0..*)
+        [label "901.d.7 Clearing Exception Type"]
+        [regulatoryReference SEC SBSR dataElement "901.d.7" field "Clearing Exception Type"
+            provision "Identifies the type of clearing exception or exemption that the Counterparty 1 has elected. All applicable exceptions and exemptions must be selected. The values may be repeated as applicable."]
+        [ruleReference ClearingExceptionType]
+    override clearingExceptionsAndExemptionsCounterparty2 ClearingExceptionsAndExemptionsEnum (0..*)
+        [label "901.d.7 Clearing exceptions and exemptions - Counterparty 2"]
+        [regulatoryReference SEC SBSR dataElement "901.d.7" field "Clearing Exception Type - Party 2"
+            provision "Identifies the type of the clearing exception or exemption that the Counterparty 2 has elected. All applicable exceptions and exemptions must be selected. The values may be repeated as applicable."]
+        [ruleReference ClearingExceptionTypeParty2]
+    override counterparty1 Min20Max72AlphaNumericText (1..1)
+        [label "13 Counterparty 1"]
+        [regulatoryReference SEC SBSR dataElement "901.d.1" field "Trade Party 1 - ID"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question. In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund, and not the fund manager is reported as the counterparty."]
+        [ruleReference TradeParty1ID]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "901.d.1 Trade Party 2 - ID"]
+        [regulatoryReference SEC SBSR dataElement "901.d.1" field "Trade Party 2 - ID"
+            provision "Identifier of the second counterparty to an OTC derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund, and not the fund manager is reported as the counterparty."]
+    override counterparty2IdentifierSource Counterparty2IdentifierEnum (1..1)
+        [label "901.d.1 Trade Party 2 - ID Type"]
+        [regulatoryReference SEC SBSR dataElement "901.d.1" field "Trade Party 2 - ID Type"
+            provision "Source used to identify the Counterparty 2."]
+    override buyerIdentifier Min20Max72AlphaNumericText (0..1)
+        [label "901.d.5 Buyer / Payer 1"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "Buyer / Payer 1"
+            provision "Identifier of the counterparty that is the buyer, as determined at the time of the transaction.
+                A non-exhaustive list of examples of instruments for which this data element could apply are:
+                    - most forwards and forward-like contracts (except for foreign exchange forwards and foreign exchange non-deliverable forwards)
+                    - most options and option-like contracts including swaptions, caps and floors
+                    - credit default swaps (buyer/seller of protection)
+                    - variance, volatility and correlation swaps
+                    - contracts for difference and spreadbets.
+                This data element is not applicable to instrument types covered by data elements Payer identifier and Receiver identifier"]
+        [ruleReference BuyerPayer1]
+    override sellerIdentifier Min20Max72AlphaNumericText (0..1)
+        [label "901.d.5 Seller / Payer 2"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "Seller / Payer 2"
+            provision "Identifier of the counterparty that is the seller, as determined at the time of the transaction.
+                A non-exhaustive list of examples of instruments for which this data element could apply are:
+                    - most forwards and forward-like contracts (except for foreign exchange forwards and foreign exchange non-deliverable forwards)
+                    - most options and option-like contracts including swaptions, caps and floors
+                    - credit default swaps (buyer/seller of protection)
+                    - variance, volatility and correlation swaps
+                    - contracts for difference and spreadbets.
+                This data element is not applicable to instrument types covered by data elements Payer identifier and Receiver identifier"]
+        [ruleReference SellerPayer2]
+    override leg1 common.CommonLeg (0..1)
+        [label for payerIdentifier "901.d.5 Payment 1 - Payer"]
+        [regulatoryReference for payerIdentifier SEC SBSR dataElement "901.d.5" field "Payment 1 - Payer"
+            provision "Identifier of the counterparty of the payer leg as determined at the time of the transaction.
+                A non-exhaustive list of examples of instruments for which this data element could apply are:
+                    - most swaps and swap-like contracts including interest rate swaps, credit total return swaps, and equity swaps (except for credit default swaps, variance, volatility, and correlation swaps)
+                    - foreign exchange swaps, forwards, non-deliverable forwards.
+                This data element is not applicable to instrument types covered by data elements Buyer identifier and Seller identifier."]
+        [ruleReference for payerIdentifier Payment1Payer]
+        
+        [label for receiverIdentifier "901.d.5 Payment 1 - Receiver"]
+        [regulatoryReference for receiverIdentifier SEC SBSR dataElement "901.d.5" field "Payment 1 - Receiver"
+            provision "Identifier of the counterparty of the payer leg as determined at the time of the transaction.
+                A non-exhaustive list of examples of instruments for which this data element could apply are:
+                - most swaps and swap-like contracts including interest rate swaps, credit total return swaps, and equity swaps (except for credit default swaps, variance, volatility, and correlation swaps)
+                - foreign exchange swaps, forwards, non-deliverable forwards.
+                This data element is not applicable to instrument types covered by data elements Buyer identifier and Seller identifier."]
+        [ruleReference for receiverIdentifier Payment1Receiver]
+        
+        [label for notionalAmount "901.c.4 Notional Amount 1"]
+        [regulatoryReference for notionalAmount SEC SBSR dataElement "901.c.4" field "Notional Amount 1"
+            provision "For each leg of the transaction, where applicable:
+                    - for OTC derivative transactions negotiated in monetary amounts, amount specified in the contract.
+                    - for OTC derivative transactions negotiated in non-monetary amounts, refer to appendix B for converting notional amounts for non-monetary amounts.
+                    In addition:
+                    - For OTC derivative transactions with a notional amount schedule, the initial notional amount, agreed by the counterparties at the inception of the transaction, is reported in this data element.
+                    - For OTC foreign exchange options, in addition to this data element, the amounts are reported using the data elements Call amount and Put amount.
+                    - For amendments or lifecycle events, the resulting outstanding notional amount is reported; (steps in notional amount schedules are not considered to be amendments or lifecycle events);
+                    - Where the notional amount is not known when a new transaction is reported, the notional amount is updated as it becomes available."]
+        [ruleReference for notionalAmount NotionalAmount1]
+        
+        [label for notionalCurrency "901.c.4 Notional Currency 1"]
+        [regulatoryReference for notionalCurrency SEC SBSR dataElement "901.c.4" field "Notional Currency 1"
+            provision "For each leg of the transaction, where applicable: currency in which the notional amount is denominated."]
+        [ruleReference for notionalCurrency NotionalCurrency1]
+        
+        [label for notionalAmountSchedule -> value "901.c.4 CDE - Notional amount in effect on associated effective date - Leg 1"]
+        [regulatoryReference SEC SBSR dataElement "901.c.4" field "CDE - Notional amount in effect on associated effective date - Leg 1"
+            provision "For each leg of the transaction, where applicable:
+                    for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:
+                        - Notional amount which becomes effective on the associated unadjusted effective date.
+                    The initial notional amount and associated unadjusted effective and end date are reported as the first values of the schedule.
+                    This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+        
+        [label for notionalAmountSchedule -> effectiveDate "901.c.4 CDE - Effective date of the notional amount - Leg 1"]
+        [regulatoryReference SEC SBSR dataElement "901.c.4" field "CDE - Effective date of the notional amount - Leg 1"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule: Unadjusted date on which the associated notional amount becomes effective This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+        
+        [label for notionalAmountSchedule -> endDate "901.c.4 CDE - End date of the notional amount - Leg 1"]
+        [regulatoryReference SEC SBSR dataElement "901.c.4" field "CDE - End date of the notional amount - Leg 1"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule: Unadjusted end date of the notional amount (not applicable if the unadjusted end date of a given schedules period is back-to-back with the unadjusted effective date of the subsequent period). This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+        [ruleReference for notionalAmountSchedule NotionalAmountScheduleLeg1]
+        
+        [label for quantityUnitOfMeasure "901.d.5 CDE - Quantity unit of measure - Leg 1"]
+        [regulatoryReference for quantityUnitOfMeasure SEC SBSR dataElement "901.d.5" field "CDE - Quantity unit of measure - Leg 1"
+            provision "For each leg of the transaction, where applicable: unit of measure in which the Total notional quantity and Notional quantity are expressed."]
+        [ruleReference for quantityUnitOfMeasure QuantityUnitOfMeasureLeg1]
+        
+        [label for totalNotionalQuantity "901.d.5 Leg 1 - Total Notional Quantity"]
+        [regulatoryReference for totalNotionalQuantity SEC SBSR dataElement "901.d.5" field "Leg 1 - Total Notional Quantity"
+            provision "For each leg of the transaction, where applicable: aggregate Notional quantity of the underlying asset for the term of the transaction.
+                   Where the Total notional quantity is not known when a new transaction is reported, the Total notional quantity is updated as it becomes available."]
+        [ruleReference for totalNotionalQuantity TotalNotionalQuantityLeg1]
+        
+        [label for periodicPayment -> fixedRateDayCountConvention "901.d.3 CDE - Fixed rate day count convention - Leg 1"]
+        [regulatoryReference for periodicPayment -> fixedRateDayCountConvention SEC SBSR dataElement "901.d.3" field "CDE - Fixed rate day count convention - Leg 1"
+            provision "For each leg of the transaction, where applicable: day count convention (often also referred to as day count fraction or day count basis or day count method) that determines how interest payments are calculated. It is used to compute the year fraction of the calculation period, and indicates the number of days in the calculation period divided by the number of days in the year."]
+        [ruleReference for periodicPayment -> fixedRateDayCountConvention FixedRateDayCountConventionLeg1]
+        
+        [label for periodicPayment -> floatingRateDayCountConvention "901.d.3 CDE - Floating rate day count convention- Leg 1"]
+        [regulatoryReference for periodicPayment -> floatingRateDayCountConvention SEC SBSR dataElement "901.d.3" field "CDE - Floating rate day count convention- Leg 1"
+            provision "For each leg of the transaction, where applicable: day count convention (often also referred to as day count fraction or day count basis or day count method) that determines how interest payments are calculated. It is used to compute the year fraction of the calculation period, and indicates the number of days in the calculation period divided by the number of days in the year."]
+        [ruleReference for periodicPayment -> floatingRateDayCountConvention FloatingRateDayCountConventionLeg1]
+        
+        [label for fixingDate "901.d.3 Fixing Date- Leg 1"]
+        [regulatoryReference for fixingDate SEC SBSR dataElement "901.d.3" field "Fixing Date - Leg 1"
+            provision "Describes the specific date when a non-deliverable forward as well as various types of FX OTC options such as cash-settled options that will 'fix' against a particular exchange rate, which will be used to compute the ultimate cash settlement"]
+        [ruleReference for fixingDate FixingDateLeg1]
+        
+        [label for periodicPayment -> floatingRateResetFrequencyPeriod "901.d.3 Reset Frequency Period 1"]
+        [regulatoryReference for periodicPayment -> floatingRateResetFrequencyPeriod SEC SBSR dataElement "901.d.3" field "Reset Frequency Period 1"
+            provision "For each floating leg of the swap transaction, where applicable, time unit associated with the frequency of resets, e.g., day, week, month, year or term of the stream."]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyPeriod ResetFrequencyPeriod1]
+        
+        [label for periodicPayment -> floatingRateResetFrequencyMultiplier "901.d.3 Reset Frequency Period Multiplier 1"]
+        [regulatoryReference for periodicPayment -> floatingRateResetFrequencyMultiplier SEC SBSR dataElement "901.d.3" field "Reset Frequency Period Multiplier 1"
+            provision "For each floating leg of the swap transaction, where applicable, number of time units (as expressed by the Floating rate reset frequency period) that determines the frequency at which periodic payment dates for reset occur. For example, a transaction with reset payments occurring every two months is represented with a Floating rate reset frequency period of MNTH (monthly) and a Floating rate reset frequency period multiplier of 2. This data element is not applicable if the Floating rate reset frequency period is ADHO. If Floating rate reset frequency period is TERM, then the Floating rate reset frequency period multiplier is 1. If the reset frequency period is intraday, then the Floating rate reset frequency period is DAIL and the Floating rate reset frequency period multiplier is 0."]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyMultiplier ResetFrequencyPeriodMultiplier1]
+        
+        [label for periodicPayment -> fixedRatePaymentFrequencyPeriod "901.d.3 CDE - Fixed rate payment frequency period - Leg 1"]
+        [regulatoryReference for periodicPayment -> fixedRatePaymentFrequencyPeriod SEC SBSR dataElement "901.d.3" field "CDE - Fixed rate payment frequency period - Leg 1"
+            provision "For each leg of the transaction, where applicable: time unit associated with the frequency of payments, e.g., day, week, month, year or term of the stream."]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriod FixedRatePaymentFrequencyPeriodLeg1]
+        
+        [label for periodicPayment -> floatingRatePaymentFrequencyPeriod "901.d.3 CDE - Floating rate payment frequency period - Leg 1"]
+        [regulatoryReference for periodicPayment -> floatingRatePaymentFrequencyPeriod SEC SBSR dataElement "901.d.3" field "CDE - Floating rate payment frequency period - Leg 1"
+            provision "For each leg of the transaction, where applicable: time unit associated with the frequency of payments, e.g., day, week, month, year or term of the stream."]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriod FloatingRatePaymentFrequencyPeriodLeg1]
+        
+        [label for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier "901.d.3 CDE - Fixed rate payment frequency period multiplier - Leg 1"]
+        [regulatoryReference for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier SEC SBSR dataElement "901.d.3" field "CDE - Fixed rate payment frequency period multiplier - Leg 1"
+            provision "For each leg of the transaction, where applicable: number of time units (as expressed by the Payment frequency period) that determines the frequency at which periodic payment dates occur. For example, a transaction with payments occurring every two months is represented with a Payment frequency period of MNTH (monthly) and a Payment frequency period multiplier of 2.This data element is not applicable if the Payment frequency period is ADHO. If Payment frequency period is TERM, then the Payment frequency period multiplier is 1. If the Payment frequency is intraday, then the Payment frequency period is DAIL and the Payment frequency multiplier is 0."]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier FixedRatePaymentFrequencyPeriodMultiplierLeg1]
+        
+        [label for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier "901.d.3 CDE - Floating rate payment frequency period multiplier - Leg 1"]
+        [regulatoryReference for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier SEC SBSR dataElement "901.d.3" field "CDE - Floating rate payment frequency period multiplier - Leg 1"
+            provision "For each leg of the transaction, where applicable: number of time units (as expressed by the Payment frequency period) that determines the frequency at which periodic payment dates occur. For example, a transaction with payments occurring every two months is represented with a Payment frequency period of MNTH (monthly) and a Payment frequency period multiplier of 2.This data element is not applicable if the Payment frequency period is ADHO. If Payment frequency period is TERM, then the Payment frequency period multiplier is 1. If the Payment frequency is intraday, then the Payment frequency period is DAIL and the Payment frequency multiplier is 0."]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier FloatingRatePaymentFrequencyPeriodMultiplierLeg1]
+        
+        [label for fixedRate "901.d.3 Leg 1 - Fixed Rate Initial"]
+        [regulatoryReference for fixedRate SEC SBSR dataElement "901.d.3" field "Leg 1 - Fixed Rate Initial"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions with periodic payments, per annum rate of the fixed leg(s)."]
+        [ruleReference for fixedRate FixedRateInitialLeg1]
+
+        [label for spread "901.c.3 Leg 1 - Spread Amount"]
+        [regulatoryReference for spread SEC SBSR dataElement "901.c.3" field "Leg 1 - Spread Amount"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions with periodic payments (e.g., interest rate fixed/float swaps, interest rate basis swaps, commodity swaps),
+                - spread on the individual floating leg(s) index reference price, in the case where there is a spread on a floating leg(s). For example, USD-LIBOR-BBA plus .03 or WTI minus USD 14.65; or
+                - difference between the reference prices of the two floating leg indexes. For example, the 9.00 USD Spread for a WCS vs. WTI basis swap where WCS is priced at 43 USD and WTI is priced at 52 USD."]
+        [ruleReference for spread SpreadAmountLeg1]
+        
+        [label for spreadCurrency "901.c.3 Leg 1 - Spread Currency"]
+        [regulatoryReference for spreadCurrency SEC SBSR dataElement "901.c.3" field "Leg 1 - Spread Currency"
+            provision "For each leg of the transaction, where applicable: currency in which the spread is denominated. This data element is only applicable if Spread notation = 1."]
+        [ruleReference for spreadCurrency SpreadCurrencyLeg1]
+        
+        [label for spreadNotation "901.c.3 CDE - Spread notation-Leg 1"]
+        [regulatoryReference for spreadNotation SEC SBSR dataElement "901.c.3" field "CDE - Spread notation-Leg 1"
+            provision "For each leg of the transaction, where applicable: manner in which the spread is expressed."]
+        [ruleReference for spreadNotation SpreadNotationLeg1]
+
+        [label for settlementCurrency "901.d.8 Settlement Currency 1"]
+        [regulatoryReference for settlementCurrency SEC SBSR dataElement "901.d.8" field "Settlement Currency 1"
+            provision "Currency for the cash settlement of the transaction when applicable. For multicurrency products that do not net, the settlement currency of each leg. This data element is not applicable for physically settled products (eg physically settled swaptions)."]
+        [ruleReference for settlementCurrency SettlementCurrency1]
+    override leg2 common.CommonLeg (0..1)
+        [label for payerIdentifier "901.d.5 Payment 2 - Payer"]
+        [regulatoryReference for receiverIdentifier SEC SBSR dataElement "901.d.5" field "Payment 2 - Payer"
+            provision "Identifier of the counterparty of the payer leg as determined at the time of the transaction.
+                A non-exhaustive list of examples of instruments for which this data element could apply are:
+                - most swaps and swap-like contracts including interest rate swaps, credit total return swaps, and equity swaps (except for credit default swaps, variance, volatility, and correlation swaps)
+                - foreign exchange swaps, forwards, non-deliverable forwards.
+                This data element is not applicable to instrument types covered by data elements Buyer identifier and Seller identifier."]
+        [ruleReference for payerIdentifier Payment2Payer]
+        
+        [label for receiverIdentifier "901.d.5 CDE - Receiver Identifier - Leg 2"]
+        [regulatoryReference for receiverIdentifier SEC SBSR dataElement "901.d.5" field "CDE - Receiver Identifier - Leg 2"
+            provision "Identifier of the counterparty of the payer leg as determined at the time of the transaction.
+                A non-exhaustive list of examples of instruments for which this data element could apply are:
+                - most swaps and swap-like contracts including interest rate swaps, credit total return swaps, and equity swaps (except for credit default swaps, variance, volatility, and correlation swaps)
+                - foreign exchange swaps, forwards, non-deliverable forwards.
+                This data element is not applicable to instrument types covered by data elements Buyer identifier and Seller identifier."]
+        [ruleReference for receiverIdentifier ReceiverIdentifierLeg2]
+        
+        [label for notionalAmount "901.c.4 Notional Amount 2"]
+        [regulatoryReference for notionalAmount SEC SBSR dataElement "901.c.4" field "Notional Amount 2"
+            provision "For each leg of the transaction, where applicable:
+                    - for OTC derivative transactions negotiated in monetary amounts, amount specified in the contract.
+                    - for OTC derivative transactions negotiated in non-monetary amounts, refer to appendix B for converting notional amounts for non-monetary amounts.
+                    In addition:
+                    - For OTC derivative transactions with a notional amount schedule, the initial notional amount, agreed by the counterparties at the inception of the transaction, is reported in this data element.
+                    - For OTC foreign exchange options, in addition to this data element, the amounts are reported using the data elements Call amount and Put amount.
+                    - For amendments or lifecycle events, the resulting outstanding notional amount is reported; (steps in notional amount schedules are not considered to be amendments or lifecycle events);
+                    - Where the notional amount is not known when a new transaction is reported, the notional amount is updated as it becomes available."]
+        [ruleReference for notionalAmount NotionalAmount2]
+        
+        [label for notionalCurrency "901.c.4 Notional Currency 2"]
+        [regulatoryReference for notionalCurrency SEC SBSR dataElement "901.c.4" field "Notional Currency 2"
+            provision "For each leg of the transaction, where applicable: currency in which the notional amount is denominated."]
+        [ruleReference for notionalCurrency NotionalCurrency2]
+        
+        [label for notionalAmountSchedule -> value "901.c.4 CDE - Notional amount in effect on associated effective date - Leg 2"]
+        [regulatoryReference SEC SBSR dataElement "901.c.4" field "CDE - Notional amount in effect on associated effective date - Leg 2"
+            provision "For each leg of the transaction, where applicable:
+                   for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:
+                        - Notional amount which becomes effective on the associated unadjusted effective date.
+                   The initial notional amount and associated unadjusted effective and end date are reported as the first values of the schedule.
+                   This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+        
+        [label for notionalAmountSchedule -> effectiveDate "901.c.4 CDE - Effective date of the notional amount - Leg 2"]
+        [regulatoryReference SEC SBSR dataElement "901.c.4" field "CDE - Effective date of the notional amount - Leg 2"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule: Unadjusted date on which the associated notional amount becomes effective This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+        
+        [label for notionalAmountSchedule -> endDate "901.c.4 CDE - End date of the notional amount - Leg 2"]
+        [regulatoryReference SEC SBSR dataElement "901.c.4" field "CDE - End date of the notional amount - Leg 2"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule: Unadjusted end date of the notional amount (not applicable if the unadjusted end date of a given schedules period is back-to-back with the unadjusted effective date of the subsequent period). This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+        [ruleReference for notionalAmountSchedule NotionalAmountScheduleLeg2]
+        
+        [label for quantityUnitOfMeasure "901.d.5 CDE - Quantity unit of measure - Leg 2"]
+        [regulatoryReference for quantityUnitOfMeasure SEC SBSR dataElement "901.d.5" field "CDE - Quantity unit of measure - Leg 2"
+            provision "For each leg of the transaction, where applicable: unit of measure in which the Total notional quantity and Notional quantity are expressed."]
+        [ruleReference for quantityUnitOfMeasure QuantityUnitOfMeasureLeg2]
+        
+        [label for totalNotionalQuantity "901.d.5 Leg 2 - Total Notional Quantity"]
+        [regulatoryReference for totalNotionalQuantity SEC SBSR dataElement "901.d.5" field "Leg 2 - Total Notional Quantity"
+            provision "For each leg of the transaction, where applicable: aggregate Notional quantity of the underlying asset for the term of the transaction.
+                   Where the Total notional quantity is not known when a new transaction is reported, the Total notional quantity is updated as it becomes available."]
+        [ruleReference for totalNotionalQuantity TotalNotionalQuantityLeg2]
+        
+        [label for periodicPayment -> fixedRateDayCountConvention "901.d.3 CDE - Fixed rate day count convention - Leg 2"]
+        [regulatoryReference for periodicPayment -> fixedRateDayCountConvention SEC SBSR dataElement "901.d.3" field "CDE - Fixed rate day count convention - Leg 2"
+            provision "For each leg of the transaction, where applicable: day count convention (often also referred to as day count fraction or day count basis or day count method) that determines how interest payments are calculated. It is used to compute the year fraction of the calculation period, and indicates the number of days in the calculation period divided by the number of days in the year."]
+        [ruleReference for periodicPayment -> fixedRateDayCountConvention FixedRateDayCountConventionLeg2]
+        
+        [label for periodicPayment -> floatingRateDayCountConvention "901.d.3 CDE - Floating rate day count convention - Leg 2"]
+        [regulatoryReference for periodicPayment -> floatingRateDayCountConvention SEC SBSR dataElement "901.d.3" field "CDE - Floating rate day count convention - Leg 2"
+            provision "For each leg of the transaction, where applicable: day count convention (often also referred to as day count fraction or day count basis or day count method) that determines how interest payments are calculated. It is used to compute the year fraction of the calculation period, and indicates the number of days in the calculation period divided by the number of days in the year."]
+        [ruleReference for periodicPayment -> floatingRateDayCountConvention FloatingRateDayCountConventionLeg2]
+        
+        [label for fixingDate "901.d.3 Fixing date - Leg 2"]
+        [regulatoryReference for fixingDate SEC SBSR dataElement "901.d.3" field "Fixing date - Leg 2"
+            provision "Describes the specific date when a non-deliverable forward as well as various types of FX OTC options such as cash-settled options that will 'fix' against a particular exchange rate, which will be used to compute the ultimate cash settlement"]
+        [ruleReference for fixingDate FixingDateLeg2]
+        
+        [label for periodicPayment -> floatingRateResetFrequencyPeriod "901.d.3 Leg 2 - Reset Frequency Period"]
+        [regulatoryReference for periodicPayment -> floatingRateResetFrequencyPeriod SEC SBSR dataElement "901.d.3" field "Leg 2 - Reset Frequency Period"
+            provision "For each floating leg of the swap transaction, where applicable, time unit associated with the frequency of resets, e.g., day, week, month, year or term of the stream."]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyPeriod ResetFrequencyPeriod2]
+        
+        [label for periodicPayment -> floatingRateResetFrequencyMultiplier "901.d.3 Leg 2 - Reset Frequency Period Multiplier"]
+        [regulatoryReference for periodicPayment -> floatingRateResetFrequencyMultiplier SEC SBSR dataElement "901.d.3" field "Leg 2 - Reset Frequency Period Multiplier"
+            provision "For each floating leg of the swap transaction, where applicable, number of time units (as expressed by the Floating rate reset frequency period) that determines the frequency at which periodic payment dates for reset occur. For example, a transaction with reset payments occurring every two months is represented with a Floating rate reset frequency period of MNTH (monthly) and a Floating rate reset frequency period multiplier of 2. This data element is not applicable if the Floating rate reset frequency period is ADHO. If Floating rate reset frequency period is TERM, then the Floating rate reset frequency period multiplier is 1. If the reset frequency period is intraday, then the Floating rate reset frequency period is DAIL and the Floating rate reset frequency period multiplier is 0."]
+        [ruleReference for periodicPayment -> floatingRateResetFrequencyMultiplier ResetFrequencyPeriodMultiplier2]
+        
+        [label for periodicPayment -> fixedRatePaymentFrequencyPeriod "901.d.3 CDE - Fixed rate payment frequency period - Leg 2"]
+        [regulatoryReference for periodicPayment -> fixedRatePaymentFrequencyPeriod SEC SBSR dataElement "901.d.3" field "CDE - Fixed rate payment frequency period - Leg 2"
+            provision "For each leg of the transaction, where applicable: time unit associated with the frequency of payments, e.g., day, week, month, year or term of the stream."]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriod FixedRatePaymentFrequencyPeriodLeg2]
+        
+        [label for periodicPayment -> floatingRatePaymentFrequencyPeriod "901.d.3 CDE - Floating rate payment frequency period - Leg 2"]
+        [regulatoryReference for periodicPayment -> floatingRatePaymentFrequencyPeriod SEC SBSR dataElement "901.d.3" field "CDE - Floating rate payment frequency period - Leg 2"
+            provision "For each leg of the transaction, where applicable: time unit associated with the frequency of payments, e.g., day, week, month, year or term of the stream."]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriod FloatingRatePaymentFrequencyPeriodLeg2]
+        
+        [label for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier "901.d.3 CDE - Fixed rate payment frequency period multiplier - Leg 2"]
+        [regulatoryReference for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier SEC SBSR dataElement "901.d.3" field "CDE - Fixed rate payment frequency period multiplier - Leg 2"
+            provision "For each leg of the transaction, where applicable: number of time units (as expressed by the Payment frequency period) that determines the frequency at which periodic payment dates occur. For example, a transaction with payments occurring every two months is represented with a Payment frequency period of MNTH (monthly) and a Payment frequency period multiplier of 2.This data element is not applicable if the Payment frequency period is ADHO. If Payment frequency period is TERM, then the Payment frequency period multiplier is 1. If the Payment frequency is intraday, then the Payment frequency period is DAIL and the Payment frequency multiplier is 0."]
+        [ruleReference for periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier FixedRatePaymentFrequencyPeriodMultiplierLeg2]
+        
+        [label for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier "901.d.3 CDE - Floating rate payment frequency period multiplier - Leg 2"]
+        [regulatoryReference for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier SEC SBSR dataElement "901.d.3" field "CDE - Floating rate payment frequency period multiplier - Leg 2"
+            provision "For each leg of the transaction, where applicable: number of time units (as expressed by the Payment frequency period) that determines the frequency at which periodic payment dates occur. For example, a transaction with payments occurring every two months is represented with a Payment frequency period of MNTH (monthly) and a Payment frequency period multiplier of 2.This data element is not applicable if the Payment frequency period is ADHO. If Payment frequency period is TERM, then the Payment frequency period multiplier is 1. If the Payment frequency is intraday, then the Payment frequency period is DAIL and the Payment frequency multiplier is 0."]
+        [ruleReference for periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier FloatingRatePaymentFrequencyPeriodMultiplierLeg2]
+        
+        [label for fixedRate "901.d.3 Leg 2 - Fixed Rate Initial"]
+        [regulatoryReference for fixedRate SEC SBSR dataElement "901.d.3" field "Leg 2 - Fixed Rate Initial"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions with periodic payments, per annum rate of the fixed leg(s)."]
+        [ruleReference for fixedRate FixedRateInitialLeg2]
+
+        [label for spread "901.c.3 Leg 2 - Spread Amount"]
+        [regulatoryReference for spread SEC SBSR dataElement "901.c.3" field "Leg 2 - Spread Amount"
+            provision "For each leg of the transaction, where applicable: for OTC derivative transactions with periodic payments (e.g., interest rate fixed/float swaps, interest rate basis swaps, commodity swaps),
+            - spread on the individual floating leg(s) index reference price, in the case where there is a spread on a floating leg(s). For example, USD-LIBOR-BBA plus .03 or WTI minus USD 14.65; or
+            - difference between the reference prices of the two floating leg indexes. For example, the 9.00 USD Spread for a WCS vs. WTI basis swap where WCS is priced at 43 USD and WTI is priced at 52 USD."]
+        [ruleReference for spread SpreadAmountLeg2]
+        
+        [label for spreadCurrency "901.c.3 Leg 2 - Spread Currency"]
+        [regulatoryReference for spreadCurrency SEC SBSR dataElement "901.c.3" field "Leg 2 - Spread Currency"
+            provision "For each leg of the transaction, where applicable: currency in which the spread is denominated. This data element is only applicable if Spread notation = 1."]
+        [ruleReference for spreadCurrency SpreadCurrencyLeg2]
+        
+        [label for spreadNotation "901.c.3 CDE - Spread notation - Leg 2"]
+        [regulatoryReference for spreadNotation SEC SBSR dataElement "901.c.3" field "CDE - Spread notation - Leg 2"
+            provision "For each leg of the transaction, where applicable: manner in which the spread is expressed."]
+        [ruleReference for spreadNotation SpreadNotationLeg2]
+
+        [label for settlementCurrency "901.d.8 Leg 2 - Settlement Currency"]
+        [regulatoryReference for settlementCurrency SEC SBSR dataElement "901.d.8" field "Leg 2 - Settlement Currency"
+            provision "Currency for the cash settlement of the transaction when applicable. For multicurrency products that do not net, the settlement currency of each leg. This data element is not applicable for physically settled products (eg physically settled swaptions)."]
+        [ruleReference for settlementCurrency SettlementCurrency2]
+    override reportSubmittingEntityID LEIIdentifier (1..1)
+        [label "13n–5(b)(1)(iii) Submitting Party ID"]
+        [regulatoryReference SEC SBSR dataElement "13n–5(b)(1)(iii)" field "Submitting Party ID"
+            provision "Identifier of the entity submitting the data to the swap data repository (SDR). The Submitter identifier will be the same as the reporting counterparty or swap execution facility (SEF), unless they use a third-party service provider to submit the data to SDR in which case, report the identifier of the third-party service provider."]
+    override customBasketIndicator boolean (1..1)
+        [label "901.c.1.v Custom Basket Indicator"]
+        [regulatoryReference SEC SBSR dataElement "901.c.1.v" field "Custom Basket Indicator"
+            provision "Indicator of whether the swap transaction is based on a custom basket."]
+        [ruleReference CustomBasketIndicator]
+    override actionType ActionTypeEnum (1..1)
+        [label "NoA - Action Type"]
+        [regulatoryReference SEC SBSR field "NoA - Action Type"
+            provision "Type of action taken on the swap transaction or type of end-of-day reporting. Actions may include, but are not limited to, new, modify, correct, error, terminate, revive, transfer out, valuation, and collateral.
+                - New: An action that reports a new swap transaction. It applies to the first message relating to a new USI or UTI.
+                - Modify: An action that modifies the state of a previously submitted transaction (e.g., credit event) or changes a term of a previously submitted transaction due to a newly negotiated modification (amendment) or updates previously missing information (e.g., post price swap). It does not include correction of a previous transaction.
+                - Correct: An action that corrects erroneous data of a previously submitted transaction.
+                - Error: An action of cancellation of a wrongly submitted entire transaction in case it never came into existence or was not subject to part 43/part 45 reporting requirements but was reported erroneously.
+                - Terminate: An action that closes an existing transaction because of a new event (e.g., Compression, Novation). This does not apply to transactions that terminate at contractual maturity date.
+                - Revive: An action that reinstates a swap transaction that was reported as error or terminated by mistake.
+                - Transfer out: An action that transfers swap transaction from one SDR to another SDR (change of swap data repository).
+                - Valuation: An update to valuation data. There will be no corresponding Event type.
+                - Collateral: An update to collateral margin data. There will be no corresponding Event type. Refer to appendix F in the CFTC Tech Spec for event model sample scenarios."]
+    override eventType EventTypeEnum (0..1)
+        [label "Event Type"]
+        [regulatoryReference SEC SBSR field "Event Type"
+            provision "Explanation or reason for the action being taken on the swap transaction. Events may include, but are not limited to, trade, novation, compression or risk reduction exercise, early termination, clearing, exercise, allocation, clearing and allocation, credit event, and transfer.
+                - Trade: A creation, modification, or termination of a transaction.
+                - Novation: A novation legally moves partial or all of the financial risks of a swap from a transferor to a transferee and has the effect of terminating/modifying the original transaction and creating a new transaction to identify the exposure between the transferor/transferee and remaining party.
+                - Compression or Risk Reduction Exercise: Compressions and risk reduction exercises generally have the effect of terminating or modifying (i.e., reducing the notional value) a set of existing transactions and of creating a set of new transaction(s). These processes result in largely the same exposure of market risk that existed prior to the event for the counterparty.
+                - Early termination: Termination of an existing swap transaction prior to scheduled termination or maturity date.
+                - Clearing: Central clearing is a process where a derivatives clearing organization interposes itself between counterparties to contracts, becoming the buyer to every seller and the seller to every buyer. It has the effect of terminating an existing transaction between the buyer and the seller and thereby ensuring the performance of open contracts.
+                - Exercise: The process by which a counterparty fully or partially exercises their rights specified in the contract of an option or a swaption.
+                - Allocation: The process by which an agent, having facilitated a single swap transaction on behalf of several clients, allocates a portion of the executed swap to the clients.
+                - Clearing and Allocation: A simultaneous clearing and allocation event in a derivatives clearing organization.
+                - Credit event: An event or trigger that results in the modification of the state of a previously submitted credit derivative transaction. Applies only to credit derivatives.
+                - Transfer: The process by which a swap is transferred to another SDR that  has the effect of the closing of the swap transaction at one SDR or opening of the same swap transaction using the same UTI/USI in a different SDR (new)."]
+        [ruleReference EventType]
+    override amendmentIndicator boolean (0..1)
+        [label "Amendment Indicator"]
+        [regulatoryReference SEC SBSR field "Amendment Indicator"
+            provision "Indicator of whether the modification of the swap transaction reflects newly agreed upon term(s) from the previously negotiated terms."]
+        [ruleReference AmendmentIndicator]
+    override eventIdentifier Max52AlphaNumericText (0..1)
+        [label "Event Identifier"]
+        [regulatoryReference SEC SBSR field "Event Identifier"
+            provision "Unique identifier to link swap transactions resulting from an event may be, but is not limited to, compression, and credit event. The unique identifier may be assigned by the reporting counterparty or a service provider."]
+        [ruleReference EventIdentifier]
+    override eventTimestamp zonedDateTime (1..1)
+        [label "901.e.1.i; 901.c.2 Latest Execution DateTime"]
+        [regulatoryReference SEC SBSR dataElement "901.e.1.i; 901.c.2" field "Latest Execution DateTime"
+            provision "Date and time of occurrence of the event as determined by the reporting counterparty or a service provider. In the case of a clearing event, date and time when the original swap is accepted by the derivative clearing organization (DCO) for clearing and recorded by the DCOs system should be reported in this data element. The time element is as specific as technologically practicable."]
+    override packageIndicator boolean (1..1)
+        [label "901.d.5 Package Indicator"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "Package Indicator"
+            provision "Indicator of whether the swap transaction is part of a package transaction."]
+        [ruleReference PackageIndicator]
+    override packageIdentifier Max100AlphaNumericText (0..1)
+        [label "901.d.5 CDE - Package Identifier"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "CDE - Package Identifier"
+            provision "Identifier (determined by the reporting counterparty) in order to connect two or more transactions that are reported separately by the reporting counterparty, but that are negotiated together as the product of a single economic agreement. Two or more reports pertaining to the same transaction whenever jurisdictional reporting requirement does not allow the transaction to be reported with a single report to TRs. A package may include reportable and non-reportable transactions. This data element is not applicable  if no package is involved, or  to allocations. Where the Package identifier is not known when a new transaction is reported, the Package identifier is updated as it becomes available."]
+        [ruleReference PackageIdentifier]
+    override packageTransactionPrice price.PriceFormat (0..1)
+        [label "901.d.5 CDE - Package Transaction Price"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "CDE - Package Transaction Price"
+            provision "Traded price of the entire package in which the reported derivative transaction is a component. This data element is not applicable if no package is involved, or package transaction spread is used Prices and related data elements of the transactions (Price currency, Price notation, Price unit of measure) that represent individual components of the package are reported when available. The Package transaction price may not be known when a new transaction is reported but may be updated later."]
+        [ruleReference PackageTransactionPrice]
+    override packageTransactionPriceCurrency ISOCurrencyCodeEnum (0..1)
+        [label "901.d.5 CDE - Package Transaction Price Currency"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "CDE - Package Transaction Price Currency"
+            provision "Currency in which the Package transaction price is denominated. This data element is not applicable if no package is involved, or package transaction spread is used, or package transaction price notation = 3"]
+        [ruleReference PackageTransactionPriceCurrency]
+    override packageTransactionPriceNotation price.PriceNotationEnum (0..1)
+        [label "901.d.5 CDE - Package Transaction Price Notation"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "CDE - Package Transaction Price Notation"
+            provision "Manner in which the Package transaction price is expressed. This data element is not applicable if no package is involved, or package transaction spread is used"]
+        [ruleReference PackageTransactionPriceNotation]
+    override packageTransactionSpread price.PriceFormat (0..1)
+        [label "901.d.5 CDE - Package Transaction Spread"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "CDE - Package Transaction Spread"
+            provision "Traded price of the entire package in which the reported derivative transaction is a component of a package transaction. Package transaction price when the price of the package is expressed as a spread, difference between two reference prices. This data element is not applicable if no package is involved, or Package transaction price is used. Spread and related data elements of the transactions (spread currency, Spread notation) that represent individual components of the package are reported when available. Package transaction spread may not be known when a new transaction is reported but may be updated later."]
+        [ruleReference PackageTransactionSpread]
+    override packageTransactionSpreadCurrency ISOCurrencyCodeEnum (0..1)
+        [label "901.d.5 CDE - Package Transaction Spread Currency"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "CDE - Package Transaction Spread Currency"
+            provision "Currency in which the Package transaction spread is denominated. This data element is not applicable if no package is involved, or Package transaction price is used, or Package transaction spread notation = 3, or = 4"]
+        [ruleReference PackageTransactionSpreadCurrency]
+    override packageTransactionSpreadNotation price.PriceNotationEnum (0..1)
+        [label "901.d.5 CDE - Package Transaction Spread Notation"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "CDE - Package Transaction Spread Notation"
+            provision "Manner in which the Package transaction spread is expressed. This data element is not applicable if no package is involved, or Package transaction price is used."]
+        [ruleReference PackageTransactionSpreadNotation]
+    override otherPayment payment.OtherPayment (0..*)
+        [label for paymentType "901.d.3 (901.c.3?) CDE - Other Payment Type"]
+        [regulatoryReference for paymentType SEC SBSR dataElement "901.d.3 (901.c.3?)" field "CDE - Other Payment Type"
+            provision "Type of Other payment amount. Option premium payment is not included as a payment type as premiums for option are reported using the option premium dedicated data element."]
+        [label for amount "901.c.3 CDE - Other Payment Amount"]
+        [regulatoryReference for amount SEC SBSR dataElement "901.c.3" field "CDE - Other Payment Amount"
+            provision "Payment amounts with corresponding payment types to accommodate requirements of transaction descriptions from different asset classes."]
+        [label for currency "901.c.3 CDE - Other Payment Currency"]
+        [regulatoryReference for currency SEC SBSR dataElement "901.c.3" field "CDE - Other Payment Currency"
+            provision "Currency in which Other payment amount is denominated."]
+        [label for date "901.c.1.iv CDE - Other Payment Date"]
+        [regulatoryReference for date SEC SBSR dataElement "901.c.1.iv" field "CDE - Other Payment Date"
+            provision "Unadjusted date on which the Other payment amount is paid."]
+        [label for payer "901.d.5 CDE - Other Payment Payer"]
+        [regulatoryReference for payer SEC SBSR dataElement "901.d.5" field "CDE - Other Payment Payer"
+            provision "Identifier of the payer of Other payment amount."]
+        [label for receiver "901.d.5 CDE - Other Payment Receiver"]
+        [regulatoryReference for receiver SEC SBSR dataElement "901.d.5" field "CDE - Other Payment Receiver"
+            provision "Identifier of the receiver of Other payment amount."]
+        [ruleReference OtherPayment]
+    override price price.PriceFormat (0..1)
+        [label "901.c.3 Price 1 - Price"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "Price 1 - Price"
+            provision "Price specified in the OTC derivative transaction. It does not include fees, taxes or commissions.
+            For commodity fixed/float swaps and similar products with periodic payments, this data element refers to the fixed price of the fixed leg(s).
+            For commodity and equity forwards and similar products, this data element refers to the forward price of the underlying or reference asset.
+            For equity swaps, portfolios swaps, and similar products, this data element refers to the initial price of the underlying or reference asset.
+            For contracts for difference and similar products, this data element refers to the initial price of the underlier.
+            This data element is not applicable to:
+                - Interest rate swaps and forward rate agreements, as it is understood that the information included in the data elements Fixed rate and Spread may be interpreted as the price of the transaction.
+                - Interest rate options and interest rate swaptions, as it is understood that the information included in the data elements Strike price and Option premium may be interpreted as the price of the transaction.
+                - Commodity basis swaps and the floating leg of commodity fixed/float swaps, as it is understood that the information included in the data element Spread may be interpreted as the price of the transaction.
+                - Foreign exchange swaps, forwards and options, as it is understood that the information included in the data elements Exchange rate, Strike price, and Option premium may be interpreted as the price of the transaction.
+                - Equity options, as it is understood that the information included in the data elements Strike price and Option premium may be interpreted as the price of the transaction.
+                - Credit default swaps and credit total return swaps, as it is understood that the information included in the data elements Fixed rate, Spread and Upfront payment (Other payment type: Upfront payment) may be interpreted as the price of the transaction.
+                - Commodity options, as it is understood that the information included in the data elements Strike price and Option premium may be interpreted as the price of the transaction. Where the price is not known when a new transaction is reported, the price is updated as it becomes available.
+            For transactions that are part of a package, this data element contains the price of the component transaction where applicable."]
+        [ruleReference Price]
+    override priceCurrency ISOCurrencyCodeEnum (0..1)
+        [label "901.c.3 CDE - Price Currency"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "CDE - Price Currency"
+            provision "Currency in which the price is denominated. Price currency is only applicable if Price notation = 1."]
+        [ruleReference PriceCurrency]
+    override priceNotation price.PriceNotationEnum (0..1)
+        [label "901.c.3 CDE - Price Notation"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "CDE - Price Notation"
+            provision "Manner in which the price is expressed."]
+        [ruleReference PriceNotation]
+    override priceUnitOfMeasure Max4Text (0..1)
+        [label "901.c.3 Price 1 - Units"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "Price 1 - Units"
+            provision "Unit of measure in which the price is expressed."]
+        [ruleReference Units]
+    override strikePrice price.PriceFormat (0..1)
+        [label "901.c.3 Strike Price"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "Strike Price"
+            provision "For options other than FX options, swaptions and similar products, price at which the owner of an option can buy or sell the underlying asset of the option. For foreign exchange options, exchange rate at which the option can be exercised, expressed as the rate of exchange from converting the unit currency into the quoted currency. In the example 0.9426 USD/EUR, USD is the unit currency and EUR is the quoted currency; USD 1 = EUR 0.9426. Where the strike price is not known when a new transaction is reported, the strike price is updated as it becomes available. For volatility and variance swaps and similar products, the volatility strike price is reported in this data element"]
+        [ruleReference StrikePrice]
+    override strikePriceCurrency string (0..1)
+        [label "901.c.3 Strike Price - Currency"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "Strike Price - Currency"
+            provision "For equity options, commodity options, and similar products, currency in which the strike price is denominated. For foreign exchange options: Currency pair and order in which the strike price is expressed. It is expressed as unit currency/quoted currency. In the example 0.9426 USD/EUR, USD is the unit currency and EUR is the quoted currency, USD 1 = EUR 0.9426. Strike price currency/currency pair is only applicable if Strike price notation = 1."]
+        [ruleReference StrikePriceCurrency]
+    override strikePriceNotation price.PriceNotationEnum (0..1)
+        [label "901.c.3 CDE - Strike Price notation"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "CDE - Strike Price Notation"
+            provision "Manner in which the strike price is expressed."]
+        [ruleReference StrikePriceNotation]
+    override optionPremiumAmount ShortFraction5DecimalNumber (0..1)
+        [label "901.c.3 Premium Amount"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "Premium Amount"
+            provision "For options and swaptions of all asset classes, monetary amount paid by the option buyer. This data element is not applicable if the instrument is not an option or does not embed any optionality."]
+        [ruleReference PremiumAmount]
+    override optionPremiumCurrency ISOCurrencyCodeEnum (0..1)
+        [label "901.c.3 Premium Currency"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "Premium Currency"
+            provision "For options and swaptions of all asset classes, currency in which the option premium amount is denominated. This data element is not applicable if the instrument is not an option or does not embed any optionality."]
+        [ruleReference PremiumCurrency]
+    override optionPremiumPaymentDate date (0..1)
+        [label "901.c.3 Premium Payment Date Unadjusted"]
+        [regulatoryReference SEC SBSR dataElement "901.c.3" field "Premium Payment Date Unadjusted"
+            provision "Unadjusted date on which the option premium is paid."]
+        [ruleReference PremiumPaymentDateUnadjusted]
+    override firstExerciseDate date (0..1)
+        [label "901.c.1.iii CDE - First exercise date"]
+        [regulatoryReference SEC SBSR dataElement "901.c.1.iii" field "CDE - First Exercise Date"
+            provision "First unadjusted date during the exercise period in which an option can be exercised.
+				    For European-style options, this date is same as the Expiration date. For American-style options, the first possible exercise date is the unadjusted date included in the Execution timestamp.
+				    For knock-in options, where the first exercise date is not known when a new transaction is reported, the first exercise date is updated as it becomes available.
+				    This data element is not applicable if the instrument is not an option or does not embed any optionality"]
+        [ruleReference FirstExerciseDate]
+    override cdSIndexAttachmentPoint BaseOneRate (0..1)
+        [label "901.d.5 Attachment Point"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "Attachment Point"
+            provision "Defined lower point at which the level of losses in the underlying portfolio reduces the notional of a tranche. For example, the notional in a tranche with an attachment point of 3% will be reduced after 3% of losses in the portfolio have occurred. This data element is not applicable if the transaction is not a CDS tranche transaction (index or custom basket)."]
+        [ruleReference AttachmentPoint]
+    override cdSIndexDetachmentPoint BaseOneRate (0..1)
+        [label "901.d.5 Exhaustion Point"]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" field "Exhaustion Point"
+            provision "Defined point beyond which losses in the underlying portfolio no longer reduce the notional of a tranche. For example, the notional in a tranche with an attachment point of 3% and a detachment point of 6% will be reduced after there have been 3% of losses in the portfolio. 6% losses in the portfolio deplete the notional of the tranche. This data element is not applicable if the transaction is not a CDS tranche transaction (index or custom basket)."]
+        [ruleReference ExhaustionPoint]
+    override indexFactor ShortFraction10DecimalNumber (0..1)
+        [label "901.c.1 Index Factor"]
+        [regulatoryReference SEC SBSR dataElement "901.c.1" field "Index Factor"
+            provision "The index version factor or percent, expressed as a decimal value, that multiplied by the Notional amount yields the notional amount covered by the seller of protection for credit default swap."]
+        [ruleReference IndexFactor]
+    override embeddedOptionType EmbeddedOptionTypeEnum (0..1)
+        [label "901.c.1 Embedded Option on Swap"]
+        [regulatoryReference SEC SBSR dataElement "901.c.1" field "Embedded Option on Swap"
+            provision "Type of option or optional provision embedded in a contract."]
+        [ruleReference EmbeddedOptionOnSwap]
+    override uniqueProductIdentifier string (0..1)
+        [label "901.c.1 UPI"]
+        [regulatoryReference SEC SBSR dataElement "901.c.1" field "UPI"
+            provision "A unique set of characters that represents a particular OTC derivative. The Commission will designate a UPI pursuant to part 45.7.
+				   Note: A Unique product identifier short name (D4), defined as, 'When the Commission designates a UPI pursuant to part 45, a humanly readable description made available by the UPI issuer corresponding to the UPI'."]
+    override finalContractualSettlementDate date (0..1)
+        [label "901.d.8 CDE - Final Contractual Settlement Date"]
+        [regulatoryReference SEC SBSR dataElement "8901.d.88" field "CDE - Final Contractual Settlement Date"
+            provision "Unadjusted date as per the contract, by which all transfer of cash or assets should take place and the counterparties should no longer have any outstanding obligations to each other under that contract. For products that may not have a final contractual settlement date (eg American options), this data element reflects the date by which the transfer of cash or asset would take place if termination were to occur on the expiration date."]
+        [ruleReference cde.execution.FinalContractualSettlementDate]
+    override settlementLocation ISOCountryCodeEnum (0..1)
+        [label "901.d.8 CDE - Settlement location-Leg 1"]
+        [regulatoryReference SEC SBSR dataElement "901.d.8" field "CDE - Settlement location-Leg 1"
+            provision "Place of settlement of the transaction as stipulated in the contract. This data element is only applicable for transactions that involve an offshore currency (i.e. a currency which is not included in the ISO 4217 currency list, for example CNH). "]
+        [ruleReference SettlementLocationLeg1]
+    override nonStandardizedTermIndicator boolean (0..1)
+        [label "907.a.4 Non Standard Trade Indicator"]
+        [regulatoryReference SEC SBSR dataElement "907.a.4" field "Non Standard Trade Indicator"
+            provision "Indicator of whether the swap transaction has one or more additional term(s) or provision(s), other than those disseminated to the public pursuant to part 43, that materially affect(s) the price of the swap transaction."]
+        [ruleReference NonStandardTradeIndicator]
+    override effectiveDate date (1..1)
+        [label "901.c.1.ii CDE - Effective Date"]
+        [regulatoryReference SEC SBSR dataElement "901.c.1.ii" field "CDE - Effective Date"
+            provision "Unadjusted date at which obligations under the OTC derivative transaction come into effect, as included in the confirmation."]
+        [ruleReference EffectiveDate]
+    override expirationDate date (0..1)
+        [label "901.c.1.ii CDE - Expiration date"]
+        [regulatoryReference SEC SBSR dataElement "901.c.1.ii" field "CDE - Expiration date"
+            provision "Unadjusted date at which obligations under the OTC derivative transaction stop being effective, as included in the confirmation. Early termination does not affect this data element."]
+        [ruleReference ExpirationDate]
+    override executionTimestamp zonedDateTime (1..1)
+        [label "901.c.2 Original Execution Timestamp"]
+        [regulatoryReference SEC SBSR dataElement "901.c.2" field "Original Execution Timestamp"
+            provision "Date and time a transaction was originally executed, resulting in the generation of a new UTI. This data element remains unchanged throughout the life of the UTI."]
+        [ruleReference OriginalExecutionTimestamp]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "Reporting timestamp"]
+        [regulatoryReference SEC SBSR field "Reporting Timestamp"
+            provision "Date and time of the submission of the report to the trade repository"]
+    override platformIdentifier Max4Text (0..1)
+        [label "901.d.9 CDE - Platform identifier"]
+        [regulatoryReference SEC SBSR dataElement "901.d.9" field "CDE - Platform identifier"
+            provision "Identifier of the trading facility (e.g., exchange, multilateral trading facility, swap execution facility) on which the transaction was executed."]
+        [ruleReference PlatformIdentifier]
+    override priorUSI Max42AlphaNumericText (0..1)
+        [label "901.g, 901.d.10 Prior USI ID"]
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" field "Prior USI ID"
+            provision "Unique swap identifier (USI) assigned to the predecessor transaction that has given rise to the reported transaction due to a lifecycle event, in a one-to-one relation between transactions (e.g., in the case of a novation, when a transaction is terminated, and a new transaction is generated) or in a one-to-many relation between transactions (e.g., in clearing or if a transaction is split into several different transactions), This data element is not applicable when reporting many-to-one and many-to-many relations between transactions (e.g., in the case of a compression)."]
+    override priorUTI Max52AlphaNumericText (0..1)
+        [label "901.g, 901.d.10 Prior UTI ID"]
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" field "Prior UTI ID"
+            provision "UTI assigned to the predecessor transaction that has given rise to the reported transaction due to a lifecycle event, in a one-to-one relation between transactions (e.g., in the case of a novation, when a transaction is terminated, and a new transaction is generated) or in a one-to-many relation between transactions (e.g., in clearing or if a transaction is split into several different transactions). This data element is not applicable when reporting many-to-one and many-to-many relations between transactions (e.g., in the case of a compression)."]
+        [ruleReference PriorUTIID]
+    override uniqueTransactionIdentifier Max52AlphaNumericText (0..1)
+        [label "901.g UTI ID"]
+        [regulatoryReference SEC SBSR dataElement "901.g" field "UTI ID"
+            provision "A unique identifier assigned to all swap transactions which identifies the swap uniquely throughout its lifecycle and used for all recordkeeping and all swap data reporting pursuant to para 45.5. A UTI is comprised of the LEI of the generating entity and a unique alphanumeric code."]
+        [ruleReference UTIID]
+    override newSDRIdentifier LEIIdentifier (0..1)
+        [label "New SDR Identifier"]
+        [regulatoryReference SEC SBSR field "New SDR Identifier"
+            provision "Identifier of the new swap data repository where the swap transaction is transferred to."]
+        [ruleReference NewSDRIdentifier]
+    clearingSwapUSIs string (0..*)
+        [label "901.g Clearing Swap USI ID"]
+        [regulatoryReference SEC SBSR dataElement "901.g" field "Clearing Swap USI ID"
+            provision "The unique swap identifiers (USI) of each clearing swap that replaces the original swap that was submitted for clearing to the derivatives clearing organization, other than the USI for the swap currently being reported (as 'USI' data element below)."]
+        [ruleReference ClearingSwapUSIID]
+    clearingSwapUTIs Max52AlphaNumericText (0..*)
+        [label "901.g Clearing Swap UTI ID"]
+        [regulatoryReference SEC SBSR dataElement "901.g" field "Clearing Swap UTI ID"
+            provision "The unique transaction identifiers (UTI) of each clearing swap that replaces the original swap that was submitted for clearing to the derivatives clearing organization, other than the UTI for the swap currently being reported (as 'UTI' data element below)."]
+        [ruleReference ClearingSwapUTIID]
+    originalSwapUSI string (0..1)
+        [label "901.g Original Swap USI"]
+        [regulatoryReference SEC SBSR dataElement "901.g" field "Original Swap USI"
+            provision "The unique swap identifier (USI) of the original swap submitted for clearing to the derivatives clearing organization that is replaced by clearing swaps."]
+        [ruleReference OriginalSwapUSI]
+    postPricedSwapIndicator boolean (1..1)
+        [label "Post-priced swap indicator"]
+        [regulatoryReference SEC SBSR field "Post-priced Swap Indicator"
+            provision "Indicator of whether the swap transaction satisfies the definition of 'post-priced swap' in  43.2(a) of the Commission's regulations."]
+        [ruleReference PostPricedSwapIndicator]
+    allocationIndicator AllocationIndicatorEnum (1..1)
+        [label "902.c.7 Allocation Type"]
+        [regulatoryReference SEC SBSR dataElement "902.c.7" field "Allocation Type"
+            provision "Indicator of whether the swap transaction is intended to be allocated, will not be allocated, or is a post allocation transaction."]
+        [ruleReference AllocationType]
+    uniqueSwapIdentifier Max42AlphaNumericText (0..1)
+        [label "901.g USI ID"]
+        [regulatoryReference SEC SBSR dataElement "901.g" field "USI ID"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+        [ruleReference USIID]
+    counterparty1FinancialEntityIndicator boolean (0..1)
+        [label "16 Trade Party 1 - CFTC Financial Entity Status"]
+        [regulatoryReference SEC SBSR field "Trade Party 1 - CFTC Financial Entity Status"
+            provision "Indicator of whether Counterparty 1 is a financial entity as defined in CEA  2(h)(7)(C)."]
+        [ruleReference Counterparty1FinancialEntityIndicator]
+    counterparty2FinancialEntityIndicator boolean (1..1)
+        [label "17 Trade Party 2 - CFTC Financial Entity Status"]
+        [regulatoryReference SEC SBSR field "Trade Party 2 - CFTC Financial Entity Status"
+            provision "Indicator of whether Counterparty 2 is a financial entity as defined in CEA  2(h)(7)(C)."]
+        [ruleReference Counterparty2FinancialEntityIndicator]
+    jurisdiction JurisdictionEnum (1..1)
+        [label "Swap Reporting Jurisdiction"]
+        [regulatoryReference SEC SBSR field "Swap Reporting Jurisdiction"
+            provision "The jurisdiction(s) that is requiring the reporting of the swap transaction."]
+        [ruleReference SwapReportingJurisdiction]
+    dtccAdditionalFields DTCCAdditionalFields (0..1)
+        [ruleReference for clearingVenueIDType DTCC_ClearingVenueIDType]
+        [ruleReference for tradeParty1ClearingBrokerIDType DTCC_TradeParty1ClearingBrokerIDType]
+        [ruleReference for originalSwapSDRIDType DTCC_OriginalSwapSDRIDType]
+
+    condition DTCC_SEC_VR_ClearingVenueID: <"Clearing Venue - ID">
+        [regulatoryReference SEC SBSR dataElement "901.c.6; 901.d.6" validationRule "Transaction"
+		provision "Required if [Clearing Status] = ‘Y’"]
+        if cleared = Y then centralCounterparty exists
+
+    condition DTCC_SEC_VR_ClearingVenueIDType: <"Clearing Venue - ID Type">
+        [regulatoryReference SEC SBSR dataElement "901.c.6; 901.d.6" validationRule "Transaction"
+		provision "Required if [Clearing Venue - ID] is populated"]
+        if centralCounterparty exists
+        then dtccAdditionalFields -> clearingVenueIDType exists
+
+    condition DTCC_SEC_VR_Origin: <"Origin">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+		provision "Required if [Clearing Status] = ‘Y’"]
+        if cleared = Y then clearingAccountOrigin exists
+
+    condition DTCC_SEC_VR_TradeParty1ClearingBrokerID: <"Trade Party 1 - Clearing Broker ID">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+		provision "Required if [Clearing Status] = ‘Y’
+        Required if  [Trade Party 1 - Clearing Broker ID Type] is populated"]
+        if cleared = Y or dtccAdditionalFields -> tradeParty1ClearingBrokerIDType exists
+        then clearingMember exists
+
+    condition DTCC_SEC_VR_TradeParty1ClearingBrokerIDType: <"Trade Party 1 - Clearing Broker ID">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+        provision "Required if [Trade Party 1 - Clearing Broker ID] is populated
+        “NPID” is only accepted when [Trade Party 2 - ID Type] = “NPID”"]
+        if clearingMember exists
+        then dtccAdditionalFields -> tradeParty1ClearingBrokerIDType exists
+
+    condition DTCC_SEC_VR_ClearingSwapUSIID: <"Clearing Swap USI ID">
+        [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+    	provision "Required if ([Clearing Status] = 'Y' or ([Clearing Status] = 'I' and [NoA - Action type] = 'TERM')) and [Event type] = 'CLRG' or 'CLAL' and [Clearing Swap UTI ID] is not populated."]
+        if (cleared = Y or (cleared = I and actionType = TERM))
+                and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType
+                and clearingSwapUTIs is absent
+        then clearingSwapUSIs exists
+
+    condition DTCC_SEC_VR_ClearingSwapUTIID: <"Clearing Swap UTI ID">
+        [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+    	provision "Required if ([Clearing Status] = 'Y' or ([Clearing Status] = 'I' and [NoA - Action type] = 'TERM')) and [Event type] = 'CLRG' or 'CLAL' and [Clearing Swap USI ID] is not populated."]
+        if (cleared = Y or (cleared = I and actionType = TERM))
+                and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType
+                and clearingSwapUSIs is absent
+        then clearingSwapUTIs exists
+        else clearingSwapUTIs is absent
+
+    condition DTCC_SEC_VR_OriginalSwapUSI: <"Original Swap USI">
+        [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+        provision "Required if ([Clearing Status] = 'Y' and [NoA - Action type] = 'NEWT' and ([Event type] = 'CLRG' or = 'CLAL')) and [Original Swap UTI] is blank."]
+        if cleared = Y
+                and actionType = NEWT
+                and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType
+                and originalSwapUTI is absent
+        then originalSwapUSI exists
+        else originalSwapUSI is absent
+
+    condition DTCC_SEC_VR_OriginalSwapUTI: <"Original Swap UTI">
+        [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+        provision "Required if ([Clearing Status] = 'Y' and [NoA - Action type] = 'NEWT' and ([Event type] = 'CLRG' or = 'CLAL')) and [Original Swap USI] is blank."]
+        if cleared = Y
+                and actionType = NEWT
+                and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType
+                and originalSwapUSI is absent
+        then originalSwapUTI exists
+        else originalSwapUTI is absent
+
+    condition DTCC_SEC_VR_OriginalSwapSDRID: <"Original Swap SDR - ID">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+        provision "Required if [Clearing Status] = 'Y' and [NoA - Action Type] = 'NEWT' and ([Event Type] = 'CLRG' or = 'CLAL').
+            Required if [Original Swap SDR - ID Type] is populated.
+            For transactions where no original swap SDR identifier is available or not provided, a value of 'NOTAVAILABLE' can be used. The [Original Swap SDR - ID Type] must be 'FREEFORMATTEXT' in order for this value to be accepted."]
+        if (cleared = Y
+                    and actionType = NEWT
+                    and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType)
+                or dtccAdditionalFields -> originalSwapSDRIDType exists
+        then originalSwapSDRIdentifier exists
+        else originalSwapSDRIdentifier is absent
+
+    condition DTCC_SEC_VR_OriginalSwapSDRIDType: <"Original Swap SDR - ID Type">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+        provision "Required if [Original Swap SDR - ID is populated]. 
+        If this field is populated with 'FREEFORMATTEXT' the value of [Original Swap SDR - ID] must be 'NOTAVAILABLE'."]
+        if originalSwapSDRIdentifier exists
+        then dtccAdditionalFields -> originalSwapSDRIDType exists
+
+    condition DTCC_SEC_VR_ClearingReceiptDateTime: <"Clearing Receipt DateTime">
+        [regulatoryReference SEC SBSR dataElement "901.e.1.ii" validationRule "Transaction"
+        provision "Required if ([NoA - Action Type] = 'NEWT' and ([Event Type] = 'CLRG' or = 'CLAL')) OR ([NoA - Action Type] = 'TERM' and ([Event Type] = 'CLRG' or = 'CLAL'))."]
+        if (actionType = NEWT
+                    and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType)
+                or (actionType = TERM
+                    and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType)
+        then clearingReceiptTimestamp exists
+
+    condition DTCC_SEC_VR_ClearingExceptionType: <"Clearing Exception Type">
+        [regulatoryReference SEC SBSR dataElement "901.d.7" validationRule "Transaction"
+      provision "Optional if [Clearing Status] = ‘N’"]
+        [regulatoryReference SEC SBSR dataElement "901.d.7" validationRule "Transaction"
+        provision "Not modelled.The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_SEC_VR_ClearingExceptionTypeParty2: <"Clearing Exception Type - Party 2">
+        [regulatoryReference SEC SBSR dataElement "901.d.7" validationRule "Transaction"
+      provision "Optional if [Clearing Status] = ‘N’"]
+        [regulatoryReference SEC SBSR dataElement "901.d.7" validationRule "Transaction"
+        provision "Not modelled.The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_SEC_VR_TradeParty1IDType: <"Trade Party 1 - ID">
+        [regulatoryReference SEC SBSR dataElement "901.d.1" validationRule "Transaction"
+      provision "NPID is only accepted when [CDE - Platform Identifier] is not 'XXXX', 'XOFF', or 'BILT' and [Clearing Status] = I."]
+        if dtccAdditionalFields -> tradeParty1IDType = "NPID"
+        then ["XXXX", "XOFF", "BILT"] any <> platformIdentifier and cleared = I
+
+    condition DTCC_SEC_VR_TradeParty2ID: <"Trade Party 2 - ID">
+        [regulatoryReference SEC SBSR dataElement "901.d.1" validationRule "Transaction"
+        provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade.
+        - However, if there is more than one live trade (for the same UTI/USI)  where [Trade Party 1 - ID] and [Trade Party 1 - ID Type] are the same, the submission will NACK."]
+        [regulatoryReference SEC SBSR dataElement "901.d.1" validationRule "Transaction"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_SEC_VR_TradeParty2IDType: <"Trade Party 2 - ID Type">
+        [regulatoryReference SEC SBSR dataElement "901.d.1" validationRule "Transaction"
+        provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade."]
+        [regulatoryReference SEC SBSR dataElement "901.d.1" validationRule "Transaction"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_SEC_VR_TradeParty1CFTCFinancialEntityStatus:
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "Required if [Clearing Status] = ‘N’ or ‘I’"]
+        if cleared = N or cleared = I
+        then counterparty1FinancialEntityIndicator exists
+
+    condition DTCC_SEC_VR_BuyerPayer1: <"Buyer / Payer 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "Required if [Seller / Payer 2] is populated.  
+        Required if ([Payment 1 - Payer] AND [Payment 1 - Receiver]) are not populated, else {blank}.
+        When populated, the value shall match the value in [Trade Party 1 - ID] or [Trade Party 2 - ID]."]
+        if sellerIdentifier exists
+                or (leg1 -> payerIdentifier is absent and leg1 -> receiverIdentifier is absent)
+        then (buyerIdentifier exists and (buyerIdentifier = counterparty1 or buyerIdentifier = counterparty2))
+        else buyerIdentifier is absent
+
+    condition DTCC_SEC_VR_SellerPayer2: <"Seller / Payer 2">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "Required if [Buyer / Payer 1] is populated.
+        Required if ([Payment 1 - Payer] AND [Payment 1 - Receiver]) are not populated, else {blank}.
+        When populated, the value shall match the value in [Trade Party 1 - ID] or [Trade Party 2 - ID] "]
+        if buyerIdentifier exists
+                or (leg1 -> payerIdentifier is absent and leg1 -> receiverIdentifier is absent)
+        then sellerIdentifier exists
+                and (sellerIdentifier = counterparty1 or sellerIdentifier = counterparty2)
+        else sellerIdentifier is absent
+
+    condition DTCC_SEC_VR_Payment1Payer: <"Payment 1 - Payer">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "Required if [Payment 1 - Receiver] is populated.
+        Required if ([Buyer / Payer 1] AND [Seller / Payer 2]) are not populated, else {blank},
+        When populated, the value shall match the value in [Trade Party 1 - ID] or [Trade Party 2 - ID] "]
+        if leg1 -> receiverIdentifier exists
+                or (buyerIdentifier is absent and sellerIdentifier is absent)
+        then leg1 -> payerIdentifier exists
+                and (leg1 -> payerIdentifier = counterparty1 or leg1 -> payerIdentifier = counterparty2)
+        else leg1 -> payerIdentifier is absent
+
+    condition DTCC_SEC_VR_Payment2Payer: <"Payment 2 - Payer">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "When populated, the value shall match the value in [Trade Party 1 - ID] or [Trade Party 2 - ID]."]
+        if leg2 -> payerIdentifier exists
+        then (leg2 -> payerIdentifier = counterparty1 or leg2 -> payerIdentifier = counterparty2)
+
+    condition DTCC_SEC_VR_Payment1Receiver: <"Payment 1 - Receiver">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "Required if [Payment 1 - Payer] is populated.
+        Required if ([Buyer / Payer 1] AND  [Seller / Payer 2]) are not populated, else {blank},
+        When populated, the value shall match the value in [Trade Party 1 - ID] or [Trade Party 2 - ID] "]
+        if leg1 -> payerIdentifier exists
+                or (buyerIdentifier is absent and sellerIdentifier is absent)
+        then leg1 -> receiverIdentifier exists
+                and (leg1 -> receiverIdentifier = counterparty1 or leg1 -> receiverIdentifier = counterparty2)
+        else leg1 -> receiverIdentifier is absent
+
+    condition DTCC_SEC_VR_CDEReceiverIdentifierLeg2: <"CDE - Receiver identifier-Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "When populated, the value shall match the value in [Trade Party 1 - ID] or [Trade Party 2 - ID]."]
+        if leg2 -> receiverIdentifier exists
+        then (leg2 -> receiverIdentifier = counterparty1 or leg2 -> receiverIdentifier = counterparty2)
+
+    condition DTCC_SEC_VR_EventType: <"Event Type">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+        provision "Must be a valid Action type (Inbound field = [NoA - Action Type]) and [Event type] Combination. See Action type tab."]
+        if actionType = ActionTypeEnum -> NEWT
+        then [EventTypeEnum -> TRAD, EventTypeEnum -> NOVA, EventTypeEnum -> COMP, EventTypeEnum -> EXER, EventTypeEnum -> CORP] any = eventType
+        else if actionType = ActionTypeEnum -> MODI
+        then [EventTypeEnum -> TRAD, EventTypeEnum -> NOVA, EventTypeEnum -> COMP, EventTypeEnum -> CREV, EventTypeEnum -> CORP, EventTypeEnum -> UPDT] any = eventType
+        else if actionType = ActionTypeEnum -> TERM
+        then [EventTypeEnum -> NOVA, EventTypeEnum -> COMP, EventTypeEnum -> ETRM, EventTypeEnum -> CLRG, EventTypeEnum -> EXER, EventTypeEnum -> CLAL, EventTypeEnum -> CREV, EventTypeEnum -> CORP] any = eventType
+        else [ActionTypeEnum -> CORR, ActionTypeEnum -> EROR, ActionTypeEnum -> REVI, ActionTypeEnum -> VALU, ActionTypeEnum -> MARU, ActionTypeEnum -> PRTO] any = actionType
+            and eventType is absent
+
+    condition DTCC_SEC_VR_AmendmentIndicator: <"Amendment indicator">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+        provision "Required if [NoA - Action Type] = 'MODI', else {blank}."]
+        if actionType = MODI
+        then amendmentIndicator exists
+        else amendmentIndicator is absent
+
+    condition DTCC_SEC_VR_EventIdentifier: <"Event identifier">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "Required if [Event type] = 'COMP' or 'CREV', else {blank}"]
+        if [EventTypeEnum -> COMP, EventTypeEnum -> CREV] any = eventType
+        then eventIdentifier exists
+        else eventIdentifier is absent
+
+    condition DTCC_SEC_VR_LatestExecutionDateTime: <"Latest Execution DateTime">
+        [regulatoryReference SEC SBSR dataElement "901.e.1.i; 901.c.2" validationRule "Transaction"
+      provision "The value shall be equal to or later than the value in [Original Execution Timestamp]"]
+        eventTimestamp = executionTimestamp or eventTimestamp > executionTimestamp
+
+    condition DTCC_SEC_VR_NotionalAmount1: <"Notional Amount 1">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "For FX (on NEWT, MODI, CORR, REVI), if UPI.[Instrument type] = ‘Option’, the value shall match the value in [CDE - Call amount-Leg 1] or [CDE - Put amount-Leg 1].
+        Required when [Notional Currency 1] is populated."]
+        if leg1 -> notionalCurrency exists
+                and (nonReportable -> postUpiData -> Header -> AssetClass = Foreign_Exchange
+                    or dtccAdditionalFields -> primaryAssetClass = ForeignExchange)
+                and [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> REVI] any = actionType
+                and (nonReportable -> postUpiData -> Header -> InstrumentType = Option
+                    or nonReportable -> instrumentType = Option)
+        then leg1 -> notionalAmount exists
+                and (leg1 -> notionalAmount = callAmount or leg1 -> notionalAmount = putAmount)
+
+    condition DTCC_SEC_VR_NotionalAmount2: <"Notional Amount 2">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "Required when [Notional Currency 2] is populated"]
+        if leg2 -> notionalCurrency exists
+        then leg2 -> notionalAmount exists
+
+    condition DTCC_SEC_VR_NotionalCurrency1: <"Notional Currency 1">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "Required for FX (on NEWT, MODI, CORR, REVI), if UPI.[Instrument type] = ‘Option’, the value shall match the value in [CDE - Call currency-Leg 1] or [CDE - Put currency-Leg 1].
+        Required when ([Notional Amount 1] is populated and value <> 99999999999999999999.99999) or ([CDE - Notional amount in effect on associated effective date-Leg 1] is populated."]
+        if (leg1 -> notionalAmount exists and leg1 -> notionalAmount <> 99999999999999999999.99999)
+                or (leg1 -> notionalAmountSchedule -> value exists)
+                    and (nonReportable -> postUpiData -> Header -> AssetClass = Foreign_Exchange
+                        or dtccAdditionalFields -> primaryAssetClass = ForeignExchange)
+                    and [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> REVI] any = actionType
+                    and (nonReportable -> postUpiData -> Header -> InstrumentType = Option
+                        or nonReportable -> instrumentType = Option)
+        then leg1 -> notionalCurrency exists
+                and (leg1 -> notionalCurrency = callCurrency
+                    or leg1 -> notionalCurrency = putCurrency)
+
+    condition DTCC_SEC_VR_NotionalCurrency2: <"Notional Currency 2">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "Required when ([Notional Amount 2] is populated and value <> 99999999999999999999.99999) or [CDE - Notional amount in effect on associated effective date-Leg 2] is populated."]
+        if (leg2 -> notionalAmount exists and leg2 -> notionalAmount <> 99999999999999999999.99999)
+                or (leg2 -> notionalAmountSchedule -> value exists)
+        then leg2 -> notionalCurrency exists
+
+    condition DTCC_SEC_VR_CDEEffectiveDateOfTheNotionalAmountLeg1: <"CDE - Effective Date of the Notional Amount - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "Required if [CDE - Notional amount in effect on associated effective date-Leg 1] is populated, else {blank}."]
+        if leg1 -> notionalAmountSchedule -> value exists
+        then leg1 -> notionalAmountSchedule -> effectiveDate exists
+        else leg1 -> notionalAmountSchedule -> effectiveDate is absent
+
+    condition DTCC_SEC_VR_CDEEffectiveDateOfTheNotionalAmountLeg2: <"CDE - Effective Date of the Notional Amount - Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "Required if [CDE - Notional amount in effect on associated effective date-Leg 2] is populated, else {blank}."]
+        if leg2 -> notionalAmountSchedule -> value exists
+        then leg2 -> notionalAmountSchedule -> effectiveDate exists
+        else leg2 -> notionalAmountSchedule -> effectiveDate is absent
+
+    condition DTCC_SEC_VR_CDEEndDateOfTheNotionalAmountLeg1: <"CDE - End Date of the Notional Amount - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "If populated with one or more values, the number of values must equal the number of values populated in [CDE - Notional amount in effect on associated effective date-Leg 1]"]
+        common.quantity.NotionalScheduleEndDateCountDTCC_Validation(
+                leg1 -> notionalAmountSchedule -> value,
+                leg1 -> notionalAmountSchedule -> endDate
+            )
+
+    condition DTCC_SEC_VR_CDEEndDateOfTheNotionalAmountLeg2: <"CDE - End Date of the Notional Amount - Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.c.4" validationRule "Transaction"
+        provision "If populated with one or more values, the number of values must equal the number of values populated in [CDE - Notional amount in effect on associated effective date-Leg 2]"]
+        common.quantity.NotionalScheduleEndDateCountDTCC_Validation(
+                leg2 -> notionalAmountSchedule -> value,
+                leg2 -> notionalAmountSchedule -> endDate
+            )
+
+    condition DTCC_SEC_VR_Leg1TotalNotionalQuantity: <"Leg 1 - Total Notional Quantity">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "”99999999999999999999.99999” is accepted when the value is not available. 25 numerical characters including decimals. If “99999999999999999999.99999” is submitted for PPD, no capping, scaling or rounding rules will be applied. The value disseminated will be “99999999999999999999.99999”."]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_SEC_VR_Leg2TotalNotionalQuantity: <"Leg 2 - Total Notional Quantity">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "”99999999999999999999.99999” is accepted when the value is not available. 25 numerical characters including decimals. If “99999999999999999999.99999” is submitted for PPD, no capping, scaling or rounding rules will be applied. The value disseminated will be “99999999999999999999.99999”."]
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_SEC_VR_CDEPackageIdentifier: <"CDE - Package Identifier">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+                provision "Required if [Package indicator] = ‘True’, else {blank}"]
+        if packageIndicator = True
+        then packageIdentifier exists
+        else packageIdentifier is absent
+
+    condition DTCC_SEC_VR_CDEPackageTransactionPrice: <"CDE - Package Transaction Price">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+                provision "Required if [Package indicator] = ‘True’ and [CDE - Package transaction spread] is not populated, else {blank}."]
+        if (packageIndicator = True and packageTransactionSpread is absent)
+        then packageTransactionPrice exists
+        else packageTransactionPrice is absent
+
+    condition DTCC_SEC_VR_CDEPackageTransactionPriceCurrency: <"CDE - Package Transaction Price Currency">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+      provision "Required if [CDE - Package transaction price notation] = ‘1’, else {blank}."]
+        if packageTransactionPriceNotation = Monetary
+        then packageTransactionPriceCurrency exists
+        else packageTransactionPriceCurrency is absent
+
+    condition DTCC_SEC_VR_CDEPackageTransactionPriceNotation: <"CDE - Package Transaction Price Notation">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+      provision "Required if [CDE - Package transaction price] is populated, else {blank}."]
+        if packageTransactionPrice exists
+        then packageTransactionPriceNotation exists
+        else packageTransactionPriceNotation is absent
+
+    condition DTCC_SEC_VR_CDEPackageTransactionSpread: <"CDE - Package Transaction Spread">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+      provision "Required if [Package indicator] = ‘True’ and [CDE - Package transaction price] is not populated, else {blank}."]
+        if (packageIndicator = True and packageTransactionPrice is absent)
+        then packageTransactionSpread exists
+        else packageTransactionSpread is absent
+
+    condition DTCC_SEC_VR_CDEPackageTransactionSpreadCurrency: <"CDE - Package Transaction Spread Currency">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+      provision "Required if [CDE - Package transaction spread notation] = '1', else {blank}."]
+        if packageTransactionSpreadNotation = Monetary
+        then packageTransactionSpreadCurrency exists
+        else packageTransactionSpreadCurrency is absent
+
+    condition DTCC_SEC_VR_CDEPackageTransactionSpreadNotation: <"CDE - Package Transaction Spread Notation">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+      provision "Required if  [CDE - Package transaction spread] is populated, else {blank}."]
+        if packageTransactionSpread exists
+        then packageTransactionSpreadNotation exists
+        else packageTransactionSpreadNotation is absent
+
+    condition DTCC_SEC_VR_CDEFixedRateDayCountConventionLeg1: <"CDE - Fixed Rate Day Count Convention - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+      provision "Required if [CDE - Fixed rate payment frequency period-Leg 1] is populated, else {blank}."]
+        if leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriod exists
+        then leg1 -> periodicPayment -> fixedRateDayCountConvention exists
+
+    condition DTCC_SEC_VR_CDEFloatingRateDayCountConventionLeg1: <"CDE - Floating Rate Day Count Convention - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+      provision "Required if [CDE - Floating rate payment frequency period-Leg 1] is populated, else {blank}."]
+        if leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriod exists
+        then leg1 -> periodicPayment -> floatingRateDayCountConvention exists
+
+    condition DTCC_SEC_VR_FixingDateLeg1: <"Fixing Date - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+      provision "Required for FX if (UPI.[Instrument type] = ‘Forward’ or ‘Option’) and UPI.[Delivery type] = ‘Cash’, else {blank}."]
+        if (nonReportable -> postUpiData -> Header -> AssetClass = Foreign_Exchange
+                or dtccAdditionalFields -> primaryAssetClass = ForeignExchange)
+        then (if ([AnnaDsbInstrumentTypeEnum -> Forward, AnnaDsbInstrumentTypeEnum -> Option] any = nonReportable -> postUpiData -> Header -> InstrumentType
+                        or [AnnaDsbInstrumentTypeEnum -> Forward, AnnaDsbInstrumentTypeEnum -> Option] any = nonReportable -> instrumentType)
+                    and (nonReportable -> postUpiData -> Attributes -> DeliveryType = CASH
+                        or dtccAdditionalFields -> settlementType = "Cash")
+            then leg1 -> fixingDate exists
+            else leg1 -> fixingDate is absent)
+
+    condition DTCC_SEC_VR_ResetFrequencyPeriod1: <"Reset Frequency Period 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+      provision "Required if UPI.[Instrument type] = ‘Swap’ and UPI.[Underlying Asset Type] ≠ (‘Fixed - Fixed’ or {blank}) and [Leg 2 - Reset Frequency Period] is {blank}, else {blank}. 
+      When populated with ‘EXPI', [Reset Frequency Period Multiplier 1] must be ‘1’"]
+        if ((nonReportable -> postUpiData -> Header -> InstrumentType = Swap or nonReportable -> instrumentType = Swap)
+                and (nonReportable -> postUpiData -> Derived -> UnderlyingAssetType exists and nonReportable -> postUpiData -> Derived -> UnderlyingAssetType <> Fixed_Fixed or nonReportable -> underlyingAssetType <> "Fixed_Fixed"))
+                and (leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod is absent)
+        then leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod exists
+                and (if leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod = EXPI
+                    then leg1 -> periodicPayment -> floatingRateResetFrequencyMultiplier = 1)
+        else leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod is absent
+
+    condition DTCC_SEC_VR_Leg2ResetFrequencyPeriod: <"Leg 2 - Reset Frequency Period">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+      provision "Required if UPI.[Instrument type] = ‘Swap’ and UPI.[Underlying Asset Type] ≠ (‘Fixed - Fixed’ or {blank}) and [Reset Frequency Period 1] is {blank}, else {blank}. When populated with ‘EXPI', [Leg 2 - Reset Frequency Period Multiplier] must be ‘1’"]
+        if ((nonReportable -> postUpiData -> Header -> InstrumentType = Swap or nonReportable -> instrumentType = Swap)
+                and (nonReportable -> postUpiData -> Derived -> UnderlyingAssetType exists and nonReportable -> postUpiData -> Derived -> UnderlyingAssetType <> Fixed_Fixed or nonReportable -> underlyingAssetType <> "Fixed_Fixed"))
+                and (leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod is absent)
+        then leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod exists
+                and (if leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod = EXPI
+                    then leg2 -> periodicPayment -> floatingRateResetFrequencyMultiplier = 1)
+        else leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod is absent
+
+    condition DTCC_SEC_VR_ResetFrequencyPeriodMultiplier1: <"Reset Frequency Period Multiplier 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+        provision "Required if  [Reset Frequency Period 1] ≠ ‘ADHO’ and [Reset Frequency Period 1] is not blank, else {blank}."]
+        if leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod exists
+                and leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod <> ADHO
+        then leg1 -> periodicPayment -> floatingRateResetFrequencyMultiplier exists
+
+    condition DTCC_SEC_VR_Leg2ResetFrequencyPeriodMultiplier: <"Leg 2 - Reset Frequency Period Multiplier">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+        provision "Required if  [Leg 2 - Reset Frequency Period] ≠ ‘ADHO’ AND [Leg 2 - Reset Frequency Period] is not blank, else {blank}."]
+        if leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod exists
+                and leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod <> ADHO
+        then leg2 -> periodicPayment -> floatingRateResetFrequencyMultiplier exists
+
+    condition DTCC_SEC_VR_CDEOtherPaymentType: <"CDE - Other Payment Type">
+        [regulatoryReference SEC SBSR dataElement "901.d.3 (901.c.3?)" validationRule "Transaction"
+        provision "At least one is required: ([Leg 1 - Fixed Rate Initial] or [Leg 1 - Spread Amount] or at least one value of [CDE - Other payment type] = ‘UFRO’)."]
+        if leg1 -> fixedRate is absent and leg1 -> spread is absent
+        then otherPayment -> paymentType any = UFRO
+
+    condition DTCC_SEC_VR_CDEOtherPaymentAmount: <"CDE - Other Payment Amount">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [CDE - Other payment type] is populated, else {blank}.
+            If populated with multiple values, the number of values must equal the number of values populated in [CDE - Other payment type] "]
+        if otherPayment -> paymentType exists
+        then otherPayment -> amount exists
+                and (otherPayment -> amount count = otherPayment -> paymentType count)
+        else otherPayment -> amount is absent
+
+    condition DTCC_SEC_VR_CDEOtherPaymentCurrency: <"CDE - Other Payment Currency">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [CDE - Other payment amount] is populated, else {blank}.
+            If populated with multiple values, the number of values must equal the number of values populated in [CDE - Other payment amount]"]
+        if otherPayment -> amount exists
+        then otherPayment -> currency exists
+                and (otherPayment -> currency count = otherPayment -> amount count)
+        else otherPayment -> currency is absent
+
+    condition DTCC_SEC_VR_CDEOtherPaymentDate: <"CDE - Other Payment Date">
+        [regulatoryReference SEC SBSR dataElement "901.c.1.iv" validationRule "Transaction"
+            provision "Required if [CDE - Other payment amount] is populated, else {blank}.
+            If populated with multiple values, the number of values must equal the number of values populated in [CDE - Other payment amount]"]
+        if otherPayment -> amount exists
+        then otherPayment -> date exists
+                and (otherPayment -> date count = otherPayment -> amount count)
+        else otherPayment -> date is absent
+
+    condition DTCC_SEC_VR_CDEOtherPaymentPayer: <"CDE - Other Payment Payer">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+            provision "Required if [CDE - Other payment amount] is populated, else {blank}.
+            If populated with multiple values, the number of values must equal the number of values populated in [CDE - Other payment amount]  AND [Other payment payer ID type]."]
+        if otherPayment -> amount exists
+        then otherPayment -> payer exists
+                and (otherPayment -> payer count = otherPayment -> amount count and otherPayment -> payer count = dtccAdditionalFields -> otherPaymentPayerIDType count)
+        else otherPayment -> payer is absent
+
+    condition DTCC_SEC_VR_CDEOtherPaymentReceiver: <"CDE - Other Payment Receiver">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+            provision "Required if [CDE - Other payment amount] is populated, else {blank}.
+            If populated with multiple values, the number of values must equal the number of values populated in [CDE - Other payment amount] AND [Other payment receiver ID type]."]
+        if otherPayment -> amount exists
+        then otherPayment -> receiver exists
+                and (otherPayment -> receiver count = otherPayment -> amount count and otherPayment -> receiver count = dtccAdditionalFields -> otherPaymentReceiverIDType count)
+        else otherPayment -> receiver is absent
+
+    condition DTCC_SEC_VR_CDEFixedRatePaymentFrequencyPeriodLeg1: <"CDE - Fixed Rate Payment Frequency Period - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "When populated with ‘EXPI', [CDE - Fixed rate payment frequency period multiplier-Leg 1] must be ‘1’"]
+        if leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriod = EXPI
+        then leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier = 1
+
+    condition DTCC_SEC_VR_CDEFixedRatePaymentFrequencyPeriodLeg2: <"CDE - Fixed Rate Payment Frequency Period - Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "When populated with ‘EXPI', [CDE - Fixed rate payment frequency period multiplier-Leg 2] must be ‘1’"]
+        if leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriod = EXPI
+        then leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier = 1
+
+    condition DTCC_SEC_VR_CDEFloatingRatePaymentFrequencyPeriodLeg1: <"CDE - Floating Rate Payment Frequency Period - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "When populated with ‘EXPI', [CDE - Floating rate payment frequency period multiplier-Leg 1] must be ‘1’"]
+        if leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriod = EXPI
+        then leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier = 1
+
+    condition DTCC_SEC_VR_CDEFloatingRatePaymentFrequencyPeriodLeg2: <"CDE - Floating Rate Payment Frequency Period - Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "When populated with ‘EXPI', [CDE - Floating rate payment frequency period multiplier-Leg 2] must be ‘1’"]
+        if leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriod = EXPI
+        then leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier = 1
+
+    condition DTCC_SEC_VR_CDEFixedRatePaymentFrequencyPeriodMultiplierLeg1: <"CDE - Fixed Rate Payment Frequency Period Multiplier - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "Required if [CDE - Fixed rate payment frequency period-Leg 1] ≠ ‘ADHO’ and [CDE - Fixed rate payment frequency period-Leg 1] is not blank, else {blank}."]
+        if leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriod exists
+                and leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriod <> FrequencyPeriodEnum -> ADHO
+        then leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier exists
+        else leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier is absent
+
+    condition DTCC_SEC_VR_CDEFixedRatePaymentFrequencyPeriodMultiplierLeg2: <"CDE - Fixed Rate Payment Frequency Period Multiplier - Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "Required if [CDE - Fixed rate payment frequency period-Leg 2] ≠ ‘ADHO’ and [CDE - Fixed rate payment frequency period-Leg 2] is not blank, else {blank}."]
+        if leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriod exists
+                and leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriod <> FrequencyPeriodEnum -> ADHO
+        then leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier exists
+        else leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier is absent
+
+    condition DTCC_SEC_VR_CDEFloatingRatePaymentFrequencyPeriodMultiplierLeg1: <"CDE - Floating Rate Payment Frequency Period Multiplier - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "Required if [CDE - Floating rate payment frequency period-Leg 1] ≠ ‘ADHO’ and [CDE - Floating rate payment frequency period-Leg 1] is not blank, else {blank}."]
+        if leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriod exists
+                and leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriod <> FrequencyPeriodEnum -> ADHO
+        then leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier exists
+        else leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier is absent
+
+    condition DTCC_SEC_VR_CDEFloatingRatePaymentFrequencyPeriodMultiplierLeg2: <"CDE - Floating Rate Payment Frequency Period Multiplier - Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "Required if [CDE - Floating rate payment frequency period-Leg 2] ≠ ‘ADHO’ and [CDE - Floating rate payment frequency period-Leg 2] is not blank, else {blank}."]
+        if leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriod exists
+                and leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriod <> FrequencyPeriodEnum -> ADHO
+        then leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier exists
+        else leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier is absent
+
+    condition DTCC_SEC_VR_Leg1FixedRateInitial: <"Leg 1 - Fixed Rate Initial">
+        [regulatoryReference SEC SBSR dataElement "901.d.3" validationRule "Transaction"
+            provision "CR: Required if [Leg 1 - Spread Amount] is not populated and [CDE - Other payment type] ≠ ‘UFRO’, and [Post-priced swap indicator] = ‘False’, and UPI.[Instrument type] ≠ ‘Option’, else {blank}. IR - Required if [Leg 1 - Spread Amount] is not populated and [Post-priced swap indicator] = ‘False’, and UPI.[Instrument type] ≠ ‘Option’, else {blank}."]
+        if dtccAdditionalFields -> primaryAssetClass = Credit
+                or nonReportable -> postUpiData -> Header -> AssetClass = Credit
+        then (if leg1 -> spread is absent
+                    and otherPayment -> paymentType any <> UFRO
+                    and postPricedSwapIndicator = False
+                    and nonReportable -> instrumentType <> Option
+            then leg1 -> fixedRate exists
+            else leg1 -> fixedRate is absent)
+        else if dtccAdditionalFields -> primaryAssetClass = InterestRate
+                or nonReportable -> postUpiData -> Header -> AssetClass = Rates
+        then (if leg1 -> spread is absent
+                    and postPricedSwapIndicator = False
+                    and nonReportable -> instrumentType <> Option
+            then leg1 -> fixedRate exists
+            else leg1 -> fixedRate is absent)
+
+    condition DTCC_SEC_VR_Price1Price: <"Price 1 - Price">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "EQ - Required if [Leg 1 - Spread Amount] is not populated and [Post-priced swap indicator] = ‘False’, and UPI.[Instrument type] ≠ ‘Option’, else {blank}."]
+        if dtccAdditionalFields -> primaryAssetClass = Equity
+                or nonReportable -> postUpiData -> Header -> AssetClass = Equity
+        then (if leg1 -> spread is absent
+                    and postPricedSwapIndicator = False
+                    and nonReportable -> instrumentType <> Option
+            then leg1 -> fixedRate exists
+            else leg1 -> fixedRate is absent)
+
+    condition DTCC_SEC_VR_CDEPriceCurrency: <"CDE - Price currency">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [CDE - Price notation] = ‘1’, else {blank}."]
+        if priceNotation = Monetary
+        then priceCurrency exists
+        else priceCurrency is absent
+
+    condition DTCC_SEC_VR_CDEPriceNotation: <"CDE - Price Notation">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [Price 1 - Price] is populated, else {blank}."]
+        if priceCurrency exists
+        then priceNotation exists
+        else priceNotation is absent
+
+    condition DTCC_SEC_VR_Price1Units: <"Price 1 - Units">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [Price 1 - Price] is populated, else {blank}."]
+        if price exists
+        then priceUnitOfMeasure exists
+        else priceUnitOfMeasure is absent
+
+    condition DTCC_SEC_VR_Leg1SpreadAmount: <"Leg 1 - Spread Amount">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+      provision "CR - Required if [Leg 1 - Fixed Rate Initial] is not populated and [CDE - Other payment type] ≠ ‘UFRO’, and [Post-priced swap indicator] = ‘False’, and UPI.[Instrument type] ≠ ‘Option’, else {blank} 
+        IR- Required if [Leg 1 - Fixed Rate Initial] is not populated and [Post-priced swap indicator] = ‘False’, and UPI.[Instrument type] ≠ ‘Option’ and [Leg 2 - Spread Amount] is not populated, else {blank}
+        EQ - Required if [Price 1 - Price] is not populated, and [Post-priced swap indicator] = ‘False’, and UPI.[Instrument type] ≠ ‘Option’, else {blank}."]
+        if dtccAdditionalFields -> primaryAssetClass = Credit
+                or nonReportable -> postUpiData -> Header -> AssetClass = Credit
+        then (if leg1 -> fixedRate is absent
+                    and otherPayment -> paymentType any <> UFRO
+                    and postPricedSwapIndicator = False
+                    and nonReportable -> instrumentType <> Option
+            then leg1 -> spread exists
+            else leg1 -> spread is absent)
+        else if dtccAdditionalFields -> primaryAssetClass = InterestRate
+                or nonReportable -> postUpiData -> Header -> AssetClass = Rates
+        then (if leg1 -> fixedRate is absent
+                    and postPricedSwapIndicator = False
+                    and nonReportable -> instrumentType <> Option
+                    and leg2 -> spread is absent
+            then leg1 -> spread exists
+            else leg1 -> spread is absent)
+        else if dtccAdditionalFields -> primaryAssetClass = Equity
+                or nonReportable -> postUpiData -> Header -> AssetClass = Equity
+        then (if price is absent
+                    and postPricedSwapIndicator = False
+                    and nonReportable -> instrumentType <> Option
+            then leg1 -> spread exists
+            else leg1 -> spread is absent)
+
+    condition DTCC_SEC_VR_Leg2SpreadAmount: <"Leg 2 - Spread Amount">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+      provision "IR- Required if [Leg 1 - Fixed Rate Initial] is not populated and [Post-priced swap indicator] = ‘False’, and UPI.[Instrument type] ≠ ‘Option’, and [Leg 1 - Spread Amount] is not populated, else {blank}."]
+        if dtccAdditionalFields -> primaryAssetClass = InterestRate
+                or nonReportable -> postUpiData -> Header -> AssetClass = Rates
+        then (if leg1 -> fixedRate is absent
+                    and postPricedSwapIndicator = False
+                    and nonReportable -> instrumentType <> Option
+                    and leg1 -> spread is absent
+            then leg2 -> spread exists
+            else leg2 -> spread is absent)
+
+    condition DTCC_SEC_VR_Leg1SpreadCurrency: <"Leg 1 - Spread Currency">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+                  provision "Required if [CDE - Spread notation-Leg 1] = ‘1’, else {blank}."]
+        if leg1 -> spreadNotation = Monetary
+        then leg1 -> spreadCurrency exists
+        else leg1 -> spreadCurrency is absent
+
+    condition DTCC_SEC_VR_Leg2SpreadCurrency: <"Leg 2 - Spread Currency">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+                  provision "Required if [CDE - Spread notation-Leg 2] = ‘1’, else {blank}."]
+        if leg2 -> spreadNotation = Monetary
+        then leg2 -> spreadCurrency exists
+        else leg2 -> spreadCurrency is absent
+
+    condition DTCC_SEC_VR_CDESpreadNotationLeg1: <"CDE - Spread Notation - Leg 1">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+                  provision "Required if [Leg 1 - Spread Amount] is populated, else {blank}."]
+        if leg1 -> spread exists
+        then leg1 -> spreadNotation exists
+        else leg1 -> spreadNotation is absent
+
+    condition DTCC_SEC_VR_CDESpreadNotationLeg2: <"CDE - Spread Notation - Leg 2">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+                  provision "Required if [Leg 2 - Spread Amount] is populated, else {blank}."]
+        if leg2 -> spread exists
+        then leg2 -> spreadNotation exists
+        else leg2 -> spreadNotation is absent
+
+    condition DTCC_SEC_VR_StrikePrice: <"Strike Price">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [Post-priced swap indicator] = ‘False’ and UPI.[Instrument type] = ‘Option’, else {blank}."]
+        if postPricedSwapIndicator = False
+                and (nonReportable -> instrumentType = Option
+                    or nonReportable -> postUpiData -> Header -> InstrumentType = Option)
+        then strikePrice exists
+        else strikePrice is absent
+
+    condition DTCC_SEC_VR_StrikePriceCurrency: <"Strike Price - Currency">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [CDE - Strike price notation] = ‘1’, else {blank}."]
+        if strikePriceNotation = Monetary
+        then strikePriceCurrency exists
+        else strikePriceCurrency is absent
+
+    condition DTCC_SEC_VR_StrikePriceNotation: <"CDE - Strike Price Notation">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [Strike price] is populated, else {blank}."]
+        if strikePrice exists
+        then strikePriceNotation exists
+        else strikePriceNotation is absent
+
+    condition DTCC_SEC_VR_PremiumAmount: <"Premium Amount">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if UPI.[Instrument type] = ‘Option’, else {blank}."]
+        if nonReportable -> instrumentType = Option
+                or nonReportable -> postUpiData -> Header -> InstrumentType = Option
+        then optionPremiumAmount exists
+        else optionPremiumAmount is absent
+
+    condition DTCC_SEC_VR_PremiumCurrency: <"Premium Currency">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [Premium Amount] is greater than 0, else {blank}."]
+        if optionPremiumAmount > 0
+        then optionPremiumCurrency exists
+        else optionPremiumCurrency is absent
+
+    condition DTCC_SEC_VR_PremiumPaymentDateUnadjusted: <"Premium Payment Date Unadjusted">
+        [regulatoryReference SEC SBSR dataElement "901.c.3" validationRule "Transaction"
+            provision "Required if [Premium Amount] is greater than 0, else {blank}."]
+        if optionPremiumAmount > 0
+        then optionPremiumPaymentDate exists
+        else optionPremiumPaymentDate is absent
+
+    condition DTCC_SEC_VR_CDEFirstExerciseDate: <"CDE - First Exercise Date">
+        [regulatoryReference SEC SBSR dataElement "901.c.1.iii" validationRule "Transaction"
+            provision "Required if UPI.[Instrument type] = ‘Option’, else {blank}."]
+        if nonReportable -> instrumentType = Option
+                or nonReportable -> postUpiData -> Header -> InstrumentType = Option
+        then firstExerciseDate exists
+        else firstExerciseDate is absent
+
+    condition DTCC_SEC_VR_AttachmentPoint: <"Attachment Point">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+            provision "Required if UPI.[Underlying Asset Type] = ‘Index tranche’, else {blank};"]
+        if nonReportable -> postUpiData -> Derived -> UnderlyingAssetType = Index_Tranche
+                or nonReportable -> underlyingAssetType = "Index_Tranche"
+        then (cdSIndexAttachmentPoint exists and cdSIndexAttachmentPoint < cdSIndexDetachmentPoint)
+        else cdSIndexAttachmentPoint is absent
+
+    condition DTCC_SEC_VR_ExhaustionPoint: <"Exhaustion Point">
+        [regulatoryReference SEC SBSR dataElement "901.d.5" validationRule "Transaction"
+            provision "Required if UPI.[Underlying Asset Type] = ‘Index tranche’, else {blank};"]
+        if nonReportable -> postUpiData -> Derived -> UnderlyingAssetType = Index_Tranche
+                or nonReportable -> underlyingAssetType = "Index_Tranche"
+        then (cdSIndexDetachmentPoint exists and cdSIndexDetachmentPoint > cdSIndexAttachmentPoint)
+        else cdSIndexDetachmentPoint is absent
+
+    condition DTCC_SEC_VR_IndexFactor: <"Index Factor">
+        [regulatoryReference SEC SBSR dataElement "901.c.1" validationRule "Transaction"
+            provision "Required if UPI.[Underlying Asset Type] = ‘Index’ or ‘Index tranche’, else {blank};"]
+        if (nonReportable -> postUpiData -> Derived -> UnderlyingAssetType = Index_Tranche
+                or nonReportable -> underlyingAssetType = "Index_Tranche")
+                or (nonReportable -> postUpiData -> Derived -> UnderlyingAssetType = Index
+                    or nonReportable -> underlyingAssetType = "Index")
+        then indexFactor exists
+        else indexFactor is absent
+
+    condition DTCC_SEC_VR_UPI: <"UPI">
+        [regulatoryReference SEC SBSR dataElement "901.c.1" validationRule "Transaction"
+      provision "Required for PPD when [Primary Asset Class] = 'Credit'."]
+        if dtccAdditionalFields -> primaryAssetClass = Credit
+        then uniqueProductIdentifier exists
+
+    condition DTCC_SEC_VR_CDEFinalContractualSettlementDate: <"CDE - Final contractual settlement date">
+        [regulatoryReference SEC SBSR dataElement "901.d.8" validationRule "Transaction"
+      provision "The value shall be equal to or later than the value in [CDE - Expiration Date]."]
+        if finalContractualSettlementDate exists
+        then finalContractualSettlementDate = expirationDate or finalContractualSettlementDate > expirationDate
+
+    condition DTCC_SEC_VR_SettlementCurrency1: <"Settlement Currency 1">
+        [regulatoryReference SEC SBSR dataElement "901.d.8" validationRule "Transaction"
+      provision "CR, IR, FX, EQ: Required if UPI.[Delivery type] = ‘Cash’, else {blank}. CO: Required if Settlement Type = 'Cash'."]
+        if nonReportable -> postUpiData -> Attributes -> DeliveryType = CASH
+                or dtccAdditionalFields -> settlementType = "Cash"
+        then leg1 -> settlementCurrency exists
+        else leg1 -> settlementCurrency is absent
+
+    condition DTCC_SEC_VR_NonStandardTradeIndicator: <"Non Standard Trade Indicator">
+        [regulatoryReference SEC SBSR dataElement "907.a.4" validationRule "Transaction"
+      provision "Required if [Clearing Status] = ‘N’."]
+        if cleared = N then nonStandardizedTermIndicator exists
+
+    condition DTCC_SEC_VR_CDEExpirationDate: <"CDE - Expiration Date">
+        [regulatoryReference SEC SBSR dataElement "901.c.1.ii" validationRule "Transaction"
+      provision "The value shall be equal to or later than the value in [CDE - Effective Date]."]
+        if expirationDate exists
+        then expirationDate = effectiveDate or expirationDate > effectiveDate
+
+    condition DTCC_SEC_VR_ReportingTimestamp: <"Reporting Timestamp">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "Trade State and PPD: The value shall be equal to or later than the value in [Original Execution Timestamp]."]
+        reportingTimestamp = executionTimestamp or reportingTimestamp > executionTimestamp
+
+    condition DTCC_SEC_VR_CDEPlatformIdentifier: <"CDE - Platform Identifier">
+        [regulatoryReference SEC SBSR dataElement "901.d.9" validationRule "Transaction"
+      provision "Required if [Clearing Status] = ‘N’ or ‘I’."]
+        if cleared = N or cleared = I then platformIdentifier exists
+
+    condition DTCC_SEC_VR_PriorUSIID: <"Prior USI ID">
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" validationRule "Transaction"
+      provision "Required when [Prior USI ID Prefix] is Populated. 
+      CFTC and CSA group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated."]
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" validationRule "Transaction"
+        provision "Required if [NoA - Action Type] = ‘NEWT’ and ([Event type] = ‘NOVA’ or ‘CLRG’ or ‘EXER’ or ‘ALOC’ or ‘CLAL’) and [Prior UTI ID] is not populated, else {blank}"]
+        if actionType = ActionTypeEnum -> NEWT
+                and [EventTypeEnum -> NOVA, EventTypeEnum -> CLRG, EventTypeEnum -> EXER, EventTypeEnum -> ALOC, EventTypeEnum -> CLAL] any = eventType
+                and priorUTI is absent
+        then priorUSI exists
+        else priorUSI is absent
+
+    condition DTCC_SEC_VR_PriorUSIIDPrefix: <"Prior USI ID Prefix">
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" validationRule "Transaction"
+      provision "Required when [Prior USI ID] is Populated. 
+      CFTC and CSA group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated.
+      Not modelled."]
+        True
+
+    condition DTCC_SEC_VR_PriorUTIID: <"Prior UTI ID">
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" validationRule "Transaction"
+      provision "Required when [Prior USI ID] is Populated. 
+      CFTC and CSA group agreed on not considering UTI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is UTI ID, considering the concatenation of both fields. Thus, UTI ID is the only field that needs to be populated."]
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" validationRule "Transaction"
+      provision "Required if [NoA - Action Type] = ‘NEWT’ and ([Event type] = ‘‘NOVA’ or ‘CLRG’ or ‘EXER’ or ‘ALOC’ or ‘CLAL’) and [Prior USI] is not populated, else {blank} "]
+        if actionType = ActionTypeEnum -> NEWT
+                and [EventTypeEnum -> NOVA, EventTypeEnum -> CLRG, EventTypeEnum -> EXER, EventTypeEnum -> ALOC, EventTypeEnum -> CLAL] any = eventType
+                and priorUSI is absent
+        then priorUTI exists
+        else priorUTI is absent
+
+    condition DTCC_SEC_VR_USIID: <"USI ID">
+        [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+      provision "[USI ID] is Required when [USI ID Prefix] is populated.
+      CFTC and CSA group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated."]
+              [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+      provision "[USI ID] will be rejected if Action Type is 'NEWT'.
+      [USI ID] is Required when [UTI ID] is not populated."]
+        (if actionType = NEWT then uniqueSwapIdentifier is absent)
+            and (if uniqueTransactionIdentifier is absent
+                then uniqueSwapIdentifier exists)
+
+    condition DTCC_SEC_VR_USIIDPrefix: <"USI ID Prefix">
+        [regulatoryReference SEC SBSR dataElement "901.g, 901.d.10" validationRule "Transaction"
+      provision "[USI ID Prefix] will be rejected if Action Type is 'NEWT'. [USI ID Prefix] is required when [USI ID] is populated.
+      CFTC and CSA group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated.
+      Not modelled."]
+        True
+
+    condition DTCC_SEC_VR_UTIID: <"UTI ID">
+        [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+      provision "Required when [NoA - Action Type] = 'NEWT' or when [USI ID] is blank."]
+        if actionType = NEWT or uniqueSwapIdentifier is absent
+        then uniqueTransactionIdentifier exists
+
+    condition DTCC_SEC_VR_UTIIDPrefix: <"UTI ID Prefix">
+        [regulatoryReference SEC SBSR dataElement "901.g" validationRule "Transaction"
+      provision "The concatenated length of [UTI ID Prefix] + [UTI ID] must no be greater than Text-52.
+      CFTC and CSA group agreed on not considering UTI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is UTI ID, considering the concatenation of both fields. Thus, UTI ID is the only field that needs to be populated.
+      Not modelled."]
+        True
+
+    condition DTCC_SEC_VR_NewSDRIdentifier: <"New SDR Identifier">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+            provision "Required if [NoA - Action Type] = ‘PRTO’, else {blank}"]
+        if actionType = ActionTypeEnum -> PRTO
+        then newSDRIdentifier exists
+        else newSDRIdentifier is absent
+
+    condition DTCC_SEC_VR_SubmittedForParty: <"Submitted For Party">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+            provision "If the value is not 'Party1' or 'BOTH', then the value must = the value in [Trade Party 1 - ID]"]
+        if ["Party1", "BOTH"] all <> dtccAdditionalFields -> submittedForParty
+        then dtccAdditionalFields -> submittedForParty = counterparty1
+
+    condition DTCC_SEC_VR_TradeParty1ReportingDestination: <"Trade Party 1 - Reporting Destination">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+            provision "Must contain at least one of: CFTC, SEC, CA.MB.MSC, CA.ON.OSC, CA.QC.AMF,CA.AB.ASC,CA.BC.BCSC,CA.NB.FCSC,CA.NL.DSS,CA.NS.NSSC,CA.NT.NTSO,CA.NU.NSO,CA.PEI.OSS,CA.SK.FCAA,CA.YT.OSS"]
+        if dtccAdditionalFields -> tradeParty1ReportingDestination exists
+        then [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC, SupervisoryBodyEnum -> CA_AB_ASC, SupervisoryBodyEnum -> CA_BC_BCSC, SupervisoryBodyEnum -> CA_MB_MSC, SupervisoryBodyEnum -> CA_NB_FCSC, SupervisoryBodyEnum -> CA_NL_DSS, SupervisoryBodyEnum -> CA_NS_NSSC, SupervisoryBodyEnum -> CA_NT_NTSO, SupervisoryBodyEnum -> CA_NU_NSO, SupervisoryBodyEnum -> CA_ON_OSC, SupervisoryBodyEnum -> CA_PEI_OSS, SupervisoryBodyEnum -> CA_QC_AMF, SupervisoryBodyEnum -> CA_SK_FCAA, SupervisoryBodyEnum -> CA_YT_OSS] contains dtccAdditionalFields -> tradeParty1ReportingDestination
+
+    condition DTCC_SEC_VR_TradeParty2ReportingDestination: <"Trade Party 2 - Reporting Destination">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+            provision "'If the submitted for Party = ‘Party1’, this field will not influence GTR North America processing and the value will be ignored.If the submitted for Party = ‘Both’, this field cannot be populated with ‘CFTC’, ‘SEC’, or a Canadian Province.
+            Not modelled.The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_SEC_VR_Comment1: <"Comment 1">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "Including < in the [Comment 1] value will cause a rejection in the Simulator.
+      Empty because CSV submission is still not supported by current DRR model."]
+        True
+
+    condition DTCC_SEC_VR_TradeParty2ExecutionAgentID: <"Trade Party 2 - Execution Agent ID">
+        [regulatoryReference SEC SBSR dataElement "901.d.1, 901.d.2" validationRule "Transaction"
+      provision "Required if [Trade Party 2 - Execution Agent ID Type] is populated."]
+        if dtccAdditionalFields -> tradeParty2ExecutionAgentIDType exists
+        then dtccAdditionalFields -> tradeParty2ExecutionAgentID exists
+
+    condition DTCC_SEC_VR_TradeParty2ExecutionAgentIDType: <"Trade Party 2 - Execution Agent ID Type">
+        [regulatoryReference SEC SBSR dataElement "901.d.1, 901.d.2" validationRule "Transaction"
+      provision "Required if [Trade Party 2 - Execution Agent ID] is populated."]
+        if dtccAdditionalFields -> tradeParty2ExecutionAgentID exists
+        then dtccAdditionalFields -> tradeParty2ExecutionAgentIDType exists
+
+    condition DTCC_SEC_VR_TradeParty1ExecutionAgentID: <"Trade Party 1 - Execution Agent ID">
+        [regulatoryReference SEC SBSR dataElement "901.d.1, 901.d.2" validationRule "Transaction"
+      provision "Required if [Trade Party 1 - Execution Agent ID Type] is populated."]
+        if dtccAdditionalFields -> tradeParty1ExecutionAgentIDType exists
+        then dtccAdditionalFields -> tradeParty1ExecutionAgentID exists
+
+    condition DTCC_SEC_VR_TradeParty1ExecutionAgentIDType: <"Trade Party 1 - Execution Agent ID Type">
+        [regulatoryReference SEC SBSR dataElement "901.d.1, 901.d.2" validationRule "Transaction"
+      provision "Required if [Trade Party 1 - Execution Agent ID] is populated."]
+        if dtccAdditionalFields -> tradeParty1ExecutionAgentID exists
+        then dtccAdditionalFields -> tradeParty1ExecutionAgentIDType exists
+
+    condition DTCC_SEC_VR_ExecutionVenueID: <"Execution Venue - ID">
+        [regulatoryReference SEC SBSR dataElement "901.d.9" validationRule "Transaction"
+      provision "Required when [Execution Venue - ID Type] is populated."]
+        if dtccAdditionalFields -> executionVenueIDType exists
+        then dtccAdditionalFields -> executionVenueID exists
+
+    condition DTCC_SEC_VR_ExecutionVenueIDType: <"Execution Venue - ID Type">
+        [regulatoryReference SEC SBSR dataElement "901.d.9" validationRule "Transaction"
+      provision "Required when [Execution Venue - ID] is populated."]
+        if dtccAdditionalFields -> executionVenueID exists
+        then dtccAdditionalFields -> executionVenueIDType exists
+
+    condition DTCC_SEC_VR_ResponsibleDataSubmitterIDType: <"Responsible Data Submitter - ID Type">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "Required if [Responsible Data Submitter – ID] is populated."]
+        if dtccAdditionalFields -> responsibleDataSubmitterID exists
+        then dtccAdditionalFields -> responsibleDataSubmitterIDType exists
+
+    condition DTCC_SEC_VR_ResponsibleDataSubmitterID: <"Responsible Data Submitter - ID">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "Required if [Responsible Data Submitter – ID Type] is populated."]
+        if dtccAdditionalFields -> responsibleDataSubmitterIDType exists
+        then dtccAdditionalFields -> responsibleDataSubmitterID exists
+
+    condition DTCC_SEC_VR_SEForDCMAnonymousExecutionIndicator: <"SEF or DCM Anonymous Execution Indicator">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "SEF and DCM: Required. CCP and DCO   Required when [NoA - Action Type] = 'TERM' and ([Event Type] = 'CLRG' or = 'CLAL'). NACK for all other submissions."]
+        if actionType = TERM
+                and ([EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = eventType)
+                and centralCounterparty exists
+        then dtccAdditionalFields -> sefOrDcmAnonymousExecutionIndicator exists
+
+    condition DTCC_SEC_VR_CorporateActionNewTradeParty1LEI: <"Corporate Action - New Trade Party 1 LEI">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+      provision "A value in this field will only be accepted when [NoA - Action Type] = 'MODI' and [Event Type] = 'TRAD'. All other [NoA - Action Type]/[Event Type] combinations will NACK.
+      The submitter must have permission in Manage Services to submit for [Trade Party 1 - ID] and [Corporate Action - New Trade Party 1 LEI].
+      We will NACK if [Responsible Data Submitter ID] and [Corporate Action - New Trade Party 1 LEI] are both populated.
+      The value in this field will replace [Trade Party 1 - ID] on the trade after the submission is processed.
+      It's expected that all data submitted outside of [NoA - Action Type],  [Event Type], and [Corporate Action - New Trade Party 1 LEI] will exactly mirror the current live position, as this feature is meant only for change in Trade Party 1/Reporting counterparty. We will not, however, validate this, and the correctness is the responsibility of the submitter."]
+        if actionType = MODI and eventType = TRAD
+        then dtccAdditionalFields -> corporateActionNewTradeParty1Lei exists
+
+    condition DTCC_SEC_VR_OtherPaymentPayerIDType: <"Other Payment Payer ID Type">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+        provision "Required if [CDE - Other payment payer] is populated. If populated with one or more values, the number of values must equal the number of values populated in [CDE - Other payment payer]"]
+        if otherPayment -> payer exists
+        then dtccAdditionalFields -> otherPaymentPayerIDType exists
+                and (otherPayment -> payer count
+                    = dtccAdditionalFields -> otherPaymentPayerIDType count)
+
+    condition DTCC_SEC_VR_OtherPaymentReceiverIDType: <"Other Payment Receiver ID Type">
+        [regulatoryReference SEC SBSR validationRule "Transaction"
+        provision "Required if [CDE - Other payment receiver] is populated. If populated with one or more values, the number of values must equal the number of values populated in [CDE - Other payment receiver]"]
+        if otherPayment -> receiver exists
+        then dtccAdditionalFields -> otherPaymentReceiverIDType exists
+                and (otherPayment -> receiver count
+                    = dtccAdditionalFields -> otherPaymentReceiverIDType count)

@@ -1,0 +1,15 @@
+{
+  "id" : "pipeline-projection-cftc-part45-trade-report-to-dtcc-rds-harmonized",
+  "name" : "Cftc Part45 Trade Report To Dtcc Rds Harmonized",
+  "transform" : {
+    "type" : "PROJECTION",
+    "function" : "drr.projection.dtcc.rds.harmonized.cftc.rewrite.trade.functions.Project_CftcPart45TradeReportToDtccRdsHarmonized",
+    "inputType" : "drr.regulation.cftc.rewrite.trade.CFTCPart45TransactionReport",
+    "outputType" : "iso20022.dtcc.rds.harmonized.Document"
+  },
+  "upstreamPipelineId" : "pipeline-report-cftc-part45",
+  "outputSerialisation" : {
+    "format" : "XML",
+    "configPath" : "xml-config/dtcc-rds-rosetta-xml-config.json"
+  }
+}

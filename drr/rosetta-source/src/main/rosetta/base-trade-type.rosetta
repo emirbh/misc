@@ -1,0 +1,89 @@
+namespace drr.base.trade
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+import cdm.event.common.*
+import cdm.event.workflow.*
+import cdm.observable.asset.*
+import cdm.product.asset.*
+import cdm.product.common.settlement.*
+import cdm.product.template.*
+
+import drr.base.qualification.*
+import drr.enrichment.common.*
+import drr.regulation.common.*
+
+type ReportableEventBase:
+    originatingWorkflowStep WorkflowStep (1..1) <"The workflowstep that originated the reportable event.">
+    reportableTrade TradeState (0..1) <"The reportable trade decomposed from the originating workflow step when required.">
+    reportablePosition CounterpartyPositionState (0..1) <"The reportable position decomposed from the originating workflow step when required.">
+    reportableInformation ReportableInformation (0..1) // Temporary, should be ReportableInformationBase
+
+type TransactionReportInstructionBase extends ReportableEventBase: <"Specifies a reportable event with with a single reporting side.">
+    [rootType]
+    reportingSide ReportingSide (1..1)
+
+type ReportingSide: <"Specifies the reporting roles for a ReportableEvent or ReportableCollateral.">
+    [rootType]
+    reportingParty Party (1..1) <"The counterparty to the transaction (buyer or seller of the contract) from whose perspective the transaction is being reported.">
+        [metadata reference]
+    reportingCounterparty Party (1..1) <"The counterparty to the transaction (buyer or seller of the contract) on the non-reporting side.">
+        [metadata reference]
+    partyResponsibleForReporting Party (0..1) <"The party responsibility for submitting the transaction report to the authority.">
+        [metadata reference]
+    reportSubmittingParty Party (0..1) <"The party submitting the transaction report to the authority.">
+        [metadata reference]
+
+type ReportableInformationBase: <"Specifies the relevant regulators or other supervisory bodies the transaction is relevant for, and regime specific information required relating to the transaction and the parties.">
+
+    confirmationMethod ConfirmationMethodEnum (0..1) <"Specifies the method for confirmation of the transacion.">
+    executionVenueType ExecutionVenueTypeEnum (1..1) <"Specifies the type of venue where a trade could be executed.">
+    intragroup boolean (0..1) <"Specifies whether the contract was entered into as an intragroup transaction, defined in Article 3 of Regulation (EU) No 648/2012.">
+    affiliated boolean (0..1) <"Indicates whether the transaction is between two affiliated entities. It is referred to as Inter-affiliate under the Canadian CSA reporting regime.">
+    largeSizeTrade boolean (0..1) <"Specifies whether the sender of this trade considers it to be a large notional trade or block trade for reporting purposes, and thus eligible for delayed public reporting. Normally this will only be applicable for off-facility trades.">
+    sefOrDcmAnonymousIndicator boolean (0..1) <"Indicator of whether the swap was executed anonymously on a SEF or DCM. When set to true, counterparty details will be masked on reporting.">
+    originalExecutionTimestamp zonedDateTime (0..1) <"Date and time a transaction was originally executed, resulting in the generation of a new UTI. This data element remains unchanged throughout the life of the UTI.">
+    cryptoBased boolean (0..1) <"Indicator whether the derivative is based on crypto-assets.">
+    underlyingAssetLastAvailableSpotPrice PriceSchedule (0..1) <"Last Available Spot Price of the underlying asset. This price is only needed for a regulatory purpose, that being the reporting of the notional amount for commodity basis products">
+    underlyingAssetPriceSource ReportablePriceSource (0..*) <"Underlying Asset Price Source is only needed for a regulatory purpose, that being the source of the price used to determine the value or level of the asset or benchmark">
+    reportableAction event.ReportableActionEnum (0..1) <"Specifies the regulatory lifecycle event action for the ReportableEvent">
+    subsequentPositionUTI PositionIdentifier (0..1) <"The UTI of the position in which a derivative transaction is included.">
+    counterpartyPositionPriorUTI PositionIdentifier (0..1) <"The prior position UTI (eg in case of a corporate action of type StockIdentifierChange).">
+    customBasket basket.CustomBasket (0..1) <"Information pertaining to Custom Basket">
+    finalContractualSettlementDate date (0..1) <"Date as per the contract, by which all transfer of cash or assets should take place and the counterparties should no longer have any outstanding obligations to each other under that contract.">
+    enrichment EnrichmentData (0..1)
+
+type ReportablePriceSource: <"Provides the extraction of the Underlying Asset Price Source and correlate it with the identification of the trade products.">
+    productIdentifier ProductIdentifier (0..*) <"Comprises an identifier and a source. The associated metadata key denotes the ability to associate a hash value to the ProductIdentifier instantiations for the purpose of model cross-referencing, in support of functionality such as the event effect and the lineage.">
+        [metadata address "pointsTo"=Observable->productIdentifier]
+    otherId string (0..1) <"Enables the identification of trade products with a specific Underlier ID (Other) that do not contain a productIdentifier and are, therefore, represented by a string (e.g., indexName).">
+    underlyingAssetPriceSource string (0..1) <"For an underlying asset or benchmark not traded on a platform, the source of the price used to determine the value or level of the asset or benchmark.">
+
+    condition Choice:
+        required choice productIdentifier, otherId
+
+type PayoutLeg:
+    creditDefaultPayout CreditDefaultPayout (0..1)
+    optionPayout OptionPayout (0..1)
+    forwardPayout ForwardPayout (0..1)
+    performancePayout PerformancePayout (0..1)
+    interestRatePayout InterestRatePayout (0..1)
+    cashflow Cashflow (0..1)
+    fixedPricePayout FixedPricePayout (0..1)
+    commodityPayout CommodityPayout (0..1)
+
+    condition:
+        one-of
+
+type PayoutLegWithAuxiliary extends PayoutLeg:
+    auxiliaryLeg PayoutLeg (0..1)
+    lastAvailableSpotPrice PriceSchedule (0..1)
+    tradeLot TradeLot (0..1)
+    isProductETD boolean (0..1)
+    zeroNotionalAmountDefaulting boolean (0..1)
+    settlementTerms SettlementTerms (0..1)
+
+    condition FixedOrCommodityPayout:
+        auxiliaryLeg -> fixedPricePayout only exists
+            or auxiliaryLeg -> commodityPayout only exists

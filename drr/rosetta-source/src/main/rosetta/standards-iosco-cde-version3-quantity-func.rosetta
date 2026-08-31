@@ -1,0 +1,102 @@
+namespace drr.standards.iosco.cde.version3.quantity
+version "${project.version}"
+
+import drr.base.trade.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version2.* as cdeV2
+import drr.standards.iso.*
+
+func NotionalAmountLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmountLeg1 number (0..1)
+
+    alias payout:
+        quantity.GetProductForQuantity(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg1(
+                        product,
+                        tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    set notionalAmountLeg1: NotionalAmountFormat(payout, defaultValue)
+
+func NotionalAmountLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmountLeg2 number (0..1)
+
+    alias payout:
+        quantity.GetProductForQuantity(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg2(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    set notionalAmountLeg2: NotionalAmountFormat(payout, defaultValue)
+
+func NotionalAmount:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount: cdeV2.quantity.NotionalAmount(payout, defaultValue)
+
+func NotionalAmountFormat:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount:
+        if payout -> commodityPayout exists
+        then FormatToShortFraction5DecimalNumber(NotionalAmount(payout, defaultValue))
+        else FormatToNonNegativeShortFraction5DecimalNumber(
+                NotionalAmount(payout, defaultValue)
+            )
+
+func TotalNotionalQuantityLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        totalTotalNotionalQuantityLeg1 number (0..1)
+    set totalTotalNotionalQuantityLeg1:
+        cdeV2.quantity.TotalNotionalQuantityLeg1(transactionReportInstruction, defaultValue)
+
+func TotalNotionalQuantityLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        totalTotalNotionalQuantityLeg2 number (0..1)
+    set totalTotalNotionalQuantityLeg2:
+        cdeV2.quantity.TotalNotionalQuantityLeg2(transactionReportInstruction, defaultValue)
+
+func ExtractCallAmount: <"CDE Call Amount with error value provided as this can differ between jurisdiction.">
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        callAmount number (0..1)
+
+    set callAmount:
+        cdeV2.quantity.ExtractCallAmount(transactionReportInstruction, defaultValue)
+
+func ExtractPutAmount: <"CDE Put Amount with error value provided as this can differ between jurisdiction.">
+    inputs:
+        transactionReportInstruction TransactionReportInstructionBase (1..1)
+        defaultValue number (1..1)
+    output:
+        putAmount number (0..1)
+
+    set putAmount:
+        cdeV2.quantity.ExtractPutAmount(transactionReportInstruction, defaultValue)

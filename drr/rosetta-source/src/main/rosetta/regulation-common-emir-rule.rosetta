@@ -1,0 +1,965 @@
+namespace drr.regulation.common.emir
+version "${project.version}"
+
+import cdm.base.math.*
+import cdm.base.staticdata.*
+import cdm.base.staticdata.asset.common.*
+import cdm.event.common.*
+import cdm.observable.asset.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.trade.underlier.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version2.* as cdeV2
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iso.*
+
+reporting rule CountryOfTheCounterParty2 from TransactionReportInstruction: <"Country of the counterparty 2">
+    filter IsAllowableAction
+    then extract common.party.CountryOfCounterparty2
+
+reporting rule TypeOfPTRRTechnique from TransactionReportInstruction: <"Type of PTRR technique">
+    filter IsAllowableAction or IsActionTypeTERM
+    then extract common.event.TypeOfPTRRTechnique
+
+reporting rule PTRRServiceProvider from TransactionReportInstruction: <"PTRR service provider">
+    filter IsAllowableAction or IsActionTypeTERM
+    then extract
+        if PTRR
+        then party.FilterPartyRole(
+                originatingWorkflowStep -> businessEvent -> instruction -> primitiveInstruction -> execution -> partyRoles,
+                party.PartyRoleEnum -> PTRRServiceProvider
+            ) -> partyReference
+            distinct
+            only-element
+    then extract PartyLei(partyId)
+
+reporting rule PTRR from TransactionReportInstruction: <"PTRR">
+    filter IsAllowableAction
+    then if TradeForEvent exists
+        then IsCompressed(originatingWorkflowStep)
+                or IsPortfolioRebalancing(originatingWorkflowStep)
+
+reporting rule BrokerID from TransactionReportInstruction: <"Broker ID">
+    filter IsAllowableAction
+    then extract common.party.BrokerID
+
+reporting rule ClearingMember from TransactionReportInstruction: <"Clearing member">
+    filter IsAllowableAction
+    then extract cde.execution.ClearingMember
+
+reporting rule Direction from TransactionReportInstruction: <"Direction">
+    filter IsAllowableAction
+    then extract cde.party.Direction1
+
+reporting rule EventDate from TransactionReportInstruction: <"Event Date">
+    extract
+        if originatingWorkflowStep -> businessEvent exists
+        then originatingWorkflowStep -> businessEvent -> eventDate
+        else originatingWorkflowStep -> counterpartyPositionBusinessEvent -> eventDate
+
+reporting rule DirectionOfLeg1 from TransactionReportInstruction: <"Direction of leg 1">
+    filter IsAllowableAction
+    then if cde.party.Direction1 is absent
+        // Ascent Uplift analysis - Direction1 for does not use regime specific leg logic to replicate current behaviour
+        then cde.party.Direction2(
+                    common.PayoutLeg1,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+reporting rule DirectionOfLeg2 from TransactionReportInstruction: <"Direction of leg 2">
+    filter IsAllowableAction
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    common.PayoutLeg2,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+reporting rule PriorUti from TransactionReportInstruction: <"Prior UTI">
+    filter IsAllowableAction
+    then common.link.GetPriorTransactionIdentifier(item, EMIR)
+    then filter IsMax32UpperCaseAlphanumericText = True
+
+reporting rule PriorUtiProprietary from TransactionReportInstruction: <"Prior UTI">
+    filter IsAllowableAction
+    then common.link.GetPriorTransactionIdentifier(item, EMIR)
+    then filter IsMax32UpperCaseAlphanumericText = False
+
+reporting rule SubsequentPositionUti from TransactionReportInstruction: <"Subsequent Position UTI">
+    filter
+        (IsActionTypeMODI or IsActionTypeCORR or IsActionTypeTERM or IsActionTypeREVI or IsActionTypePOSC)
+    then extract common.link.SubsequentPositionUTI
+
+reporting rule PTRRID from TransactionReportInstruction: <"PTRR ID">
+    filter
+        (IsActionTypeNEWT or IsActionTypeMODI or IsActionTypeCORR or IsActionTypeTERM or IsActionTypeREVI)
+    then extract common.party.PTRRID
+
+reporting rule PackageIdentifier from TransactionReportInstruction: <"Package identifier">
+    filter IsAllowableAction
+    then extract cde.link.PackageIdentifier
+
+reporting rule ContractType from TransactionReportInstruction: <"Contract Type">
+    filter IsAllowableAction
+    then extract common.contract.ContractType
+
+reporting rule AssetClass from TransactionReportInstruction: <"Asset Class">
+    filter IsAllowableAction
+    then extract common.contract.AssetClass
+
+reporting rule UnderlyingIdentificationType from TransactionReportInstruction: <"Underlying Identification Type">
+    filter IsAllowableAction
+    then GetUnderlyingIdentificationType
+
+reporting rule UnderlyingIdentification from TransactionReportInstruction: <"Underlying Identification">
+    filter IsAllowableAction
+    then extract common.underlier.UnderlyingIdentification
+
+reporting rule ReferenceEntity from TransactionReportInstruction: <"Reference Entity">
+    filter IsAllowableAction
+    then extract
+        if UnderlyingIdentificationType is absent // EMIR_VR_2144_01
+        then ExtractReferenceEntity
+
+reporting rule NameOfTheUnderlyingIndex from TransactionReportInstruction: <"Name of the underlying index">
+    filter IsAllowableAction
+    then extract common.underlier.NameOfTheUnderlyingIndex
+
+reporting rule CustomBasketCode from TransactionReportInstruction: <"Custom basket code">
+    filter IsAllowableAction
+    then extract cde.basket.CustomBasketCode
+
+reporting rule ValuationAmount from TransactionReportInstruction: <"Valuation amount">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then cde.valuation.ValuationAmount
+
+reporting rule ValuationCurrency from TransactionReportInstruction: <"Valuation currency">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then cde.valuation.ValuationCurrency
+
+reporting rule ValuationTimestamp from TransactionReportInstruction: <"Valuation Timestamp">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then cde.datetime.ValuationTimestamp
+
+reporting rule ValuationMethod from TransactionReportInstruction: <"Valuation method">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then extract cde.valuation.ValuationMethod(valuation.GetValuation)
+
+reporting rule Delta from TransactionReportInstruction: <"Delta">
+    filter
+        (IsActionTypeNEWT or IsActionTypeVALU or IsActionTypeCORR or IsActionTypeREVI or IsActionTypePOSC)
+    then extract cde.quantity.Delta
+
+reporting rule CollateralPortfolioIndicator from TransactionReportInstruction: <"Collateral Portfolio Indicator">
+    filter IsAllowableAction
+    then extract cde.collateral.CollateralPortfolioIndicator
+
+reporting rule CollateralPortfolioCode from TransactionReportInstruction: <"Collateral Portfolio Code">
+    filter IsAllowableAction
+    then extract cde.collateral.CollateralPortfolioCode
+
+reporting rule Cleared from TransactionReportInstruction: <"Cleared">
+    filter IsAllowableAction
+    then extract
+        if cde.execution.Cleared = I
+        then ClearedEnum -> N
+        else cde.execution.Cleared
+
+reporting rule ClearingTimestamp from TransactionReportInstruction: <"Clearing Timestamp">
+    filter IsAllowableAction
+    then extract common.datetime.ClearingTimestamp
+
+reporting rule CentralCounterparty from TransactionReportInstruction: <"Central Counterparty">
+    filter IsAllowableAction
+    then cde.execution.CentralCounterparty
+
+reporting rule MasterAgreementType from TransactionReportInstruction: <"Master Agreement type">
+    filter IsAllowableAction
+    then common.contract.MasterAgreementType
+
+//      TO DO: check full list to confirm if others need code other than OTHR
+reporting rule OtherMasterAgreementType from TransactionReportInstruction: <"Other master agreement type">
+    filter IsAllowableAction
+    then common.contract.OtherMasterAgreementType
+
+reporting rule MasterAgreementVersion from TransactionReportInstruction: <"Master Agreement version">
+    filter IsAllowableAction
+    then extract common.contract.MasterAgreementVersion
+
+reporting rule Intragroup from TransactionReportInstruction: <"Intragroup">
+    filter IsAllowableAction
+    then extract common.party.Intragroup
+
+reporting rule ExecutionTimestamp from TransactionReportInstruction: <"Execution Timestamp">
+    filter IsAllowableAction
+    then cde.datetime.ExecutionTimestamp
+
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective Date">
+    filter IsAllowableAction
+    then extract common.datetime.EffectiveDate
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"Expiration Date">
+    filter IsAllowableAction
+    then extract common.datetime.ExpirationDate
+
+reporting rule EarlyTerminationDate from TransactionReportInstruction: <"Early termination date">
+    filter (IsActionTypeCORR or IsActionTypeTERM or IsActionTypeREVI)
+    then extract
+        (if originatingWorkflowStep -> counterpartyPositionBusinessEvent exists
+                and IsProductETD(ProductForEvent)
+                and (originatingWorkflowStep -> counterpartyPositionBusinessEvent -> intent = PositionEventIntentEnum -> CorporateActionAdjustment
+                    or originatingWorkflowStep -> counterpartyPositionBusinessEvent -> intent = PositionEventIntentEnum -> Transfer)
+                and reportablePosition -> counterpartyPosition -> positionBase -> tradeLot -> priceQuantity -> quantity -> value all = 0
+        then originatingWorkflowStep -> counterpartyPositionBusinessEvent -> effectiveDate
+        else cde.datetime.EarlyTerminationDate)
+
+reporting rule FinalContractualSettlementDate from TransactionReportInstruction: <"Final Contractual Settlement Date">
+    filter IsAllowableAction
+    then extract
+        if IsFRA(ProductForEvent)
+        then InterestRateLeg2(ProductForEvent) -> paymentDate -> unadjustedDate
+        else cde.execution.FinalContractualSettlementDate
+
+reporting rule DeliveryType from TransactionReportInstruction:
+    filter IsAllowableAction
+    then extract common.contract.DeliveryType
+
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option Premium Amount">
+    filter IsAllowableAction
+    then if cde.price.OptionPremiumAmount exists
+        then cde.price.OptionPremiumAmount
+        else if IsCapFloor(ProductForEvent)
+        then 9999999999999999999999999
+    then extract RoundToPrecision(item, 5, RoundingDirectionEnum -> Nearest)
+    then FormatToShortFraction5DecimalNumber
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction: <"Option Premium Currency">
+    filter IsAllowableAction
+    then if cde.price.OptionPremiumCurrency exists
+        then cde.price.OptionPremiumCurrency
+        else if IsCapFloor(ProductForEvent)
+        then cde.quantity.NotionalCurrencyLeg1
+
+reporting rule OptionPremiumPaymentDate from TransactionReportInstruction: <"Option Premium Payment Date">
+    filter IsAllowableAction
+    then if cde.price.OptionPremiumPaymentDate exists
+        then cde.price.OptionPremiumPaymentDate
+        else if IsCapFloor(ProductForEvent)
+        then EffectiveDate
+
+reporting rule ExchangeRateBasis from TransactionReportInstruction: <"Exchange Rate Basis">
+    filter IsAllowableAction
+    then extract cde.price.ExchangeRateBasis
+
+reporting rule BaseProduct from TransactionReportInstruction: <"Base Product">
+    filter IsAllowableAction
+    then extract
+        ExtractCommodityClassification(
+                EconomicTermsForProduct(ProductForEvent),
+                TaxonomySourceEnum -> EMIR,
+                1
+            )
+
+reporting rule SubProduct from TransactionReportInstruction: <"Sub-product">
+    filter IsAllowableAction
+    then extract
+        ExtractCommodityClassification(
+                EconomicTermsForProduct(ProductForEvent),
+                TaxonomySourceEnum -> EMIR,
+                2
+            )
+
+reporting rule FurtherSubProduct from TransactionReportInstruction: <"Further sub-product">
+    filter IsAllowableAction
+    then extract
+        ExtractCommodityClassification(
+                EconomicTermsForProduct(ProductForEvent),
+                TaxonomySourceEnum -> EMIR,
+                3
+            )
+
+reporting rule OptionType from TransactionReportInstruction: <"Option Type">
+    filter IsAllowableAction
+    then extract common.contract.OptionType
+
+reporting rule OptionStyle from TransactionReportInstruction: <"Option Style">
+    filter IsAllowableAction
+    then extract common.contract.OptionStyle
+
+reporting rule MaturityDateOfTheUnderlying from TransactionReportInstruction: <"Maturity date of the underlying">
+    filter IsAllowableAction
+    then extract common.datetime.MaturityDateOfTheUnderlier
+
+reporting rule Seniority from TransactionReportInstruction: <"Seniority">
+    filter IsAllowableAction
+    then common.index.Seniority
+
+reporting rule Series from TransactionReportInstruction: <"Series">
+    filter IsAllowableAction
+    then extract common.index.Series
+
+reporting rule Version from TransactionReportInstruction: <"Version">
+    filter IsAllowableAction
+    then common.index.Version
+
+reporting rule Tranche from TransactionReportInstruction: <"Tranche">
+    extract ProductForTrade(TradeForEvent)
+    then extract
+        if IsCreditSwaption
+        then underlier.UnderlierForProduct -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout
+        else if IsCreditDefaultSwap
+        then contractualProduct -> economicTerms -> payout -> creditDefaultPayout
+    then extract
+        if generalTerms -> indexReferenceInformation -> tranche exists
+        then True
+        else if generalTerms -> basketReferenceInformation -> tranche exists
+        then True
+        else False
+
+reporting rule CDSIndexAttachmentPoint from TransactionReportInstruction: <"CDS Index Attachment Point">
+    filter IsAllowableAction
+    then cde.index.CDSIndexAttachmentPoint
+
+reporting rule CDSIndexDetachmentPoint from TransactionReportInstruction: <"CDS index detachment point">
+    filter IsAllowableAction
+    then cde.index.CDSIndexDetachmentPoint
+
+reporting rule OtherPayment from TransactionReportInstruction: <"Other Payment">
+    filter IsAllowableAction or IsActionTypeTERM
+    then extract transactionReportInstruction [
+        TradeStateForEvent
+            then extract transferHistory
+            then filter cde.payment.IsOtherPayment
+            then extract
+                payment.OtherPayment {
+                    paymentType: cde.payment.OtherPaymentType to-enum PaymentType4Code,
+                    amount: cde.payment.OtherPaymentAmount
+                            then extract
+                                RoundToPrecision(item, 5, RoundingDirectionEnum -> Nearest)
+                            then FormatToShortFraction5DecimalNumber,
+                    currency: cde.payment.OtherPaymentCurrency,
+                    date: cde.payment.OtherPaymentDate,
+                    payer: cde.payment.ExtractOtherPaymentPayer(
+                                item,
+                                transactionReportInstruction
+                            ),
+                    payerFormat: cde.payment.OtherPaymentPayerFormat,
+                    receiver: cde.payment.ExtractOtherPaymentReceiver(
+                                item,
+                                transactionReportInstruction
+                            ),
+                    receiverFormat: cde.payment.OtherPaymentReceiverFormat,
+                    ...
+                }
+    ]
+
+//Price 
+// ToDo Note also we don't have Bond Forward, Equity Forward examples yet.
+// ToDo - Credit Options are inconsistent & use settlementType - awaiting clarification on harmonisation potential before coding (and in any case, no DRR examples yet!)
+// ToDo Commodities also likely to have other nuances?
+//TODO: Add Equity Swap Samples to test this part of the code
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule PriceNotation from TransactionReportInstruction: <"Price notation">
+    filter IsAllowableAction
+    then extract cde.price.PriceNotation
+
+reporting rule Price from TransactionReportInstruction: <"Price">
+    filter IsAllowableAction
+    then extract price.PriceFormatFromNotation(cde.price.PriceValue, PriceNotation)
+
+reporting rule PriceCurrency from TransactionReportInstruction: <"Price Currency">
+    filter IsAllowableAction
+    then extract cde.price.PriceCurrency
+
+reporting rule ContractPriceSchedule from TransactionReportInstruction: <"Contract Price Schedule">
+    filter IsAllowableAction
+    then extract
+        Create_ContinuousPriceSchedule(
+                cde.price.GetReportablePricePeriod(item, PriceNotation),
+                GetExpirationDate
+            )
+
+reporting rule PackageTransactionPrice from TransactionReportInstruction: <"Package transaction price">
+    filter IsAllowableAction
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionPriceValue,
+                PackageTransactionPriceNotation
+            )
+
+reporting rule PackageTransactionPriceNotation from TransactionReportInstruction: <"Package Transaction Price Notation">
+    filter IsAllowableAction
+    then extract cde.price.PackageTransactionPriceNotationEnum
+
+reporting rule PackageTransactionPriceCurrency from TransactionReportInstruction: <"Package Transaction Price Currency">
+    filter IsAllowableAction
+    then extract cde.price.PackageTransactionPriceCurrency
+
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule SpreadOfLeg1 from TransactionReportInstruction: <"Spread of Leg 1">
+    filter IsAllowableAction
+    then extract
+        if cde.price.Spread(common.PayoutLeg1) exists
+        then price.PriceFormatFromNotation(
+                    cde.price.SpreadValue(common.PayoutLeg1),
+                    SpreadOfLeg1Notation
+                )
+        else if NameOfTheFloatingRateOfLeg1 exists
+        then price.PriceFormat {
+                basis: 0,
+                ...
+            }
+
+reporting rule SpreadOfLeg1Notation from TransactionReportInstruction: <"Spread of Leg 1 Notation">
+    filter IsAllowableAction
+    then extract
+        if cde.price.Spread(common.PayoutLeg1) exists
+        then cde.price.SpreadNotationEnum(common.PayoutLeg1)
+        else if NameOfTheFloatingRateOfLeg1 exists
+        then Basis
+
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule SpreadCurrencyOfLeg1 from TransactionReportInstruction: <"Spread Currency of Leg 1">
+    filter IsAllowableAction
+    then extract cde.price.SpreadCurrency(common.PayoutLeg1)
+
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule SpreadOfLeg2 from TransactionReportInstruction: <"Spread of Leg 2">
+    filter IsAllowableAction
+    then extract
+        if cde.price.Spread(common.PayoutLeg2) exists
+        then price.PriceFormatFromNotation(
+                    cde.price.SpreadValue(common.PayoutLeg2),
+                    SpreadOfLeg2Notation
+                )
+        else if NameOfTheFloatingRateOfLeg2 exists
+        then price.PriceFormat {
+                basis: 0,
+                ...
+            }
+
+reporting rule SpreadOfLeg2Notation from TransactionReportInstruction: <"Spread of Leg 2">
+    filter IsAllowableAction
+    then extract
+        if cde.price.Spread(common.PayoutLeg2) exists
+        then cde.price.SpreadNotationEnum(common.PayoutLeg2)
+        else if NameOfTheFloatingRateOfLeg2 exists
+        then Basis
+
+reporting rule SpreadCurrencyOfLeg2 from TransactionReportInstruction: <"Spread Currency of Leg 2">
+    filter IsAllowableAction
+    then cde.price.SpreadCurrency(common.PayoutLeg2)
+
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule PackageTransactionSpread from TransactionReportInstruction: <"Package transaction spread">
+    filter IsAllowableAction or IsActionTypeEROR
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionSpreadValue,
+                PackageTransactionSpreadNotation
+            )
+
+reporting rule PackageTransactionSpreadNotation from TransactionReportInstruction: <"Package transaction spread Notation">
+    filter IsAllowableAction or IsActionTypeEROR
+    then extract cde.price.PackageTransactionSpreadNotationEnum
+
+reporting rule PackageTransactionSpreadCurrency from TransactionReportInstruction:
+    filter IsAllowableAction
+    then extract cde.price.PackageTransactionSpreadCurrency
+
+// End of Repeatable Field modelling
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule StrikePriceNotation from TransactionReportInstruction: <"Strike price notation">
+    filter IsAllowableAction
+    then extract cde.price.StrikePriceNotationEnum
+
+reporting rule StrikePrice from TransactionReportInstruction: <"Strike price">
+    filter IsAllowableAction
+    then extract
+        price.PriceFormatFromNotation(cde.price.StrikePriceValue, StrikePriceNotation)
+
+// ----------------------------------------------------------------------------------------------------------------
+//Repeatable fields modelling
+reporting rule StrikePriceSchedule from TransactionReportInstruction: <"Strike Price Schedule">
+    filter IsAllowableAction
+    then extract
+        Create_ContinuousPriceSchedule(
+                cde.price.GetReportableStrikePricePeriod(item, StrikePriceNotation),
+                GetExpirationDate
+            )
+
+//End of repeatable fields
+reporting rule StrikePriceCurrencyCurrencyPair from TransactionReportInstruction: <"Strike Price Currency/currency pair">
+    filter IsAllowableAction
+    then cde.price.StrikePriceCurrency
+
+reporting rule IdentifierOfBasketConstituents from TransactionReportInstruction: <"Identifier of the basket's constituents">
+    extract cde.basket.BasketConstituents
+    then filter item -> source = ISIN
+    then extract
+        basket.BasketConstituentsReport {
+            identifier: identifier,
+            ...
+        }
+
+reporting rule PayoutLeg1 from TransactionReportInstruction:
+    if IsFRA(ProductOrUnderlierProduct(ProductForEvent))
+    then empty
+    else common.PayoutLeg1
+
+reporting rule PayoutLeg2 from TransactionReportInstruction:
+    if IsFRA(ProductOrUnderlierProduct(ProductForEvent))
+    then (if common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1) exists
+        then common.PayoutLeg1
+        else empty)
+    else common.PayoutLeg2
+
+reporting rule FloatingRateResetFrequencyPeriodOfLeg1 from TransactionReportInstruction: <"Floating rate reset frequency period of leg 1">
+    filter IsAllowableAction
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> period
+
+reporting rule FloatingRateResetFrequencyMultiplierOfLeg1 from TransactionReportInstruction: <"Floating rate reset frequency multiplier of leg 1">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> periodMultiplier
+
+reporting rule FloatingRateResetFrequencyPeriodOfLeg2 from TransactionReportInstruction: <"Floating rate reset frequency period of leg 2">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> period
+
+reporting rule FloatingRateResetFrequencyMultiplierOfLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> periodMultiplier
+
+reporting rule FloatingRateIndicatorLeg1 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then extract common.underlier.FloatingRateIndicator
+
+reporting rule FloatingRateIndicatorLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then extract common.underlier.FloatingRateIndicator
+
+reporting rule IdentifierOfFloatingRateOfLeg1 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then common.underlier.FloatingRateIdentifier
+
+reporting rule IdentifierOfFloatingRateOfLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then extract common.underlier.FloatingRateIdentifier
+
+reporting rule NameOfTheFloatingRateOfLeg1 from TransactionReportInstruction: <"Name of the Floating Rate of Leg 1">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule NameOfTheFloatingRateOfLeg2 from TransactionReportInstruction: <"Name of the Floating Rate of Leg 2">
+    // To be revisited when both index name and code are available in CDM
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule FloatingRateReferencePeriodOfLeg1TimePeriod from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then common.underlier.FloatingRateReferencePeriod
+
+reporting rule FloatingRateReferencePeriodOfLeg1Multiplier from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then common.underlier.FloatingRateReferencePeriodMultiplier
+
+reporting rule FloatingRateReferencePeriodOfLeg2TimePeriod from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriod
+
+reporting rule FloatingRateReferencePeriodOfLeg2Multiplier from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriodMultiplier
+
+reporting rule NotionalQuantityLeg1 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.quantity.NotionalQuantityLeg1
+
+reporting rule NotionalQuantityLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.quantity.NotionalQuantityLeg2
+
+reporting rule FixingDateLeg1 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.datetime.FixingDateLeg1
+
+reporting rule FixingDateLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.datetime.FixingDateLeg2
+
+reporting rule QuantityFrequencyLeg1 from TransactionReportInstruction: <"Quantity Frequency Leg 1">
+    filter IsAllowableAction
+    then extract common.quantity.QuantityFrequencyLeg1(item) -> period
+
+reporting rule QuantityFrequencyLeg2 from TransactionReportInstruction: <"Quantity Frequency Leg 2">
+    filter IsAllowableAction
+    then extract common.quantity.QuantityFrequencyLeg2(item) -> period
+
+reporting rule QuantityFrequencyMultiplierLeg1 from TransactionReportInstruction: <"Quantity Frequency Multiplier Leg 1">
+    filter IsAllowableAction
+    then extract common.quantity.QuantityFrequencyLeg1(item) -> periodMultiplier
+
+reporting rule QuantityFrequencyMultiplierLeg2 from TransactionReportInstruction: <"Quantity Frequency Multiplier Leg 2">
+    filter IsAllowableAction
+    then extract common.quantity.QuantityFrequencyLeg2(item) -> periodMultiplier
+
+reporting rule FloatingRateDayCountConventionOfLeg1 from TransactionReportInstruction: <"Floating rate day count convention of leg 1">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then extract cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionOfLeg2 from TransactionReportInstruction: <"Floating rate day count convention of leg 2">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then extract cde.payment.DayCountConvention
+
+reporting rule FixedRateOrCouponDayCountConventionLeg1 from TransactionReportInstruction: <"Fixed rate or coupon day count convention leg 1">
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRateDayCountConventionLeg2 from TransactionReportInstruction: <"Fixed rate day count convention leg 2">
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period - Leg 1">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period - Leg 2">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period Multiplier - Leg 1">
+    filter IsAllowableAction
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Floating Rate Payment Frequency Period Multiplier - Leg 2">
+    filter IsAllowableAction
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRateOrCouponPaymentFrequencyPeriodLeg1 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRateOrCouponPaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule NotionalAmountOfLeg1 from TransactionReportInstruction: <"Notional of Leg 1">
+    filter IsAllowableAction
+    then extract cde.quantity.NotionalAmountLeg1(item, 9999999999999999999999999)
+
+reporting rule NotionalAmountOfLeg2 from TransactionReportInstruction: <"Notional Amount of Leg 2">
+    filter IsAllowableAction
+    then extract cde.quantity.NotionalAmountLeg2(item, 9999999999999999999999999)
+
+reporting rule NotionalCurrencyLeg1 from TransactionReportInstruction: <"Notional Currency Leg 1">
+    filter IsAllowableAction
+    then extract cde.quantity.NotionalCurrencyLeg1
+
+reporting rule NotionalCurrencyLeg2 from TransactionReportInstruction: <"Notional Currency Leg 2">
+    filter IsAllowableAction
+    then extract cde.quantity.NotionalCurrencyLeg2
+
+reporting rule FixedRateOfLeg1OrCoupon from TransactionReportInstruction: <"Fixed rate of leg 1 or coupon">
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.price.FixedRate * 100
+    then FormatToBaseOneRate
+
+reporting rule FixedRateOfLeg2 from TransactionReportInstruction: <"Fixed rate of leg 2">
+    filter IsAllowableAction
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.price.FixedRate * 100
+    then FormatToBaseOneRate
+
+reporting rule SettlementCurrency1 from TransactionReportInstruction: <"Settlement Currency 1">
+    filter IsAllowableAction
+    then extract cde.execution.SettlementCurrency(PayoutLeg1)
+
+reporting rule TotalNotionalQuantityLeg1 from TransactionReportInstruction: <"Total Notional Quantity Leg 1">
+    filter IsAllowableAction
+    then if IsProductETD(ProductForEvent)
+        then (TradableProductForEvent -> tradeLot only-element -> priceQuantity -> quantity
+            filter unit -> financialUnit exists
+            then extract value
+            then only-element
+            then FormatToShortFraction5DecimalNumber)
+        else cde.quantity.TotalNotionalQuantityLeg1(item, 9999999999999999999999999)
+
+reporting rule TotalNotionalQuantityLeg2 from TransactionReportInstruction: <"Total Notional Quantity Leg 2">
+    filter IsAllowableAction
+    then extract cde.quantity.TotalNotionalQuantityLeg2(item, empty)
+
+reporting rule NotionalAmountScheduleLeg1 from TransactionReportInstruction: <"Notional Amount Schedule">
+    filter IsAllowableAction
+    then extract
+        Create_ContinuousQuantitySchedule(
+                cde.quantity.NotionalAmountSchedule(common.PayoutLeg1),
+                GetExpirationDate
+            )
+
+reporting rule NotionalAmountScheduleLeg2 from TransactionReportInstruction: <"Notional Amount Schedule">
+    filter IsAllowableAction
+    then extract
+        Create_ContinuousQuantitySchedule(
+                cde.quantity.NotionalAmountSchedule(common.PayoutLeg2),
+                GetExpirationDate
+            )
+
+reporting rule ReportTrackingNumber from TransactionReportInstruction: <"Report Tracking Number">
+    extract
+        if (GetVenueOfExecution(reportableInformation) exists
+                and PositionForEvent is absent
+                and IsMicXOFF = False
+                and IsMicXXXX = False)
+        then GetReportTrackingNumber
+
+reporting rule ExchangeRate from TransactionReportInstruction: <"Exchange Rate 1">
+    filter IsAllowableAction
+    then extract
+        if TradeForEvent exists
+        then (extract TradeForEvent
+        then filter
+            Qualify_ForeignExchange_Swap(EconomicTermsForProduct(ProductForTrade))
+                or Qualify_ForeignExchange_NDS(EconomicTermsForProduct(ProductForTrade))
+        then extract trade [
+            tradableProduct -> tradeLot -> priceQuantity
+                filter
+                    quantity -> value any = FXNearLeg(ProductForTrade(trade)) -> underlier -> foreignExchange -> exchangedCurrency1 -> priceQuantity -> quantitySchedule -> value
+                        and quantity -> value any = FXNearLeg(ProductForTrade(trade)) -> underlier -> foreignExchange -> exchangedCurrency2 -> priceQuantity -> quantitySchedule -> value
+                then extract price
+                then flatten
+                then filter
+                    priceType = PriceTypeEnum -> ExchangeRate
+                        and arithmeticOperator is absent
+                then only-element
+                then extract value
+        ])
+        else if PositionForEvent exists
+        then (extract PositionForEvent
+        then filter
+            Qualify_ForeignExchange_Swap(EconomicTermsForProduct(ProductForPosition))
+                or Qualify_ForeignExchange_NDS(EconomicTermsForProduct(ProductForPosition))
+        then extract counterpartyPosition [
+            positionBase -> tradeLot -> priceQuantity
+                filter
+                    quantity -> value any = FXNearLeg(
+                                ProductForPosition(counterpartyPosition)
+                            ) -> underlier -> foreignExchange -> exchangedCurrency1 -> priceQuantity -> quantitySchedule -> value
+                        and quantity -> value any = FXNearLeg(
+                                ProductForPosition(counterpartyPosition)
+                            ) -> underlier -> foreignExchange -> exchangedCurrency2 -> priceQuantity -> quantitySchedule -> value
+                then extract price
+                then flatten
+                then filter
+                    priceType = PriceTypeEnum -> ExchangeRate
+                        and arithmeticOperator is absent
+                then only-element
+                then extract value
+        ])
+    then FormatToBaseOne18Rate
+
+reporting rule ForwardExchangeRate from TransactionReportInstruction: <"Forward Exchange Rate">
+    filter IsAllowableAction
+    then extract reportableEvent [
+        [
+            // FX Forwards, FX Options and FX Strategies
+            filter
+                Qualify_ForeignExchange_Spot_Forward(
+                        ProductForTrade(TradeForEvent) -> contractualProduct -> economicTerms
+                    )
+                    or Qualify_ForeignExchange_NDF(
+                            ProductForTrade(TradeForEvent) -> contractualProduct -> economicTerms
+                        )
+                    or IsFXOption(ProductForTrade(TradeForEvent))
+            then extract
+                ([price.Contract_Price, cdeV2.price.StrikePrice]
+                    filter
+                        priceType = PriceTypeEnum -> ExchangeRate
+                            and arithmeticOperator is absent
+                    then last),
+            // FX Swaps (Far leg)
+            extract TradeForEvent(reportableEvent)
+            then filter
+                Qualify_ForeignExchange_Swap(
+                        ProductForTrade -> contractualProduct -> economicTerms
+                    )
+                    or Qualify_ForeignExchange_NDS(
+                            ProductForTrade -> contractualProduct -> economicTerms
+                        )
+            then extract trade [
+                trade -> tradableProduct -> tradeLot -> priceQuantity
+                    filter
+                        quantity -> value any = FXFarLeg(ProductForTrade(trade)) -> underlier -> foreignExchange -> exchangedCurrency1 -> priceQuantity -> quantitySchedule -> value
+                            and quantity -> value any = FXFarLeg(ProductForTrade(trade)) -> underlier -> foreignExchange -> exchangedCurrency2 -> priceQuantity -> quantitySchedule -> value
+            ]
+            then extract price
+            then flatten
+            then filter
+                priceType = PriceTypeEnum -> ExchangeRate and arithmeticOperator is absent
+        ]
+            extract value
+            then last
+    ]
+    then FormatToBaseOne18Rate
+
+reporting rule IndicatorOfTheUnderlyingIndex from TransactionReportInstruction: <"Indicator of the underlying index">
+    extract
+        (if IsCreditSwaption(ProductForEvent) or IsIRSwaption(ProductForEvent)
+        then UnderlierForProduct(ProductForEvent)
+        else ProductForEvent)
+    then extract
+        underlier.UnderlierProductIdentifier(item, Name) -> identifier default if IsFRA
+            then EconomicTermsForProduct -> payout -> interestRatePayout -> rateSpecification -> floatingRate -> rateOption -> floatingRateIndex
+                first
+                to-string
+    then extract GetIndexIndicatorFromFloatingRate
+
+reporting rule DeliveryPointOrZone from TransactionReportInstruction: <"Delivery point or zone">
+    extract ProductForEvent
+    then extract EconomicTermsForProduct
+    then extract
+        if Qualify_Commodity_Swap_FixedFloat or Qualify_Commodity_Swap_Basis
+        then payout -> commodityPayout -> delivery first
+        else if Qualify_Commodity_Swaption
+        then EconomicTermsForProduct(payout -> optionPayout -> underlier only-element) -> payout -> commodityPayout -> delivery first
+        else if Qualify_Commodity_Option
+        then payout -> optionPayout -> delivery only-element
+        else if item -> payout -> forwardPayout -> underlier -> commodity exists
+        then payout -> forwardPayout -> delivery only-element
+    then extract item -> location
+    then filter
+        locationIdentifierType = identifier.CommodityLocationIdentifierTypeEnum -> DeliveryPoint
+    then extract assignedIdentifier -> identifier
+    then flatten
+
+reporting rule InterconnectionPoint from TransactionReportInstruction: <"Interconnection Point">
+    extract TradeForEvent
+    then extract ProductForTrade
+    then extract EconomicTermsForProduct
+    then extract
+        if Qualify_Commodity_Swap_FixedFloat or Qualify_Commodity_Swap_Basis
+        then payout -> commodityPayout -> delivery first
+        else if Qualify_Commodity_Swaption
+        then EconomicTermsForProduct(payout -> optionPayout -> underlier only-element) -> payout -> commodityPayout -> delivery first
+        else if Qualify_Commodity_Option
+        then payout -> optionPayout -> delivery only-element
+        else if item -> payout -> forwardPayout -> underlier -> commodity exists
+        then payout -> forwardPayout -> delivery only-element
+        else payout -> commodityPayout only-element -> delivery
+    then extract item -> location
+    then filter
+        locationIdentifierType = identifier.CommodityLocationIdentifierTypeEnum -> InterconnectionPoint
+    then only-element // There should be only one Location
+    then extract assignedIdentifier -> identifier
+    then only-element
+
+reporting rule LoadType from TransactionReportInstruction: <"Load type">
+    extract EconomicTermsForProduct(ProductForEvent)
+    then extract
+        if Qualify_Commodity_Swap_FixedFloat or Qualify_Commodity_Swap_Basis
+        then (payout -> commodityPayout
+            first
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+        else if Qualify_Commodity_Swaption
+        then (EconomicTermsForProduct(payout -> optionPayout -> underlier only-element) -> payout -> commodityPayout
+            first
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+        else if Qualify_Commodity_Option
+        then (payout -> optionPayout
+            only-element
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+        else if item -> payout -> forwardPayout -> underlier -> commodity exists
+        then (payout -> forwardPayout
+            only-element
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+    then extract GetLoadType
+    then distinct only-element to-enum EnergyLoadType1Code
+
+// Repeatable Field modelling
+reporting rule Delivery from TransactionReportInstruction: <"Commodity Delivery">
+    extract GetReportableDelivery
+    then extract
+        ReportableDelivery {
+            deliveryStartTime: deliveryStartTime,
+            deliveryEndTime: deliveryEndTime,
+            deliveryStartDate: deliveryStartDate,
+            deliveryEndDate: deliveryEndDate,
+            duration: duration,
+            daysOfTheWeek: daysOfTheWeek,
+            deliveryCapacity: deliveryCapacity then FormatToLongFraction20DecimalNumber,
+            quantityUnit: quantityUnit to-enum EnergyQuantityUnit2Code,
+            priceTimeIntervalQuantity: priceTimeIntervalQuantity
+                    then FormatToLongFraction20DecimalNumber,
+            currencyOfThePriceTimeIntervalQuantity: currencyOfThePriceTimeIntervalQuantity
+        }

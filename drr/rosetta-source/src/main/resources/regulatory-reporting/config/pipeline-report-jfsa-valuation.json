@@ -1,0 +1,10 @@
+{
+  "id" : "pipeline-report-jfsa-valuation",
+  "name" : "JFSA / Valuation",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.jfsa.rewrite.valuation.reports.JFSAValuationReportFunction",
+    "inputType" : "drr.regulation.common.ValuationReportInstruction",
+    "outputType" : "drr.regulation.jfsa.rewrite.valuation.JFSAValuationReport"
+  }
+}

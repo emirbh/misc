@@ -1,0 +1,243 @@
+namespace drr.regulation.cftc.rewrite.margin
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.datetime.*
+import cdm.base.staticdata.identifier.*
+import cdm.base.staticdata.party.*
+
+import drr.base.util.party.*
+import drr.regulation.cftc.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iosco.cde.version3.collateral.*
+import drr.standards.iso.*
+
+corpus Dissemination Margin
+
+corpus Dissemination DTCC_Harmonized
+
+report CFTC Margin in T+1
+    from CollateralReportInstruction
+    when ReportableProduct
+    with type CFTCMarginReport
+
+eligibility rule ReportableProduct from CollateralReportInstruction: <"When eligible for CFTC">
+    [regulatoryReference CFTC Margin
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+// CFTC Definitions
+reporting rule Counterparty1 from CollateralReportInstruction: <"Counterparty 1 (reporting counterparty)">
+    extract PartyLei(reportingSide -> reportingParty -> partyId)
+
+reporting rule Counterparty2 from CollateralReportInstruction: <"Counterparty 2 (non-reporting counterparty)">
+    extract
+        PartyLeiAndPersonByRoles(
+                reportingSide -> reportingCounterparty,
+                reportingSide -> reportingParty
+            )
+
+reporting rule Counterparty2IdentifierSource from CollateralReportInstruction: <"Counterparty 2 Identifier Source">
+    extract reportingSide -> reportingCounterparty
+    then extract
+        if person exists
+                and [PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID] any = person -> personId -> identifierType
+        then (person -> personId -> identifierType
+            then filter
+                ([PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID]) any = item
+            then first
+            then extract item to-string)
+        else if partyId -> identifierType any = LEI
+        then "LEID"
+
+reporting rule ReportingTimestamp from CollateralReportInstruction: <"Reporting Timestamp">
+    Now
+
+reporting rule UniqueSwapIdentifier from CollateralReportInstruction: <"Unique Swap Identifier (USI)">
+    extract
+        if GetRegimeSpecificIdentifiers(
+                reportableInformation,
+                CFTC,
+                TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+            )
+            exists
+        then GetRegimeSpecificIdentifiers(
+                    reportableInformation,
+                    CFTC,
+                    TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+                )
+        else (extract collateralDetails -> uniqueTradeIdentifier
+        then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+        then extract assignedIdentifier -> identifier)
+    then distinct
+    then only-element
+
+reporting rule UniqueTransactionIdentifier from CollateralReportInstruction: <"Unique Transaction Identifier (UTI)">
+    extract
+        if GetRegimeSpecificIdentifiers(
+                reportableInformation,
+                CFTC,
+                TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+            )
+            exists
+        then GetRegimeSpecificIdentifiers(
+                    reportableInformation,
+                    CFTC,
+                    TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+                )
+        else item -> collateralDetails -> uniqueTradeIdentifier -> assignedIdentifier -> identifier
+    then distinct
+    then only-element
+    then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True
+
+reporting rule SubmitterIdentifier from CollateralReportInstruction: <"Submitter Identifier">
+    extract ExtractReportSubmittingPartyIdentifier(reportingSide)
+
+reporting rule CollateralisationCategory from CollateralReportInstruction: <"Collateralisation Category">
+    extract item -> collateralDetails -> collateralisationCategory
+
+reporting rule PortfolioContainingNonReportableComponentIndicator from CollateralReportInstruction: <"Portfolio containing nonreportable component indicator">
+    extract item -> reportableInformation -> partyInformation
+    then extract regimeInformation
+    then flatten
+    then filter supervisoryBody = CFTC
+    then only-element
+    then extract
+        if cftcPartyInformation -> nonReportedTradePortfolio exists
+        then cftcPartyInformation -> nonReportedTradePortfolio
+        else False
+
+reporting rule InitialMarginPostedByTheReportingCounterpartyPreHaircut from CollateralReportInstruction: <"Initial margin posted by the reporting counterparty (pre-haircut)">
+    extract
+        InitialMarginPostedByReportingCounterpartyPreHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule InitialMarginPostedByTheReportingCounterpartyPostHaircut from CollateralReportInstruction: <"Initial margin posted by the reporting counterparty (post-haircut)">
+    extract
+        InitialMarginPostedByReportingCounterpartyPostHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule CurrencyOfInitialMarginPosted from CollateralReportInstruction: <"Currency of Initial Margin Posted">
+    extract
+        InitialMarginPostedByReportingCounterpartyCurrency(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule InitialMarginCollectedByTheReportingCounterpartyPreHaircut from CollateralReportInstruction: <"Initial margin collected by the counterparty (pre-haircut)">
+    extract
+        InitialMarginCollectedByReportingCounterpartyPreHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule InitialMarginCollectedByTheReportingCounterpartyPostHaircut from CollateralReportInstruction: <"Initial margin collected by the counterparty (post-haircut)">
+    extract
+        InitialMarginCollectedByReportingCounterpartyPostHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule CurrencyOfInitialMarginCollected from CollateralReportInstruction: <"Currency of Initial Margin Collected">
+    extract
+        InitialMarginCollectedByReportingCounterpartyCurrency(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule VariationMarginPostedByTheReportingCounterpartyPreHaircut from CollateralReportInstruction: <"Variation margin posted by the reporting counterparty (pre-haircut)">
+    extract
+        VariationMarginPostedByReportingCounterpartyPreHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule CurrencyOfVariationMarginPosted from CollateralReportInstruction: <"Currency of variation margin posted">
+    extract
+        VariationMarginPostedByReportingCounterpartyCurrency(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule VariationMarginCollectedByTheReportingCounterpartyPreHaircut from CollateralReportInstruction: <"Variation margin collected by the reporting counterparty (pre-haircut)">
+    extract
+        VariationMarginCollectedByReportingCounterpartyPreHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule CurrencyOfVariationMarginCollected from CollateralReportInstruction: <"Currency of variation margin collected">
+    extract
+        VariationMarginCollectedByReportingCounterpartyCurrency(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule VariationMarginCollateralPortfolioCode from CollateralReportInstruction: <"Variation Margin Collateral Portfolio Code">
+    extract collateralDetails -> collateral -> collateralPortfolio
+    then filter
+        legalAgreement -> legalAgreementIdentification -> agreementName -> creditSupportAgreementMarginType = VariationMargin
+    then only-element
+    then portfolioIdentifier -> assignedIdentifier -> identifier last
+
+reporting rule InitialMarginCollateralPortfolioCode from CollateralReportInstruction: <"Initial Margin Collateral Portfolio Code">
+    extract collateralDetails -> collateral -> collateralPortfolio
+    then filter
+        legalAgreement -> legalAgreementIdentification -> agreementName -> creditSupportAgreementMarginType = InitialMargin
+    then only-element
+    then portfolioIdentifier -> assignedIdentifier -> identifier last
+
+reporting rule EventTimestamp from CollateralReportInstruction: <"Event Timestamp">
+    extract collateralDetails -> collateralTimestamp
+
+reporting rule ActionType from CollateralReportInstruction: <"Action Type">
+    extract
+        if collateralDetails -> action = MARU
+        then collateralDetails -> action
+
+reporting rule AffiliatedCounterpartyForMarginAndCapitalIndicator from CollateralReportInstruction: <"Affiliated Counterparty for Margin and Capital Indicator">
+    // TH Sprint 2025-17: The reporting rule will remain empty as no existing logic can be reused. Awaiting for a proposal.
+    extract empty
+
+reporting rule DTCC_TradeParty1IDType from CollateralReportInstruction: <"Trade Party 1 - ID Type">
+    extract
+        if PartyLei(reportingSide -> reportingParty -> partyId) exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_SubmittingPartyIDType from CollateralReportInstruction: <"Submitting Party - ID Type">
+    extract
+        if ExtractReportSubmittingPartyIdentifier(reportingSide) exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_TradeParty1ReportingDestination from CollateralReportInstruction: <"Trade Party 1 - Reporting Destination">
+    extract collateralReportInstruction [
+        reportableInformation -> partyInformation
+            then filter
+                item -> partyReference = collateralReportInstruction -> reportingSide -> reportingParty
+            then extract regimeInformation -> supervisoryBody distinct
+            then flatten
+            then extract
+                if csaTrade.SupervisoryBodyForCSA any = item
+                        or [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC] any = item
+                then item
+            then distinct
+    ]
+
+reporting rule DTCC_Comment1 from CollateralReportInstruction: <"Comment 1">
+    empty
+
+reporting rule DTCC_MessageID from CollateralReportInstruction: <"Message ID">
+    extract
+        common.link.TechnicalRecordId(item -> reportableInformation, DoddFrankAct) + (ReportingTimestamp to-string)
+
+reporting rule DTCC_MessageType from CollateralReportInstruction: <"Message Type">
+    "CollateralValue"
+
+reporting rule DTCC_Version from CollateralReportInstruction: <"Version">
+    "Coll1.0"

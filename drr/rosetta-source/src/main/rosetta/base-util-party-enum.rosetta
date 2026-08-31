@@ -1,0 +1,13 @@
+namespace drr.base.util.party
+version "${project.version}"
+
+enum PartyIdentifierFormatEnum extends PartyIdentifierFormat2Enum:
+
+enum PartyIdentifierFormat2Enum extends LeiIdentifierFormatEnum: //TH Comment Sprint 13/2025: HKMA Specific
+    NaturalPerson
+    SWIFTBIC
+    Other
+
+enum LeiIdentifierFormatEnum:
+    Lei
+    LeiAndPerson

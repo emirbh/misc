@@ -1,0 +1,17 @@
+namespace drr.standards.iosco.cde.version3.valuation
+version "${project.version}"
+
+import cdm.event.common.*
+
+import drr.base.trade.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version2.* as cdeV2
+
+reporting rule ValuationAmount from TransactionReportInstructionBase: <"Valuation amount">
+    cdeV2.valuation.ValuationAmount
+
+reporting rule ValuationMethod from Valuation: <"Valuation Method">
+    cdeV2.valuation.ValuationMethod
+
+reporting rule ValuationCurrency from TransactionReportInstructionBase: <"Valuation currency">
+    cdeV2.valuation.ValuationCurrency

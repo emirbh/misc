@@ -1,0 +1,292 @@
+namespace drr.regulation.cftc.rewrite.dtcc
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.party.*
+import cdm.product.qualification.*
+
+import drr.base.trade.*
+import drr.regulation.cftc.*
+import drr.regulation.cftc.rewrite.*
+import drr.regulation.cftc.rewrite.trade.* as cftcTrade
+import drr.regulation.common.*
+import drr.regulation.common.dtcc.* as commondtcc
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.cde.version3.datetime.*
+import drr.standards.iso.*
+
+eligibility rule ReportableProduct from TransactionReportInstruction: <"When eligible for GTR Control fields from DTCC Harmonized">
+    [docReference CFTC cftcTrade.Trade DTCC_Specs
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+//DTCC Definitions
+reporting rule DTCC_ClearingVenueIDType from TransactionReportInstruction: <"Clearing Venue - ID Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_ClearingVenueIDType
+
+reporting rule DTCC_TradeParty1ClearingBrokerIDType from TransactionReportInstruction: <"Trade Party 1 - Clearing Broker ID Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeParty1ClearingBrokerIDType
+
+reporting rule DTCC_TradeParty1IDType from TransactionReportInstruction: <"Trade Party 1 - ID Type">
+    extract
+        if PartyPersonIdExists(reportingSide -> reportingParty) = True
+        then "NPID"
+        else "LEI"
+
+reporting rule DTCC_SubmittingPartyIDType from TransactionReportInstruction: <"Submitting Party - ID Type">
+    extract commondtcc.DTCC_SubmittingPartyIDType
+
+reporting rule DTCC_SubmittedForParty from TransactionReportInstruction: <"Submitted For Party">
+    extract commondtcc.DTCC_SubmittedForParty
+
+reporting rule DTCC_TradeLegTypes from TransactionReportInstruction: <"Trade Leg Types">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeLegTypes
+
+reporting rule DTCC_TradeParty1ReportingDestination from TransactionReportInstruction: <"Trade Party 1 - Reporting Destination">
+    extract commondtcc.DTCC_TradeParty1ReportingDestination
+
+reporting rule DTCC_TradeParty2ReportingDestination from TransactionReportInstruction: <"Trade Party 2 - Reporting Destination">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeParty2ReportingDestination
+
+reporting rule DTCC_PrimaryAssetClass from TransactionReportInstruction: <"Primary Asset Class">
+    extract commondtcc.DTCC_PrimaryAssetClass
+
+reporting rule DTCC_SecondaryAssetClass from TransactionReportInstruction: <"Secondary Asset Class">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_SecondaryAssetClass
+
+reporting rule DTCC_Comment1 from TransactionReportInstruction: <"Comment 1">
+    extract commondtcc.DTCC_Comment1
+
+reporting rule DTCC_MessageID from TransactionReportInstruction: <"Message ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract ReportableEvent [
+        common.link.TechnicalRecordId(item -> reportableInformation, DoddFrankAct) default originatingWorkflowStep -> messageInformation -> messageId
+            then extract item + (ReportingTimestamp(ReportableEvent) to-string)
+    ]
+
+reporting rule DTCC_MessageTypeTransaction from TransactionReportInstruction: <"Message Type (Transaction)">
+    extract commondtcc.DTCC_MessageTypeTransaction
+
+reporting rule DTCC_MessageTypePPD from TransactionReportInstruction: <"Message Type (PPD)">
+    extract commondtcc.DTCC_MessageTypePPD
+
+reporting rule DTCC_OptionStyle from TransactionReportInstruction: <"Option Style">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_OptionStyle
+
+reporting rule DTCC_OptionType from TransactionReportInstruction: <"Option Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_OptionType
+
+reporting rule DTCC_ProductID from TransactionReportInstruction: <"Product ID">
+    extract commondtcc.DTCC_ProductID
+
+reporting rule DTCC_TradeParty2ExecutionAgentID from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeParty2ExecutionAgentID
+
+reporting rule DTCC_TradeParty2ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeParty2ExecutionAgentIDType
+
+reporting rule DTCC_TradeParty1ExecutionAgentID from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeParty1ExecutionAgentID
+
+reporting rule DTCC_TradeParty1ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeParty1ExecutionAgentIDType
+
+reporting rule DTCC_TradeParty1TransactionID from TransactionReportInstruction: <"Trade Party 1 - Transaction ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_TradeParty1TransactionID
+
+reporting rule DTCC_VersionTransaction from TransactionReportInstruction: <"Version (Trade report)">
+    extract commondtcc.DTCC_VersionTransaction
+
+reporting rule DTCC_VersionPPD from TransactionReportInstruction: <"Version (PPD report)">
+    extract commondtcc.DTCC_VersionPPD
+
+reporting rule DTCC_Leg1CommodityUnderlyerID from TransactionReportInstruction: <"Leg 1 - Commodity Underlyer ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract ProductForEvent
+    then filter Qualify_AssetClass_Commodity(EconomicTermsForProduct) = True
+    then extract
+        ExtractCommodityClassificationLeg1(
+                item,
+                staticdata.asset.common.TaxonomySourceEnum -> CFTC,
+                1
+            )
+    then extract
+        if ["Agricultural", "Benzene", "Bullion", "Coal", "Composite Commodity Indices", "Diesel Fuel", "Electricity", "Emissions Allowances", "Ethanol and Bio Fuels", "Fuel Oil", "Freight", "Gas Oil", "Gasoline", "Heating Oil", "Jet Fuel", "Kerosene", "Metals", "Methanol", "Naptha", "Natural Gas", "NGL", "Oil", "Paper", "Plastic", "Weather"] any = item // TH Sprint 25-14: FpMl coding scheme specific for CFTC (CommodityClassificationScheme) needs to be generated
+        then item
+        as "Leg 1 - Commodity Underlyer ID"
+
+reporting rule DTCC_Leg2CommodityUnderlyerID from TransactionReportInstruction: <"Leg 2 - Commodity Underlyer ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract ProductForEvent
+    then filter Qualify_AssetClass_Commodity(EconomicTermsForProduct) = True
+    then extract
+        ExtractCommodityClassificationLeg2(
+                item,
+                staticdata.asset.common.TaxonomySourceEnum -> CFTC,
+                1
+            )
+    then extract
+        if ["Agricultural", "Benzene", "Bullion", "Coal", "Composite Commodity Indices", "Diesel Fuel", "Electricity", "Emissions Allowances", "Ethanol and Bio Fuels", "Fuel Oil", "Freight", "Gas Oil", "Gasoline", "Heating Oil", "Jet Fuel", "Kerosene", "Metals", "Methanol", "Naptha", "Natural Gas", "NGL", "Oil", "Paper", "Plastic", "Weather"] any = item // TH Sprint 25-14: FpMl coding scheme specific for CFTC (CommodityClassificationScheme) needs to be generated
+        then item
+        as "Leg 2 - Commodity Underlyer ID"
+
+reporting rule DTCC_SettlementType from TransactionReportInstruction: <"Settlement Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_SettlementType
+
+reporting rule DTCC_ProductGrade from TransactionReportInstruction: <"Product Grade">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_ProductGrade
+
+reporting rule DTCC_DeliveryLocation from TransactionReportInstruction: <"Delivery Location">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_DeliveryLocation
+
+reporting rule DTCC_Leg1CommodityInstrumentID from TransactionReportInstruction: <"Leg 1 - Commodity Instrument ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_Leg1CommodityInstrumentID
+
+reporting rule DTCC_Leg2CommodityInstrumentID from TransactionReportInstruction: <"Leg 2 - Commodity Instrument ID">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_Leg2CommodityInstrumentID
+
+reporting rule DTCC_ResponsibleDataSubmitterIDType from TransactionReportInstruction: <"Responsible Data Submitter - ID Type">
+    extract commondtcc.DTCC_ResponsibleDataSubmitterIDType
+
+reporting rule DTCC_ResponsibleDataSubmitterID from TransactionReportInstruction: <"Responsible Data Submitter - ID">
+    extract commondtcc.DTCC_ResponsibleDataSubmitterID
+
+reporting rule DTCC_MaturityDateOfTheUnderlying from TransactionReportInstruction: <"Maturity Date of the Underlier">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then commondtcc.DTCC_MaturityDateOfTheUnderlying
+
+reporting rule DTCC_CorporateActionNewTradeParty1LEI from TransactionReportInstruction: <"Corporate Action - New Trade Party 1 LEI">
+    extract commondtcc.DTCC_CorporateActionNewTradeParty1LEI
+
+reporting rule DTCC_OtherPaymentPayerIDType from TransactionReportInstruction: <"Other Payment Payer ID Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_OtherPaymentPayerIDType
+
+reporting rule DTCC_OtherPaymentReceiverIDType from TransactionReportInstruction: <"Other Payment Receiver ID Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract commondtcc.DTCC_OtherPaymentReceiverIDType
+
+reporting rule DTCC_ChangeInNotionalAmount1 from TransactionReportInstruction: <"Change in Notional Amount 1">
+    extract ChangeInNotionalAmountLeg1(item, 99999999999999999999.99999)
+
+reporting rule DTCC_ChangeInNotionalAmount2 from TransactionReportInstruction: <"Change in Notional Amount 2">
+    extract ChangeInNotionalAmountLeg2(item, 99999999999999999999.99999)
+
+reporting rule DTCC_LargeNotionalOffFacilitySwapElectionIndicator from TransactionReportInstruction: <"Large Notional Off-Facility Swap Election Indicator">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract reportableInformation
+    then filter
+        partyInformation -> regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> CFTC
+    then extract
+        if largeSizeTrade = True
+                and (executionVenueType <> ExecutionVenueTypeEnum -> SEF
+                    and executionVenueType <> ExecutionVenueTypeEnum -> DCM)
+        then True
+        else False
+
+reporting rule DTCC_MandatoryClearingIndicator from TransactionReportInstruction: <"Mandatory Clearing Indicator">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract reportableInformation -> partyInformation -> regimeInformation
+    then filter supervisoryBody = SupervisoryBodyEnum -> CFTC
+    then extract
+        if mandatorilyClearable = MandatorilyClearableEnum -> ProductAndCptyMandatory
+        then True
+        else if mandatorilyClearable = MandatorilyClearableEnum -> ProductMandatoryButNotCpty
+        then False
+    then distinct only-element
+
+reporting rule DTCC_OriginalSwapSDRIDType from TransactionReportInstruction: <"Original Swap SDR - ID Type">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract
+        if common.link.OriginalSwapSDRIdentifier exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_PhysicalCommodityContractIndicator from TransactionReportInstruction: <"Physical Commodity Contract Indicator">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract reportInstruction [
+        reportInstruction -> reportableInformation -> partyInformation
+            filter partyReference = reportInstruction -> reportingSide -> reportingParty
+            then only-element
+            then extract
+                if regimeInformation -> cftcPartyInformation -> physicalCommodityContractIndicator exists
+                then regimeInformation -> cftcPartyInformation -> physicalCommodityContractIndicator only-element
+                else False
+    ]
+
+reporting rule DTCC_SDMSPIndicatorCounterparty1 from TransactionReportInstruction: <"SD MSP Indicator - Counterparty 1">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract reportInstruction [
+        reportInstruction -> reportableInformation -> partyInformation
+            filter partyReference = reportInstruction -> reportingSide -> reportingParty
+            then filter regimeInformation -> cftcPartyInformation -> organizationType exists
+            then extract regimeInformation
+            then flatten
+            then filter supervisoryBody = SupervisoryBodyEnum -> CFTC
+            then only-element
+            then extract
+                if (cftcPartyInformation -> organizationType = CFTCEntityClassificationEnum -> SD
+                        or cftcPartyInformation -> organizationType = CFTCEntityClassificationEnum -> MSP)
+                then True
+                else False
+    ]
+
+reporting rule DTCC_SDMSPIndicatorCounterparty2 from TransactionReportInstruction: <"SD MSP Indicator - Counterparty 2">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract reportInstruction [
+        reportInstruction -> reportableInformation -> partyInformation
+            filter
+                partyReference = reportInstruction -> reportingSide -> reportingCounterparty
+            then filter regimeInformation -> cftcPartyInformation -> organizationType exists
+            then extract regimeInformation
+            then flatten
+            then filter supervisoryBody = SupervisoryBodyEnum -> CFTC
+            then only-element
+            then extract
+                if cftcPartyInformation -> organizationType = CFTCEntityClassificationEnum -> SD
+                        or cftcPartyInformation -> organizationType = CFTCEntityClassificationEnum -> MSP
+                then True
+                else False
+    ]
+
+reporting rule DTCC_SEFOrDCMAnonymousExecutionIndicator from TransactionReportInstruction: <"SEF or DCM Anonymous Execution Indicator">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then if (cde.event.ActionType = TERM
+                and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = cde.event.EventType
+                and cde.execution.CentralCounterparty exists)
+        then (reportableInformation -> sefOrDcmAnonymousIndicator default False)
+        else (extract reportableInformation
+        then extract
+            if ((partyInformation
+                    filter
+                        regimeInformation -> supervisoryBody any = SupervisoryBodyEnum -> CFTC
+                    then exists
+                    )
+                    and ([ExecutionVenueTypeEnum -> SEF, ExecutionVenueTypeEnum -> DCM] any = executionVenueType))
+            then (sefOrDcmAnonymousIndicator default False))
+
+reporting rule DTCC_SEFOrDCMIndicator from TransactionReportInstruction: <"SEF or DCM Indicator">
+    filter cftcTrade.IsAllowableActionForCFTC
+    then extract reportableInformation
+    then extract
+        if (executionVenueType = ExecutionVenueTypeEnum -> SEF
+                or executionVenueType = ExecutionVenueTypeEnum -> DCM)
+        then True
+        else False

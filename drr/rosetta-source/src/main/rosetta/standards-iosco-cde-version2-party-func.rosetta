@@ -1,0 +1,65 @@
+namespace drr.standards.iosco.cde.version2.party
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.base.trade.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version1.* as cdeV1
+import drr.standards.iosco.cde.version2.* as cdeV2
+import drr.standards.iso.*
+
+func Direction2: <"2.13 Direction. Reporting counterparties should use either:
+    - the element Direction 1 or Buyer identifier and Seller identifier to identify the direction of the transaction for the reporting counterparty as Buyer or Seller (model 1); or
+    - the element Direction 2 or Payer identifier and Receiver identifier to identify the payer and the receiver of each leg (model 2).
+    Reporting counterparties should NOT use both approaches, but adopt the appropriate one for the type of instrument concerned.">
+    [regulatoryReference CPMI_IOSCO cdeV2.CDE section "2" field "13" dataElement "1"
+        provision "Indicator of whether the reporting counterparty is the payer or the receiver of the leg as determined at the time of the transaction."]
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        reportingParty CounterpartyRoleEnum (0..1)
+    output:
+        direction Direction2Enum (1..1)
+
+    set direction: cdeV1.party.Direction2(payout, reportingParty)
+
+func PayerParty:
+    [regulatoryReference CPMI_IOSCO cdeV2.CDE section "2" field "13" dataElement "1"
+        provision "Indicator of whether the reporting counterparty is the payer or the receiver of the leg as determined at 
+            the time of the transaction.  
+            Or 
+            Identifier of the counterparty of the payer leg and the counterparty of the receiver leg as determined at 
+            the time of the transaction.  
+            A non-exhaustive list of examples of instruments for which this data element could apply are: 
+            • most swaps and swap-like contracts including interest rate swaps, credit total return swaps, and 
+            equity swaps (except for credit default swaps, variance, volatility, and correlation swaps) 
+            • foreign exchange swaps, forwards, non-deliverable forwards 
+            This data element is not applicable to instrument types covered by data elements Direction 1 or Buyer 
+            identifier and Seller identifier"]
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        counterparties Counterparty (2..2)
+    output:
+        party Party (0..1)
+    set party: cdeV1.party.PayerParty(payout, counterparties)
+
+func ReceiverParty:
+    [regulatoryReference CPMI_IOSCO cdeV2.CDE section "2" field "13" dataElement "1"
+        provision "Indicator of whether the reporting counterparty is the payer or the receiver of the leg as determined at 
+            the time of the transaction.  
+            Or 
+            Identifier of the counterparty of the payer leg and the counterparty of the receiver leg as determined at 
+            the time of the transaction.  
+            A non-exhaustive list of examples of instruments for which this data element could apply are: 
+            • most swaps and swap-like contracts including interest rate swaps, credit total return swaps, and 
+            equity swaps (except for credit default swaps, variance, volatility, and correlation swaps) 
+            • foreign exchange swaps, forwards, non-deliverable forwards 
+            This data element is not applicable to instrument types covered by data elements Direction 1 or Buyer 
+            identifier and Seller identifier"]
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        counterparties Counterparty (2..2)
+    output:
+        party Party (0..1)
+    set party: cdeV1.party.ReceiverParty(payout, counterparties)

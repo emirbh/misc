@@ -1,0 +1,107 @@
+namespace drr.base.util.party
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.party.*
+
+import drr.base.trade.*
+import drr.standards.iso.*
+
+func PartyLei: <"Returns a single Party LEI from a list of party identifiers">
+    inputs:
+        partyIdentifier PartyIdentifier (1..*)
+    output:
+        partyLei string (0..1)
+    set partyLei:
+        partyIdentifier
+            filter identifierType = PartyIdentifierTypeEnum -> LEI
+            then identifier distinct only-element
+
+func PartyLeiAndPersonByRoles: <"Returns a concatenated Party LEI and Person Id, or a Party LEI, from a PartyInformation.">
+    inputs:
+        party Party (0..1)
+        reportingParty Party (0..1)
+    output:
+        partyPersonLei string (0..1)
+
+    alias partyLei:
+        if party -> partyId -> identifierType any = PartyIdentifierTypeEnum -> LEI
+        then PartyLei(party -> partyId)
+
+    alias partyPersonId: // Returns a Person Id from a Party
+        party
+            filter [
+                personRole -> role // role is multi-cardinality
+                    extract r [ PartyIdentifierNaturalPersonRoles contains r ]
+                any = True
+            ]
+            then extract person -> personId -> identifier
+            then only-element
+
+    alias reportingPartyLei:
+        if reportingParty -> partyId -> identifierType any = PartyIdentifierTypeEnum -> LEI
+        then PartyLei(reportingParty -> partyId)
+
+    set partyPersonLei:
+        if partyPersonId exists
+        then (if reportingPartyLei exists then reportingPartyLei + partyPersonId else partyLei + partyPersonId)
+        else partyLei
+
+func PartyIdentifierNaturalPersonRoles:
+    output:
+        roles NaturalPersonRoleEnum (0..*)
+    add roles: [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+
+func ExtractPartyFromRelatedPartyByRole:
+    inputs:
+        relatedParties RelatedParty (0..*)
+        partyRole PartyRoleEnum (1..1)
+    output:
+        party Party (0..1)
+
+    set party:
+        FilterRelatedPartyByRole(relatedParties, partyRole) -> partyReference
+            distinct
+            only-element
+
+func PartyIdentifierFormat: <"Returns a Person Id from a Party.">
+    inputs:
+        party Party (1..1)
+    output:
+        partyIdentifierFormat PartyIdentifierFormatEnum (1..1)
+
+    alias personId:
+        party
+            filter [
+                personRole -> role // role is multi-cardinality
+                    extract r [ PartyIdentifierNaturalPersonRoles contains r ]
+                any = True
+            ]
+            then extract person -> personId -> identifier
+            then only-element
+    set partyIdentifierFormat:
+        if personId exists
+        then PartyIdentifierFormatEnum -> LeiAndPerson
+        else PartyIdentifierFormatEnum -> Lei
+
+func CounterpartyRoleFromLEI:
+    inputs:
+        counterparties Counterparty (2..2)
+        partyLei LEIIdentifier (0..1)
+    output:
+        reportingParty CounterpartyRoleEnum (0..1)
+    alias party1: ExtractCounterpartyByRole(counterparties, Party1)
+    alias party2: ExtractCounterpartyByRole(counterparties, Party2)
+
+    set reportingParty:
+        if partyLei = PartyLei(party1 -> partyReference -> partyId)
+        then Party1
+        else if partyLei = PartyLei(party2 -> partyReference -> partyId)
+        then Party2
+
+func CounterpartiesForEvent:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        counterparties Counterparty (2..2)
+    add counterparties: TradeForEvent(reportableEvent) -> tradableProduct -> counterparty

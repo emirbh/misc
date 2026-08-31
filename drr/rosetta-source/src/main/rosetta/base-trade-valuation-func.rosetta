@@ -1,0 +1,20 @@
+namespace drr.base.trade.valuation
+version "${project.version}"
+
+import cdm.event.common.*
+
+import drr.base.trade.*
+
+func GetValuation: <"Extracts the valuation history for the max timestamp available">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        valuation Valuation (0..1)
+
+    set valuation:
+        if TradeStateForEvent(reportableEvent) -> valuationHistory exists
+        then TradeStateForEvent(reportableEvent) -> valuationHistory
+            max [ timestamp -> date ]
+        else if PositionStateForEvent(reportableEvent) -> valuationHistory exists
+        then PositionStateForEvent(reportableEvent) -> valuationHistory
+            max [ timestamp -> date ]

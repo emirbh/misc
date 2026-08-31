@@ -1,0 +1,133 @@
+namespace drr.regulation.common.trade.link
+version "${project.version}"
+
+import cdm.base.staticdata.identifier.*
+import cdm.base.staticdata.party.*
+import cdm.event.qualification.*
+
+import drr.base.qualification.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version3.* as cde
+
+reporting rule PackageIndicator from TransactionReportInstruction: <"Package Indicator">
+    extract link.PackageInformation exists
+
+reporting rule PriorUSI from TransactionReportInstruction: <"Prior USI">
+    extract
+        if TradeForEvent -> tradeIdentifier -> assignedIdentifier -> identifier <> BeforeTradeForEvent -> tradeIdentifier -> assignedIdentifier -> identifier
+                and Qualify_Compression(originatingWorkflowStep -> businessEvent) = False
+        then BeforeTradeForEvent
+    then extract tradeIdentifier
+    then filter identifierType = UniqueSwapIdentifier
+    then only-element
+    then extract assignedIdentifier -> identifier
+    then last
+
+reporting rule SubsequentPositionUTI from TransactionReportInstruction: <"Subsequent Position UTI">
+    extract
+        if reportableInformation -> subsequentPositionUTI exists
+        then reportableInformation -> subsequentPositionUTI
+    then filter identifierType = UniqueTransactionIdentifier
+    then extract assignedIdentifier -> identifier
+    then distinct
+    then only-element
+
+reporting rule SwapLinkID from TransactionReportInstruction: <"Swap Link ID">
+    if product.IsFXSwap(ProductForEvent)
+    then cde.link.PackageIdentifier
+
+reporting rule SecondaryTransactionIdentifier from TransactionReportInstruction: <"Secondary transaction identifier">
+    extract TradeForEvent
+    then extract tradeIdentifier
+    then filter
+        identifierType <> UniqueTransactionIdentifier
+            and identifierType <> UniqueSwapIdentifier
+    then extract assignedIdentifier -> identifier
+    then flatten
+    then distinct
+    then only-element
+
+reporting rule OriginalSwapUTI from TransactionReportInstruction: <"Original Swap UTI">
+    extract
+        if (event.IsCleared(originatingWorkflowStep) = True and event.IsActionTypeNEWT = True and cde.event.EventType = CLRG)
+        then BeforeTradeForEvent
+    then extract tradeIdentifier
+    then filter identifierType = TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+    then only-element
+    then extract assignedIdentifier -> identifier
+
+reporting rule OriginalSwapSDRIdentifier from TransactionReportInstruction: <"Original Swap SDR Identifier">
+    extract
+        if ((event.IsCleared(originatingWorkflowStep) or (event.IntendedToClear(originatingWorkflowStep) and event.IsActionTypeTERM))
+                and cde.event.EventType = CLRG)
+        then ExtractPartyFromRelatedPartyByRole(
+                    reportableInformation -> partyInformation -> relatedParty,
+                    PartyRoleEnum -> TradeRepository
+                )
+    then extract PartyLei(partyId)
+
+reporting rule NewSDRIdentifier from TransactionReportInstruction: <"New SDR Identifier">
+    extract
+        if event.IsCleared(originatingWorkflowStep) = True
+        then ExtractPartyFromRelatedPartyByRole(
+                    reportableInformation -> partyInformation -> relatedParty,
+                    PartyRoleEnum -> TradeRepository
+                )
+    then extract PartyLei(partyId)
+
+reporting rule ClearingSwapUSIID from TransactionReportInstruction: <"Clearing Swap USI ID">
+    extract
+        if ((event.IsCleared(originatingWorkflowStep) or (event.IntendedToClear(originatingWorkflowStep) and event.IsActionTypeTERM))
+                and cde.event.EventType = CLRG)
+        then originatingWorkflowStep -> businessEvent
+    then extract businessEvent [
+        businessEvent -> after -> trade -> tradeIdentifier
+            filter
+                businessEvent -> instruction -> before -> trade -> tradeIdentifier all <> item
+            then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+            then extract FindLatestAssignedIdentifier
+    ]
+    then extract identifier
+
+reporting rule ClearingSwapUTIID from TransactionReportInstruction: <"Clearing Swap UTI ID">
+    extract
+        if ((event.IsCleared(originatingWorkflowStep) or (event.IntendedToClear(originatingWorkflowStep) and event.IsActionTypeTERM))
+                and cde.event.EventType = CLRG)
+        then originatingWorkflowStep -> businessEvent
+    then extract businessEvent [
+        businessEvent -> after -> trade -> tradeIdentifier
+            filter
+                businessEvent -> instruction -> before -> trade -> tradeIdentifier all <> item
+            then filter
+                identifierType = TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+            then extract FindLatestAssignedIdentifier
+    ]
+    then extract identifier
+
+reporting rule USIID from TransactionReportInstruction: <"USI ID">
+    extract TradeForEvent
+    then extract tradeIdentifier
+    then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+    then only-element
+    then extract assignedIdentifier -> identifier
+    then only-element
+
+reporting rule PostPricedSwapIndicator from TransactionReportInstruction: <"Post-priced swap indicator">
+    extract reportableInformation -> partyInformation -> regimeInformation
+    then filter supervisoryBody = SupervisoryBodyEnum -> CFTC
+    then only-element
+    then if postPricedIndicator exists
+        then postPricedIndicator
+        else False
+
+reporting rule OriginalSwapUSI from TransactionReportInstruction: <"Original Swap USI">
+    extract
+        if (event.IsCleared(originatingWorkflowStep) = True and event.IsActionTypeNEWT = True and cde.event.EventType = CLRG)
+        then BeforeTradeForEvent
+    then extract tradeIdentifier
+    then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+    then only-element
+    then extract assignedIdentifier -> identifier
+    then last

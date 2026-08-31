@@ -1,0 +1,23 @@
+namespace drr.standards.iosco.cde.version1.valuation
+version "${project.version}"
+
+import cdm.event.common.*
+
+import drr.base.trade.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version1.* as cdeV1
+import drr.standards.iso.*
+
+reporting rule ValuationAmount from TransactionReportInstructionBase: <"Valuation amount">
+    extract ValuationAmountFromValuation(valuation.GetValuation)
+
+reporting rule ValuationCurrency from TransactionReportInstructionBase: <"Valuation currency">
+    ValuationCurrencyFromValuation(valuation.GetValuation)
+
+reporting rule ValuationMethod from Valuation: <"Valuation Method">
+    if source exists and source = ValuationSourceEnum -> CentralCounterparty
+    then ValuationType1Code -> CCPV
+    else if method exists and method = ValuationTypeEnum -> MarkToMarket
+    then ValuationType1Code -> MTMA
+    else if method exists and method = ValuationTypeEnum -> MarkToModel
+    then ValuationType1Code -> MTMO

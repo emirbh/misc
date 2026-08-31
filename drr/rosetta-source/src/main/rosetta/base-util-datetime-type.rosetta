@@ -1,0 +1,9 @@
+namespace drr.base.util.datetime
+version "${project.version}"
+
+type ValuePeriod extends ValuePeriodBase:
+    value number (1..1)
+
+type ValuePeriodBase:
+    effectiveDate date (1..1)
+    endDate date (0..1)

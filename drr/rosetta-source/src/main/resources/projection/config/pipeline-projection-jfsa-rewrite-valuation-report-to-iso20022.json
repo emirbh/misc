@@ -1,0 +1,15 @@
+{
+  "id" : "pipeline-projection-jfsa-rewrite-valuation-report-to-iso20022",
+  "name" : "Jfsa Rewrite Valuation Report To Iso20022",
+  "transform" : {
+    "type" : "PROJECTION",
+    "function" : "drr.projection.iso20022.jfsa.rewrite.valuation.functions.Project_JFSARewriteValuationReportToIso20022",
+    "inputType" : "drr.regulation.jfsa.rewrite.valuation.JFSAValuationReport",
+    "outputType" : "iso20022.auth030.jfsa.Document"
+  },
+  "upstreamPipelineId" : "pipeline-report-jfsa-valuation",
+  "outputSerialisation" : {
+    "format" : "XML",
+    "configPath" : "xml-config/auth030-jfsa-rosetta-xml-config.json"
+  }
+}

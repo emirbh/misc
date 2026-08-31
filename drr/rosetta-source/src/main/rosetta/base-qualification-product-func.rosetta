@@ -1,0 +1,580 @@
+namespace drr.base.qualification.product
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.math.*
+import cdm.base.staticdata.asset.common.*
+import cdm.event.common.*
+import cdm.observable.asset.*
+import cdm.product.asset.*
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.trade.*
+
+func IsEquitySwap:
+    inputs:
+        tradableProduct TradableProduct (1..1)
+    output:
+        result boolean (1..1)
+    set result: IsEquitySwapProduct(tradableProduct -> product) = True
+
+func IsEquitySwapProduct:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_BaseProduct_EquitySwap(EconomicTermsForProduct(product)) = True
+
+func IsEquityOther: <"Evaluates a product as Equity Other product when it is either qualifies as Equity Option (Other) or Equity Swap (Other)">
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_Equity_OtherOption(EconomicTermsForProduct(product)) = True
+            or Qualify_Equity_OtherSwap(EconomicTermsForProduct(product)) = True
+
+func IsCommoditySwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_Commodity_Swap_FixedFloat(EconomicTermsForProduct(product)) = True
+            or Qualify_Commodity_Swap_Basis(EconomicTermsForProduct(product)) = True
+
+func IsCommoditySwaption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_Commodity_Swaption(EconomicTermsForProduct(product)) = True
+
+func IsCommodityForward:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_Commodity_Forward(EconomicTermsForProduct(product)) = True
+
+func IsCommodityFixedPriceForward:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        IsCommodityForward(product) = True
+            and EconomicTermsForProduct(product) -> payout -> fixedPricePayout exists
+
+func IsCommodityFloatingPriceForward:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        IsCommodityForward(product) = True
+            and EconomicTermsForProduct(product) -> payout -> commodityPayout exists
+
+func IsProductOTC: <"True if the product is and OTC under contractualProduct element">
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: product -> contractualProduct exists
+
+func IsProductETD: <"True if the product is and ETD under security element">
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        product -> security exists
+            and product -> security -> securityType = SecurityTypeEnum -> ListedDerivative
+
+func IsOption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: EconomicTermsForProduct(product) -> payout -> optionPayout exists
+
+func IsCommoditySwapFixedFloat:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_Commodity_Swap_FixedFloat(EconomicTermsForProduct(product)) = True
+
+func IsCommodityOption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_Commodity_Option(EconomicTermsForProduct(product)) = True
+
+func IsEquityOption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_EquityOption_PriceReturnBasicPerformance_SingleName(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquityOption_PriceReturnBasicPerformance_Index(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquityOption_PriceReturnBasicPerformance_Basket(
+                    EconomicTermsForProduct(product)
+                ) = True
+
+func IsPutOption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        IsOption(product)
+            and (EconomicTermsForProduct(product) -> payout -> optionPayout -> optionType all = OptionTypeEnum -> Put
+                or EconomicTermsForProduct(product) -> payout -> optionPayout -> optionType all = OptionTypeEnum -> Receiver)
+
+func IsCallOption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        IsOption(product)
+            and (EconomicTermsForProduct(product) -> payout -> optionPayout -> optionType all = OptionTypeEnum -> Call
+                or EconomicTermsForProduct(product) -> payout -> optionPayout -> optionType all = OptionTypeEnum -> Payer)
+
+func IsSingleCommodityPayoutProduct:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    alias economicTerms: EconomicTermsForProduct(product)
+    set result:
+        // EconomicTermsForProduct(product) -> payout -> commodityPayout only-element exists
+        // and EconomicTermsForProduct(product) -> payout -> fixedPricePayout is absent
+        // and EconomicTermsForProduct(product) -> payout -> interestRatePayout is absent
+        economicTerms -> payout -> commodityPayout only exists
+            and economicTerms -> payout -> commodityPayout count = 1
+
+func IsFXOption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        EconomicTermsForProduct(product) -> payout -> optionPayout -> underlier -> foreignExchange exists
+
+func IsCap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_InterestRate_CapFloor(EconomicTermsForProduct(product)) = True
+            and EconomicTermsForProduct(product) -> payout -> interestRatePayout -> rateSpecification -> floatingRate -> capRateSchedule exists
+
+func IsFloor:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_InterestRate_CapFloor(EconomicTermsForProduct(product)) = True
+            and EconomicTermsForProduct(product) -> payout -> interestRatePayout -> rateSpecification -> floatingRate -> floorRateSchedule exists
+
+func IsEquityForward:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_UnderlierProduct_Equity(
+                EconomicTermsForProduct(product) -> payout -> forwardPayout only-element -> underlier
+            )
+
+func IsProductWithUnderlier:
+    inputs:
+        product Product (1..1)
+    output:
+        productWithUnderlier boolean (1..1)
+    alias payout: EconomicTermsForProduct(product) -> payout
+    set productWithUnderlier:
+        payout -> optionPayout exists or payout -> forwardPayout exists
+
+func IsFixedInterestRate: <"Returns true if Price has priceType of InterestRate, with no spreadType specified.">
+    inputs:
+        price PriceSchedule (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        price -> priceType = PriceTypeEnum -> InterestRate
+            and price -> arithmeticOperator is absent
+
+func IsInterestRateSpread: <"Returns true if Price has priceType of InterestRate, and a spreadType of Spread.">
+    inputs:
+        price PriceSchedule (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        price -> priceType = PriceTypeEnum -> InterestRate
+            and price -> arithmeticOperator = ArithmeticOperationEnum -> Add
+
+func IsCommoditySwap_SingleIndex: <"Evaluates a product as a Commodity Swap on Single Index when the product satisfies the following criteria: 1) It is a Commodity Swap, 2) the instrument qualifies as a Financial Commodity, as it is based on the performance of a Commodity Index, and 3) the floating leg contains a Commodity Reference Price (ISDACRP) or an underlying commodity index.">
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+
+    alias economicTerms: EconomicTermsForProduct(product)
+    alias commodityUnderlier: economicTerms -> payout -> commodityPayout -> underlier
+
+    set result:
+        IsCommoditySwap(product) = True
+            and economicTerms -> payout -> commodityPayout -> settlementTerms -> settlementType all = Cash
+            and (commodityUnderlier -> commodity -> productIdentifier -> source all = ISDACRP
+                or commodityUnderlier -> index -> productTaxonomy -> primaryAssetClass any = Commodity)
+
+func IsCommodityForward_SingleIndex: <"Evaluates a product as a Commodity Forward on Single Index when the product satisfies the following criteria: 1) It is a Commodity Forward, 2) the instrument qualifies as a Financial Commodity, as it is based on the performance of a Commodity Index, and 3) the floating leg contains a Commodity Reference Price (ISDACRP) or an underlying commodity index.">
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+
+    alias economicTerms: EconomicTermsForProduct(product)
+    alias forwardUnderlier:
+        economicTerms -> payout -> forwardPayout only-element -> underlier
+
+    set result:
+        Qualify_Commodity_Forward(economicTerms) = True
+            and economicTerms -> payout -> forwardPayout only-element -> settlementTerms -> settlementType = Cash
+            and (forwardUnderlier -> commodity -> productIdentifier only-element -> source = ISDACRP
+                or forwardUnderlier -> index -> productTaxonomy -> primaryAssetClass any = Commodity)
+
+func IsCommodityOption_SingleIndex: <"Evaluates a product as a Commodity Option on Single Index when the product satisfies the following criteria: 1) It is a Commodity Option, 2) the instrument qualifies as a Financial Commodity, as it is based on the performance of a Commodity Index, and 3) the floating leg contains a Commodity Reference Price (ISDACRP) or an underlying commodity index.">
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+
+    alias economicTerms: EconomicTermsForProduct(product)
+    alias optionUnderlier: economicTerms -> payout -> optionPayout only-element -> underlier
+
+    set result:
+        Qualify_Commodity_Option_Cash(economicTerms) = True
+            and (optionUnderlier -> commodity -> productIdentifier only-element -> source = ISDACRP
+                or optionUnderlier -> index -> productTaxonomy -> primaryAssetClass any = Commodity)
+
+func IsCommodityTotalReturnSwap_SingleIndex: <"Evaluates a product as a Commodity Total Return Swap on Single Index when the product satisfies the following criteria: 1) It is a Commodity product, 2) has an interest rate leg and a performance leg, 3) the instrument qualifies as a Financial Commodity, as it is based on the performance of a Commodity Index, and 4) has a performance leg that contains a Commodity Reference Price (ISDACRP) or an underlying commodity index.">
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+
+    alias economicTerms: EconomicTermsForProduct(product)
+    alias performanceUnderlier:
+        economicTerms -> payout -> performancePayout only-element -> underlier
+
+    set result:
+        Qualify_AssetClass_Commodity(economicTerms) = True
+            and (economicTerms -> payout -> interestRatePayout, economicTerms -> payout -> performancePayout) only exists
+            and economicTerms -> payout -> performancePayout only-element -> settlementTerms -> settlementType = Cash
+            and (performanceUnderlier -> commodity -> productIdentifier only-element -> source = ISDACRP
+                or performanceUnderlier -> index -> productTaxonomy -> primaryAssetClass any = Commodity)
+
+func IsInflationRateBasis:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_BaseProduct_Inflation(EconomicTermsForProduct(product)) = True
+            and Qualify_BaseProduct_CrossCurrency(EconomicTermsForProduct(product)) = False
+            and Qualify_SubProduct_Basis(EconomicTermsForProduct(product)) = True
+
+func IsInterestRateCrossCurrency:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_BaseProduct_CrossCurrency(EconomicTermsForProduct(product)) = True
+
+func IsInterestRateCrossCurrencyBasis:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_SubProduct_Basis(EconomicTermsForProduct(product)) = True
+            and Qualify_BaseProduct_CrossCurrency(EconomicTermsForProduct(product)) = True
+
+func IsInterestRateFixedFloatSingleCurrency:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_SubProduct_FixedFloat(EconomicTermsForProduct(product)) = True
+            and Qualify_BaseProduct_CrossCurrency(EconomicTermsForProduct(product)) = False
+
+func IsInterestRateFixedFixed:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_SubProduct_FixedFixed(EconomicTermsForProduct(product)) = True
+            and Qualify_BaseProduct_CrossCurrency(EconomicTermsForProduct(product)) = False
+
+func IsInterestRateBasis:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_SubProduct_Basis(EconomicTermsForProduct(product)) = True
+            and Qualify_BaseProduct_CrossCurrency(EconomicTermsForProduct(product)) = False
+
+func IsInterestRateReturnSwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+
+    set result:
+        if EconomicTermsForProduct(product) -> payout -> interestRatePayout count = 1
+                and EconomicTermsForProduct(product) -> payout -> performancePayout count = 1
+        then (EconomicTermsForProduct(product) -> payout -> interestRatePayout only-element -> rateSpecification -> floatingRate exists
+                or EconomicTermsForProduct(product) -> payout -> interestRatePayout only-element -> rateSpecification -> fixedRate exists
+                or EconomicTermsForProduct(product) -> payout -> interestRatePayout only-element -> rateSpecification -> inflationRate exists)
+
+func InterestRateReturnSwap:
+    inputs:
+        product Product (1..1)
+    output:
+        interestRatePayout InterestRatePayout (1..1)
+
+    set interestRatePayout:
+        EconomicTermsForProduct(product) -> payout -> interestRatePayout only-element
+
+func IsGenericIRS:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: EconomicTermsForProduct(product) -> payout -> interestRatePayout count = 2
+
+func IsCommoditySwapFloatFloat: //FloatFloat
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_Commodity_Swap_Basis(EconomicTermsForProduct(product)) = True
+
+func IsIRSwaption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_InterestRate_Option_Swaption(EconomicTermsForProduct(product)) = True
+
+func IsCapFloor:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_InterestRate_CapFloor(EconomicTermsForProduct(product)) = True
+
+func IsFXForward:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        EconomicTermsForProduct(product) -> payout -> forwardPayout -> underlier -> foreignExchange count = 1
+            and IsProductETD(product) = False
+
+func IsFXPerformance:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        EconomicTermsForProduct(product) -> payout -> performancePayout -> observationTerms -> observable -> currencyPair exists
+
+func IsFXSwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_ForeignExchange_Swap(EconomicTermsForProduct(product))
+            or Qualify_ForeignExchange_NDS(EconomicTermsForProduct(product))
+
+func IsFXProduct:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: IsFXForward(product) or IsFXOption(product) or IsFXSwap(product)
+
+func IsEquity: //@TODO: should this also include equity forwards?
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_UnderlierProduct_Equity(
+                    EconomicTermsForProduct(product) -> payout -> performancePayout only-element -> underlier
+                ) = True
+            or Qualify_UnderlierProduct_Equity(
+                    EconomicTermsForProduct(product) -> payout -> optionPayout only-element -> underlier
+                ) = True
+            or Qualify_UnderlierProduct_Equity(
+                    EconomicTermsForProduct(product) -> payout -> forwardPayout only-element -> underlier
+                )
+
+func IsFRA:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_InterestRate_Fra(EconomicTermsForProduct(product)) = True
+
+func IsCreditSwaption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_CreditDefaultSwaption(EconomicTermsForProduct(product)) = True
+
+func IsCommodity:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(product)) = True
+            or IsSingleCommodityPayoutProduct(product) = True
+
+func IsCreditDefaultSwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_AssetClass_Credit(EconomicTermsForProduct(product)) = True
+
+func IsCreditDefaultSwapIndex:
+    inputs:
+        trade Trade (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_CreditDefaultSwap_Index(EconomicTermsForProduct(ProductForTrade(trade))) = True
+            or Qualify_CreditDefaultSwap_IndexTranche(
+                    EconomicTermsForProduct(ProductForTrade(trade))
+                ) = True
+
+func IsCreditDefaultSwapBasket:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result: Qualify_CreditDefaultSwap_Basket(EconomicTermsForProduct(product)) = True
+
+func IsInterestRateDebtOption:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_InterestRate_Option_DebtOption(EconomicTermsForProduct(product)) = True
+
+func IsVarianceSwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_EquitySwap_ParameterReturnVariance_SingleName(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquitySwap_ParameterReturnVariance_Index(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquitySwap_ParameterReturnVariance_Basket(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquitySwap_ParameterReturnDispersion(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_ForeignExchange_ParameterReturnVariance(
+                    EconomicTermsForProduct(product)
+                ) = True
+
+func IsVolatilitySwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_EquitySwap_ParameterReturnVolatility_SingleName(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquitySwap_ParameterReturnVolatility_Index(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquitySwap_ParameterReturnVolatility_Basket(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_ForeignExchange_ParameterReturnVolatility(
+                    EconomicTermsForProduct(product)
+                ) = True
+
+func IsDividendSwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_EquitySwap_ParameterReturnDividend_SingleName(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquitySwap_ParameterReturnDividend_Index(
+                    EconomicTermsForProduct(product)
+                ) = True
+            or Qualify_EquitySwap_ParameterReturnDividend_Basket(
+                    EconomicTermsForProduct(product)
+                ) = True
+
+func IsFixedFloatZeroCouponSwap:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        Qualify_InterestRate_IRSwap_FixedFloat_ZeroCoupon(EconomicTermsForProduct(product)) = True
+            or Qualify_InterestRate_InflationSwap_FixedFloat_ZeroCoupon(
+                    EconomicTermsForProduct(product)
+                ) = True
+
+func IsTotalReturnSwapDebtUnderlier:
+    inputs:
+        product Product (1..1)
+    output:
+        result boolean (1..1)
+
+    alias performanceUnderlier:
+        product -> contractualProduct -> economicTerms -> payout -> performancePayout only-element -> underlier
+
+    set result:
+        (product -> contractualProduct -> economicTerms -> payout -> interestRatePayout, product -> contractualProduct -> economicTerms -> payout -> performancePayout) only exists
+            and if performanceUnderlier exists
+                then performanceUnderlier -> loan exists
+                        or performanceUnderlier -> security -> securityType = SecurityTypeEnum -> Debt

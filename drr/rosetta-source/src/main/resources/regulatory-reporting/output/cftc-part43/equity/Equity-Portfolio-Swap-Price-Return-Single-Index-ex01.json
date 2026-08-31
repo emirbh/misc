@@ -1,0 +1,68 @@
+{
+  "actionType" : "NEWT",
+  "blockTradeElectionIndicator" : false,
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI123456789001",
+  "counterparty2" : "DUMMYLEI123456789002",
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "changeInNotionalAmount1" : 0,
+    "largeNotionalOffFacilitySwapElectionIndicator" : false,
+    "messageID" : "PrimeSwpConfirmed1P65714723751DFCFTCRiskNew2024-04-29T00:00Z",
+    "messageType" : "RT",
+    "physicalCommodityContractIndicator" : false,
+    "primaryAssetClass" : "Equity",
+    "sefOrDcmIndicator" : false,
+    "submittedForParty" : "DUMMYLEI123456789001",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CFTC", "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "EQUITYPORTFOLIOSWA01",
+    "version" : "PPD1.0"
+  },
+  "effectiveDate" : "2022-02-14",
+  "eventTimestamp" : "2022-02-10T05:42:28Z",
+  "eventType" : "ALOC",
+  "executionTimestamp" : "2022-02-10T05:42:21Z",
+  "leg1" : {
+    "notionalAmount" : 90000,
+    "notionalCurrency" : "USD",
+    "settlementCurrency" : "USD"
+  },
+  "leg2" : {
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004"
+    },
+    "settlementCurrency" : "USD"
+  },
+  "nonReportable" : {
+    "counterparty1Format" : "Lei",
+    "counterparty2Format" : "Lei",
+    "executionVenueType" : "OffFacility",
+    "instrumentType" : "Swap",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "USD",
+          "UnderlierID" : "USD-SOFR-COMPOUND"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "underlyingAssetType" : "Index"
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI123456789001",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "EQUITYPORTFOLIOSWA03"
+}

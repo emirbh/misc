@@ -1,0 +1,437 @@
+namespace drr.regulation.cftc.rewrite.margin
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.regulation.cftc.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+type CFTCMarginReport:
+    [rootType]
+    counterparty1 LEIIdentifier (1..1)
+        [label "13 Counterparty 1"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "13" field "Counterparty 1 (reporting counterparty)"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question. In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund, and not the fund manager is reported as the counterparty."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "13" field "Counterparty 1" footnote "24"
+            provision "Throughout this Technical Specification, references to 'OTC derivatives' in CDE data elements should be read to mean swaps."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "13" field "Counterparty 1" footnote "25"
+            provision " ROC Statement  Individuals Acting in a Business Capacity, ROC Statement - Individuals Acting in a Business Capacity."]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 1 (reporting counterparty)"
+            provision "The same CDE Counterparty 1 extraction is required."]
+        [ruleReference Counterparty1]
+    counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "14 Counterparty 2"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "14" field "Counterparty 2"
+            provision "Identifier of the second counterparty to an OTC derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund, and not the fund manager is reported as the counterparty."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "14" field "Counterparty 2" footnote "26"
+            provision "In the case of a swap transaction for pre-allocated block executed by a fund manager on behalf of a fund, the fund manager is reported as the counterparty."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "14" field "Counterparty 2" footnote "27"
+            provision "Only one counterparty should be reported. In cases where multiple counterparties are legally responsible as the second counterparty (such as an obligated group, for example), report only one of the counterparties and use the same counterparty for all continuation data and lifecycle events."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "14" field "Counterparty 2" footnote "28"
+            provision "ROC Statement  Individuals Acting in a Business Capacity, ROC Statement - Individuals Acting in a Business Capacity"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "14" field "Counterparty 2" footnote "29"
+            provision "Throughout this Technical Specification, Privacy Law Identifier (PLI) has been added as an allowable value for all Counterparty 2 (#14) associated data elements."]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 2 (non-reporting counterparty)"
+            provision "The same CDE Counterparty 2 extraction is required."]
+        [ruleReference Counterparty2]
+    counterparty2IdentifierSource Max4Text (1..1)
+        [label "15 Counterparty 2 identifier source"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "15" field "Counterparty 2 Identifier Source"
+            provision "Source used to identify the Counterparty 2."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "15" field "Counterparty 2 Identifier Source" footnote "30"
+            provision "Throughout this Technical Specification, for references to 'Privacy Law Identifiers', refer to DMO Letter No. 17-16, http://www.cftc.gov/idc/groups/public/@lrlettergeneral/documents/letter/17-16.pdf"]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 2 Identifier Source"
+            provision "Improvement on the logic was done to consider first if person exists. If not, then consider party."]
+        [ruleReference Counterparty2IdentifierSource]
+    submitterIdentifier string (1..1)
+        [label "22 Submitter identifier"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "22" field "Submitter Identifier"
+            provision "Identifier of the entity submitting the data to the swap data repository (SDR). The Submitter identifier will be the same as the reporting counterparty or swap execution facility (SEF), unless they use a third-party service provider to submit the data to SDR in which case, report the identifier of the third-party service provider."]
+        [regulatoryReference ISDA PeerReviewGroup date "20220309"
+            provision "Check whether trade is executed in a SEF first. If it is, SEF is obliged to be the Submitter. Then check for Reporting Party and Data Submitter."]
+        [ruleReference SubmitterIdentifier]
+    actionType MarginActionEnum (1..1)
+        [label "26 Action type"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "26" field "Action Type"
+            provision "Type of action taken on the swap transaction or type of end-of-day reporting. Actions may include, but are not limited to, new, modify, correct, error, terminate, revive, transfer out, valuation, and collateral.
+                - New: An action that reports a new swap transaction. It applies to the first message relating to a new USI or UTI.
+                - Modify: An action that modifies the state of a previously submitted transaction (e.g., credit event) or changes a term of a previously submitted transaction due to a newly negotiated modification (amendment) or updates previously missing information (e.g., post price swap). It does not include correction of a previous transaction.
+                - Correct: An action that corrects erroneous data of a previously submitted transaction.
+                - Error: An action of cancellation of a wrongly submitted entire transaction in case it never came into existence or was not subject to part 43/part 45 reporting requirements but was reported erroneously.
+                - Terminate: An action that closes an existing transaction because of a new event (e.g., Compression, Novation). This does not apply to transactions that terminate at contractual maturity date.
+                - Revive: An action that reinstates a swap transaction that was reported as error or terminated by mistake.
+                - Transfer out: An action that transfers swap transaction from one SDR to another SDR (change of swap data repository).
+                - Valuation: An update to valuation data. There will be no corresponding Event type.
+                - Collateral: An update to collateral margin data. There will be no corresponding Event type. Refer to appendix F for event model sample scenarios"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "26" field "Action Type" footnote "33"
+            provision "Only one Action type value is allowed per submission. Multiple Action type values should not be submitted in one transaction report. For example, if a data element needs to be corrected on a previously submitted transaction that is getting terminated, the Correct (CORR) value should be submitted as a separate submission prior to the submission of the Terminate (TERM) transaction."]
+        [ruleReference ActionType]
+    eventTimestamp zonedDateTime (1..1)
+        [label "30 Event timestamp"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "30" field "Event Timestamp"
+            provision "Date and time of occurrence of the event as determined by the reporting counterparty or a service provider. In the case of a clearing event, date and time when the original swap is accepted by the derivative clearing organization (DCO) for clearing and recorded by the DCOs system should be reported in this data element. The time element is as specific as technologically practicable."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "30" field "Event Timestamp" footnote "38"
+            provision "In the case of collateral update (Action type = 'MARU'), this is the date for which the information contained in the report is provided. Time portion should be reported as '00:00:00'."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "30" field "Event Timestamp" footnote "39"
+            provision "Both the date and time portion are required to be reported. If the time portion is not available, report '00:00:00' for the time portion."]
+        [regulatoryReference ISDA PeerReviewGroup date "20240117"
+            provision "DRR users are expected to use eventCreationDateTime as qualifier to the timestamp they have to report as the Event Timestamp"]
+        [ruleReference EventTimestamp]
+    reportingTimestamp zonedDateTime (1..1)
+        [label "97 Reporting timestamp"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "97" field "Reporting Timestamp"
+            provision "Date and time of the submission of the report to the trade repository"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "97" field "Reporting Timestamp" footnote "74"
+            provision "Reporting timestamp (#97) is recorded and reported by the submitter."]
+        [ruleReference ReportingTimestamp]
+    uniqueSwapIdentifier string (1..1)
+        [label "102 Unique Swap Identifier (USI)"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "102" field "Unique Swap Identifier (USI)"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "102" field "Unique Swap Identifier (USI)" footnote "76"
+            provision "Throughout this Technical Specification, references to 'CFTC USI Data Standard' should refer to the USI Data Standard, https://www.cftc.gov/sites/default/files/idc/groups/public/@swaps/documents/dfsubmission/usidatastandards100112.pdf"]
+        [regulatoryReference ISDA PeerReviewGroup date "20220309"
+            provision "Rule does not model UTI > USI priority defined in CFTC specification."]
+        [regulatoryReference ISDA PeerReviewGroup date "20220309"
+            provision "Firms do expect to report USI/UTI in both formats: as a single identifier field as well as using Issuer + identifier. The functional model needs to handle both scenarios."]
+        [ruleReference UniqueSwapIdentifier]
+    uniqueTransactionIdentifier UTIdentifier (0..1)
+        [label "103 Unique Transaction Identifier (UTI)"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "103" field "Unique Transaction Identifier (UTI)"
+            provision "A unique identifier assigned to all swap transactions which identifies the swap uniquely throughout its lifecycle and used for all recordkeeping and all swap data reporting pursuant to para 45.5. A UTI is comprised of the LEI of the generating entity and a unique alphanumeric code."]
+        [regulatoryReference ISDA PeerReviewGroup date "20220309"
+            provision "Rule does not model UTI > USI priority defined in CFTC specification."]
+        [regulatoryReference ISDA PeerReviewGroup date "20220309"
+            provision "Firms do expect to report USI/UTI in both formats: as a single identifier field as well as using Issuer + identifier. The functional model needs to handle both scenarios."]
+        [ruleReference UniqueTransactionIdentifier]
+    affiliatedCounterpartyForMarginAndCapitalIndicator boolean (1..1)
+        [label "114 Affiliated Counterparty for Margin and Capital Indicator"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "114" field "Affiliated Counterparty For Margin And Capital Indicator"
+            provision "Indicator of whether the current counterparty is deemed an affiliate for U.S. margin and capital rules (as per para 23.159)."]
+        [regulatoryReference ISDA USComplianceGroup date "20220802"
+            provision "Not returning anything until it gets modelled"]
+        [ruleReference AffiliatedCounterpartyForMarginAndCapitalIndicator]
+    collateralisationCategory CollateralisationType3Code__1 (0..1)
+        [label "115 Collateralisation Category"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "115" field "Collateralisation Category"
+            provision "Indicator of whether a collateral agreement (or collateral agreements) between the counterparties exists (uncollateralised/partially collateralised/one-way collateralised/fully collateralised). This data element is provided for each transaction or each portfolio, depending on whether the collateralisation is performed at the transaction or portfolio level, and is applicable to both cleared and uncleared transactions."]
+        [ruleReference CollateralisationCategory]
+    initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "116 Initial Margin Collateral Portfolio Code"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "116" field "Initial Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate initial margin of a set of open swap transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "116" field "Initial Margin Collateral Portfolio Code" footnote "82"
+            provision "If collateralization was performed on a transaction level basis, 'TRANSACTION-LEVEL' is accepted.  “NOTAPPLICABLE” is accepted if (i) collateralization was performed on a portfolio basis and there is no IM portfolio code, or (ii) it is a submission from a DCO. "]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "116" field "Initial Margin Collateral Portfolio Code" footnote "83"
+            provision " The M in the Part 43/45 Asset Class column is for collateral and valuation reporting only."]
+        [ruleReference InitialMarginCollateralPortfolioCode]
+    portfolioContainingNonReportableComponentIndicator boolean (1..1)
+        [label "117 Portfolio Containing Non Reportable Component Indicator"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "117" field "Portfolio Containing Non Reportable Component Indicator"
+            provision "If collateral is reported on a portfolio basis, indicator of whether the collateral portfolio includes swap transactions exempt from reporting."]
+        [ruleReference PortfolioContainingNonReportableComponentIndicator]
+    initialMarginPostedByTheReportingCounterpartyPostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "118 Initial Margin Posted By The Reporting Counterparty Post Haircut"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "118" field "Initial Margin Posted By The Reporting Counterparty Post Haircut"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction. This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e., committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [ruleReference InitialMarginPostedByTheReportingCounterpartyPostHaircut]
+    initialMarginPostedByTheReportingCounterpartyPreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "119 Initial Margin Posted By The Reporting Counterparty (Pre-Haircut)"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "119" field "Initial Margin Posted By The Reporting Counterparty (Pre-Haircut)"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction. This refers to the total current value of the initial margin, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e., committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [ruleReference InitialMarginPostedByTheReportingCounterpartyPreHaircut]
+    currencyOfInitialMarginPosted ISOCurrencyCodeEnum (0..1)
+        [label "120 Currency Of Initial Margin Posted"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "120" field "Currency Of Initial Margin Posted"
+            provision "Currency in which the initial margin posted is denominated. If the initial margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted initial margins."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "120" field "Currency Of Initial Margin Posted" footnote "79"
+            provision "For portfolio with multiple currencies, it must be converted in to a single currency chosen by the reporting counterparty and reported."]
+        [ruleReference CurrencyOfInitialMarginPosted]
+    initialMarginCollectedByTheReportingCounterpartyPostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "121 Initial Margin Collected By The Reporting Counterparty (Post-Haircut)"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "121" field "Initial Margin Collected By The Reporting Counterparty (Post-Haircut)"
+            provision "Monetary value of initial margin that has been collected by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction. This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the central counterparty as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [ruleReference InitialMarginCollectedByTheReportingCounterpartyPostHaircut]
+    initialMarginCollectedByTheReportingCounterpartyPreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "122 Initial Margin Collected By The Reporting Counterparty (Pre-Haircut)"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "122" field "Initial Margin Collected By The Reporting Counterparty (Pre-Haircut)"
+            provision "Monetary value of initial margin that has been collected by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction. This refers to the total current value of the initial margin, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the central counterparty as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [ruleReference InitialMarginCollectedByTheReportingCounterpartyPreHaircut]
+    currencyOfInitialMarginCollected ISOCurrencyCodeEnum (0..1)
+        [label "123 Currency Of Initial Margin Collected"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "123" field "Currency Of Initial Margin Collected"
+            provision "Currency in which the initial margin collected is denominated. If the initial margin collected is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected initial margins."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "123" field "Currency Of Initial Margin Collected" footnote "84"
+            provision "For portfolio with multiple currencies, it must be converted in to a single currency chosen by the reporting counterparty and reported."]
+        [ruleReference CurrencyOfInitialMarginCollected]
+    variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "124 Variation Margin Collateral Portfolio Code"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "124" field "Variation Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate variation margin related to a set of open swap transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "124" field "Variation Margin Collateral Portfolio Code" footnote "90"
+            provision "If collateralization was performed on a transaction level basis, 'TRANSACTION-LEVEL' is accepted. “NOTAPPLICABLE” is accepted if (i) collateralization was performed on a portfolio basis and there is no VM portfolio code, or (ii) it is a submission from a DCO."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "124" field "Variation Margin Collateral Portfolio Code" footnote "91"
+            provision "The 'M' in the 'Part 43/45 Asset Class' column is for collateral and valuation reporting only."]
+        [ruleReference VariationMarginCollateralPortfolioCode]
+    variationMarginPostedByTheReportingCounterpartyPreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "125 Variation Margin Posted By The Reporting Counterparty (Pre-Haircut)"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "125" field "Variation Margin Posted By The Reporting Counterparty (Pre-Haircut)"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin posted relates to such single transaction. This data element refers to the total current value of the variation margin, cumulated since the first reporting of variation margins posted for the portfolio/transaction. If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "125" field "Variation Margin Posted By The Reporting Counterparty (Pre-Haircut)" footnote "87"
+            provision "This data element must be reported daily regardless of whether there is a change in the value since the last reporting."]
+        [ruleReference VariationMarginPostedByTheReportingCounterpartyPreHaircut]
+    currencyOfVariationMarginPosted ISOCurrencyCodeEnum (0..1)
+        [label "126 Currency Of Variation Margin Posted"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "126" field "Currency Of Variation Margin Posted"
+            provision "Currency in which the variation margin posted is denominated. If the variation margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted variation margins."]
+        [ruleReference CurrencyOfVariationMarginPosted]
+    variationMarginCollectedByTheReportingCounterpartyPreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "127 Variation Margin Collected By The Reporting Counterparty (Pre-Haircut)"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "127" field "Variation Margin Collected By The Reporting Counterparty (Pre-Haircut)"
+            provision "Monetary value of the variation margin collected by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin collected relates to such single transaction. This refers to the total current value of the variation margin, cumulated since the first reporting of collected variation margins for the portfolio/ transaction. If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "127" field "Variation Margin Collected By The Reporting Counterparty (Pre-Haircut)" footnote "88"
+            provision "This data element must be reported daily regardless of whether there is a change in the value since the last reporting."]
+        [ruleReference VariationMarginPostedByTheReportingCounterpartyPreHaircut]
+    currencyOfVariationMarginCollected ISOCurrencyCodeEnum (0..1)
+        [label "128 Currency Of Variation Margin Collected"]
+        [regulatoryReference CFTC Margin appendix "1" dataElement "128" field "Currency Of Variation Margin Collected"
+            provision "Currency in which the variation margin collected is denominated. If the variation margin collected is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected variation margins."]
+        [ruleReference CurrencyOfVariationMarginCollected]
+    // DTCC Additional Fields
+    tradeParty1IDType PartyIdentifierTypeEnum (1..1)
+        [label "Trade Party 1 - ID Type"]
+        [docReference CFTC Margin DTCC_Specs field "Trade Party 1 - ID Type"
+            provision "GTR required Control Field."]
+        [ruleReference DTCC_TradeParty1IDType]
+    submittingPartyIDType PartyIdentifierTypeEnum (1..1)
+        [label "Submitting Party - ID Type"]
+        [docReference CFTC Margin DTCC_Specs field "Submitting Party - ID Type"
+            provision "GTR required Control Field."]
+        [ruleReference DTCC_SubmittingPartyIDType]
+    usiIDPrefix string (0..1)
+        [label "USI ID Prefix"]
+        [docReference CFTC Margin DTCC_Specs field "USI ID Prefix"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250327" field "USI ID Prefix"
+            provision "The group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated."]
+    utiIDPrefix string (0..1)
+        [label "UTI ID Prefix"]
+        [docReference CFTC Margin DTCC_Specs field "UTI ID Prefix"
+            provision "A unique identifier assigned to all swap transactions which identifies the swap uniquely throughout its lifecycle and used for all recordkeeping and all swap data reporting pursuant to §45.5. A UTI is comprised of the LEI of the generating entity and a unique alphanumeric code."]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250327" field "UTI ID Prefix"
+            provision "The group agreed on not considering UTI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is UTI ID, considering the concatenation of both fields. Thus, UTI ID is the only field that needs to be populated."]
+    tradeParty1ReportingDestination SupervisoryBodyEnum (1..*)
+        [label "Trade Party 1 - Reporting Destination"]
+        [docReference CFTC Margin DTCC_Specs field "Trade Party 1 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+        [ruleReference DTCC_TradeParty1ReportingDestination]
+    comment1 string (1..1)
+        [label "Comment 1"]
+        [docReference CFTC Margin DTCC_Specs field "Comment 1"
+            provision "For CSV submissions if  populated with an * the entire line is treated as comment."]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Comment 1"
+            provision "Empty because CSV submission is still not supported by current DRR model. This rule will be revisited once Harmonized CSV projection is included."]
+        [ruleReference DTCC_Comment1]
+    messageID string (1..1)
+        [label "Message ID"]
+        [docReference CFTC Margin DTCC_Specs field "Message ID"
+            provision "Purpose of this field is to allow firms to submit a unique ID that will allow them to tie in specific submissions/modifications. For example if 5 modifications are submitted on a specific PET, this will allow the firm to ensure they receive responses for all 5 modifications."]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250604" field "Message ID"
+            provision "Each Message ID must be unique, irrespective of the report type. This unique identification is achieved by concatenating with the Reporting Timestamp field."]
+        [ruleReference DTCC_MessageID]
+    messageType string (1..1)
+        [label "Message Type"]
+        [docReference CFTC Margin DTCC_Specs field "Message Type"
+            provision "Need to indicate what message is being submitted to GTR."]
+        [ruleReference DTCC_MessageType]
+    version string (1..1)
+        [label "Version"]
+        [docReference CFTC Margin DTCC_Specs field "Version"
+            provision "Memo field. Used to identify the asset class and template type of submission."]
+        [ruleReference DTCC_Version]
+
+    condition DTCC_CFTC_VR_0013_01: <"Counterparty 2 (non-reporting counterparty)">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "13" validationRule "Collateral"
+            provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade.
+        - However, if there is more than one live trade (for the same UTI/USI)  where [Trade Party 1 - ID] and [Trade Party 1 - ID Type] are the same, the submission will NACK."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_CFTC_VR_0014_01: <"Counterparty 2 Identifier Source">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "14" validationRule "Collateral"
+            provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_CFTC_VR_0016_01: <"Unique Transaction Identifier">
+        [regulatoryReference CFTC Margin DTCC_Specs appendix "1" dataElement "103" validationRule "Collateral"
+      provision "C if [Initial margin collateral portfolio code] = TRANSACTIONLEVEL, else {blank}."]
+        if initialMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+        then uniqueTransactionIdentifier exists
+        else uniqueTransactionIdentifier is absent
+
+    condition CFTC_VR_0026_01: <"Action Type">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "26" validationRule "Collateral"
+            provision "M, must equal MARU"]
+        actionType = MARU
+
+    condition CFTC_VR_0102_01: <"Unique Swap Identifier">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "102" validationRule "Collateral"
+            provision "C if [Initial margin collateral portfolio code] = 'TRANSACTIONLEVEL' and [Unique transaction identifier (UTI)] is not populated, else {blank}."]
+        if (initialMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+                and uniqueTransactionIdentifier is absent)
+        then uniqueSwapIdentifier exists
+        else uniqueSwapIdentifier is absent
+
+    condition CFTC_VR_0103_01: <"Unique Transaction Identifier">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "103" validationRule "Collateral"
+            provision "C if [Initial margin collateral portfolio code] = 'TRANSACTIONLEVEL' and [Unique swap identifier (USI)] is not populated, else {blank}."]
+        if (initialMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+                and uniqueSwapIdentifier is absent)
+        then uniqueTransactionIdentifier exists
+        else uniqueTransactionIdentifier is absent
+
+    condition DTCC_CFTC_VR_0115_01: <"Collateralisation Category">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "115" validationRule "Collateral"
+            provision "Required when [NoA - Action Type] = 'MARU."]
+        if actionType = MARU then collateralisationCategory exists
+
+    condition DTCC_CFTC_VR_0116_01: <"Initial Margin Collateral Portfolio Code">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "116" validationRule "Collateral"
+            provision "Required if [Variation margin collateral portfolio code] is blank."]
+        if variationMarginCollateralPortfolioCode is absent
+        then initialMarginCollateralPortfolioCode exists
+
+    condition DTCC_CFTC_VR_0116_02: <"Initial Margin Collateral Portfolio Code">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "116" validationRule "Collateral"
+            provision "If USI or UTI is populated, the only accepted values are 'TRANSACTIONLEVEL' or 'NOTAPPLICABLE'. All other values will be rejected."]
+        if uniqueSwapIdentifier exists or uniqueTransactionIdentifier exists
+        then initialMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+                or initialMarginCollateralPortfolioCode = "NOTAPPLICABLE"
+
+    condition DTCC_CFTC_VR_0116_03: <"Initial Margin Collateral Portfolio Code">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "116" validationRule "Collateral"
+            provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then False
+
+    condition CFTC_VR_0118_01: <"Initial margin posted by the reporting counterparty (Post-Haircut)">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "118" validationRule "Collateral"
+            provision "C if ([Collateralisation category] = OWC1 or OWP1 or FLCL), else {blank}."]
+        if ["OWC1", "OWP1", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginPostedByTheReportingCounterpartyPostHaircut exists
+        else initialMarginPostedByTheReportingCounterpartyPostHaircut is absent
+
+    condition CFTC_VR_0119_01: <"Initial margin posted by the reporting counterparty (Pre-Haircut)">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "119" validationRule "Collateral"
+            provision "C if ([Collateralisation category] = OWC1 or OWP1 or FLCL), else {blank}."]
+        if ["OWC1", "OWP1", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginCollectedByTheReportingCounterpartyPreHaircut exists
+        else initialMarginCollectedByTheReportingCounterpartyPreHaircut is absent
+
+    condition CFTC_VR_0120_01: <"Currency Of Initial Margin Posted">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "120" validationRule "Collateral"
+            provision "C if [Initial margin posted by the reporting counterparty (post-haircut)] or [Initial margin posted by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if initialMarginPostedByTheReportingCounterpartyPostHaircut exists
+                or initialMarginPostedByTheReportingCounterpartyPreHaircut exists
+        then currencyOfInitialMarginPosted exists
+        else currencyOfInitialMarginPosted is absent
+
+    condition CFTC_VR_0121_01: <"Initial margin collected by the reporting counterparty (Post-Haircut)">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "121" validationRule "Collateral"
+            provision "C if ([Collateralisation category] = OWC2 or  OWP2 or FLCL), else {blank}."]
+        if ["OWC2", "OWP2", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginCollectedByTheReportingCounterpartyPostHaircut exists
+        else initialMarginCollectedByTheReportingCounterpartyPostHaircut is absent
+
+    condition CFTC_VR_0122_01: <"Initial margin collected by the reporting counterparty (Pre-Haircut)">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "122" validationRule "Collateral"
+            provision "C if ([Collateralisation category] = OWC2 or  OWP2 or FLCL), else {blank}."]
+        if ["OWC2", "OWP2", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginCollectedByTheReportingCounterpartyPreHaircut exists
+        else initialMarginCollectedByTheReportingCounterpartyPreHaircut is absent
+
+    condition CFTC_VR_0123_01: <"Currency Of Initial Margin Collected">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "123" validationRule "Collateral"
+            provision "C if [Initial margin collected by the reporting counterparty (post-haircut)] or [Initial margin collected by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if initialMarginCollectedByTheReportingCounterpartyPostHaircut exists
+                or initialMarginCollectedByTheReportingCounterpartyPreHaircut exists
+        then currencyOfInitialMarginCollected exists
+        else currencyOfInitialMarginCollected is absent
+
+    condition DTCC_CFTC_VR_0124_01: <"Variation Margin Collateral Portfolio Code">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "124" validationRule "Collateral"
+            provision "Required if [Initial margin collateral portfolio code] is blank."]
+        if initialMarginCollateralPortfolioCode is absent
+        then variationMarginCollateralPortfolioCode exists
+
+    condition DTCC_CFTC_VR_0124_02: <"Variation Margin Collateral Portfolio Code">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "124" validationRule "Collateral"
+            provision "If USI or UTI is populated, the only accepted values are 'TRANSACTIONLEVEL' or 'NOTAPPLICABLE'. All other values will be rejected."]
+        if uniqueSwapIdentifier exists or uniqueTransactionIdentifier exists
+        then variationMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+                or variationMarginCollateralPortfolioCode = "NOTAPPLICABLE"
+
+    condition DTCC_CFTC_VR_0124_03: <"Variation Margin Collateral Portfolio Code">
+        [docReference CFTC Margin DTCC_Specs appendix "1" dataElement "124" validationRule "Collateral"
+            provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then False
+
+    condition CFTC_VR_0125_01: <"Variation margin posted by the reporting counterparty (Pre-Haircut)">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "125" validationRule "Collateral"
+            provision "C if ([Collateralisation category] = PRC1 or PRCL or OWC1 or OWP1 or OWP2 or FLCL), else {blank}."]
+        if ["OWC1", "OWP1", "PRC1", "OWP2", "PRCL", "FLCL"]
+                any = collateralisationCategory to-string
+        then variationMarginPostedByTheReportingCounterpartyPreHaircut exists
+        else variationMarginPostedByTheReportingCounterpartyPreHaircut is absent
+
+    condition CFTC_VR_0126_01: <"Currency of variation margin posted">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "126" validationRule "Collateral"
+            provision "C if [Variation margin posted by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if variationMarginPostedByTheReportingCounterpartyPreHaircut exists
+        then currencyOfVariationMarginPosted exists
+        else currencyOfVariationMarginPosted is absent
+
+    condition CFTC_VR_0127_01: <"Variation margin collected by the reporting counterparty (Pre-Haircut)">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "127" validationRule "Collateral"
+            provision "C if ([Collateralisation category] = PRC2 or PRCL or OWC2 or OWP1 or OWP2 or FLCL), else {blank}."]
+        if ["OWP1", "PRC2", "OWC2", "OWP2", "PRCL", "FLCL"]
+                any = collateralisationCategory to-string
+        then variationMarginCollectedByTheReportingCounterpartyPreHaircut exists
+        else variationMarginCollectedByTheReportingCounterpartyPreHaircut is absent
+
+    condition CFTC_VR_0128_01: <"Currency of variation margin collected">
+        [regulatoryReference CFTC Margin appendix "1" dataElement "128" validationRule "Collateral"
+            provision "C if [Variation margin collected by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if variationMarginCollectedByTheReportingCounterpartyPreHaircut exists
+        then currencyOfVariationMarginCollected exists
+        else currencyOfVariationMarginCollected is absent
+
+    condition DTCC_CFTC_VR_DTCC_04: <"Trade Party 1 - ID Type">
+        [docReference CFTC Margin DTCC_Specs field "Trade Party 1 - ID Type" validationRule "Transaction"
+      provision "NPID is only accepted when [CDE - Platform Identifier] is not 'XXXX', 'XOFF', or 'BILT' and [Clearing Status] = I."]
+        True
+
+    condition DTCC_CFTC_VR_DTCC_06: <"Trade Party 1 - Reporting Destination">
+        [docReference CFTC Margin DTCC_Specs field "Trade Party 1 - Reporting Destination" validationRule "Transaction"
+      provision "Must contain at least one of: CFTC, SEC, CA.MB.MSC, CA.ON.OSC, CA.QC.AMF,CA.AB.ASC,CA.BC.BCSC,CA.NB.FCSC,CA.NL.DSS,CA.NS.NSSC,CA.NT.NTSO,CA.NU.NSO,CA.PEI.OSS,CA.SK.FCAA,CA.YT.OSS"]
+        if tradeParty1ReportingDestination exists
+        then [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC, SupervisoryBodyEnum -> CA_AB_ASC, SupervisoryBodyEnum -> CA_BC_BCSC, SupervisoryBodyEnum -> CA_MB_MSC, SupervisoryBodyEnum -> CA_NB_FCSC, SupervisoryBodyEnum -> CA_NL_DSS, SupervisoryBodyEnum -> CA_NS_NSSC, SupervisoryBodyEnum -> CA_NT_NTSO, SupervisoryBodyEnum -> CA_NU_NSO, SupervisoryBodyEnum -> CA_ON_OSC, SupervisoryBodyEnum -> CA_PEI_OSS, SupervisoryBodyEnum -> CA_QC_AMF, SupervisoryBodyEnum -> CA_SK_FCAA, SupervisoryBodyEnum -> CA_YT_OSS] contains tradeParty1ReportingDestination
+
+    condition DTCC_CFTC_VR_DTCC_08: <"Comment 1">
+        [docReference CFTC Margin DTCC_Specs field "Comment 1" validationRule "Transaction"
+      provision "Including < in the [Comment 1] value will cause a rejection in the Simulator."]
+        [regulatoryReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Comment 1"
+        provision "Empty because CSV submission is still not supported by current DRR model. This rule will be revisited once Harmoinzed CSV projection is included."]
+        True

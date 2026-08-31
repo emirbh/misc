@@ -1,0 +1,162 @@
+namespace drr.regulation.sec.rewrite.dtcc
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.common.dtcc.* as commondtcc
+import drr.regulation.sec.*
+import drr.regulation.sec.rewrite.trade.* as secTrade
+import drr.standards.iso.*
+
+type DTCCAdditionalFields extends commondtcc.CommonDTCCAdditionalFields:
+    [rootType]
+    override clearingVenueIDType PartyIdentifierTypeEnum (0..1)
+        [label "901.c.6; 901.d.6 Clearing Venue - ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.c.6; 901.d.6" field "Clearing Venue - ID Type"
+            provision "GTR Control Field."]
+        [ruleReference empty]
+    override tradeParty1ClearingBrokerIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Clearing Broker ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 1 - Clearing Broker ID Type"
+            provision "GTR Control Field."]
+            [ruleReference empty]
+    override submittingPartyIDType PartyIdentifierTypeEnum (1..1)
+        [label "Submitting Party - ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Submitting Party - ID Type"
+            provision "GTR required Control Field."]
+    override submittedForParty LEIIdentifier (1..1)
+        [label "Submitted For Party"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Submitted For Party"
+            provision "Need field for GTR Processing."]
+    override tradeParty1ReportingDestination SupervisoryBodyEnum (1..*)
+        [label "Trade Party 1 - Reporting Destination"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 1 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+    override tradeParty2ReportingDestination SupervisoryBodyEnum (0..*)
+        [label "Trade Party 2 - Reporting Destination"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 2 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+    override primaryAssetClass AssetClassEnum (1..1)
+        [label "Primary Asset Class"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Primary Asset Class"
+            provision "UPI RDL: Indicates whether the asset, benchmark or another derivatives contract underlying a derivatives contract is, or references, an equity, rate, credit, commodity or foreign exchange asset."]
+    override secondaryAssetClass AssetClassEnum (0..1)
+        [label "Secondary Asset Class"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Secondary Asset Class"
+            provision "Needed field to indicate edge cases."]
+        [ruleReference empty]
+    override comment1 string (0..1)
+        [label "Comment 1"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Comment 1"
+            provision "For CSV submissions if populated with an * the entire line is treated as comment."]
+    override tradeParty2ExecutionAgentID string (0..1)
+        [label "Trade Party 2 - Execution Agent ID"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 2 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty2ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 2 - Execution Agent ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 2 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ExecutionAgentID string (0..1)
+        [label "Trade Party 1 - Execution Agent ID"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 1 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Execution Agent ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 1 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1TransactionID string (0..1)
+        [label "Trade Party 1 - Transaction ID"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Trade Party 1 - Transaction ID"
+            provision "Internal trade identifier for Counterparty 1 to map to their internal system."]
+    override responsibleDataSubmitterIDType PartyIdentifierTypeEnum (0..1)
+        [label "Responsible Data Submitter - ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Responsible Data Submitter - ID Type"
+            provision "This field contains the ID Type associated with the Ultimate Data Submitter ID."]
+    override responsibleDataSubmitterID string (0..1)
+        [label "Responsible Data Submitter - ID"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Responsible Data Submitter - ID"
+            provision "This field should only populated by Third Party Submitters who have been permissioned to act on behalf of SEFs, and not by any other submitters. This field must be populated with the LEI of the SEF."]
+    override maturityDateOfTheUnderlying date (0..1)
+        [label "901.c.1.iii Maturity Date of the Underlier"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.c.1.iii" field "Maturity Date of the Underlying"
+            provision "The date on which the underlying transaction settles if the option is exercised.In the case of swaptions, maturity date of the underlying swap."]
+    override corporateActionNewTradeParty1Lei LEIIdentifier (0..1)
+        [label "Corporate Action - New Trade Party 1 LEI"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Corporate Action - New Trade Party 1 LEI"
+            provision "In the case of a Corporate Action/Merger, populate this field with the LEI of the reporting party that will replace Trade Party 1/Reporting counterparty. The value in this field will replace [Trade Party 1 - ID] on the trade after the submission is processed."]
+    override otherPaymentPayerIDType string (0..18)
+        [label "Other Payment Payer ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Other Payment Payer ID Type"
+            provision "Identifier type of the payer of Other payment amount."]
+        [ruleReference empty]
+    override otherPaymentReceiverIDType string (0..18)
+        [label "Other Payment Receiver ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Other Payment Receiver ID Type"
+            provision "Identifier type of the receiver of Other payment amount."]
+        [ruleReference empty]
+    override sefOrDcmAnonymousExecutionIndicator boolean (0..1)
+        [label "SEF or DCM Anonymous Execution Indicator"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "SEF or DCM Anonymous Execution Indicator"
+            provision "Indicator of whether the swap was executed anonymously on a SEF or DCM. When set to true, counterparty details will be masked on reporting."]
+        [ruleReference DTCC_SEFOrDCMAnonymousExecutionIndicator]
+    override executionVenueID string (0..1)
+        [label "901.d.9 Execution Venue - ID" ]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.d.9" field "Execution Venue - ID"
+            provision "LEI of the electronic trading venue where the transaction was executed."]
+        [ruleReference DTCC_ExecutionVenueID]
+    override executionVenueIDType PartyIdentifierTypeEnum (0..1)
+        [label "901.d.9 Execution Venue - ID Type" ]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.d.9" field "Execution Venue - ID Type"
+            provision "Identifier Type (LEI) of the electronic trading venue where the transaction was executed."]
+        [ruleReference DTCC_ExecutionVenueIDType]
+    override leg1FloatingRateIndex string (0..1)
+        [label "901.d.3 Leg 1 - Floating Rate Index"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.d.3" field "Leg 1 - Floating Rate Index"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+       [ruleReference DTCC_Leg1FloatingRateIndex]
+    override leg2FloatingRateIndex string (0..1)
+        [label "901.d.3 Leg 2 - Floating Rate Index"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.d.3" field "Leg 2 - Floating Rate Index"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+        [ruleReference DTCC_Leg2FloatingRateIndex]
+    override underlyingAssetName commondtcc.UnderlyingAssetNameReport (0..1)
+        [label "901.c.1.v Underlying Asset Name"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.c.1.v" field "Underlying Asset Name"
+            provision "Needed for Multi jurisdiction reporting and field is currently used for public dissemination."]
+        [ruleReference DTCC_UnderlyingAssetName]
+    override underlyingAssetID commondtcc.UnderlyingAssetReport (0..1)
+        [label "901.c.1.v Underlying Asset ID"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.c.1.v" field "Underlying Asset ID"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+        [ruleReference DTCC_UnderlyingAssetID]
+    originalSwapSDRIDType PartyIdentifierTypeEnum (0..1)
+        [label "Original Swap SDR - ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Original Swap SDR - ID Type"
+            provision "GTR Control Field."]
+    tradeParty1IDType string (1..1)
+        [label "901.d.1 Trade Party 1 - ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.d.1" field "Trade Party 1 - ID Type"
+            provision "GTR required Control Field."]
+	    [ruleReference DTCC_TradeParty1IDType]
+    messageID string (0..1)
+        [label "Message ID"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Message ID"
+            provision "Purpose of this field is to allow firms to submit a unique ID that will allow them to tie in specific submissions/modifications. For example if 5 modifications are submitted on a specific PET, this will allow the firm to ensure they receive responses for all 5 modifications."]
+	    [ruleReference DTCC_MessageID]
+    messageType string (0..1)
+        [label "Message Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Message Type"
+            provision "Need to indicate what message is being submitted to GTR."]
+    version string (0..1)
+        [label "Version"]
+        [docReference SEC secTrade.Trade DTCC_Specs field "Version"
+            provision "Memo field. Used to identify the asset class and template type of submission."]
+    underlyingAssetIDType string (0..1)
+        [label "901.c.1.v Underlying Asset ID Type"]
+        [docReference SEC secTrade.Trade DTCC_Specs dataElement "901.c.1.v" field "Underlying Asset ID Type"
+            provision "UPI RDL: The origin, or publisher, of the associated underlier ID."]
