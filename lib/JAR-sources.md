@@ -96,6 +96,59 @@ clone https://github.com/JodaOrg/joda-beans.git                    v2.1         
 clone https://github.com/OpenGamma/Strata.git                      v1.7.0                          strata
 ```
 
+## Build commands and order
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+MVN="mvn -B -ntp -DskipTests"
+```
+
+Layer 1 — rune-dsl, both tags. Sequential, sharing one local repo.
+
+```bash
+cd rune-dsl-9.83.0 && $MVN install \
+  -Dnode.download.root=$ARTIFACTORY_URL/artifactory/nodejs-dist-remote/ \
+  -Dnpm.download.root=$ARTIFACTORY_URL/artifactory/npm-remote/npm/-/
+cd ../rune-dsl-9.85.1 && $MVN install \
+  -Dnode.download.root=$ARTIFACTORY_URL/artifactory/nodejs-dist-remote/ \
+  -Dnpm.download.root=$ARTIFACTORY_URL/artifactory/npm-remote/npm/-/
+```
+
+Layer 2 — rune-common. Requires layer 1.
+
+```bash
+cd ../rune-common && $MVN install
+```
+
+Layer 3 — CDM. Requires layer 2. Blocked on `com.regnosys.rune-fpml:rosetta-source`.
+
+```bash
+cd ../common-domain-model && $MVN install
+```
+
+Third-party — independent of layers 1-3, but ordered internally.
+
+```bash
+cd ../jackson-annotations         && $MVN install
+cd ../jackson-core                && $MVN install
+cd ../jackson-databind            && $MVN install
+cd ../jackson-dataformat-xml      && $MVN install
+cd ../jackson-dataformats-text    && $MVN install -pl csv -am
+cd ../jackson-modules-java8       && $MVN install -pl datetime -am
+cd ../joda-convert                && $MVN install
+cd ../joda-beans                  && $MVN install
+cd ../joda-time                   && $MVN install
+cd ../strata                      && $MVN install -pl modules/basics,modules/collect -am
+```
+
+To publish rather than install locally, replace `install` with:
+
+```bash
+deploy -DaltDeploymentRepository=artifactory-releases::default::$ARTIFACTORY_URL/artifactory/libs-release-local
+```
+
+Not built here: `org.eclipse.emf.*` (proxy from Central), DRR, iso20022, rune-fpml.
+
 ## Notes
 
 - **26 of 29 are buildable internally** under Apache 2.0 / EPL 2.0 / Community
