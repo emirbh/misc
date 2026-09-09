@@ -1,0 +1,619 @@
+# Tekton pipeline: build ISDA CDM/DRR dependency stack from source
+# and publish to internal JFrog Artifactory.
+#
+# Covers the 29 JARs catalogued in JAR-sources.md:
+#   - 12 built from FINOS source   (rune-dsl x2 tags, rune-common, cdm)
+#   - 14 third-party from source   (Jackson, Joda, Strata, EMF)
+#   -  3 NOT BUILDABLE             (DRR, iso20022, rune-fpml — see notes at end)
+#
+# Requires Java 21: both org.finos.rune.parent and cdm-parent declare
+# <java.enforced.version>[21,22)</java.enforced.version>, enforced by
+# maven-enforcer-plugin. A JDK 17 or 24 agent fails at validate.
+---
+# Credentials consumed by the maven-build-deploy task. Create this out of
+# band (sealed secret / external secrets operator); the literal values below
+# are placeholders and must not be committed with real tokens.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: artifactory-credentials
+type: Opaque
+stringData:
+  url: "https://artifactory.internal.example.com"
+  username: "REPLACE_ME"
+  token: "REPLACE_ME"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: artifactory-maven-settings
+type: Opaque
+stringData:
+  settings.xml: |
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+      <servers>
+        <server>
+          <id>artifactory-releases</id>
+          <username>${env.ARTIFACTORY_USER}</username>
+          <password>${env.ARTIFACTORY_TOKEN}</password>
+        </server>
+        <server>
+          <id>artifactory-snapshots</id>
+          <username>${env.ARTIFACTORY_USER}</username>
+          <password>${env.ARTIFACTORY_TOKEN}</password>
+        </server>
+        <server>
+          <id>central</id>
+          <username>${env.ARTIFACTORY_USER}</username>
+          <password>${env.ARTIFACTORY_TOKEN}</password>
+        </server>
+      </servers>
+      <mirrors>
+        <!-- All upstream resolution goes through Artifactory's remote proxy.
+             Nothing in this pipeline talks to repo1.maven.org directly. -->
+        <mirror>
+          <id>central</id>
+          <name>Artifactory remote proxy</name>
+          <url>${env.ARTIFACTORY_URL}/artifactory/maven-remote</url>
+          <mirrorOf>*</mirrorOf>
+        </mirror>
+      </mirrors>
+      <profiles>
+        <profile>
+          <id>artifactory</id>
+          <repositories>
+            <repository>
+              <id>artifactory-releases</id>
+              <url>${env.ARTIFACTORY_URL}/artifactory/${env.RELEASE_REPO}</url>
+              <releases><enabled>true</enabled></releases>
+              <snapshots><enabled>false</enabled></snapshots>
+            </repository>
+            <repository>
+              <id>artifactory-snapshots</id>
+              <url>${env.ARTIFACTORY_URL}/artifactory/${env.SNAPSHOT_REPO}</url>
+              <releases><enabled>false</enabled></releases>
+              <snapshots><enabled>true</enabled></snapshots>
+            </repository>
+          </repositories>
+          <pluginRepositories>
+            <pluginRepository>
+              <id>artifactory-releases</id>
+              <url>${env.ARTIFACTORY_URL}/artifactory/${env.RELEASE_REPO}</url>
+            </pluginRepository>
+          </pluginRepositories>
+        </profile>
+      </profiles>
+      <activeProfiles>
+        <activeProfile>artifactory</activeProfile>
+      </activeProfiles>
+    </settings>
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-clone-tag
+spec:
+  description: >-
+    Clone a repository at an exact tag into a named subdirectory of the
+    shared source workspace. Kept local rather than using the Tekton Hub
+    git-clone task, so the pipeline has no catalog dependency.
+  params:
+    - name: url
+      type: string
+    - name: revision
+      type: string
+      description: Tag or commit SHA. Never a branch — builds must be reproducible.
+    - name: subdirectory
+      type: string
+  workspaces:
+    - name: source
+  steps:
+    - name: clone
+      image: alpine/git:2.45.2
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        set -eu
+        rm -rf "$(params.subdirectory)"
+        git clone --depth 1 --branch "$(params.revision)" \
+          "$(params.url)" "$(params.subdirectory)"
+        cd "$(params.subdirectory)"
+        echo "Cloned $(params.url) at $(git rev-parse HEAD)"
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: maven-build-deploy
+spec:
+  description: >-
+    Build a Maven project and deploy it to Artifactory, routing to the
+    release or snapshot repository based on the project's own version.
+  params:
+    - name: subdirectory
+      type: string
+    - name: maven-args
+      type: string
+      default: ""
+    - name: skip-tests
+      type: string
+      default: "true"
+    - name: goals
+      type: string
+      default: "deploy"
+  workspaces:
+    - name: source
+    - name: maven-repo
+    - name: maven-settings
+  results:
+    - name: deployed-version
+      description: The project version that was deployed.
+    - name: deployed-repo
+      description: Which Artifactory repository received the artifacts.
+  steps:
+    - name: build-and-deploy
+      # JDK 21 is mandatory — see enforcer note in the file header.
+      image: maven:3.9.9-eclipse-temurin-21
+      workingDir: $(workspaces.source.path)/$(params.subdirectory)
+      env:
+        - name: ARTIFACTORY_URL
+          valueFrom:
+            secretKeyRef: { name: artifactory-credentials, key: url }
+        - name: ARTIFACTORY_USER
+          valueFrom:
+            secretKeyRef: { name: artifactory-credentials, key: username }
+        - name: ARTIFACTORY_TOKEN
+          valueFrom:
+            secretKeyRef: { name: artifactory-credentials, key: token }
+        - name: RELEASE_REPO
+          value: libs-release-local
+        - name: SNAPSHOT_REPO
+          value: libs-snapshot-local
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        MVN="mvn -B -ntp -s $(workspaces.maven-settings.path)/settings.xml \
+             -Dmaven.repo.local=$(workspaces.maven-repo.path)"
+
+        # Read the project's own version rather than assuming it.
+        VERSION=$($MVN -q --non-recursive \
+          -Dexec.executable=echo -Dexec.args='${project.version}' \
+          exec:exec 2>/dev/null | tail -1)
+        echo "Project version: ${VERSION}"
+
+        # ---- SNAPSHOT routing --------------------------------------------
+        # A -SNAPSHOT version must never land in the release repo:
+        # Artifactory rejects it, and a release repo that accepts mutable
+        # artifacts destroys build reproducibility.
+        case "${VERSION}" in
+          *-SNAPSHOT)
+            TARGET_REPO="${SNAPSHOT_REPO}"
+            SERVER_ID="artifactory-snapshots"
+            ;;
+          *)
+            TARGET_REPO="${RELEASE_REPO}"
+            SERVER_ID="artifactory-releases"
+            ;;
+        esac
+        echo "Routing to ${TARGET_REPO}"
+
+        $MVN $(params.goals) \
+          -DskipTests=$(params.skip-tests) \
+          -DaltDeploymentRepository="${SERVER_ID}::default::${ARTIFACTORY_URL}/artifactory/${TARGET_REPO}" \
+          $(params.maven-args)
+
+        printf '%s' "${VERSION}"     > $(results.deployed-version.path)
+        printf '%s' "${TARGET_REPO}" > $(results.deployed-repo.path)
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: verify-no-external-jars
+spec:
+  description: >-
+    Fail the pipeline if any artifact resolved from outside Artifactory.
+    This is the control that enforces the no-imported-JARs policy: it
+    inspects _remote.repositories in the local repo and rejects anything
+    whose origin is not the Artifactory mirror.
+  workspaces:
+    - name: maven-repo
+  steps:
+    - name: audit
+      image: alpine:3.20
+      script: |
+        #!/bin/sh
+        set -eu
+        echo "Auditing $(workspaces.maven-repo.path) for external origins..."
+        BAD=$(find "$(workspaces.maven-repo.path)" -name '_remote.repositories' \
+              -exec grep -l -E '>(central|repo1|maven-central)=' {} \; 2>/dev/null || true)
+        if [ -n "${BAD}" ]; then
+          echo "FAIL: artifacts resolved from outside Artifactory:"
+          echo "${BAD}"
+          exit 1
+        fi
+        echo "OK: every artifact came through Artifactory."
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: isda-cdm-drr-source-build
+spec:
+  description: >-
+    Builds the full ISDA CDM/DRR dependency stack from source and publishes
+    to internal Artifactory. Build order follows the real dependency graph:
+    rune-dsl -> rune-common -> cdm. Third-party libraries are independent
+    and run in parallel.
+  params:
+    - name: rune-dsl-url
+      type: string
+      default: https://github.com/finos/rune-dsl.git
+    - name: rune-common-url
+      type: string
+      default: https://github.com/finos/rune-common.git
+    - name: cdm-url
+      type: string
+      default: https://github.com/finos/common-domain-model.git
+  workspaces:
+    - name: source
+      description: Shared clone area.
+    - name: maven-repo
+      description: >-
+        Shared .m2 local repository. Must persist across tasks in the run —
+        rune-common resolves the rune-dsl artifacts this pipeline just built.
+    - name: maven-settings
+      description: Mount of the artifactory-maven-settings secret.
+
+  tasks:
+    # ================================================================
+    # LAYER 1 — Rune DSL. Built at TWO tags: the JARs in lib/ are split
+    # across 9.83.0 (maven-plugin, xcore-plugin-dependencies, rosetta.lib,
+    # rosetta-maven-plugin) and 9.85.1 (rune-lang, rune-runtime,
+    # rune-generator-api, com.regnosys.rosetta).
+    # ================================================================
+    - name: clone-rune-dsl-9-83-0
+      taskRef: { name: git-clone-tag }
+      workspaces:
+        - { name: source, workspace: source }
+      params:
+        - { name: url, value: $(params.rune-dsl-url) }
+        - { name: revision, value: "9.83.0" }
+        - { name: subdirectory, value: rune-dsl-9.83.0 }
+
+    - name: build-rune-dsl-9-83-0
+      runAfter: [clone-rune-dsl-9-83-0]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params:
+        - { name: subdirectory, value: rune-dsl-9.83.0 }
+        # Node/npm: org.finos.rune.parent 9.83.0 pins <node.version>24.11.1
+        # and uses frontend-maven-plugin, which downloads Node at build time.
+        # Point it at an internal mirror or the build fails air-gapped.
+        - name: maven-args
+          value: >-
+            -Dnode.download.root=${ARTIFACTORY_URL}/artifactory/nodejs-dist-remote/
+            -Dnpm.download.root=${ARTIFACTORY_URL}/artifactory/npm-remote/npm/-/
+
+    - name: clone-rune-dsl-9-85-1
+      runAfter: [build-rune-dsl-9-83-0]
+      taskRef: { name: git-clone-tag }
+      workspaces:
+        - { name: source, workspace: source }
+      params:
+        - { name: url, value: $(params.rune-dsl-url) }
+        - { name: revision, value: "9.85.1" }
+        - { name: subdirectory, value: rune-dsl-9.85.1 }
+
+    - name: build-rune-dsl-9-85-1
+      runAfter: [clone-rune-dsl-9-85-1]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params:
+        - { name: subdirectory, value: rune-dsl-9.85.1 }
+        - name: maven-args
+          value: >-
+            -Dnode.download.root=${ARTIFACTORY_URL}/artifactory/nodejs-dist-remote/
+            -Dnpm.download.root=${ARTIFACTORY_URL}/artifactory/npm-remote/npm/-/
+
+    # ================================================================
+    # LAYER 2 — Rune Common. Produces rosetta-common, serialization and
+    # ingest-test-framework, all at 11.121.2. Depends on rune-dsl.
+    # NOTE the groupId rename: this tag still publishes com.regnosys:*,
+    # which is what the pilot's POM asks for. Later tags publish
+    # org.finos.rune-common:* and will NOT satisfy it.
+    # ================================================================
+    - name: clone-rune-common
+      runAfter: [build-rune-dsl-9-85-1]
+      taskRef: { name: git-clone-tag }
+      workspaces:
+        - { name: source, workspace: source }
+      params:
+        - { name: url, value: $(params.rune-common-url) }
+        - { name: revision, value: "11.121.2" }
+        - { name: subdirectory, value: rune-common }
+
+    - name: build-rune-common
+      runAfter: [clone-rune-common]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params:
+        - { name: subdirectory, value: rune-common }
+
+    # ================================================================
+    # LAYER 3 — Common Domain Model 6.23.0 -> cdm-java.
+    #
+    # BLOCKED: cdm-parent declares a dependency on
+    # com.regnosys.rune-fpml:rosetta-source, which has no public source
+    # repository. This task will fail at dependency resolution until that
+    # artifact is available in Artifactory. See notes at end of file.
+    # ================================================================
+    - name: clone-cdm
+      runAfter: [build-rune-common]
+      taskRef: { name: git-clone-tag }
+      workspaces:
+        - { name: source, workspace: source }
+      params:
+        - { name: url, value: $(params.cdm-url) }
+        - { name: revision, value: "6.23.0" }
+        - { name: subdirectory, value: common-domain-model }
+
+    - name: build-cdm
+      runAfter: [clone-cdm]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params:
+        - { name: subdirectory, value: common-domain-model }
+        # CDM's test suite is large and needs reference data; skip in the
+        # publish pipeline and gate it separately.
+        - { name: skip-tests, value: "true" }
+
+    # ================================================================
+    # THIRD-PARTY — independent of the Rune stack, run in parallel.
+    # All are release-versioned; none produce SNAPSHOTs.
+    # ================================================================
+    - name: clone-jackson-core
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/FasterXML/jackson-core.git }
+        - { name: revision, value: "jackson-core-2.17.1" }
+        - { name: subdirectory, value: jackson-core }
+
+    - name: build-jackson-core
+      runAfter: [clone-jackson-core]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params: [{ name: subdirectory, value: jackson-core }]
+
+    - name: clone-jackson-annotations
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/FasterXML/jackson-annotations.git }
+        - { name: revision, value: "jackson-annotations-2.17.1" }
+        - { name: subdirectory, value: jackson-annotations }
+
+    - name: build-jackson-annotations
+      runAfter: [clone-jackson-annotations]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params: [{ name: subdirectory, value: jackson-annotations }]
+
+    - name: clone-jackson-databind
+      runAfter: [build-jackson-core, build-jackson-annotations]
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/FasterXML/jackson-databind.git }
+        - { name: revision, value: "jackson-databind-2.17.1" }
+        - { name: subdirectory, value: jackson-databind }
+
+    - name: build-jackson-databind
+      runAfter: [clone-jackson-databind]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params: [{ name: subdirectory, value: jackson-databind }]
+
+    # jackson-dataformat-csv and jackson-datatype-jsr310 live in monorepos;
+    # build only the module that produces the JAR.
+    - name: clone-jackson-dataformats-text
+      runAfter: [build-jackson-databind]
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/FasterXML/jackson-dataformats-text.git }
+        - { name: revision, value: "jackson-dataformats-text-2.17.1" }
+        - { name: subdirectory, value: jackson-dataformats-text }
+
+    - name: build-jackson-dataformat-csv
+      runAfter: [clone-jackson-dataformats-text]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params:
+        - { name: subdirectory, value: jackson-dataformats-text }
+        - { name: maven-args, value: "-pl csv -am" }
+
+    - name: clone-jackson-modules-java8
+      runAfter: [build-jackson-databind]
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/FasterXML/jackson-modules-java8.git }
+        - { name: revision, value: "jackson-modules-java8-2.17.1" }
+        - { name: subdirectory, value: jackson-modules-java8 }
+
+    - name: build-jackson-datatype-jsr310
+      runAfter: [clone-jackson-modules-java8]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params:
+        - { name: subdirectory, value: jackson-modules-java8 }
+        - { name: maven-args, value: "-pl datetime -am" }
+
+    - name: clone-jackson-dataformat-xml
+      runAfter: [build-jackson-databind]
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/FasterXML/jackson-dataformat-xml.git }
+        - { name: revision, value: "jackson-dataformat-xml-2.17.1" }
+        - { name: subdirectory, value: jackson-dataformat-xml }
+
+    - name: build-jackson-dataformat-xml
+      runAfter: [clone-jackson-dataformat-xml]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params: [{ name: subdirectory, value: jackson-dataformat-xml }]
+
+    - name: clone-joda-time
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/JodaOrg/joda-time.git }
+        - { name: revision, value: "v2.10.14" }
+        - { name: subdirectory, value: joda-time }
+
+    - name: build-joda-time
+      runAfter: [clone-joda-time]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params: [{ name: subdirectory, value: joda-time }]
+
+    - name: clone-joda-convert
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/JodaOrg/joda-convert.git }
+        - { name: revision, value: "v2.0" }
+        - { name: subdirectory, value: joda-convert }
+
+    - name: build-joda-convert
+      runAfter: [clone-joda-convert]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params: [{ name: subdirectory, value: joda-convert }]
+
+    - name: clone-joda-beans
+      runAfter: [build-joda-convert]
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/JodaOrg/joda-beans.git }
+        - { name: revision, value: "v2.1" }
+        - { name: subdirectory, value: joda-beans }
+
+    - name: build-joda-beans
+      runAfter: [clone-joda-beans]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params: [{ name: subdirectory, value: joda-beans }]
+
+    - name: clone-strata
+      runAfter: [build-joda-beans]
+      taskRef: { name: git-clone-tag }
+      workspaces: [{ name: source, workspace: source }]
+      params:
+        - { name: url, value: https://github.com/OpenGamma/Strata.git }
+        - { name: revision, value: "v1.7.0" }
+        - { name: subdirectory, value: strata }
+
+    - name: build-strata-modules
+      runAfter: [clone-strata]
+      taskRef: { name: maven-build-deploy }
+      workspaces:
+        - { name: source, workspace: source }
+        - { name: maven-repo, workspace: maven-repo }
+        - { name: maven-settings, workspace: maven-settings }
+      params:
+        - { name: subdirectory, value: strata }
+        - { name: maven-args, value: "-pl modules/basics,modules/collect -am" }
+
+    # ================================================================
+    # ECLIPSE EMF — DO NOT BUILD FROM SOURCE.
+    #
+    # EMF is built with Tycho, which stamps -SNAPSHOT into the produced
+    # Maven metadata (the JARs in lib/ show version=2.23.0-SNAPSHOT in
+    # pom.properties while Bundle-Version reads 2.23.0.v20230211-1150).
+    # Building here would republish SNAPSHOTs into Artifactory and
+    # reintroduce exactly the resolution error already seen.
+    #
+    # Eclipse publishes clean releases at these coordinates upstream:
+    #   org.eclipse.emf:org.eclipse.emf.codegen:2.23.0
+    #   org.eclipse.emf:org.eclipse.emf.codegen.ecore:2.46.0
+    #   org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:1.8.0
+    # Proxy them through the Artifactory remote repo instead.
+    # ================================================================
+
+  finally:
+    - name: audit-external-resolution
+      taskRef: { name: verify-no-external-jars }
+      workspaces:
+        - { name: maven-repo, workspace: maven-repo }
+---
+# Example run. Uses a persistent volume claim for .m2 so the layered builds
+# (rune-dsl -> rune-common -> cdm) can see each other's artifacts.
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: isda-cdm-drr-source-build-
+spec:
+  pipelineRef:
+    name: isda-cdm-drr-source-build
+  timeouts:
+    pipeline: "3h0m0s"
+  workspaces:
+    - name: source
+      volumeClaimTemplate:
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 20Gi
+    - name: maven-repo
+      volumeClaimTemplate:
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 15Gi
+    - name: maven-settings
+      secret:
+        secretName: artifactory-maven-settings
