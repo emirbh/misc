@@ -22,7 +22,6 @@ Every git tag below was verified against the GitHub refs API
 | `rosetta-maven-plugin-9.83.0.jar` | https://github.com/finos/rune-dsl @ `9.83.0` — pre-rename | Apache 2.0 |
 | `rosetta-common-11.121.2.jar` | https://github.com/finos/rune-common @ `11.121.2` | Apache 2.0 |
 | `serialization-11.121.2.jar` | https://github.com/finos/rune-common @ `11.121.2` | Apache 2.0 |
-| `ingest-test-framework-11.121.2.jar` | https://github.com/finos/rune-common @ `11.121.2` | Apache 2.0 |
 | `strata-basics-1.7.0.jar` | https://github.com/OpenGamma/Strata @ `v1.7.0` — `modules/basics` | Apache 2.0 |
 | `strata-collect-1.7.0.jar` | https://github.com/OpenGamma/Strata @ `v1.7.0` — `modules/collect` | Apache 2.0 |
 | `joda-time-2.10.14.jar` | https://github.com/JodaOrg/joda-time @ `v2.10.14` | Apache 2.0 |
@@ -44,7 +43,8 @@ Every git tag below was verified against the GitHub refs API
 |---|---|---|
 | `rosetta-source-7.7.0.jar` (`com.regnosys.drr`) | No public repo. `REGnosys/drr` and `finos/drr` both 404. Source = `rosetta-source-<ver>-sources.jar` in the ISDA DRR distribution | ISDA DRR License |
 | `rosetta-source-1.42.0.jar` (`org.iso20022`) | No public repo. Its `parent-1.32.0.pom` declares no `<scm>`, no `<licenses>`, and publishes only to `isda-maven` | not declared |
-| `rosetta-source-2.1.1.jar` (`com.regnosys.rune-fpml`) | No public repo found — FpML Rune model, same ISDA registry pattern | not declared |
+| `rosetta-source-2.1.1.jar` (`com.regnosys.rune-fpml`) | No git repo. Source = `rosetta-source-2.1.1-sources.jar` on Maven Central | not declared |
+| `ingest-test-framework-11.121.2.jar` (`com.regnosys`) | No git repo — not a module of rune-common 11.121.2. Source = `ingest-test-framework-11.121.2-sources.jar` on Maven Central | Rosetta Licence |
 
 ## Clone commands
 
@@ -55,7 +55,7 @@ with `v` (`v2.10.14`), Jackson repeats the artifact name (`jackson-core-2.17.1`)
 |---|---|
 | rune-lang, rune-runtime, rune-generator-api, com.regnosys.rosetta | `git clone --depth 1 --branch 9.85.1 https://github.com/finos/rune-dsl.git rune-dsl-9.85.1` |
 | rune-maven-plugin, rune-xcore-plugin-dependencies, com.regnosys.rosetta.lib, rosetta-maven-plugin | `git clone --depth 1 --branch 9.83.0 https://github.com/finos/rune-dsl.git rune-dsl-9.83.0` |
-| rosetta-common, serialization, ingest-test-framework | `git clone --depth 1 --branch 11.121.2 https://github.com/finos/rune-common.git` |
+| rosetta-common, serialization | `git clone --depth 1 --branch 11.121.2 https://github.com/finos/rune-common.git` |
 | cdm-java | `git clone --depth 1 --branch 6.23.0 https://github.com/finos/common-domain-model.git` |
 | jackson-core | `git clone --depth 1 --branch jackson-core-2.17.1 https://github.com/FasterXML/jackson-core.git` |
 | jackson-annotations | `git clone --depth 1 --branch jackson-annotations-2.17.1 https://github.com/FasterXML/jackson-annotations.git` |
@@ -67,101 +67,133 @@ with `v` (`v2.10.14`), Jackson repeats the artifact name (`jackson-core-2.17.1`)
 | joda-convert | `git clone --depth 1 --branch v2.0 https://github.com/JodaOrg/joda-convert.git` |
 | joda-beans | `git clone --depth 1 --branch v2.1 https://github.com/JodaOrg/joda-beans.git` |
 | strata-basics, strata-collect (modules `modules/basics`, `modules/collect`) | `git clone --depth 1 --branch v1.7.0 https://github.com/OpenGamma/Strata.git` |
+| org.eclipse.emf.codegen 2.23.0 | `git clone --depth 1 --branch R2_33_0 https://github.com/eclipse-emf/org.eclipse.emf.git emf-R2_33_0` |
+| org.eclipse.emf.codegen.ecore 2.46.0, org.eclipse.emf.codegen.ecore.xtext 1.8.0 | `git clone --depth 1 --branch R2_46_0 https://github.com/eclipse-emf/org.eclipse.emf.git emf-R2_46_0` |
+| ingest-test-framework 11.121.2 | sources jar: `https://repo1.maven.org/maven2/com/regnosys/ingest-test-framework/11.121.2/ingest-test-framework-11.121.2-sources.jar` |
+| rune-fpml rosetta-source 2.1.1 | sources jar: `https://repo1.maven.org/maven2/com/regnosys/rune-fpml/rosetta-source/2.1.1/rosetta-source-2.1.1-sources.jar` |
 
 ### Clone everything
 
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-mkdir -p src && cd src
-
-clone() { # url tag dir
-  echo "==> $3 @ $2"
-  git clone --depth 1 --branch "$2" "$1" "$3"
-}
-
-clone https://github.com/finos/rune-dsl.git                        9.83.0                          rune-dsl-9.83.0
-clone https://github.com/finos/rune-dsl.git                        9.85.1                          rune-dsl-9.85.1
-clone https://github.com/finos/rune-common.git                     11.121.2                        rune-common
-clone https://github.com/finos/common-domain-model.git             6.23.0                          common-domain-model
-clone https://github.com/FasterXML/jackson-core.git                jackson-core-2.17.1             jackson-core
-clone https://github.com/FasterXML/jackson-annotations.git         jackson-annotations-2.17.1      jackson-annotations
-clone https://github.com/FasterXML/jackson-databind.git            jackson-databind-2.17.1         jackson-databind
-clone https://github.com/FasterXML/jackson-dataformat-xml.git      jackson-dataformat-xml-2.17.1   jackson-dataformat-xml
-clone https://github.com/FasterXML/jackson-dataformats-text.git    jackson-dataformats-text-2.17.1 jackson-dataformats-text
-clone https://github.com/FasterXML/jackson-modules-java8.git       jackson-modules-java8-2.17.1    jackson-modules-java8
-clone https://github.com/JodaOrg/joda-time.git                     v2.10.14                        joda-time
-clone https://github.com/JodaOrg/joda-convert.git                  v2.0                            joda-convert
-clone https://github.com/JodaOrg/joda-beans.git                    v2.1                            joda-beans
-clone https://github.com/OpenGamma/Strata.git                      v1.7.0                          strata
-```
+[`clone-all.sh`](clone-all.sh) / [`clone-all.ps1`](clone-all.ps1) — run from the directory
+that will hold `src/`.
 
 ## Build commands and order
+
+Build only. No deploy — publishing is a separate task.
 
 ```bash
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 MVN="mvn -B -ntp -DskipTests"
 ```
 
-Layer 1 — rune-dsl, both tags. Sequential, sharing one local repo.
+### 1. Eclipse EMF (no dependencies — build first)
+
+Two clones, because the three bundles are at different tags. Tag mapping verified
+by reading `Bundle-Version` from each tag's MANIFEST.
 
 ```bash
-cd rune-dsl-9.83.0 && $MVN install \
+cd emf-R2_33_0 && $MVN clean install -pl plugins/org.eclipse.emf.codegen -am
+cd ../emf-R2_46_0 && $MVN clean install \
+  -pl plugins/org.eclipse.emf.codegen.ecore,plugins/org.eclipse.emf.codegen.ecore.xtext -am
+```
+
+EMF builds with Tycho, which stamps `-SNAPSHOT` into the produced Maven metadata.
+To land them at the release coordinates the rest of the tree resolves:
+
+```bash
+mvn install:install-file -Dfile=<built>.jar -DgroupId=org.eclipse.emf \
+  -DartifactId=org.eclipse.emf.codegen -Dversion=2.23.0 -Dpackaging=jar
+```
+
+### 2. Joda and Strata
+
+```bash
+cd ../joda-convert && $MVN clean install
+cd ../joda-beans   && $MVN clean install
+cd ../joda-time    && $MVN clean install
+cd ../strata       && $MVN clean install -pl modules/basics,modules/collect -am
+```
+
+### 3. Jackson
+
+```bash
+cd ../jackson-annotations      && $MVN clean install
+cd ../jackson-core             && $MVN clean install
+cd ../jackson-databind         && $MVN clean install
+cd ../jackson-dataformat-xml   && $MVN clean install
+cd ../jackson-dataformats-text && $MVN clean install -pl csv -am
+cd ../jackson-modules-java8    && $MVN clean install -pl datetime -am
+```
+
+### 4. Rune DSL — both tags, sequential
+
+```bash
+cd ../rune-dsl-9.83.0 && $MVN clean install \
   -Dnode.download.root=$ARTIFACTORY_URL/artifactory/nodejs-dist-remote/ \
   -Dnpm.download.root=$ARTIFACTORY_URL/artifactory/npm-remote/npm/-/
-cd ../rune-dsl-9.85.1 && $MVN install \
+cd ../rune-dsl-9.85.1 && $MVN clean install \
   -Dnode.download.root=$ARTIFACTORY_URL/artifactory/nodejs-dist-remote/ \
   -Dnpm.download.root=$ARTIFACTORY_URL/artifactory/npm-remote/npm/-/
 ```
 
-Layer 2 — rune-common. Requires layer 1.
+### 5. Rune Common — requires step 4
 
 ```bash
-cd ../rune-common && $MVN install
+cd ../rune-common && $MVN clean install
 ```
 
-Layer 3 — CDM. Requires layer 2. Blocked on `com.regnosys.rune-fpml:rosetta-source`.
+### 6. Sources-jar builds — requires step 5
+
+`src/ingest-test-framework` and `src/rune-fpml` are produced by the clone script from
+the Central `-sources.jar` plus the published POM.
 
 ```bash
-cd ../common-domain-model && $MVN install
+cd ../ingest-test-framework && $MVN clean install -Dcheckstyle.skip
+cd ../rune-fpml             && $MVN clean install -Dcheckstyle.skip
 ```
 
-Third-party — independent of layers 1-3, but ordered internally.
+### 7. CDM — requires step 6
 
 ```bash
-cd ../jackson-annotations         && $MVN install
-cd ../jackson-core                && $MVN install
-cd ../jackson-databind            && $MVN install
-cd ../jackson-dataformat-xml      && $MVN install
-cd ../jackson-dataformats-text    && $MVN install -pl csv -am
-cd ../jackson-modules-java8       && $MVN install -pl datetime -am
-cd ../joda-convert                && $MVN install
-cd ../joda-beans                  && $MVN install
-cd ../joda-time                   && $MVN install
-cd ../strata                      && $MVN install -pl modules/basics,modules/collect -am
+cd ../common-domain-model && $MVN clean install -pl rosetta-source -am
 ```
 
-To publish rather than install locally, replace `install` with:
+### 8. DRR — requires step 7
+
+DRR 7.7.0 source is copied into `src/DRR`.
 
 ```bash
-deploy -DaltDeploymentRepository=artifactory-releases::default::$ARTIFACTORY_URL/artifactory/libs-release-local
+cd ../DRR && $MVN clean install -pl rosetta-source -am
 ```
 
-Not built here: `org.eclipse.emf.*` (proxy from Central), DRR, iso20022, rune-fpml.
+### Still unbuildable
+
+| Artifact | Reason |
+|---|---|
+| `org.iso20022:rosetta-source:1.42.0` | no source tree; `isda-maven` only |
+
+DRR depends on it, so step 8 fails at resolution until it is present in the local repo.
+
+### Build everything
+
+Run from the directory that contains `src/`. Builds every library in the order above
+and collects the JARs into `build/`, with per-library logs in `build/logs/`. Uses a
+dedicated local repository at `build/.m2`; a JAR is collected only if Maven recorded
+it as installed locally, never if it was resolved from a remote repository. DRR source
+is `src/DRR`.
+
+[`build-all.sh`](build-all.sh) / [`build-all.ps1`](build-all.ps1)
 
 ## Notes
 
-- **26 of 29 are buildable internally** under Apache 2.0 / EPL 2.0 / Community
-  Specification 1.0.
-- **3 are blocked.** DRR source ships as `rosetta-source-<ver>-sources.jar` in the
-  ISDA DRR distribution, governed by the ISDA DRR License PDFs beside it. ISO 20022
-  and rune-fpml ship no sources JAR at all. rune-fpml is a CDM dependency, so it
-  blocks the CDM build too.
+- **28 of 29 have source**: 24 in public git repositories, DRR 7.7.0 copied into
+  `src/DRR`, rune-fpml and ingest-test-framework as `-sources.jar` on Maven Central.
+- **1 has no source**: `org.iso20022:rosetta-source:1.42.0` (isda-maven only). DRR
+  depends on it.
 - **The three EMF JARs report `-SNAPSHOT`** in their embedded `pom.properties` because
   Eclipse builds them with Tycho, which stamps the build-time version. The real
-  identity is the OSGi `Bundle-Version`, and all three are published to Maven Central
-  as clean releases at the versions in their filenames. Proxy them; do not rebuild,
-  and do not install them as SNAPSHOTs.
+  identity is the OSGi `Bundle-Version`. The build scripts re-install each built bundle
+  at its release version with `install:install-file`, so nothing lands as a SNAPSHOT.
 - **`finos/rune-dsl` must be built at two tags** — `9.85.1` and `9.83.0` — since the
   JARs are split across both.
 - **Java 21 is mandatory.** `org.finos.rune.parent` and `cdm-parent` both declare
