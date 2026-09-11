@@ -11,6 +11,59 @@ LOGS="$OUT/logs"
 M2="$OUT/.m2"                     # dedicated local repo, so a collected JAR can be proven built here
 DRR_SRC="${DRR_SRC:-$SRC/DRR}"
 
+# ---- Preflight: every source directory must exist before anything is built ----
+# A directory counts only if it contains pom.xml. For each missing one, print the
+# commands that create it, then stop. Re-run once they are all in place.
+#   git|<url>|<tag>    jar|<group-path>|<artifact>|<version>    copy|<what>
+SOURCES_REPO="${SOURCES_REPO:-https://repo1.maven.org/maven2}"
+REQUIRED=(
+  "emf-R2_33_0|git|https://github.com/eclipse-emf/org.eclipse.emf.git|R2_33_0"
+  "emf-R2_46_0|git|https://github.com/eclipse-emf/org.eclipse.emf.git|R2_46_0"
+  "joda-convert|git|https://github.com/JodaOrg/joda-convert.git|v2.0"
+  "joda-beans|git|https://github.com/JodaOrg/joda-beans.git|v2.1"
+  "joda-time|git|https://github.com/JodaOrg/joda-time.git|v2.10.14"
+  "strata|git|https://github.com/OpenGamma/Strata.git|v1.7.0"
+  "jackson-annotations|git|https://github.com/FasterXML/jackson-annotations.git|jackson-annotations-2.17.1"
+  "jackson-core|git|https://github.com/FasterXML/jackson-core.git|jackson-core-2.17.1"
+  "jackson-databind|git|https://github.com/FasterXML/jackson-databind.git|jackson-databind-2.17.1"
+  "jackson-dataformat-xml|git|https://github.com/FasterXML/jackson-dataformat-xml.git|jackson-dataformat-xml-2.17.1"
+  "jackson-dataformats-text|git|https://github.com/FasterXML/jackson-dataformats-text.git|jackson-dataformats-text-2.17.1"
+  "jackson-modules-java8|git|https://github.com/FasterXML/jackson-modules-java8.git|jackson-modules-java8-2.17.1"
+  "rune-dsl-9.83.0|git|https://github.com/finos/rune-dsl.git|9.83.0"
+  "rune-dsl-9.85.1|git|https://github.com/finos/rune-dsl.git|9.85.1"
+  "rune-common|git|https://github.com/finos/rune-common.git|11.121.2"
+  "common-domain-model|git|https://github.com/finos/common-domain-model.git|6.23.0"
+  "ingest-test-framework|jar|com/regnosys|ingest-test-framework|11.121.2"
+  "rune-fpml|jar|com/regnosys/rune-fpml|rosetta-source|2.1.1"
+  "DRR|copy|DRR 7.7.0 source tree"
+)
+MISSING_SRC=0
+for entry in "${REQUIRED[@]}"; do
+  IFS='|' read -r dir kind a b c <<<"$entry"
+  path="$SRC/$dir"; [ "$dir" = DRR ] && path="$DRR_SRC"
+  [ -f "$path/pom.xml" ] && continue
+  show="${path#"$ROOT"/}"
+  MISSING_SRC=$((MISSING_SRC + 1))
+  echo "MISSING: $show"
+  case $kind in
+    git)  echo "  git clone --depth 1 --branch $b $a \"$show\"" ;;
+    jar)  base="$SOURCES_REPO/$a/$b/$c"
+          echo "  mkdir -p \"$show/src/main/java\" \"$show/src/main/resources\""
+          echo "  curl -fsSL $base/$b-$c.pom -o \"$show/pom.xml\""
+          echo "  curl -fsSL $base/$b-$c-sources.jar -o \"$show/sources.jar\""
+          echo "  unzip -q -o \"$show/sources.jar\" '*.java' -d \"$show/src/main/java\""
+          echo "  unzip -q -o \"$show/sources.jar\" -x '*.java' '*.rosetta' 'META-INF/*' -d \"$show/src/main/resources\"" ;;
+    copy) echo "  copy the $a into \"$show\"" ;;
+  esac
+  echo
+done
+if [ "$MISSING_SRC" -gt 0 ]; then
+  echo "Missing source directories: $MISSING_SRC of ${#REQUIRED[@]}."
+  echo "Create them with the commands above, then re-run this script."
+  exit 1
+fi
+echo "All ${#REQUIRED[@]} source directories present."
+
 java -version 2>&1 | grep 'version "21' >/dev/null || { echo "JDK 21 required" >&2; exit 1; }
 mkdir -p "$OUT" "$LOGS"
 rm -f "$OUT"/*.jar

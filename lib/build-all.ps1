@@ -11,6 +11,65 @@ $Logs   = Join-Path $Out 'logs'
 $M2     = Join-Path $Out '.m2'    # dedicated local repo, so a collected JAR can be proven built here
 $DrrSrc = if ($env:DRR_SRC) { $env:DRR_SRC } else { Join-Path $Src 'DRR' }
 
+# ---- Preflight: every source directory must exist before anything is built ----
+# A directory counts only if it contains pom.xml. For each missing one, print the
+# commands that create it, then stop. Re-run once they are all in place.
+$SourcesRepo = if ($env:SOURCES_REPO) { $env:SOURCES_REPO } else { 'https://repo1.maven.org/maven2' }
+$Required = @(
+    @{ Dir = 'emf-R2_33_0';              Kind = 'git'; Url = 'https://github.com/eclipse-emf/org.eclipse.emf.git';        Tag = 'R2_33_0' }
+    @{ Dir = 'emf-R2_46_0';              Kind = 'git'; Url = 'https://github.com/eclipse-emf/org.eclipse.emf.git';        Tag = 'R2_46_0' }
+    @{ Dir = 'joda-convert';             Kind = 'git'; Url = 'https://github.com/JodaOrg/joda-convert.git';               Tag = 'v2.0' }
+    @{ Dir = 'joda-beans';               Kind = 'git'; Url = 'https://github.com/JodaOrg/joda-beans.git';                 Tag = 'v2.1' }
+    @{ Dir = 'joda-time';                Kind = 'git'; Url = 'https://github.com/JodaOrg/joda-time.git';                  Tag = 'v2.10.14' }
+    @{ Dir = 'strata';                   Kind = 'git'; Url = 'https://github.com/OpenGamma/Strata.git';                   Tag = 'v1.7.0' }
+    @{ Dir = 'jackson-annotations';      Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-annotations.git';      Tag = 'jackson-annotations-2.17.1' }
+    @{ Dir = 'jackson-core';             Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-core.git';             Tag = 'jackson-core-2.17.1' }
+    @{ Dir = 'jackson-databind';         Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-databind.git';         Tag = 'jackson-databind-2.17.1' }
+    @{ Dir = 'jackson-dataformat-xml';   Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-dataformat-xml.git';   Tag = 'jackson-dataformat-xml-2.17.1' }
+    @{ Dir = 'jackson-dataformats-text'; Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-dataformats-text.git'; Tag = 'jackson-dataformats-text-2.17.1' }
+    @{ Dir = 'jackson-modules-java8';    Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-modules-java8.git';    Tag = 'jackson-modules-java8-2.17.1' }
+    @{ Dir = 'rune-dsl-9.83.0';          Kind = 'git'; Url = 'https://github.com/finos/rune-dsl.git';                     Tag = '9.83.0' }
+    @{ Dir = 'rune-dsl-9.85.1';          Kind = 'git'; Url = 'https://github.com/finos/rune-dsl.git';                     Tag = '9.85.1' }
+    @{ Dir = 'rune-common';              Kind = 'git'; Url = 'https://github.com/finos/rune-common.git';                  Tag = '11.121.2' }
+    @{ Dir = 'common-domain-model';      Kind = 'git'; Url = 'https://github.com/finos/common-domain-model.git';          Tag = '6.23.0' }
+    @{ Dir = 'ingest-test-framework';    Kind = 'jar'; Group = 'com/regnosys';           Artifact = 'ingest-test-framework'; Version = '11.121.2' }
+    @{ Dir = 'rune-fpml';                Kind = 'jar'; Group = 'com/regnosys/rune-fpml'; Artifact = 'rosetta-source';        Version = '2.1.1' }
+    @{ Dir = 'DRR';                      Kind = 'copy'; What = 'DRR 7.7.0 source tree' }
+)
+$missingSrc = 0
+foreach ($r in $Required) {
+    $path = if ($r.Dir -eq 'DRR') { $DrrSrc } else { Join-Path $Src $r.Dir }
+    if (Test-Path (Join-Path $path 'pom.xml')) { continue }
+    $show = if ($path.StartsWith($Root)) { $path.Substring($Root.Length + 1) } else { $path }
+    $missingSrc++
+    Write-Host "MISSING: $show"
+    switch ($r.Kind) {
+        'git' {
+            Write-Host "  git -c core.longpaths=true clone --depth 1 --branch $($r.Tag) $($r.Url) `"$show`""
+        }
+        'jar' {
+            $base = "$SourcesRepo/$($r.Group)/$($r.Artifact)/$($r.Version)"
+            $java = Join-Path $show 'src\main\java'
+            $res  = Join-Path $show 'src\main\resources'
+            Write-Host "  New-Item -ItemType Directory -Force `"$java`", `"$res`" | Out-Null"
+            Write-Host "  Invoke-WebRequest $base/$($r.Artifact)-$($r.Version).pom -OutFile `"$show\pom.xml`" -UseBasicParsing"
+            Write-Host "  Invoke-WebRequest $base/$($r.Artifact)-$($r.Version)-sources.jar -OutFile `"$show\sources.jar`" -UseBasicParsing"
+            Write-Host "  tar -xf `"$show\sources.jar`" -C `"$java`" '*.java'"
+            Write-Host "  tar -xf `"$show\sources.jar`" -C `"$res`" --exclude '*.java' --exclude '*.rosetta' --exclude 'META-INF/*'"
+        }
+        'copy' {
+            Write-Host "  copy the $($r.What) into `"$show`""
+        }
+    }
+    Write-Host ''
+}
+if ($missingSrc -gt 0) {
+    Write-Host "Missing source directories: $missingSrc of $($Required.Count)."
+    Write-Host 'Create them with the commands above, then re-run this script.'
+    exit 1
+}
+Write-Host "All $($Required.Count) source directories present."
+
 # java and mvn write to stderr; under 'Stop', Windows PowerShell 5.1 turns that into
 # a terminating error. Native calls run with 'Continue' and are checked by exit code.
 $ErrorActionPreference = 'Continue'
