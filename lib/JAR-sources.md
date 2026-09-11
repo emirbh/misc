@@ -144,8 +144,8 @@ cd ../rune-common && $MVN clean install
 
 ### 6. Sources-jar builds — requires step 5
 
-`src/ingest-test-framework` and `src/rune-fpml` are produced by the clone script from
-the Central `-sources.jar` plus the published POM.
+`src/ingest-test-framework` and `src/rune-fpml` have no git repository; copy their
+sources (pom.xml + sources) in manually.
 
 ```bash
 cd ../ingest-test-framework && $MVN clean install -Dcheckstyle.skip

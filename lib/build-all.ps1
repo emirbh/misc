@@ -14,7 +14,6 @@ $DrrSrc = if ($env:DRR_SRC) { $env:DRR_SRC } else { Join-Path $Src 'DRR' }
 # ---- Preflight: every source directory must exist before anything is built ----
 # A directory counts only if it contains pom.xml. For each missing one, print the
 # commands that create it, then stop. Re-run once they are all in place.
-$SourcesRepo = if ($env:SOURCES_REPO) { $env:SOURCES_REPO } else { 'https://repo1.maven.org/maven2' }
 $Required = @(
     @{ Dir = 'emf-R2_33_0';              Kind = 'git'; Url = 'https://github.com/eclipse-emf/org.eclipse.emf.git';        Tag = 'R2_33_0' }
     @{ Dir = 'emf-R2_46_0';              Kind = 'git'; Url = 'https://github.com/eclipse-emf/org.eclipse.emf.git';        Tag = 'R2_46_0' }
@@ -32,8 +31,8 @@ $Required = @(
     @{ Dir = 'rune-dsl-9.85.1';          Kind = 'git'; Url = 'https://github.com/finos/rune-dsl.git';                     Tag = '9.85.1' }
     @{ Dir = 'rune-common';              Kind = 'git'; Url = 'https://github.com/finos/rune-common.git';                  Tag = '11.121.2' }
     @{ Dir = 'common-domain-model';      Kind = 'git'; Url = 'https://github.com/finos/common-domain-model.git';          Tag = '6.23.0' }
-    @{ Dir = 'ingest-test-framework';    Kind = 'jar'; Group = 'com/regnosys';           Artifact = 'ingest-test-framework'; Version = '11.121.2' }
-    @{ Dir = 'rune-fpml';                Kind = 'jar'; Group = 'com/regnosys/rune-fpml'; Artifact = 'rosetta-source';        Version = '2.1.1' }
+    @{ Dir = 'ingest-test-framework';    Kind = 'copy'; What = 'ingest-test-framework 11.121.2 source (pom.xml + sources)' }
+    @{ Dir = 'rune-fpml';                Kind = 'copy'; What = 'rune-fpml rosetta-source 2.1.1 source (pom.xml + sources)' }
     @{ Dir = 'DRR';                      Kind = 'copy'; What = 'DRR 7.7.0 source tree' }
 )
 $missingSrc = 0
@@ -46,16 +45,6 @@ foreach ($r in $Required) {
     switch ($r.Kind) {
         'git' {
             Write-Host "  git -c core.longpaths=true clone --depth 1 --branch $($r.Tag) $($r.Url) `"$show`""
-        }
-        'jar' {
-            $base = "$SourcesRepo/$($r.Group)/$($r.Artifact)/$($r.Version)"
-            $java = Join-Path $show 'src\main\java'
-            $res  = Join-Path $show 'src\main\resources'
-            Write-Host "  New-Item -ItemType Directory -Force `"$java`", `"$res`" | Out-Null"
-            Write-Host "  Invoke-WebRequest $base/$($r.Artifact)-$($r.Version).pom -OutFile `"$show\pom.xml`" -UseBasicParsing"
-            Write-Host "  Invoke-WebRequest $base/$($r.Artifact)-$($r.Version)-sources.jar -OutFile `"$show\sources.jar`" -UseBasicParsing"
-            Write-Host "  tar -xf `"$show\sources.jar`" -C `"$java`" '*.java'"
-            Write-Host "  tar -xf `"$show\sources.jar`" -C `"$res`" --exclude '*.java' --exclude '*.rosetta' --exclude 'META-INF/*'"
         }
         'copy' {
             Write-Host "  copy the $($r.What) into `"$show`""
