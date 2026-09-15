@@ -1,0 +1,41 @@
+package iso20022.auth030.fca.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import iso20022.auth030.fca.NotionalQuantity9__1;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkNumber;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.stream.Collectors.toList;
+
+public class NotionalQuantity9__1TypeFormatValidator implements Validator<NotionalQuantity9__1> {
+
+	private List<ComparisonResult> getComparisonResults(NotionalQuantity9__1 o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkNumber("ttlQty", o.getTtlQty(), of(25), of(5), of(new BigDecimal("0")), empty())
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, NotionalQuantity9__1 o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("NotionalQuantity9__1", ValidationResult.ValidationType.TYPE_FORMAT, "NotionalQuantity9__1", path, "", res.getError());
+				}
+				return success("NotionalQuantity9__1", ValidationResult.ValidationType.TYPE_FORMAT, "NotionalQuantity9__1", path, "");
+			})
+			.collect(toList());
+	}
+
+}

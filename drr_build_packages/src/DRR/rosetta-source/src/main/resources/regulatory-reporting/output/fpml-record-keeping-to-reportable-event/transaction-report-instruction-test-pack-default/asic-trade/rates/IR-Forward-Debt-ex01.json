@@ -1,0 +1,58 @@
+{
+  "actionType" : "NEWT",
+  "assetClass" : "INTR",
+  "beneficiary1" : "DUMMYLEI010000000037",
+  "beneficiary1IdentifierTypeIndicator" : true,
+  "cleared" : "N",
+  "collateralPortfolioIndicator" : false,
+  "contractType" : "FORW",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2IdentifierType" : true,
+  "direction1" : "SLLR",
+  "effectiveDate" : "2023-11-15",
+  "entityResponsibleForReporting" : "DUMMYLEI010000000037",
+  "eventIdentifier" : "BANKX0001",
+  "eventTimestamp" : "2023-11-20T00:35:09Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2023-11-15T01:45:41Z",
+  "expirationDate" : "2029-11-15",
+  "leg1" : {
+    "notionalAmount" : 8600000,
+    "notionalCurrency" : "JPY"
+  },
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "PHYS",
+          "NotionalCurrency" : "JPY",
+          "ReturnorPayoutTrigger" : "Forward price of underlying instrument",
+          "Underlying" : {
+            "UnderlierID" : "JP1700161P53",
+            "UnderlierIDSource" : "ISIN"
+          }
+        },
+        "Header" : {
+          "AssetClass" : "Rates",
+          "InstrumentType" : "Forward",
+          "Level" : "UPI",
+          "UseCase" : "Debt"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "platformIdentifier" : "XOFF",
+  "price" : {
+    "decimal" : 0.726600701
+  },
+  "priceNotation" : "Decimal",
+  "priceUnitOfMeasure" : "ACCY",
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "secondaryTransactionIdentifier" : "UTIIRFORWARDDEBT0116",
+  "underlyingIdentification" : "JP1700161P53",
+  "underlyingIdentificationType" : "I",
+  "uniqueTransactionIdentifier" : "UTIIRFORWARDDEBT0213"
+}

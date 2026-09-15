@@ -1,0 +1,356 @@
+namespace drr.regulation.common
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.identifier.*
+import cdm.base.staticdata.party.*
+import cdm.event.common.*
+import cdm.product.collateral.*
+
+import drr.base.margin.*
+import drr.base.trade.*
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iso.*
+
+annotation nonReportable:
+
+type ExecutingEntity:
+    isInvestmentFirm boolean (1..1)
+    addressOfBranch Address (1..1)
+    addressOfIncorporation Address (1..1)
+
+type RegimeReportingSide: <"Specifies the reporting roles for a particular regime and supervisory body.">
+    [rootType]
+    regimeName RegimeNameEnum (1..1) <"Identifies the reporting regime under which this data is reported. For example, Dodd-Frank, MiFID, HongKongOTCDRepository, ODRF">
+    supervisoryBody SupervisoryBodyEnum (0..1) <"Identifies the specific regulator or other supervisory body for which this data is produced. For example, CFTC, SEC, UKFSA, ODRF, SFC, ESMA.">
+    reportingSide ReportingSide (0..1) <"Specifies the reporting roles for (self) reporting.">
+    delegatedReportingSide ReportingSide (0..1) <"Specifies the reporting roles for delegated reporting.">
+
+    condition ReportingSide:
+        reportingSide exists or delegatedReportingSide exists
+
+type ReportableEvent extends ReportableEventBase: <"Specifies a workflowstep with enriched information required for reporting.">
+    [rootType]
+    override reportableInformation ReportableInformation (1..1) <"Additional information required for a reportable transaction, including the reporting regime.">
+
+type RegimeReportableEvent extends ReportableEvent: <"Specifies a reportable event with a reporting side for each regime.">
+    [rootType]
+    regimeReportingSide RegimeReportingSide (0..*)
+
+type TransactionReportInstruction extends TransactionReportInstructionBase: <"Specifies a reportable event with with a single reporting side.">
+    [rootType]
+    override reportableInformation ReportableInformation (1..1) <"Additional information required for a reportable transaction, including the reporting regime.">
+
+type ReportableCollateral extends ReportableCollateralBase:
+    [rootType]
+    override reportableInformation ReportableInformation (1..1) <"Additional information required for a reportable transaction, including the reporting regime.">
+
+type RegimeReportableCollateral extends ReportableCollateral: <"Specifies a reportable collateral with a reporting side for each regime.">
+    regimeReportingSide RegimeReportingSide (0..*)
+
+type CollateralReportInstruction extends CollateralReportInstructionBase: <"Specifies a reportable collateral with with a single reporting side.">
+    [rootType]
+    override reportableInformation ReportableInformation (1..1) <"Additional information required for a reportable transaction, including the reporting regime.">
+
+type ReportableValuation:
+    [rootType]
+    valuationDetails ValuationDetails (0..1) <"The reportable valuation information">
+    reportableInformation ReportableInformation (1..1) <"Additional information required for a reportable transaction, including the reporting regime.">
+    collateralDetails Collateral (0..1) <"Collateral information needed to complement valuation report.">
+    eventIdentifier Identifier (0..*) <"Allows user to insert processing identifiers">
+    level ReportLevelEnum (0..1) <"Indication whether the report is done at trade or position level.">
+
+type RegimeReportableValuation extends ReportableValuation: <"Specifies a reportable valuation with a reporting side for each regime.">
+    regimeReportingSide RegimeReportingSide (0..*)
+
+type ValuationReportInstruction extends ReportableValuation: <"Specifies a reportable valuation with with a single reporting side.">
+    [rootType]
+    reportingSide ReportingSide (1..1)
+
+type ValuationDetails:
+    valuation Valuation (0..1)
+    tradeInformation ValuationTradeInformation (0..1)
+
+type ValuationTradeInformation:
+    uniqueTradeIdentifier TradeIdentifier (0..1)
+    uniqueProductIdentifier ProductIdentifier (0..*)
+    action ActionTypeEnum (0..1)
+    nextFloatingReferenceResetDateLeg1 date (0..1)
+    nextFloatingReferenceResetDateLeg2 date (0..1)
+    lastFloatingReference LastFloatingReference (0..1)
+    assetClass CommonAssetClass (0..1)
+
+type LastFloatingReference:
+    lastFloatingReferenceResetDateLeg1 date (0..1)
+    lastFloatingReferenceResetDateLeg2 date (0..1)
+    lastFloatingReferenceValueLeg1 Max11Number (0..1)
+    lastFloatingReferenceValueLeg2 Max11Number (0..1)
+
+type ReportableInformation extends ReportableInformationBase: <"Specifies the relevant regulators or other supervisory bodies the transaction is relevant for, and regime specific information required relating to the transaction and the parties.">
+    [rootType]
+    jurisdictionInformation ReportableJurisdictionInformation (1..*) <"Defines the jurisdictions-specific data necessary for reporting.">
+
+    condition NotDuplicatedJurisdictions: <"Every jurisdiction is limited to a single jurisdictionInformation container. As the most granular method of defining a jurisdiction is through its supervisory body, these supervisory bodies cannot be duplicated.">
+        jurisdictionInformation -> supervisoryBody distinct count
+            = jurisdictionInformation count
+
+    condition TradingCapacityMAS: <"For MAS, the trading capacity may only be designated as 'Agent' or 'Principal' when the reporting roles for all involved parties are set to 'ReportingParty'.">
+        jurisdictionInformation
+            then filter regimeName = MAS
+            then if partyInformation -> reportingRole all = ReportingParty
+                then partyInformation -> tradingCapacity any = Agent
+                        or partyInformation -> tradingCapacity any = Principal
+
+    condition MandatorilyClearableConditionESMA: <"The mandatorily clearable indicator for ESMA must have the same value for all parties involved.">
+        jurisdictionInformation
+            then filter supervisoryBody = ESMA
+            then if partyInformation -> mandatorilyClearable exists
+                then partyInformation -> mandatorilyClearable distinct count = 1
+
+    condition MandatorilyClearableConditionFCA: <"The mandatorily clearable indicator for FCA must have the same value for all parties involved.">
+        jurisdictionInformation
+            then filter supervisoryBody = FCA
+            then if partyInformation -> mandatorilyClearable exists
+                then partyInformation -> mandatorilyClearable distinct count = 1
+
+    condition MandatorilyClearableConditionCFTC: <"The mandatorily clearable indicator for CFTC must have the same value for all parties involved.">
+        jurisdictionInformation
+            then filter supervisoryBody = CFTC
+            then if partyInformation -> mandatorilyClearable exists
+                then partyInformation -> mandatorilyClearable distinct count = 1
+
+type ReportableJurisdictionInformation: <"Specifies the regulatory regime and supervisory body applicable to the transaction, along with the required jurisdiction-specific information concerning both the transaction and the involved parties.">
+    regimeName RegimeNameEnum (1..1) <"Identifies the regulatory regime applicable to the transaction.">
+        [metadata scheme]
+    supervisoryBody SupervisoryBodyEnum (0..1) <"Identifies the supervisory body applicable to the transaction.">
+        [metadata scheme]
+    transactionInformation TransactionInformation (0..1) <"Identifies jurisdiction-specific information regarding the transaction.">
+    partyInformation JurisdictionPartyInformation (1..*) <"Identifies jurisdiction-specific information concerning the involved parties.">
+
+    condition ESMATransactionInformation: <"The 'duration' attribute is specific to the ESMA transaction information.">
+        if regimeName <> EMIR
+        then transactionInformation -> duration is absent
+
+    condition CFTCTransactionInformation: <"The 'largeSizeTrade' attribute is specific to the CFTC transaction information.">
+        if regimeName <> DoddFrankAct and supervisoryBody <> CFTC
+        then transactionInformation -> largeSizeTrade is absent
+
+    condition DoddFranckActSupervisoryBodies: <"The 'DoddFranckAct' regime supports either the CFTC or the SEC supervisory bodies.">
+        if regimeName = DoddFrankAct
+        then supervisoryBody = CFTC or supervisoryBody = SEC
+
+    condition CFTCReportingRegime: <"Specific CFTC party information must reside within the CFTC container.">
+        if supervisoryBody = CFTC
+        then partyInformation -> cftcPartyInformation exists
+        else partyInformation -> cftcPartyInformation is absent
+
+    condition CSAReportingRegime: <"Specific CSA party information must reside within the CSA container.">
+        if csaTrade.SupervisoryBodyForCSA any = supervisoryBody
+        then partyInformation -> csaPartyInformation exists
+        else partyInformation -> csaPartyInformation is absent
+
+    condition SECReportingRegime: <"Specific SEC party information must reside within the SEC container.">
+        if supervisoryBody = SEC
+        then partyInformation -> secPartyInformation exists
+        else partyInformation -> secPartyInformation is absent
+
+    condition ESMAReportingRegime: <"Specific ESMA party information must reside within the ESMA container.">
+        if supervisoryBody = ESMA
+        then partyInformation -> esmaPartyInformation exists
+        else partyInformation -> esmaPartyInformation is absent
+
+    condition FCAReportingRegime: <"Specific FCA party information must reside within the FCA container.">
+        if supervisoryBody = FCA
+        then partyInformation -> fcaPartyInformation exists
+        else partyInformation -> fcaPartyInformation is absent
+
+    condition ASICReportingRegime: <"Specific ASIC party information must reside within the ASIC container.">
+        if supervisoryBody = ASIC
+        then partyInformation -> asicPartyInformation exists
+        else partyInformation -> asicPartyInformation is absent
+
+    condition HKMAReportingRegime: <"Specific HKMA party information must reside within the HKMA container.">
+        if supervisoryBody = HKMA
+        then partyInformation -> hkmaPartyInformation exists
+        else partyInformation -> hkmaPartyInformation is absent
+
+type TransactionInformation: <"Specifies jurisdiction-specific information regarding the transaction.">
+    transactionIdentifier TradeIdentifier (0..1) <"Identifier to use specifically in the context of reporting to a specific regime.">
+    priorTransactionIdentifier TradeIdentifier (0..1) <"Identifier of the prior transaction.">
+    reportableExecutionVenue ReportableExecutionVenue (1..1) <"Describes the execution venue where the trade is executed.">
+    largeSizeTrade boolean (0..1) <"Specifies whether the sender of this trade considers it to be a large notional trade or block trade for reporting purposes, and thus eligible for delayed public reporting. Normally this will only be applicable for off-facility trades.">
+    duration CommodityTimeUnitEnum (0..1) <"Specifies the approximate duration of the contract in the context of commoditiy trading. Exact boundaries of each value have not been precisely defined by so far. This attribute is expected to be removed when values exact definitions of values emerge and a functional assessment of duration - based upon start and end dates and times - can be implemented.">
+    tradableOnTradingVenue TradableOnTradingVenueEnum (0..1) <"Whether the financial instrument is admitted to trading, or traded on a trading venue or for which a request for admission was made.">
+    underlierTradedOnTradingVenue boolean (0..1) <"Indicator of whether the product underlier of the reportable trade is traded on a trading venue.">
+    underlierAssetTradingPlatformIdentifier string (0..1) <"For a platform (e.g. exchange) traded underlying asset, the platform on which the asset is traded.">
+    internalTradeIdentifier string (0..1) <"Unique internal identifier created and used by the user to identify the transaction.">
+
+type ReportableExecutionVenue: <"Describes the execution venue where the trade is executed.">
+    executionVenueType ExecutionVenueTypeEnum (1..1) <"Specifies the type of venue where a trade could be executed.">
+    sefOrDcmAnonymousIndicator boolean (0..1) <"Indicator of whether the swap was executed anonymously on a SEF or DCM. When set to true, counterparty details will be masked on reporting.">
+
+    condition SEFOrDCMAnonymousIndicator: <"The 'sefOrDcmAnonymousIndicator' is only applicable when the trade was executed on either a SEF or DCM venue.">
+        if [ExecutionVenueTypeEnum -> SEF, ExecutionVenueTypeEnum -> DCM] all <> executionVenueType
+        then sefOrDcmAnonymousIndicator is absent
+
+type JurisdictionPartyInformation: <"Specifies jurisdiction-specific information regarding one party.">
+    partyReference Party (1..1) <"Specifies the party that is associated with the enriched information.">
+        [metadata reference]
+    mandatorilyClearable MandatorilyClearableEnum (0..1) <"Indicator of whether the transaction is mandatorily clearable.">
+    clearingException ClearingException (0..1) <"Identifies the type of clearing exception or exemption that the counterparty has elected.">
+    postPricedIndicator boolean (0..1) <"Indication of whether the transaction satisfies the definition of 'post-priced swap'.">
+    asicPartyInformation ASICPartyInformation (0..1) <"Party information required for reporting a transaction to the ASIC.">
+    cftcPartyInformation CFTCPartyInformation (0..1) <"Party information required for reporting a transaction to the CFTC.">
+    csaPartyInformation CSAPartyInformation (0..1) <"Party information required for reporting a transaction to the CSA.">
+    secPartyInformation SECPartyInformation (0..1) <"Party information required for reporting a transaction under SEC.">
+    esmaPartyInformation ESMAPartyInformation (0..1) <"Party information required for reporting a transaction under ESMA.">
+    fcaPartyInformation FCAPartyInformation (0..1) <"Party information required for reporting a transaction under FCA.">
+    hkmaPartyInformation HKMAPartyInformation (0..1) <"Party information required for reporting a transaction to the HKMA.">
+    reportingRole ReportingRoleEnum (0..1) <"Specifies the reporting role of the party with respect to the regime.">
+    tradingCapacity ReportingRoleEnum (0..1) <"Specifies the Trading Capacity of the specified person with respect to the regime.">
+    technicalRecordId TechnicalRecordId (0..1) <"Provides the unique technical identification of the original data for which the status is provided for the BDR.">
+
+type ASICPartyInformation: <"Enriched party information required for reporting a transaction under ASIC.">
+    nonReportedTradePortfolio boolean (0..1) <"Specifies whether the portfolio contains non reported transactions.">
+    smallScaleBuySideIndicator boolean (0..1) <"Indicator whether the reporting enitity is acting as a small-scale buy side and meets the 'small-scale' criteria">
+
+type CFTCPartyInformation: <"Enriched party information required for reporting a transaction to the CFTC.">
+    organizationType CFTCEntityClassificationEnum (0..1) <"Specifies the nature of the type as registered with the CFTC.">
+    federalEntity CFTCFederalEntityClassificationEnum (0..1) <"Indicator of whether counterparty is a federal entity, and which type.">
+    financialEntity CFTCFinancialEntityClassificationEnum (0..1) <"Indicator of whether counterparty is a financial entity, and which type.">
+    physicalCommodityContractIndicator boolean (0..1) <"Indicator of whether the contract is classified as a physical commodity by referencing one of the contracts described in P43 Appendix B. The approach is consistent with 43.4(c)(4)(ii).">
+    isUSPerson boolean (0..1)
+    nonReportedTradePortfolio boolean (0..1) <"Specifies whether the portfolio contains non reported transactions.">
+
+type CSAPartyInformation: <"Enriched party information required for reporting a transaction under CSA.">
+    nonReportedTradePortfolio boolean (0..1) <"Specifies whether the portfolio contains non reported transactions.">
+    localCounterparty boolean (0..1) <"Indicator of whether the counterparty is a local counterparty for the jurisdiction.">
+
+type HKMAPartyInformation: <"Enriched party information required for reporting a transaction under HKMA.">
+    natureOfParty NatureOfPartyEnum (1..1) <"Specifies the nature of the counterparty.">
+    nonReportedTradePortfolio boolean (0..1) <"Specifies whether the portfolio contains non reported transactions.">
+    corporateSector CorporateSector (0..1) <"Specifies the corporate sector of the counterparty.">
+    condition CorporateSector: <"Condition to ensure that the corporate sector of the counterparty is specified when required.">
+        if natureOfParty = Financial or natureOfParty = NonFinancial
+        then corporateSector exists
+        else corporateSector is absent
+
+    condition FinancialNonFinancial: <"At least a corporate sector must be provided matching the nature of the party.">
+        if natureOfParty = Financial
+        then corporateSector -> financialSector exists
+        else if natureOfParty = NonFinancial
+        then corporateSector -> nonFinancialSector exists
+
+type ClearingException: <"Specifies information related to clearing exceptions or exemptions that are applied to the trade.">
+    clearingException boolean (0..1) <"Indication of whether an exception from normal clearing mandates is being applied caused by the type of the parties or their relationship, such as inter-affiliate trades.">
+    clearingExceptionReason ClearingExceptionReasonEnum (0..*) <"Identifies the type of clearing exception or exemption that the counterparty has elected.">
+    clearingExceptionDeclaration ClearingExceptionDeclaration (0..1) <"Specifies supporting evidence when claiming an end user exception.">
+
+    condition ClearingException: <"When Clearing Exception is 'True' a Clearing Exception Reason should be provided.">
+        if clearingException = True
+        then clearingExceptionReason exists
+        else if clearingExceptionReason exists
+        then clearingException = True
+
+type ClearingExceptionDeclaration: <"Specifies supporting evidence when claiming an end user exception.">
+    creditDocument CreditDocumentEnum (0..*) <"Specifies arrangements being made to provide credit.">
+    organizationCharacteristic OrganizationCharacteristicEnum (0..*) <"Specifies the categories or characteristics that apply to an organization which allow it to apply for an end-user exception determination.">
+    transactionCharacteristic TransactionCharacteristicEnum (0..*) <"Specifies the categories or characteristics that apply to a transaction which allow application of an end-user exception determination.">
+
+type ESMAPartyInformation: <"Enriched party information required for reporting a transaction under ESMA EMIR.">
+    natureOfParty NatureOfPartyEnum (1..1) <"Specifies the nature of the counterparty.">
+    corporateSector CorporateSector (0..1) <"Specifies the corporate sector of the counterparty.">
+    exceedsClearingThreshold boolean (0..1) <"Information whether the counterparty is above the clearing threshold referred to in Article 4(a)(3) or 10(3) of Regulation (EU) No 648/2012 at the moment when the transaction was concluded.">
+    directlyLinkedActivity boolean (0..1) <"Directly linked to commercial activity or treasury financing. Information on whether the contract is objectively measurable as directly linked to the counterparty 1's commercial or treasury financing activity, as referred to in Article 10(3) of Regulation (EU) No 648/2012."> // TH Review: definition specific for EMIR but it's not jurisdiction specific in FpML
+    condition CorporateSector: <"Condition to ensure that the corporate sector of the counterparty is specified when required.">
+        if natureOfParty = Financial or natureOfParty = NonFinancial
+        then corporateSector exists
+        else corporateSector is absent
+
+    condition FinancialNonFinancial: <"At least a corporate sector must be provided matching the nature of the party.">
+        if natureOfParty = Financial
+        then corporateSector -> financialSector exists
+        else if natureOfParty = NonFinancial
+        then corporateSector -> nonFinancialSector exists
+
+type FCAPartyInformation: <"Enriched party information required for reporting a transaction under FCA UK EMIR.">
+    natureOfParty NatureOfPartyEnum (1..1) <"Specifies the nature of the counterparty.">
+    corporateSector CorporateSector (0..1) <"Specifies the corporate sector of the counterparty.">
+    exceedsClearingThreshold boolean (0..1) <"Information whether the counterparty is above the clearing threshold referred to in Article 4(a)(3) or 10(3) of Regulation (EU) No 648/2012 at the moment when the transaction was concluded.">
+    directlyLinkedActivity boolean (0..1) <"Directly linked to commercial activity or treasury financing. Information on whether the contract is objectively measurable as directly linked to the counterparty 1's commercial or treasury financing activity, as referred to in Article 10(3) of Regulation (EU) No 648/2012.">
+
+    condition CorporateSector: <"Condition to ensure that the corporate sector of the counterparty is specified when required.">
+        if natureOfParty = Financial or natureOfParty = NonFinancial
+        then corporateSector exists
+        else corporateSector is absent
+
+    condition FinancialNonFinancial: <"At least a corporate sector must be provided matching the nature of the party.">
+        if natureOfParty = Financial
+        then corporateSector -> financialSector exists
+        else if natureOfParty = NonFinancial
+        then corporateSector -> nonFinancialSector exists
+
+type CorporateSector: <"Specifies the corporate sector of the counterparty.">
+    financialSector FinancialSectorEnum (0..*) <"Specifies the ESMA EMIR Financial Sector of a counterparty.">
+    nonFinancialSector NonFinancialSector (0..*) <"Specifies the ESMA EMIR Non Financial Sector of a counterparty.">
+
+type NonFinancialSector: <"Specifies the ESMA Non Financial Sector of a counterparty and the ordinality of the relative importance of the corresponding activity.">
+    ordinal int (1..1) <"Specifies the order of relative importance of each activity">
+    nonFinancialSectorIndicator NonFinancialSectorEnum (1..1) <"Specifies the ESMA EMIR Non Financial Sector of a counterparty">
+
+type SECPartyInformation: <"Enriched party information required for reporting a transaction to the CFTC.">
+    financialEntity CFTCFinancialEntityClassificationEnum (0..1) <"Indicator of whether counterparty is a financial entity, and which type.">
+
+type ReportableDelivery:
+    deliveryStartTime time (0..1)
+    deliveryEndTime time (0..1)
+    deliveryStartDate ISODate (0..1)
+    deliveryEndDate ISODate (0..1)
+    duration DurationType1Code (0..1)
+    daysOfTheWeek string (0..*)
+    deliveryCapacity number (0..1)
+    quantityUnit EnergyQuantityUnit2Code (0..1)
+    priceTimeIntervalQuantity number (0..1)
+    currencyOfThePriceTimeIntervalQuantity string (0..1)
+
+type CommonPartiesReport: <"Common Parties Report represents common party attributes used in Margin Report">
+    reportingTimestamp zonedDateTime (1..1)
+    entityResponsibleForReporting LEIIdentifier (0..1)
+    counterparty1 LEIIdentifier (1..1)
+    counterparty2IdentifierType boolean (0..1)
+    counterparty2 Min20Max72AlphaNumericText (0..1)
+
+type CommonCollateralReport: <"Common Margin Report represents common Margin report attributes">
+    uti CollateralUTIString (0..1)
+    collateralPortfolioIndicator boolean (0..1)
+    collateralisationCategory CollateralisationType3Code (0..1)
+    initialMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+    initialMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+    initialMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+    variationMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+    variationMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+    variationMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+    initialMarginCollectedByCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+    initialMarginCollectedByCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+    initialMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+    variationMarginCollectedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+    variationMarginCollectedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+    variationMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+    excessCollateralPostedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+    currencyOfTheExcessCollateralPosted string (0..1)
+    excessCollateralCollectedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+    currencyOfTheExcessCollateralCollected string (0..1)
+    actionType MarginActionEnum (0..1)
+    eventDate date (1..1)
+
+type DeliveryCapacity:
+    amount number (0..1)
+    unit EnergyQuantityUnit2Code (0..1)
+
+type TechnicalRecordId: <"Provides the unique technical identification of the original data for which the status is provided for the BDR.">
+    id string (0..1) <"Technical identification of the original data for which the status is provided for the BDR.">
+        [metadata scheme]
+    isUnique boolean (0..1) <"Specifies whether the technical identification is unique for every submission of a transaction.">
+
+    condition IsUnique: <"Condition to ensure that if isUnique exists, then the ID must also exist.">
+        if isUnique exists then id exists

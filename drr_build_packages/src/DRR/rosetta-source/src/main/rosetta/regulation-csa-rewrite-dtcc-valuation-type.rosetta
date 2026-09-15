@@ -1,0 +1,97 @@
+namespace drr.regulation.csa.rewrite.dtcc.valuation
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.*
+import drr.regulation.csa.rewrite.dtcc.valuation.*
+import drr.regulation.csa.rewrite.valuation.* as csaValuation
+import drr.standards.iso.*
+
+type DTCCAdditionalValuationFields extends dtcc.valuation.DTCCCommonValuationFields:
+    override tradeParty1IDType PartyIdentifierTypeEnum (1..1)
+        [label "Trade Party 1 - ID Type"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 1 - ID Type"
+            provision "GTR required Control Field."]
+        [docReference ISDA CanadianDataAndReporting date "20250508" field "Trade Party 1 - ID Type"
+            provision "Reporting firms on the WG call said they would be using an LEI. There is only a possible use case for crypto trades reporting by SEFs; however, DRR is not going to model this case until is demanded by firms."]
+    override submittingPartyIDType PartyIdentifierTypeEnum (1..1)
+        [label "Submitting Party - ID Type"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Submitting Party - ID Type"
+            provision "GTR required Control Field."]
+    override usiIDPrefix string (0..1)
+        [label "USI ID Prefix"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "USI ID Prefix"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250327" field "USI ID Prefix"
+            provision "The group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated."]
+        [ruleReference DTCC_USIIDPrefix]
+    override submittedForParty LEIIdentifier (1..1)
+        [label "Submitted For Party"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Submitted For Party"
+            provision "Need field for GTR Processing."]
+        [docReference ISDA PeerReviewGroup date "20250507" field "Submitted For Party"
+            provision "Agreed to default the output to the LEI of the reporting party."]
+    override tradeParty1ReportingDestination SupervisoryBodyEnum (1..*)
+        [label "Trade Party 1 - Reporting Destination"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 1 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+    override tradeParty2ReportingDestination SupervisoryBodyEnum (0..*)
+        [label "Trade Party 2 - Reporting Destination"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 2 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+    override primaryAssetClass AssetClassEnum (1..1)
+        [label "Primary Asset Class"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Primary Asset Class"
+            provision "UPI RDL: Indicates whether the asset, benchmark or another derivatives contract underlying a derivatives contract is, or references, an equity, rate, credit, commodity or foreign exchange asset."]
+    override comment1 string (0..1)
+        [label "Comment 1"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Comment 1"
+            provision "For CSV submissions if  populated with an * the entire line is treated as comment."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Comment 1"
+            provision "Empty because CSV submission is still not supported by current DRR model. This rule will be revisited once Harmonized CSV projection is included."]
+    override messageID string (1..1)
+        [label "Message ID"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Message ID"
+            provision "Purpose of this field is to allow firms to submit a unique ID that will allow them to tie in specific submissions/modifications. For example if 5 modifications are submitted on a specific PET, this will allow the firm to ensure they receive responses for all 5 modifications."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250604" field "Message ID"
+            provision "Each Message ID must be unique, irrespective of the report type. This unique identification is achieved by concatenating with the Reporting Timestamp field."]
+        [ruleReference DTCC_MessageID]
+    override messageType string (1..1)
+        [label "Message Type"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Message Type"
+            provision "Need to indicate what message is being submitted to GTR."]
+    override tradeParty2ExecutionAgentID string (0..1)
+        [label "Trade Party 2 - Execution Agent ID"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 2 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty2ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 2 - Execution Agent ID Type"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 2 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ExecutionAgentID string (0..1)
+        [label "Trade Party 1 - Execution Agent ID"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 1 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Execution Agent ID Type"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 1 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1TransactionID string (0..1)
+        [label "Valuation Trade Party 1 - Transaction ID"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Trade Party 1 - Transaction ID"
+            provision "Internal trade identifier for Counterparty 1 to map to their internal system."]
+    override version string (0..1)
+        [label "Version"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "Version"
+            provision "Memo field. Used to identify the asset class and template type of submission."]
+    usiID string (0..1)
+        [label "USI ID"]
+        [docReference CSA csaValuation.Valuation DTCC_Specs field "USI ID"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+        [ruleReference DTCC_USIID]

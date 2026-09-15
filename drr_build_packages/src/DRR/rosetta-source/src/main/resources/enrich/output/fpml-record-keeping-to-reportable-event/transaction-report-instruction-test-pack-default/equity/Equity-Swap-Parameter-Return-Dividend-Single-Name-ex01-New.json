@@ -1,0 +1,1263 @@
+{
+  "originatingWorkflowStep" : {
+    "action" : "New",
+    "businessEvent" : {
+      "after" : [ {
+        "meta" : {
+          "globalKey" : "b1de418a"
+        },
+        "state" : {
+          "positionState" : "Formed"
+        },
+        "trade" : {
+          "contractDetails" : {
+            "documentation" : [ {
+              "contractualParty" : [ {
+                "externalReference" : "PartyA",
+                "globalReference" : "5151b003"
+              }, {
+                "externalReference" : "PartyB",
+                "globalReference" : "2d47d95e"
+              } ],
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "47167e61"
+              }
+            } ],
+            "meta" : {
+              "globalKey" : "47167e61"
+            }
+          },
+          "counterparty" : [ {
+            "partyReference" : {
+              "externalReference" : "PartyA",
+              "globalReference" : "5151b003"
+            },
+            "role" : "Party1"
+          }, {
+            "partyReference" : {
+              "externalReference" : "PartyB",
+              "globalReference" : "2d47d95e"
+            },
+            "role" : "Party2"
+          } ],
+          "meta" : {
+            "globalKey" : "133c72e7"
+          },
+          "party" : [ {
+            "meta" : {
+              "externalKey" : "PartyA",
+              "globalKey" : "5151b003"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "DUMMYLEI010000000037"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "5151b003"
+              }
+            } ]
+          }, {
+            "meta" : {
+              "externalKey" : "PartyB",
+              "globalKey" : "2d47d95e"
+            },
+            "name" : {
+              "value" : "Bank X (reportingParty)"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "DUMMYLEI020000000085"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "590367e9"
+              }
+            } ]
+          } ],
+          "product" : {
+            "economicTerms" : {
+              "effectiveDate" : {
+                "adjustableDate" : {
+                  "meta" : {
+                    "globalKey" : "3f3042"
+                  },
+                  "unadjustedDate" : "2022-01-02"
+                },
+                "meta" : {
+                  "globalKey" : "3f3042"
+                }
+              },
+              "nonStandardisedTerms" : false,
+              "payout" : [ {
+                "PerformancePayout" : {
+                  "payerReceiver" : {
+                    "payer" : "Party1",
+                    "receiver" : "Party2"
+                  },
+                  "returnTerms" : {
+                    "dividendReturnTerms" : {
+                      "dividendPayoutRatio" : [ {
+                        "cashRatio" : 1.0,
+                        "nonCashRatio" : 1.0
+                      } ],
+                      "dividendPeriod" : [ {
+                        "dateAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "EUTA"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "20a71d"
+                            }
+                          },
+                          "businessDayConvention" : "FOLLOWING",
+                          "meta" : {
+                            "globalKey" : "211dc30c"
+                          }
+                        },
+                        "dividendPaymentDate" : {
+                          "dividendDate" : {
+                            "value" : {
+                              "meta" : {
+                                "externalKey" : "p1",
+                                "globalKey" : "815062c0"
+                              },
+                              "relativeDate" : {
+                                "businessDayConvention" : "FOLLOWING",
+                                "dateRelativeTo" : {
+                                  "externalReference" : "e1",
+                                  "globalReference" : "3edb13"
+                                },
+                                "dayType" : "Calendar",
+                                "meta" : {
+                                  "globalKey" : "815062c0"
+                                },
+                                "period" : "D",
+                                "periodMultiplier" : 3
+                              }
+                            }
+                          }
+                        },
+                        "endDate" : {
+                          "dividendDate" : {
+                            "value" : {
+                              "adjustableDate" : {
+                                "meta" : {
+                                  "globalKey" : "3edb13"
+                                },
+                                "unadjustedDate" : "2011-12-19"
+                              },
+                              "meta" : {
+                                "externalKey" : "e1",
+                                "globalKey" : "3edb13"
+                              }
+                            }
+                          }
+                        },
+                        "startDate" : {
+                          "dividendDate" : {
+                            "value" : {
+                              "adjustableDate" : {
+                                "meta" : {
+                                  "globalKey" : "3ed314"
+                                },
+                                "unadjustedDate" : "2010-12-20"
+                              },
+                              "meta" : {
+                                "externalKey" : "s1",
+                                "globalKey" : "3ed314"
+                              }
+                            }
+                          }
+                        }
+                      }, {
+                        "dateAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "EUTA"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "20a71d"
+                            }
+                          },
+                          "businessDayConvention" : "FOLLOWING",
+                          "meta" : {
+                            "globalKey" : "211dc30c"
+                          }
+                        },
+                        "dividendPaymentDate" : {
+                          "dividendDate" : {
+                            "value" : {
+                              "meta" : {
+                                "externalKey" : "p2",
+                                "globalKey" : "815062c1"
+                              },
+                              "relativeDate" : {
+                                "businessDayConvention" : "FOLLOWING",
+                                "dateRelativeTo" : {
+                                  "externalReference" : "e2",
+                                  "globalReference" : "3ee313"
+                                },
+                                "dayType" : "Calendar",
+                                "meta" : {
+                                  "globalKey" : "815062c1"
+                                },
+                                "period" : "D",
+                                "periodMultiplier" : 3
+                              }
+                            }
+                          }
+                        },
+                        "endDate" : {
+                          "dividendDate" : {
+                            "value" : {
+                              "adjustableDate" : {
+                                "meta" : {
+                                  "globalKey" : "3ee313"
+                                },
+                                "unadjustedDate" : "2012-12-19"
+                              },
+                              "meta" : {
+                                "externalKey" : "e2",
+                                "globalKey" : "3ee313"
+                              }
+                            }
+                          }
+                        },
+                        "startDate" : {
+                          "dividendDate" : {
+                            "value" : {
+                              "adjustableDate" : {
+                                "meta" : {
+                                  "globalKey" : "3edb14"
+                                },
+                                "unadjustedDate" : "2011-12-20"
+                              },
+                              "meta" : {
+                                "externalKey" : "s2",
+                                "globalKey" : "3edb14"
+                              }
+                            }
+                          }
+                        }
+                      } ]
+                    }
+                  },
+                  "settlementTerms" : {
+                    "meta" : {
+                      "globalKey" : "103a6"
+                    },
+                    "settlementCurrency" : {
+                      "value" : "CAD"
+                    }
+                  },
+                  "underlier" : {
+                    "Observable" : {
+                      "address" : {
+                        "scope" : "DOCUMENT",
+                        "value" : "observable-1"
+                      }
+                    }
+                  }
+                },
+                "meta" : {
+                  "globalKey" : "b9c95386"
+                }
+              }, {
+                "FixedPricePayout" : {
+                  "fixedPrice" : {
+                    "price" : {
+                      "value" : {
+                        "priceType" : "Dividend"
+                      }
+                    }
+                  },
+                  "payerReceiver" : {
+                    "payer" : "Party2",
+                    "receiver" : "Party1"
+                  },
+                  "priceQuantity" : {
+                    "meta" : {
+                      "globalKey" : "0"
+                    },
+                    "quantitySchedule" : {
+                      "address" : {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-1"
+                      }
+                    }
+                  }
+                },
+                "meta" : {
+                  "globalKey" : "35fb3c30"
+                }
+              } ],
+              "terminationDate" : {
+                "adjustableDate" : {
+                  "meta" : {
+                    "globalKey" : "3f331f"
+                  },
+                  "unadjustedDate" : "2022-12-31"
+                },
+                "meta" : {
+                  "globalKey" : "3f331f"
+                }
+              }
+            },
+            "identifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/product-taxonomy"
+                },
+                "value" : "Equity:Swap:ParameterReturnDividend:SingleName"
+              },
+              "meta" : {
+                "globalKey" : "81589d99"
+              },
+              "source" : "Other"
+            } ],
+            "meta" : {
+              "globalKey" : "6b42550c"
+            },
+            "taxonomy" : [ {
+              "primaryAssetClass" : {
+                "value" : "Equity"
+              }
+            }, {
+              "source" : "CFI",
+              "value" : {
+                "name" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/product-classification/iso10962"
+                  },
+                  "value" : "SESDXC"
+                }
+              }
+            }, {
+              "productQualifier" : "EquitySwap_ParameterReturnDividend_SingleName",
+              "source" : "ISDA"
+            } ]
+          },
+          "tradeDate" : {
+            "meta" : {
+              "globalKey" : "3f184a"
+            },
+            "value" : "2019-01-10"
+          },
+          "tradeIdentifier" : [ {
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                },
+                "value" : "UTIEQUITYSWAPPAR0144"
+              }
+            } ],
+            "identifierType" : "UniqueTransactionIdentifier",
+            "issuer" : {
+              "meta" : {
+                "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+              },
+              "value" : "DUMMYLEI010000000037"
+            },
+            "meta" : {
+              "globalKey" : "8fb682e5"
+            }
+          } ],
+          "tradeLot" : [ {
+            "priceQuantity" : [ {
+              "meta" : {
+                "globalKey" : "f0e85498"
+              },
+              "quantity" : [ {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "quantity-1"
+                  } ]
+                },
+                "value" : {
+                  "unit" : {
+                    "currency" : {
+                      "value" : "CAD"
+                    }
+                  },
+                  "value" : 682240.00
+                }
+              } ]
+            }, {
+              "meta" : {
+                "globalKey" : "2fe2f13f"
+              },
+              "observable" : {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "observable-1"
+                  } ]
+                },
+                "value" : {
+                  "Asset" : {
+                    "Instrument" : {
+                      "Security" : {
+                        "identifier" : [ {
+                          "identifier" : {
+                            "meta" : {
+                              "scheme" : "http://www.fpml.org/spec/2002/instrument-id-SingleOther"
+                            },
+                            "value" : "MFCTO"
+                          },
+                          "identifierType" : "Other"
+                        }, {
+                          "identifier" : {
+                            "meta" : {
+                              "scheme" : "http://www.fpml.org/spec/2002/instrument-id-ISIN"
+                            },
+                            "value" : "CA56501R1064"
+                          },
+                          "identifierType" : "ISIN"
+                        } ],
+                        "instrumentType" : "Equity"
+                      }
+                    }
+                  }
+                }
+              },
+              "quantity" : [ {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "quantity-2"
+                  } ]
+                },
+                "value" : {
+                  "unit" : {
+                    "financialUnit" : "Share"
+                  },
+                  "value" : 656000.00
+                }
+              } ]
+            } ]
+          } ]
+        }
+      } ],
+      "eventDate" : "2020-03-17",
+      "eventQualifier" : "ContractFormation",
+      "instruction" : [ {
+        "before" : {
+          "value" : {
+            "meta" : {
+              "globalKey" : "133c72e7"
+            },
+            "trade" : {
+              "contractDetails" : {
+                "documentation" : [ {
+                  "contractualParty" : [ {
+                    "externalReference" : "PartyA",
+                    "globalReference" : "5151b003"
+                  }, {
+                    "externalReference" : "PartyB",
+                    "globalReference" : "2d47d95e"
+                  } ],
+                  "legalAgreementIdentification" : {
+                    "agreementName" : {
+                      "agreementType" : "MasterAgreement",
+                      "masterAgreementType" : {
+                        "value" : "ISDAMaster"
+                      }
+                    },
+                    "vintage" : 2002
+                  },
+                  "meta" : {
+                    "globalKey" : "47167e61"
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "47167e61"
+                }
+              },
+              "counterparty" : [ {
+                "partyReference" : {
+                  "externalReference" : "PartyA",
+                  "globalReference" : "5151b003"
+                },
+                "role" : "Party1"
+              }, {
+                "partyReference" : {
+                  "externalReference" : "PartyB",
+                  "globalReference" : "2d47d95e"
+                },
+                "role" : "Party2"
+              } ],
+              "meta" : {
+                "globalKey" : "133c72e7"
+              },
+              "party" : [ {
+                "meta" : {
+                  "externalKey" : "PartyA",
+                  "globalKey" : "5151b003"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "DUMMYLEI010000000037"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "5151b003"
+                  }
+                } ]
+              }, {
+                "meta" : {
+                  "externalKey" : "PartyB",
+                  "globalKey" : "2d47d95e"
+                },
+                "name" : {
+                  "value" : "Bank X (reportingParty)"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "DUMMYLEI020000000085"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "590367e9"
+                  }
+                } ]
+              } ],
+              "product" : {
+                "economicTerms" : {
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "meta" : {
+                        "globalKey" : "3f3042"
+                      },
+                      "unadjustedDate" : "2022-01-02"
+                    },
+                    "meta" : {
+                      "globalKey" : "3f3042"
+                    }
+                  },
+                  "nonStandardisedTerms" : false,
+                  "payout" : [ {
+                    "PerformancePayout" : {
+                      "payerReceiver" : {
+                        "payer" : "Party1",
+                        "receiver" : "Party2"
+                      },
+                      "returnTerms" : {
+                        "dividendReturnTerms" : {
+                          "dividendPayoutRatio" : [ {
+                            "cashRatio" : 1.0,
+                            "nonCashRatio" : 1.0
+                          } ],
+                          "dividendPeriod" : [ {
+                            "dateAdjustments" : {
+                              "businessCenters" : {
+                                "businessCenter" : [ {
+                                  "value" : "EUTA"
+                                } ],
+                                "meta" : {
+                                  "globalKey" : "20a71d"
+                                }
+                              },
+                              "businessDayConvention" : "FOLLOWING",
+                              "meta" : {
+                                "globalKey" : "211dc30c"
+                              }
+                            },
+                            "dividendPaymentDate" : {
+                              "dividendDate" : {
+                                "value" : {
+                                  "meta" : {
+                                    "externalKey" : "p1",
+                                    "globalKey" : "815062c0"
+                                  },
+                                  "relativeDate" : {
+                                    "businessDayConvention" : "FOLLOWING",
+                                    "dateRelativeTo" : {
+                                      "externalReference" : "e1",
+                                      "globalReference" : "3edb13"
+                                    },
+                                    "dayType" : "Calendar",
+                                    "meta" : {
+                                      "globalKey" : "815062c0"
+                                    },
+                                    "period" : "D",
+                                    "periodMultiplier" : 3
+                                  }
+                                }
+                              }
+                            },
+                            "endDate" : {
+                              "dividendDate" : {
+                                "value" : {
+                                  "adjustableDate" : {
+                                    "meta" : {
+                                      "globalKey" : "3edb13"
+                                    },
+                                    "unadjustedDate" : "2011-12-19"
+                                  },
+                                  "meta" : {
+                                    "externalKey" : "e1",
+                                    "globalKey" : "3edb13"
+                                  }
+                                }
+                              }
+                            },
+                            "startDate" : {
+                              "dividendDate" : {
+                                "value" : {
+                                  "adjustableDate" : {
+                                    "meta" : {
+                                      "globalKey" : "3ed314"
+                                    },
+                                    "unadjustedDate" : "2010-12-20"
+                                  },
+                                  "meta" : {
+                                    "externalKey" : "s1",
+                                    "globalKey" : "3ed314"
+                                  }
+                                }
+                              }
+                            }
+                          }, {
+                            "dateAdjustments" : {
+                              "businessCenters" : {
+                                "businessCenter" : [ {
+                                  "value" : "EUTA"
+                                } ],
+                                "meta" : {
+                                  "globalKey" : "20a71d"
+                                }
+                              },
+                              "businessDayConvention" : "FOLLOWING",
+                              "meta" : {
+                                "globalKey" : "211dc30c"
+                              }
+                            },
+                            "dividendPaymentDate" : {
+                              "dividendDate" : {
+                                "value" : {
+                                  "meta" : {
+                                    "externalKey" : "p2",
+                                    "globalKey" : "815062c1"
+                                  },
+                                  "relativeDate" : {
+                                    "businessDayConvention" : "FOLLOWING",
+                                    "dateRelativeTo" : {
+                                      "externalReference" : "e2",
+                                      "globalReference" : "3ee313"
+                                    },
+                                    "dayType" : "Calendar",
+                                    "meta" : {
+                                      "globalKey" : "815062c1"
+                                    },
+                                    "period" : "D",
+                                    "periodMultiplier" : 3
+                                  }
+                                }
+                              }
+                            },
+                            "endDate" : {
+                              "dividendDate" : {
+                                "value" : {
+                                  "adjustableDate" : {
+                                    "meta" : {
+                                      "globalKey" : "3ee313"
+                                    },
+                                    "unadjustedDate" : "2012-12-19"
+                                  },
+                                  "meta" : {
+                                    "externalKey" : "e2",
+                                    "globalKey" : "3ee313"
+                                  }
+                                }
+                              }
+                            },
+                            "startDate" : {
+                              "dividendDate" : {
+                                "value" : {
+                                  "adjustableDate" : {
+                                    "meta" : {
+                                      "globalKey" : "3edb14"
+                                    },
+                                    "unadjustedDate" : "2011-12-20"
+                                  },
+                                  "meta" : {
+                                    "externalKey" : "s2",
+                                    "globalKey" : "3edb14"
+                                  }
+                                }
+                              }
+                            }
+                          } ]
+                        }
+                      },
+                      "settlementTerms" : {
+                        "meta" : {
+                          "globalKey" : "103a6"
+                        },
+                        "settlementCurrency" : {
+                          "value" : "CAD"
+                        }
+                      },
+                      "underlier" : {
+                        "Observable" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "observable-1"
+                          }
+                        }
+                      }
+                    },
+                    "meta" : {
+                      "globalKey" : "b9c95386"
+                    }
+                  }, {
+                    "FixedPricePayout" : {
+                      "fixedPrice" : {
+                        "price" : {
+                          "value" : {
+                            "priceType" : "Dividend"
+                          }
+                        }
+                      },
+                      "payerReceiver" : {
+                        "payer" : "Party2",
+                        "receiver" : "Party1"
+                      },
+                      "priceQuantity" : {
+                        "meta" : {
+                          "globalKey" : "0"
+                        },
+                        "quantitySchedule" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "quantity-1"
+                          }
+                        }
+                      }
+                    },
+                    "meta" : {
+                      "globalKey" : "35fb3c30"
+                    }
+                  } ],
+                  "terminationDate" : {
+                    "adjustableDate" : {
+                      "meta" : {
+                        "globalKey" : "3f331f"
+                      },
+                      "unadjustedDate" : "2022-12-31"
+                    },
+                    "meta" : {
+                      "globalKey" : "3f331f"
+                    }
+                  }
+                },
+                "identifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/product-taxonomy"
+                    },
+                    "value" : "Equity:Swap:ParameterReturnDividend:SingleName"
+                  },
+                  "meta" : {
+                    "globalKey" : "81589d99"
+                  },
+                  "source" : "Other"
+                } ],
+                "meta" : {
+                  "globalKey" : "6b42550c"
+                },
+                "taxonomy" : [ {
+                  "primaryAssetClass" : {
+                    "value" : "Equity"
+                  }
+                }, {
+                  "source" : "CFI",
+                  "value" : {
+                    "name" : {
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/product-classification/iso10962"
+                      },
+                      "value" : "SESDXC"
+                    }
+                  }
+                }, {
+                  "productQualifier" : "EquitySwap_ParameterReturnDividend_SingleName",
+                  "source" : "ISDA"
+                } ]
+              },
+              "tradeDate" : {
+                "meta" : {
+                  "globalKey" : "3f184a"
+                },
+                "value" : "2019-01-10"
+              },
+              "tradeIdentifier" : [ {
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                    },
+                    "value" : "UTIEQUITYSWAPPAR0144"
+                  }
+                } ],
+                "identifierType" : "UniqueTransactionIdentifier",
+                "issuer" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+                  },
+                  "value" : "DUMMYLEI010000000037"
+                },
+                "meta" : {
+                  "globalKey" : "8fb682e5"
+                }
+              } ],
+              "tradeLot" : [ {
+                "priceQuantity" : [ {
+                  "meta" : {
+                    "globalKey" : "f0e85498"
+                  },
+                  "quantity" : [ {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-1"
+                      } ]
+                    },
+                    "value" : {
+                      "unit" : {
+                        "currency" : {
+                          "value" : "CAD"
+                        }
+                      },
+                      "value" : 682240.00
+                    }
+                  } ]
+                }, {
+                  "meta" : {
+                    "globalKey" : "2fe2f13f"
+                  },
+                  "observable" : {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "observable-1"
+                      } ]
+                    },
+                    "value" : {
+                      "Asset" : {
+                        "Instrument" : {
+                          "Security" : {
+                            "identifier" : [ {
+                              "identifier" : {
+                                "meta" : {
+                                  "scheme" : "http://www.fpml.org/spec/2002/instrument-id-SingleOther"
+                                },
+                                "value" : "MFCTO"
+                              },
+                              "identifierType" : "Other"
+                            }, {
+                              "identifier" : {
+                                "meta" : {
+                                  "scheme" : "http://www.fpml.org/spec/2002/instrument-id-ISIN"
+                                },
+                                "value" : "CA56501R1064"
+                              },
+                              "identifierType" : "ISIN"
+                            } ],
+                            "instrumentType" : "Equity"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "quantity" : [ {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-2"
+                      } ]
+                    },
+                    "value" : {
+                      "unit" : {
+                        "financialUnit" : "Share"
+                      },
+                      "value" : 656000.00
+                    }
+                  } ]
+                } ]
+              } ]
+            }
+          }
+        },
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "contractualParty" : [ {
+                "externalReference" : "PartyA",
+                "globalReference" : "5151b003"
+              }, {
+                "externalReference" : "PartyB",
+                "globalReference" : "2d47d95e"
+              } ],
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "47167e61"
+              }
+            } ]
+          }
+        }
+      } ],
+      "intent" : "ContractFormation",
+      "meta" : {
+        "globalKey" : "7a4d6a3"
+      }
+    },
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "745ec9f9271945d49e6915e9076ad6c9"
+        }
+      } ],
+      "meta" : {
+        "globalKey" : "db50b0d5"
+      }
+    } ],
+    "messageInformation" : {
+      "messageId" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+        },
+        "value" : "745ec9f9271945d49e6915e9076ad6c9"
+      },
+      "sentBy" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+        },
+        "value" : "DUMMYLEI010000000037"
+      },
+      "sentTo" : [ {
+        "value" : "DTCCGTR"
+      } ]
+    },
+    "meta" : {
+      "globalKey" : "608dd376"
+    },
+    "party" : [ {
+      "meta" : {
+        "externalKey" : "PartyA",
+        "globalKey" : "5151b003"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "DUMMYLEI010000000037"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "5151b003"
+        }
+      } ]
+    }, {
+      "meta" : {
+        "externalKey" : "PartyB",
+        "globalKey" : "2d47d95e"
+      },
+      "name" : {
+        "value" : "Bank X (reportingParty)"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "DUMMYLEI020000000085"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "590367e9"
+        }
+      } ]
+    } ],
+    "previousWorkflowStep" : {
+      "globalReference" : "ccc677ce"
+    },
+    "timestamp" : [ {
+      "dateTime" : "2021-11-09T07:47:51.4265352Z",
+      "qualification" : "eventCreationDateTime"
+    }, {
+      "dateTime" : "2020-03-17T08:03:27Z",
+      "qualification" : "executionDateTime"
+    } ]
+  },
+  "reportableInformation" : {
+    "confirmationMethod" : "NotConfirmed",
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "externalReference" : "PartyA",
+        "globalReference" : "5151b003"
+      }
+    }, {
+      "partyReference" : {
+        "externalReference" : "PartyB",
+        "globalReference" : "2d47d95e"
+      }
+    } ],
+    "intragroup" : false,
+    "jurisdictionInformation" : [ {
+      "partyInformation" : [ {
+        "esmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INUN" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyA",
+          "globalReference" : "5151b003"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "esmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyB",
+          "globalReference" : "2d47d95e"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "fcaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INUN" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyA",
+          "globalReference" : "5151b003"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "fcaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyB",
+          "globalReference" : "2d47d95e"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "UKEMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "FCA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "partyReference" : {
+          "externalReference" : "PartyA",
+          "globalReference" : "5151b003"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            },
+            "value" : "745ec9f9271945d49e6915e9076ad6c9"
+          }
+        }
+      }, {
+        "partyReference" : {
+          "externalReference" : "PartyB",
+          "globalReference" : "2d47d95e"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            },
+            "value" : "745ec9f9271945d49e6915e9076ad6c9"
+          }
+        }
+      } ],
+      "regimeName" : {
+        "value" : "JFSA"
+      },
+      "supervisoryBody" : {
+        "value" : "JFSA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyA",
+          "globalReference" : "5151b003"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyB",
+          "globalReference" : "2d47d95e"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "CSA"
+      },
+      "supervisoryBody" : {
+        "value" : "CA.AB.ASC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "hkmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INUN" ]
+          },
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyA",
+          "globalReference" : "5151b003"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "hkmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyB",
+          "globalReference" : "2d47d95e"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "HKMA"
+      },
+      "supervisoryBody" : {
+        "value" : "HKMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "PartyA",
+          "globalReference" : "5151b003"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "SEC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    } ],
+    "originalExecutionTimestamp" : "2020-03-17T08:03:27Z"
+  },
+  "reportingSide" : {
+    "reportingCounterparty" : {
+      "externalReference" : "PartyA",
+      "globalReference" : "5151b003"
+    },
+    "reportingParty" : {
+      "externalReference" : "PartyB",
+      "globalReference" : "2d47d95e"
+    }
+  }
+}

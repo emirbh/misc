@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-jfsa-trade",
+  "name" : "JFSA / Trade",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.jfsa.rewrite.trade.reports.JFSATradeReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.jfsa.rewrite.trade.JFSATransactionReport"
+  },
+  "upstreamPipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default"
+}

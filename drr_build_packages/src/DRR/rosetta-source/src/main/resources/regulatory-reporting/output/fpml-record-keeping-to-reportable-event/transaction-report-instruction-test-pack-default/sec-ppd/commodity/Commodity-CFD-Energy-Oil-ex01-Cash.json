@@ -1,0 +1,70 @@
+{
+  "actionType" : "CORR",
+  "cleared" : "N",
+  "counterparty1" : "7H6GLXDRUGQFU57RNE97",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "5U0XI89JRFVHWIBS4F54",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "D2F9D3C7AEF97KMZ92S2024-04-29T00:00Z",
+    "primaryAssetClass" : "Commodity",
+    "submittedForParty" : "7H6GLXDRUGQFU57RNE97",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC" ],
+    "tradeParty1TransactionID" : "COMMODITYCFDENERGY01"
+  },
+  "effectiveDate" : "2022-03-01",
+  "eventTimestamp" : "2021-08-18T14:17:08Z",
+  "executionTimestamp" : "2021-08-12T07:32:01Z",
+  "expirationDate" : "2023-10-31",
+  "leg1" : {
+    "notionalAmount" : 30000000,
+    "notionalCurrency" : "JPY",
+    "totalNotionalQuantity" : 3000
+  },
+  "leg2" : {
+    "notionalAmount" : 30000000,
+    "notionalCurrency" : "JPY",
+    "settlementCurrency" : "JPY",
+    "spread" : {
+      "monetary" : 0
+    },
+    "spreadCurrency" : "USD",
+    "spreadNotation" : "Monetary",
+    "totalNotionalQuantity" : 3000
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "ReturnorPayoutTrigger" : "Total Return",
+          "UnderlierID" : "DUBAI",
+          "UnderlierIDSource" : "COMM"
+        },
+        "Header" : {
+          "AssetClass" : "Commodities",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Swap"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "price" : {
+    "monetary" : 10000
+  },
+  "priceCurrency" : "JPY",
+  "priceNotation" : "Monetary",
+  "reportSubmittingEntityID" : "7H6GLXDRUGQFU57RNE97",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTICOMMODITYCFDE0211"
+}

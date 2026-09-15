@@ -1,0 +1,50 @@
+namespace drr.base.trade.quantity
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.math.*
+import cdm.product.asset.*
+import cdm.product.template.*
+
+import drr.base.trade.*
+import drr.standards.iso.*
+
+reporting rule InterestRateNotionalCurrency from InterestRatePayout: <"Interest Rate Notional Currency">
+    if priceQuantity -> quantitySchedule exists
+    then priceQuantity -> quantitySchedule -> unit -> currency
+    else if priceQuantity -> quantityReference exists
+    then priceQuantity -> quantityReference -> quantitySchedule -> unit -> currency
+
+reporting rule CommodityFixedPriceQuantity from TradeLot: <"Commodity Fixed Price Quantity">
+    priceQuantity
+        filter item -> observable is absent
+        then only-element
+
+reporting rule UnitOfMeasureFromQuantity from NonNegativeQuantitySchedule: <"Quantity unit of measure"> //Rule to be removed after CSA discrepancy resolved
+    extract if multiplier exists then multiplier -> unit else unit
+    then UnitToISO20022UnitOfMeasure
+
+reporting rule CommodityTotalNotionalQuantity from CommodityPayout: <"Commodity Total Notional Quantity">
+    if priceQuantity -> quantitySchedule -> value exists
+    then priceQuantity -> quantitySchedule -> value
+    else if priceQuantity -> quantitySchedule -> datedValue exists
+    then priceQuantity -> quantitySchedule -> datedValue -> value sum
+
+reporting rule QuantitySchedule from PayoutLegWithAuxiliary:
+    extract payout [
+        payout -> interestRatePayout -> priceQuantity -> quantitySchedule
+            then default payout -> creditDefaultPayout -> priceQuantity -> quantitySchedule
+            then default payout -> performancePayout -> priceQuantity -> quantitySchedule
+            then default payout -> fixedPricePayout -> priceQuantity -> quantitySchedule
+            then default payout -> commodityPayout -> priceQuantity -> quantitySchedule
+            then default payout -> settlementPayout -> priceQuantity -> quantitySchedule
+    ]
+
+reporting rule CustomSchedule from PayoutLegWithAuxiliary:
+    extract payout [
+        payout -> fixedPricePayout -> schedule
+            then default payout -> commodityPayout -> schedule
+            then default payout -> optionPayout -> schedule
+            then default payout -> fixedPricePayout -> schedule
+            then default payout -> settlementPayout -> schedule
+    ]

@@ -1,0 +1,20 @@
+namespace drr.regulation.common.valuation.datetime
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version1.* as cde
+
+reporting rule ReportingTimestamp from ValuationReportInstruction: <"Reporting Timestamp">
+    extract cde.datetime.ReportingTimestampFromReportableInformation(reportableInformation)
+
+reporting rule EventDate from ValuationReportInstruction: <"Event Date">
+    extract ValuationTimestamp -> date
+
+reporting rule ValuationTimestamp from ValuationReportInstruction: <"Valuation Timestamp">
+    extract valuationDetails -> valuation -> timestamp
+
+reporting rule NextFloatingReferenceResetDateLeg1 from ValuationReportInstruction: <"Next floating reference reset date - Leg 1">
+    extract valuationDetails -> tradeInformation -> nextFloatingReferenceResetDateLeg1
+
+reporting rule NextFloatingReferenceResetDateLeg2 from ValuationReportInstruction: <"Next floating reference reset date - Leg 2">
+    extract valuationDetails -> tradeInformation -> nextFloatingReferenceResetDateLeg2

@@ -1,0 +1,240 @@
+{
+  "originatingWorkflowStep" : {
+    "proposedEvent" : {
+      "intent" : "ContractFormation",
+      "eventDate" : "2021-12-03",
+      "instruction" : [ {
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "c6cc4d2b"
+              }
+            } ]
+          }
+        },
+        "before" : {
+          "value" : {
+            "trade" : {
+              "product" : {
+                "economicTerms" : {
+                  "nonStandardisedTerms" : false
+                },
+                "meta" : {
+                  "globalKey" : "4d5"
+                }
+              },
+              "tradeIdentifier" : [ {
+                "issuer" : {
+                  "value" : "DUMMYLEI010000000037",
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+                  }
+                },
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "value" : "UTIMOCKUPSTRIKEP0196",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                    }
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "9ec671f8"
+                },
+                "identifierType" : "UniqueTransactionIdentifier"
+              } ],
+              "tradeDate" : {
+                "value" : "2021-12-03",
+                "meta" : {
+                  "globalKey" : "3f2b03"
+                }
+              },
+              "party" : [ {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "DUMMYLEI010000000037",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    }
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "5151b003"
+                  }
+                } ],
+                "contactInformation" : {
+                  "address" : [ {
+                    "country" : {
+                      "value" : "CA"
+                    }
+                  } ]
+                },
+                "meta" : {
+                  "globalKey" : "f123fee1",
+                  "externalKey" : "PartyA"
+                }
+              }, {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "DUMMYLEI020000000085",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    }
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "590367e9"
+                  }
+                } ],
+                "contactInformation" : {
+                  "address" : [ {
+                    "country" : {
+                      "value" : "US"
+                    }
+                  } ]
+                },
+                "meta" : {
+                  "globalKey" : "d7cb5607",
+                  "externalKey" : "PartyB"
+                }
+              } ],
+              "meta" : {
+                "globalKey" : "46d06cab"
+              }
+            },
+            "meta" : {
+              "globalKey" : "46d06cab"
+            }
+          }
+        }
+      } ]
+    },
+    "messageInformation" : {
+      "messageId" : {
+        "value" : "123453212",
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+        }
+      },
+      "sentBy" : {
+        "value" : "SEF123"
+      },
+      "sentTo" : [ {
+        "value" : "SDR001"
+      } ]
+    },
+    "timestamp" : [ {
+      "dateTime" : "1994-12-12T09:57:00Z",
+      "qualification" : "eventCreationDateTime"
+    }, {
+      "dateTime" : "2021-12-03T19:23:14Z",
+      "qualification" : "executionDateTime"
+    }, {
+      "dateTime" : "2021-12-03T19:23:14Z",
+      "qualification" : "executionDateTime"
+    } ],
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "123453212"
+        }
+      } ],
+      "meta" : {
+        "globalKey" : "90b09f73"
+      }
+    } ],
+    "action" : "New",
+    "meta" : {
+      "globalKey" : "2f584547"
+    }
+  },
+  "reportableInformation" : {
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "globalReference" : "f123fee1",
+        "externalReference" : "PartyA"
+      }
+    }, {
+      "partyReference" : {
+        "globalReference" : "d7cb5607",
+        "externalReference" : "PartyB"
+      }
+    } ],
+    "confirmationMethod" : "NotConfirmed",
+    "originalExecutionTimestamp" : "2021-12-03T19:23:14Z",
+    "intragroup" : false,
+    "jurisdictionInformation" : [ {
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "f123fee1",
+          "externalReference" : "PartyA"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "esmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "d7cb5607",
+          "externalReference" : "PartyB"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "esmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "CFTC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "f123fee1",
+          "externalReference" : "PartyA"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "d7cb5607",
+          "externalReference" : "PartyB"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "Counterparty"
+      } ]
+    } ]
+  }
+}

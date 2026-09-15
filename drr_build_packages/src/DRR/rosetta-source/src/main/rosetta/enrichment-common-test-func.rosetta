@@ -1,0 +1,165 @@
+namespace drr.enrichment.common.test: <"Functions used to enrich test pack samples used in DRR tests.  The functions in this namespace are intended to be used for testing purposes only, NOT for production.">
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+import cdm.event.common.*
+import cdm.event.workflow.*
+
+import drr.base.trade.*
+import drr.base.util.string.*
+import drr.enrichment.common.trade.*
+import drr.enrichment.common.valuation.*
+import drr.enrichment.lei.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+func Enrich_TransactionReportInstructionTestPackDefault: <"Enrich function used for transforming ingest test pack samples ready for use as report input samples. Creates a TransactionReportInstruction with the reportingSide attributes defaulted from an originatingWorkflowStep containing an instruction, reportableInformation. This function is intended to be used for testing purposes only, NOT for production.">
+    [enrich]
+    inputs:
+        reportableEvent ReportableEvent (1..1) <"ReportableEvent containing a proposed BusinessEvent (i.e. the output sample from an Ingestion).">
+    output:
+        transactionReportInstruction TransactionReportInstruction (1..1) <"TransactionReportInstruction containing a BusinessEvent and a ReportingSide (i.e. the input sample for a Report).">
+
+    alias acceptedReportableEvent: Create_ReportableEventFromInstruction(reportableEvent)
+
+    alias parties: acceptedReportableEvent -> originatingWorkflowStep -> party
+
+    alias counterparties:
+        acceptedReportableEvent -> originatingWorkflowStep -> businessEvent -> after first -> trade -> counterparty
+
+    alias reportingParty:
+        ExtractPartyByNameContains(parties, "reportingParty") default ExtractCounterpartyByRole(
+                counterparties,
+                CounterpartyRoleEnum -> Party1
+            ) -> partyReference
+
+    alias reportingCounterpartyRole:
+        FilterPartyNoMatch(counterparties -> partyReference, reportingParty)
+            default FilterPartyNoMatch(parties, reportingParty)
+            then first
+
+    alias partyResponsibleForReporting:
+        ExtractPartyByNameContains(parties, "partyResponsibleForReporting")
+
+    alias reportSubmittingParty:
+        ExtractPartyByNameContains(parties, "reportSubmittingParty")
+
+    alias reportingSide:
+        ReportingSide {
+            reportingParty: reportingParty as-key,
+            partyResponsibleForReporting: partyResponsibleForReporting as-key,
+            reportSubmittingParty: reportSubmittingParty as-key,
+            reportingCounterparty: reportingCounterpartyRole as-key
+        }
+
+    alias enrichedReportableEvent:
+        ReportableEvent {
+            originatingWorkflowStep: acceptedReportableEvent -> originatingWorkflowStep,
+            reportableTrade: ExtractReportableTrade(
+                        acceptedReportableEvent -> originatingWorkflowStep
+                    ),
+            reportablePosition: acceptedReportableEvent -> reportablePosition,
+            reportableInformation: acceptedReportableEvent -> reportableInformation
+        }
+
+    set transactionReportInstruction:
+        Create_TransactionReportInstruction(enrichedReportableEvent, reportingSide)
+
+func ExtractPartyByNameContains: <"This function is intended to be used for testing purposes only, NOT for production.">
+    inputs:
+        parties Party (0..*) <"The list of parties to filter.">
+        partyName string (1..1) <"The party name to filter by .">
+    output:
+        party Party (0..1) <"The party with specified party name.">
+
+    set party:
+        parties
+            filter StringContains(name, ".*" + partyName + ".*")
+            then only-element
+
+func FilterPartyNoMatch: <"This function is intended to be used for testing purposes only, NOT for production.">
+    inputs:
+        parties Party (0..*) <"The list of parties to filter.">
+        party Party (1..1) <"The party name to filter by .">
+    output:
+        filteredParties Party (1..*) <"The party with specified party name.">
+
+    set filteredParties: parties filter item <> party
+
+func ExtractReportableTrade: <"This function is intended to be used for testing purposes only, NOT for production.">
+    inputs:
+        workflowStep WorkflowStep (0..1)
+    output:
+        reportableTrade TradeState (0..1)
+
+    alias eventIds: workflowStep -> eventIdentifier -> assignedIdentifier -> identifier
+
+    set reportableTrade:
+        // for sample event/partial-novation-new-trade.xml
+        if eventIds any = "NovationNewTradeEventId"
+        then workflowStep -> businessEvent -> after first
+        // for sample event/partial-novation-old-trade.xml
+        else if eventIds any = "NovationOldTradeEventId"
+        then workflowStep -> businessEvent -> after last
+        // for any samples with multiple after trades, the implementor must choose which trade to report
+        // otherwise do not set reportableTrade
+        else empty
+
+func Enrich_TransactionReportInstructionTestPackPreEnrich: <"This function is intended to be used for testing purposes only, NOT for production.">
+    [enrich]
+    inputs:
+        reportableEvent ReportableEvent (1..1) <"Reportable event containing a proposed business event (i.e. the output sample from an Ingestion).">
+    output:
+        preEnrichedTransactionReportInstruction TransactionReportInstruction (1..1) <"Transaction report instruction containing business event and a reporting side (i.e. the input sample for a Report).">
+
+    set preEnrichedTransactionReportInstruction:
+        Enrich_TransactionReportInstructionTestPackDefault(reportableEvent)
+
+    add preEnrichedTransactionReportInstruction -> reportableInformation -> enrichment -> leiData:
+        preEnrichedTransactionReportInstruction -> originatingWorkflowStep -> party -> partyId
+            filter identifierType = LEI
+            then distinct
+            then extract API_GetLeiData(identifier)
+
+    add preEnrichedTransactionReportInstruction -> reportableInformation -> enrichment -> micData:
+        preEnrichedTransactionReportInstruction -> originatingWorkflowStep -> party -> partyId
+            filter identifierType = MIC
+            then distinct
+            then extract API_GetMicData(identifier)
+
+func Create_TransactionReportInstructionFromIngestionDefault: <"Creates a TransactionReportInstruction with the reportingSide attributes defaulted from an originatingWorkflowStep containing an instruction, reportableInformation. To be used only for testing purposes, NOT for production.">
+    inputs:
+        originatingWorkflowStep WorkflowStep (1..1)
+        reportableInformation ReportableInformation (1..1)
+    output:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+
+    set transactionReportInstruction:
+        Enrich_TransactionReportInstructionTestPackDefault(
+                ReportableEvent {
+                    originatingWorkflowStep: originatingWorkflowStep,
+                    reportableInformation: reportableInformation,
+                    ...
+                }
+            )
+
+func Create_ValuationReportInstructionFromIngestionDefault: <"Creates a ValuationReportInstruction with the reportingSide attributes defaulted from an originatingWorkflowStep containing an instruction, reportableInformation. To be used only for testing purposes, NOT for production. RegimeNameEnum is included to support jurisdiction-specific leg ordering.">
+    inputs:
+        originatingWorkflowStep WorkflowStep (1..1)
+        reportableInformation ReportableInformation (1..1)
+        regimeNameEnum RegimeNameEnum (0..1)
+    output:
+        valuationReportInstruction ValuationReportInstruction (1..1)
+    set valuationReportInstruction:
+        Create_ValuationReportInstructionFromInstruction(
+                ReportableEvent {
+                    originatingWorkflowStep: originatingWorkflowStep,
+                    reportableInformation: reportableInformation,
+                    ...
+                },
+                CounterpartyRoleEnum -> Party1,
+                CounterpartyRoleEnum -> Party2,
+                empty,
+                empty,
+                regimeNameEnum
+            )

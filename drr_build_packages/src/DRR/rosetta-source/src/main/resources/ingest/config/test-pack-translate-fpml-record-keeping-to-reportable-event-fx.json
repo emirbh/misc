@@ -1,0 +1,281 @@
+{
+  "id" : "test-pack-translate-fpml-record-keeping-to-reportable-event-fx",
+  "pipelineId" : "pipeline-translate-fpml-record-keeping-to-reportable-event",
+  "name" : "Fx",
+  "samples" : [ {
+    "id" : "fx-forward-ex01",
+    "name" : "FX Forward ex01",
+    "inputPath" : "ingest/input/fx/FX-Forward-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 200,
+      "outputPathCount" : 184,
+      "modelValidationFailures" : 25,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex02",
+    "name" : "FX Forward ex02",
+    "inputPath" : "ingest/input/fx/FX-Forward-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 197,
+      "outputPathCount" : 181,
+      "modelValidationFailures" : 23,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex03",
+    "name" : "FX Forward ex03",
+    "inputPath" : "ingest/input/fx/FX-Forward-ex03.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex03.json",
+    "assertions" : {
+      "inputPathCount" : 184,
+      "outputPathCount" : 182,
+      "modelValidationFailures" : 25,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex04-party1-pays-eur",
+    "name" : "FX Forward ex04 Party1 pays EUR",
+    "inputPath" : "ingest/input/fx/FX-Forward-ex04-Party1-pays-EUR.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex04-Party1-pays-EUR.json",
+    "assertions" : {
+      "inputPathCount" : 194,
+      "outputPathCount" : 186,
+      "modelValidationFailures" : 67,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex05-party1-pays-usd",
+    "name" : "FX Forward ex05 Party1 pays USD",
+    "inputPath" : "ingest/input/fx/FX-Forward-ex05-Party1-pays-USD.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex05-Party1-pays-USD.json",
+    "assertions" : {
+      "inputPathCount" : 195,
+      "outputPathCount" : 194,
+      "modelValidationFailures" : 27,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex06",
+    "name" : "FX Forward ex06",
+    "inputPath" : "ingest/input/fx/FX-Forward-ex06.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex06.json",
+    "assertions" : {
+      "inputPathCount" : 217,
+      "outputPathCount" : 218,
+      "modelValidationFailures" : 141,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex01",
+    "name" : "FX NDF ex01",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 213,
+      "outputPathCount" : 201,
+      "modelValidationFailures" : 27,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex02",
+    "name" : "FX NDF ex02",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 193,
+      "outputPathCount" : 190,
+      "modelValidationFailures" : 26,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex03-bilateral",
+    "name" : "FX NDF ex03 Bilateral",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex03-Bilateral.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex03-Bilateral.json",
+    "assertions" : {
+      "inputPathCount" : 208,
+      "outputPathCount" : 205,
+      "modelValidationFailures" : 37,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex04",
+    "name" : "FX NDF ex04",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex04.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex04.json",
+    "assertions" : {
+      "inputPathCount" : 186,
+      "outputPathCount" : 191,
+      "modelValidationFailures" : 125,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex05-cleared",
+    "name" : "FX NDF ex05 Cleared",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex05-Cleared.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex05-Cleared.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 209,
+      "modelValidationFailures" : 33,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex06",
+    "name" : "FX NDF ex06",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex06.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex06.json",
+    "assertions" : {
+      "inputPathCount" : 232,
+      "outputPathCount" : 203,
+      "modelValidationFailures" : 41,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex07-beta",
+    "name" : "FX NDF ex07 Beta",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex07-Beta.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex07-Beta.json",
+    "assertions" : {
+      "inputPathCount" : 191,
+      "outputPathCount" : 181,
+      "modelValidationFailures" : 20,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex08-gamma",
+    "name" : "FX NDF ex08 Gamma",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex08-Gamma.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex08-Gamma.json",
+    "assertions" : {
+      "inputPathCount" : 191,
+      "outputPathCount" : 181,
+      "modelValidationFailures" : 20,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex09-confirmation",
+    "name" : "FX NDF ex09 Confirmation",
+    "inputPath" : "ingest/input/fx/FX-NDF-ex09-Confirmation.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex09-Confirmation.json",
+    "assertions" : {
+      "inputPathCount" : 224,
+      "outputPathCount" : 200,
+      "modelValidationFailures" : 52,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndo-ex01-european",
+    "name" : "FX NDO ex01 European",
+    "inputPath" : "ingest/input/fx/FX-NDO-ex01-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDO-ex01-European.json",
+    "assertions" : {
+      "inputPathCount" : 205,
+      "outputPathCount" : 196,
+      "modelValidationFailures" : 19,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndo-ex02-european",
+    "name" : "FX NDO ex02 European",
+    "inputPath" : "ingest/input/fx/FX-NDO-ex02-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDO-ex02-European.json",
+    "assertions" : {
+      "inputPathCount" : 193,
+      "outputPathCount" : 197,
+      "modelValidationFailures" : 25,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex01-european",
+    "name" : "FX VanillaOption ex01 European",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex01-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex01-European.json",
+    "assertions" : {
+      "inputPathCount" : 177,
+      "outputPathCount" : 190,
+      "modelValidationFailures" : 15,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex02-european",
+    "name" : "FX VanillaOption ex02 European",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex02-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex02-European.json",
+    "assertions" : {
+      "inputPathCount" : 211,
+      "outputPathCount" : 202,
+      "modelValidationFailures" : 20,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex03-european",
+    "name" : "FX VanillaOption ex03 European",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex03-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex03-European.json",
+    "assertions" : {
+      "inputPathCount" : 210,
+      "outputPathCount" : 217,
+      "modelValidationFailures" : 32,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex04-european",
+    "name" : "FX VanillaOption ex04 European",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex04-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex04-European.json",
+    "assertions" : {
+      "inputPathCount" : 184,
+      "outputPathCount" : 187,
+      "modelValidationFailures" : 24,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex05-american",
+    "name" : "FX VanillaOption ex05 American",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex05-American.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex05-American.json",
+    "assertions" : {
+      "inputPathCount" : 207,
+      "outputPathCount" : 200,
+      "modelValidationFailures" : 69,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex06-european",
+    "name" : "FX VanillaOption ex06 European",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex06-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex06-European.json",
+    "assertions" : {
+      "inputPathCount" : 233,
+      "outputPathCount" : 214,
+      "modelValidationFailures" : 43,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex07-european",
+    "name" : "FX VanillaOption ex07 European",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex07-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex07-European.json",
+    "assertions" : {
+      "inputPathCount" : 178,
+      "outputPathCount" : 193,
+      "modelValidationFailures" : 121,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex08-european",
+    "name" : "FX VanillaOption ex08 European",
+    "inputPath" : "ingest/input/fx/FX-VanillaOption-ex08-European.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex08-European.json",
+    "assertions" : {
+      "inputPathCount" : 233,
+      "outputPathCount" : 214,
+      "modelValidationFailures" : 43,
+      "runtimeError" : false
+    }
+  } ]
+}

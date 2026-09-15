@@ -1,0 +1,86 @@
+namespace drr.regulation.hkma.rewrite.valuation
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.*
+import drr.regulation.common.*
+import drr.regulation.hkma.*
+import drr.standards.*
+import drr.standards.iosco.uti.*
+import drr.standards.iso.*
+
+corpus Dissemination Valuation
+
+corpus Dissemination DTCC_Harmonized
+
+report HKMA Valuation in T+1
+  	from ValuationReportInstruction
+  	when ReportableProduct
+  	with type HKMAValuationReport
+
+eligibility rule ReportableProduct from ValuationReportInstruction: <"When eligible for HKMA">
+    [docReference HKMA Valuation
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+reporting rule Counterparty2Name from ValuationReportInstruction: <"Counterparty 2 name">
+    extract reportingSide -> reportingCounterparty
+    then filter partyId -> identifierType all <> LEI and partyId -> identifier all <> "ANON"
+    then extract name
+
+reporting rule UniqueTransactionIdentifier from ValuationReportInstruction: <"Unique Transaction Identifier (UTI)">
+    GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            HKMA,
+            item -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UniqueTransactionIdentifierProprietary from ValuationReportInstruction: <"Unique Transaction Identifier (UTI)">
+    if UniqueTransactionIdentifier is absent
+    then Extract_UTIPropietary
+        then Extract_HKMATradeIdentifier
+
+reporting rule SubmitterIdentifier from ValuationReportInstruction: <"Submitter Identifier">
+    extract ExtractReportSubmittingPartyIdentifier(reportingSide)
+
+reporting rule NumberRecords from ValuationReportInstruction: <"Number records">
+    empty
+
+reporting rule TechnicalRecordId from ValuationReportInstruction: <"Technical record identification">
+    extract
+        if trade.link.TechnicalRecordId(reportableInformation, HKMA) -> isUnique
+        then trade.link.TechnicalRecordId(reportableInformation, HKMA) -> id
+        else trade.link.TechnicalRecordId(reportableInformation, HKMA) -> id + "_" + (valuation.datetime.ReportingTimestamp to-string)
+
+reporting rule Remarks from ValuationReportInstruction: <"Remarks">
+    empty
+
+reporting rule Counterparty2IdentifierFormat from ValuationReportInstruction: <"Counterparty 2 Identifier Format">
+    extract reportInstruction [
+        extract reportingSide -> reportingCounterparty
+        then extract
+            if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                    only-element
+            then PartyIdentifierFormat2Enum -> NaturalPerson
+            else if partyId -> identifierType any = LEI
+            then PartyIdentifierFormat2Enum -> Lei
+            else if partyId -> identifierType any = BIC
+            then PartyIdentifierFormat2Enum -> SWIFTBIC
+            else PartyIdentifierFormat2Enum -> Other
+    ]
+
+reporting rule Counterparty2SchemeName from ValuationReportInstruction: <"Counterparty 2 Scheme Name">
+    if Counterparty2IdentifierFormat = Other
+    then reportingSide -> reportingCounterparty
+        then drr.regulation.hkma.rewrite.trade.Filter_HKMAPriorityPartyIdentifiers
+        then drr.regulation.hkma.rewrite.trade.Extract_HKMASchemeName
+
+reporting rule UniqueTransactionIdentifierProprietarySchemeName from ValuationReportInstruction: <"Unique Transaction Identifier Proprietary Scheme Name">
+    if UniqueTransactionIdentifierProprietary exists
+    then Extract_UTIPropietary
+        then Extract_HKMATransactionSchemeName

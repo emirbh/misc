@@ -1,0 +1,64 @@
+package iso20022.auth030.asic.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import iso20022.auth030.asic.SecurityIdentification46__2;
+import iso20022.auth030.asic.validation.SecurityIdentification46__2TypeFormatValidator;
+import iso20022.auth030.asic.validation.SecurityIdentification46__2Validator;
+import iso20022.auth030.asic.validation.exists.SecurityIdentification46__2OnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version ${project.version}
+ */
+@RosettaMeta(model=SecurityIdentification46__2.class)
+public class SecurityIdentification46__2Meta implements RosettaMetaData<SecurityIdentification46__2> {
+
+	@Override
+	public List<Validator<? super SecurityIdentification46__2>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+		);
+	}
+	
+	@Override
+	public List<Function<? super SecurityIdentification46__2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super SecurityIdentification46__2> validator(ValidatorFactory factory) {
+		return factory.<SecurityIdentification46__2>create(SecurityIdentification46__2Validator.class);
+	}
+
+	@Override
+	public Validator<? super SecurityIdentification46__2> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<SecurityIdentification46__2>create(SecurityIdentification46__2TypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super SecurityIdentification46__2> validator() {
+		return new SecurityIdentification46__2Validator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super SecurityIdentification46__2> typeFormatValidator() {
+		return new SecurityIdentification46__2TypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super SecurityIdentification46__2, Set<String>> onlyExistsValidator() {
+		return new SecurityIdentification46__2OnlyExistsValidator();
+	}
+}

@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-sec-trade",
+  "name" : "SEC / Trade",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.sec.rewrite.trade.reports.SECTradeReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.sec.rewrite.trade.SECTransactionReportTrade"
+  },
+  "upstreamPipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default"
+}

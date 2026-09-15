@@ -1,0 +1,74 @@
+namespace drr.regulation.common.trade.underlier
+version "${project.version}"
+
+import cdm.product.asset.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+reporting rule NameOfTheUnderlyingIndex from TransactionReportInstruction: <"Name of the underlying index">
+    extract
+        (if IsCreditSwaption(ProductForEvent) or IsIRSwaption(ProductForEvent)
+        then underlier.UnderlierForProduct(ProductForEvent) -> Product -> NonTransferableProduct
+        else ProductForEvent)
+    then extract
+        (if economicTerms -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then economicTerms -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> name
+        else if underlier.UnderlierForProduct -> Product -> NonTransferableProduct -> economicTerms -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then underlier.UnderlierForProduct -> Product -> NonTransferableProduct -> economicTerms -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> name
+        else if underlier.UnderlierForProduct -> Observable -> Index exists
+        then (if underlier.UnderlierForProduct -> Observable -> Index ->> identifier -> identifierType any = Name
+            then (underlier.UnderlierForProduct -> Observable -> Index ->> identifier
+                then filter identifierType = Name
+                then extract identifier)
+            else if underlier.UnderlierForProduct -> Observable -> Index ->> name exists
+            then underlier.UnderlierForProduct -> Observable -> Index ->> name)
+        else if economicTerms -> payout -> PerformancePayout -> underlier -> Observable -> Index exists
+        then (economicTerms -> payout -> PerformancePayout -> underlier -> Observable -> Index ->> identifier
+            then filter identifierType = Name
+            then extract identifier)
+        else if economicTerms -> payout -> CommodityPayout -> underlier -> Observable -> Index exists
+        then (economicTerms -> payout -> CommodityPayout -> underlier -> Observable -> Index ->> identifier
+            then filter identifierType = Name
+            then extract identifier)
+        else if EconomicTermsForProduct -> payout -> InterestRatePayout -> rateSpecification -> FloatingRateSpecification count = 2
+        then extract
+            InterestRateLeg1 -> rateSpecification -> FloatingRateSpecification -> rateOption -> FloatingRateIndex -> floatingRateIndex to-string
+        else if Qualify_AssetClass_InterestRate(EconomicTermsForProduct)
+        then (EconomicTermsForProduct -> payout -> InterestRatePayout -> rateSpecification -> InflationRateSpecification -> rateOption -> InflationIndex -> inflationRateIndex only-element to-string default EconomicTermsForProduct -> payout -> InterestRatePayout -> rateSpecification -> FloatingRateSpecification -> rateOption -> FloatingRateIndex -> floatingRateIndex only-element to-string))
+    then distinct only-element
+
+//leg agnostic
+reporting rule FloatingRateIndicator from InterestRatePayout: <"Indicator Of The Floating Rate">
+    RateOption
+        then extract
+            GetIndexIndicatorFromFloatingRate(
+                    item -> FloatingRateIndex -> floatingRateIndex to-string
+                )
+
+reporting rule FloatingRateIdentifier from InterestRatePayout: <"Indicator Of The Floating">
+    RateOption
+        then filter item -> FloatingRateIndex -> identifier -> identifierType any = ISIN // Awaiting approval from DRR WG to add logic to DRR DEV
+        then extract item -> FloatingRateIndex -> identifier -> identifier only-element
+
+reporting rule FloatingRateReferencePeriod from InterestRatePayout: <"Floating rate reference period">
+    RateOption -> FloatingRateIndex -> indexTenor -> period
+        then extract FloatingReferencePeriod
+
+reporting rule FloatingRateReferencePeriodMultiplier from InterestRatePayout: <"Floating rate reference period muliplier">
+    RateOption -> FloatingRateIndex -> indexTenor -> periodMultiplier
+        then FormatToMax3Number
+
+reporting rule NameOfTheFloatingRate from InterestRatePayout: <"Name of the Floating Rate">
+    RateOption ->> name
+
+reporting rule UnderlyingIdentification from TransactionReportInstruction:
+    if IsCreditSwaption(ProductForEvent) or IsIRSwaption(ProductForEvent)
+    then underlier.UnderlierForProduct(ProductForEvent) -> Product -> NonTransferableProduct
+    else ProductForEvent
+        then extract
+            if underlier.UnderlierProductIdentifier(item, ISIN) exists
+            then underlier.UnderlierProductIdentifier(item, ISIN) -> identifier only-element

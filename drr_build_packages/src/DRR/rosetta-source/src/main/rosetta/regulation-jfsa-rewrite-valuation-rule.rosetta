@@ -1,0 +1,53 @@
+namespace drr.regulation.jfsa.rewrite.valuation
+version "${project.version}"
+
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.jfsa.*
+import drr.regulation.jfsa.rewrite.*
+import drr.standards.iosco.uti.*
+import drr.standards.iso.*
+
+corpus Dissemination Valuation
+
+report JFSA Valuation in T+1
+  	from ValuationReportInstruction
+  	when ReportableProduct
+  	with type JFSAValuationReport
+
+eligibility rule ReportableProduct from ValuationReportInstruction: <"When eligible for JFSA">
+    [docReference JFSA Valuation
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+reporting rule NewSDRIdentifier from ValuationReportInstruction: <"New SDR Identifier">
+    extract
+        ExtractPartyFromRelatedPartyByRole(
+                reportableInformation -> globalPartyInformation -> relatedParty,
+                TradeRepository
+            )
+    then extract PartyLei(partyId)
+
+reporting rule UniqueTransactionIdentifier from ValuationReportInstruction: <"Unique Transaction Identifier (UTI)">
+    GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            JFSA,
+            item -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UniqueTransactionIdentifierProprietary from ValuationReportInstruction: <"Unique Transaction Identifier Proprietary (UTI Proprietary)">
+    GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            JFSA,
+            item -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule TechnicalRecordId from ValuationReportInstruction: <"Technical Record Id (ISO)">
+    extract
+        if trade.link.TechnicalRecordId(reportableInformation, JFSA) -> isUnique
+        then trade.link.TechnicalRecordId(reportableInformation, JFSA) -> id
+        else trade.link.TechnicalRecordId(reportableInformation, JFSA) -> id + "_" + (valuation.datetime.ReportingTimestamp to-string)

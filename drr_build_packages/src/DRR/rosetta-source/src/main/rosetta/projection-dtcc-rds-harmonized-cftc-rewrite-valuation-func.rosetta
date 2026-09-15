@@ -1,0 +1,102 @@
+namespace drr.projection.dtcc.rds.harmonized.cftc.rewrite.valuation
+version "${project.version}"
+
+import drr.regulation.cftc.rewrite.valuation.*
+
+import iso20022.dtcc.rds.harmonized.*
+
+func Project_CFTCValuationReportToDtccRdsHarmonized:
+    [projection XML]
+    inputs:
+        drrReport CFTCValuationReport (1..1)
+    output:
+        harmonizedReport Document (1..1)
+
+    set harmonizedReport -> submission -> header: Create_SubmissionHeader(drrReport)
+
+    set harmonizedReport -> submission -> core: Create_SubmissionCore(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedData:
+        Create_SubmissionHarmonizedData(drrReport)
+
+func Create_SubmissionHeader:
+    inputs:
+        drrReport CFTCValuationReport (1..1)
+    output:
+        header Header (1..1)
+
+    set header:
+        Header {
+            sender: drrReport -> reportSubmittingEntityID,
+            documentTrackingId: drrReport -> dtccValuationFields -> messageID,
+            documentCreationTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            ...
+        }
+
+func Create_SubmissionCore:
+    inputs:
+        drrReport CFTCValuationReport (1..1)
+    output:
+        core Core (1..1)
+
+    set core:
+        Core {
+            messageId: drrReport -> dtccValuationFields -> messageID,
+            messageType: drrReport -> dtccValuationFields -> messageType,
+            primaryAssetClass: drrReport -> dtccValuationFields -> primaryAssetClass to-string,
+            submittedForParty: drrReport -> dtccValuationFields -> submittedForParty,
+            submittingPartyId: drrReport -> reportSubmittingEntityID,
+            submittingPartyIdType: drrReport -> dtccValuationFields -> submittingPartyIDType to-string,
+            tradeParty1Id: drrReport -> counterparty1,
+            tradeParty1IdType: drrReport -> dtccValuationFields -> tradeParty1IDType to-string,
+            tradeParty1ReportingDestination: drrReport -> dtccValuationFields -> tradeParty1ReportingDestination
+                    extract to-string,
+            tradeParty1TransactionId: drrReport -> dtccValuationFields -> tradeParty1TransactionID,
+            tradeParty2Id: drrReport -> counterparty2,
+            tradeParty2IdType: drrReport -> counterparty2IdentifierSource,
+            tradeParty2ReportingDestination: drrReport -> dtccValuationFields -> tradeParty2ReportingDestination
+                    extract to-string,
+            usiId: drrReport -> uniqueSwapIdentifier,
+            usiIdPrefix: drrReport -> dtccValuationFields -> usiIDPrefix,
+            utiId: drrReport -> uniqueTransactionIdentifier,
+            tradeParty1ExecutionAgentId: drrReport -> dtccValuationFields -> tradeParty1ExecutionAgentID,
+            tradeParty1ExecutionAgentIdType: drrReport -> dtccValuationFields -> tradeParty1ExecutionAgentIDType to-string,
+            tradeParty2ExecutionAgentId: drrReport -> dtccValuationFields -> tradeParty2ExecutionAgentID,
+            tradeParty2ExecutionAgentIdType: drrReport -> dtccValuationFields -> tradeParty2ExecutionAgentIDType to-string,
+            reportingTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            upi: drrReport -> uniqueProductIdentifier,
+            initialMarginCollateralPortfolioCode: drrReport -> initialMarginCollateralPortfolioCode,
+            variationMarginCollateralPortfolioCode: drrReport -> variationMarginCollateralPortfolioCode,
+            utiIdPrefix: drrReport -> dtccValuationFields -> utiIDPrefix,
+            noaActionType: drrReport -> actionType to-string,
+            ...
+        }
+
+func Create_SubmissionHarmonizedData:
+    inputs:
+        drrReport CFTCValuationReport (1..1)
+    output:
+        harmonized HarmonizedData (1..1)
+
+    set harmonized:
+        HarmonizedData {
+            noaActionType: drrReport -> actionType to-string,
+            version: drrReport -> dtccValuationFields -> version,
+            comment1: drrReport -> dtccValuationFields -> comment1,
+            initialMarginCollateralPortfolioCode: drrReport -> initialMarginCollateralPortfolioCode,
+            variationMarginCollateralPortfolioCode: drrReport -> variationMarginCollateralPortfolioCode,
+            tradeParty1ValuationAmount: drrReport -> valuationAmount,
+            tradeParty1ValuationCurrency: drrReport -> valuationCurrency to-string,
+            tradeParty1ValuationDatetime: drrReport -> valuationTimestamp,
+            tradeParty1ValuationType: drrReport -> valuationMethod to-string,
+            nextFloatingReferenceResetDateLeg1: drrReport -> nextFloatingReferenceResetDateLeg1,
+            lastFloatingReferenceValueLeg1: drrReport -> lastFloatingReferenceValueLeg1,
+            lastFloatingReferenceResetDateLeg1: drrReport -> lastFloatingReferenceResetDateLeg1,
+            nextFloatingReferenceResetDateLeg2: drrReport -> nextFloatingReferenceResetDateLeg2,
+            lastFloatingReferenceValueLeg2: drrReport -> lastFloatingReferenceValueLeg2,
+            lastFloatingReferenceResetDateLeg2: drrReport -> lastFloatingReferenceResetDateLeg2,
+            cdeDelta: drrReport -> delta,
+            ...
+        }

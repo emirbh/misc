@@ -1,0 +1,90 @@
+package drr.projection.iso20022.asic.rewrite.trade.functions;
+
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.expression.CardinalityOperator;
+import com.rosetta.model.lib.functions.ModelObjectValidator;
+import com.rosetta.model.lib.functions.RosettaFunction;
+import com.rosetta.model.lib.mapper.MapperS;
+import drr.regulation.asic.rewrite.trade.ASICTransactionReport;
+import iso20022.auth030.asic.CollateralPortfolioCode6Choice__1;
+import iso20022.auth030.asic.MarginPortfolio4__1;
+import iso20022.auth030.asic.NotApplicable1Code;
+import iso20022.auth030.asic.PortfolioCode5Choice__1;
+import iso20022.auth030.asic.PortfolioIdentification3__1;
+import java.util.Optional;
+import javax.inject.Inject;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+@ImplementedBy(GetCollPrtflCd.GetCollPrtflCdDefault.class)
+public abstract class GetCollPrtflCd implements RosettaFunction {
+	
+	@Inject protected ModelObjectValidator objectValidator;
+
+	/**
+	* @param drrReport 
+	* @return collPrtflCd 
+	*/
+	public CollateralPortfolioCode6Choice__1 evaluate(ASICTransactionReport drrReport) {
+		CollateralPortfolioCode6Choice__1.CollateralPortfolioCode6Choice__1Builder collPrtflCdBuilder = doEvaluate(drrReport);
+		
+		final CollateralPortfolioCode6Choice__1 collPrtflCd;
+		if (collPrtflCdBuilder == null) {
+			collPrtflCd = null;
+		} else {
+			collPrtflCd = collPrtflCdBuilder.build();
+			objectValidator.validate(CollateralPortfolioCode6Choice__1.class, collPrtflCd);
+		}
+		
+		return collPrtflCd;
+	}
+
+	protected abstract CollateralPortfolioCode6Choice__1.CollateralPortfolioCode6Choice__1Builder doEvaluate(ASICTransactionReport drrReport);
+
+	public static class GetCollPrtflCdDefault extends GetCollPrtflCd {
+		@Override
+		protected CollateralPortfolioCode6Choice__1.CollateralPortfolioCode6Choice__1Builder doEvaluate(ASICTransactionReport drrReport) {
+			CollateralPortfolioCode6Choice__1.CollateralPortfolioCode6Choice__1Builder collPrtflCd = CollateralPortfolioCode6Choice__1.builder();
+			return assignOutput(collPrtflCd, drrReport);
+		}
+		
+		protected CollateralPortfolioCode6Choice__1.CollateralPortfolioCode6Choice__1Builder assignOutput(CollateralPortfolioCode6Choice__1.CollateralPortfolioCode6Choice__1Builder collPrtflCd, ASICTransactionReport drrReport) {
+			PortfolioIdentification3__1 ifThenElseResult0 = null;
+			if (areEqual(MapperS.of(drrReport).<Boolean>map("getCollateralPortfolioIndicator", aSICTransactionReport -> aSICTransactionReport.getCollateralPortfolioIndicator()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+				ifThenElseResult0 = PortfolioIdentification3__1.builder()
+					.setCd(MapperS.of(drrReport).<String>map("getInitialMarginCollateralPortfolioCode", aSICTransactionReport -> aSICTransactionReport.getInitialMarginCollateralPortfolioCode()).get())
+					.build();
+			}
+			NotApplicable1Code ifThenElseResult1 = null;
+			if (areEqual(MapperS.of(drrReport).<Boolean>map("getCollateralPortfolioIndicator", aSICTransactionReport -> aSICTransactionReport.getCollateralPortfolioIndicator()), MapperS.of(false), CardinalityOperator.All).getOrDefault(false)) {
+				ifThenElseResult1 = NotApplicable1Code.NOAP;
+			}
+			PortfolioIdentification3__1 ifThenElseResult2 = null;
+			if (areEqual(MapperS.of(drrReport).<Boolean>map("getCollateralPortfolioIndicator", aSICTransactionReport -> aSICTransactionReport.getCollateralPortfolioIndicator()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+				ifThenElseResult2 = PortfolioIdentification3__1.builder()
+					.setCd(MapperS.of(drrReport).<String>map("getVariationMarginCollateralPortfolioCode", aSICTransactionReport -> aSICTransactionReport.getVariationMarginCollateralPortfolioCode()).get())
+					.build();
+			}
+			NotApplicable1Code ifThenElseResult3 = null;
+			if (areEqual(MapperS.of(drrReport).<Boolean>map("getCollateralPortfolioIndicator", aSICTransactionReport -> aSICTransactionReport.getCollateralPortfolioIndicator()), MapperS.of(false), CardinalityOperator.All).getOrDefault(false)) {
+				ifThenElseResult3 = NotApplicable1Code.NOAP;
+			}
+			collPrtflCd = toBuilder(CollateralPortfolioCode6Choice__1.builder()
+				.setMrgnPrtflCd(MarginPortfolio4__1.builder()
+					.setInitlMrgnPrtflCd(PortfolioCode5Choice__1.builder()
+						.setPrtfl(ifThenElseResult0)
+						.setNoPrtfl(ifThenElseResult1)
+						.build())
+					.setVartnMrgnPrtflCd(PortfolioCode5Choice__1.builder()
+						.setPrtfl(ifThenElseResult2)
+						.setNoPrtfl(ifThenElseResult3)
+						.build())
+					.build())
+				.build());
+			
+			return Optional.ofNullable(collPrtflCd)
+				.map(o -> o.prune())
+				.orElse(null);
+		}
+	}
+}

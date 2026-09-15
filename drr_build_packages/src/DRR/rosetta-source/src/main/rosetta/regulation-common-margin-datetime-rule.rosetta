@@ -1,0 +1,14 @@
+namespace drr.regulation.common.margin.datetime
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version1.* as cde
+
+reporting rule ReportingTimestamp from CollateralReportInstruction: <"Reporting Timestamp">
+    extract cde.datetime.ReportingTimestampFromReportableInformation(reportableInformation)
+
+reporting rule EventDate from CollateralReportInstruction: <"Event date">
+    collateralDetails -> collateralTimestamp -> date
+
+reporting rule EventTimestamp from CollateralReportInstruction: <"Event Timestamp">
+    collateralDetails -> collateralTimestamp

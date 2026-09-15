@@ -1,0 +1,74 @@
+{
+  "actionType" : "NEWT",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "DTDUnapproved11370814201DFCFTCRiskNewNewCre2024-04-29T00:00Z",
+    "primaryAssetClass" : "Credit",
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC" ],
+    "tradeParty1TransactionID" : "1370814201P1P1YU87UJ",
+    "underlyingAsset" : [ {
+      "underlyingAssetID" : "CDX.NA.HY.18",
+      "underlyingAssetIDType" : "Index"
+    }, {
+      "underlyingAssetID" : "USS17U16X151",
+      "underlyingAssetIDType" : "REDID"
+    } ],
+    "underlyingAssetName" : [ "CDX.NA.HY.18" ]
+  },
+  "effectiveDate" : "2022-02-11",
+  "eventTimestamp" : "2022-02-11T07:32:32Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2022-02-11T07:32:14Z",
+  "expirationDate" : "2023-07-20",
+  "indexFactor" : 0.02,
+  "leg1" : {
+    "fixedRate" : 0.05,
+    "notionalAmount" : 10000000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "MNTH",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 3
+    }
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "OPTL",
+          "Underlying" : {
+            "UnderlierIDSource" : "CRIDX",
+            "UnderlyingCreditIndexSeries" : 2,
+            "UnderlyingCreditIndexVersion" : 3,
+            "UnderlyingInstrumentIndexTermUnit" : "YEAR"
+          },
+          "UnderlyingIssuerType" : "Corporate"
+        },
+        "Header" : {
+          "AssetClass" : "Credit",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Index"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueSwapIdentifier" : "DTD1370814201",
+  "uniqueTransactionIdentifier" : "DUMMYLEI020000000085UTICREDITINDEXCD0387"
+}

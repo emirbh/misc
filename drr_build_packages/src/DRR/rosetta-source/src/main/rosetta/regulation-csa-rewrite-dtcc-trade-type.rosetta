@@ -1,0 +1,269 @@
+namespace drr.regulation.csa.rewrite.dtcc.trade
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.common.dtcc.trade.* as commondtcc
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.*
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iso.*
+
+type DTCCAdditionalFields extends commondtcc.CommonDTCCAdditionalFields:
+    [rootType]
+    override clearingVenueIDType PartyIdentifierTypeEnum (0..1)
+        [label "Clearing Venue - ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Clearing Venue - ID Type"
+            provision "GTR Control Field."]
+    override comment1 string (0..1)
+        [label "Comment 1"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Comment 1"
+            provision "For CSV submissions if populated with an * the entire line is treated as comment."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Comment 1"
+            provision "Empty because CSV submission is still not supported by current DRR model. This rule will be revisited once Harmonized CSV projection is included."]
+    override corporateActionNewTradeParty1Lei LEIIdentifier (0..1)
+        [label "Corporate Action - New Trade Party 1 LEI"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Corporate Action - New Trade Party 1 LEI"
+            provision "This field is intended to update the party affected by a corporate action in a trade. It has been agreed to defer support for this field at this time."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Corporate Action - New Trade Party 1 LEI"
+            provision "In the case of a Corporate Action/Merger, populate this field with the LEI of the reporting party that will replace Trade Party 1/Reporting counterparty. The value in this field will replace [Trade Party 1 - ID] on the trade after the submission is processed."]
+    override deliveryLocation string (0..1)
+        [label "Delivery Location"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Delivery Location"
+            provision "The delivery location."]
+    override leg1CommodityInstrumentID string (0..1)
+        [label "Leg 1 - Commodity Instrument ID"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Leg 1 - Commodity Instrument ID"
+            provision "UPI RDL: A lower-level description of the characteristics of an asset or contract underlying a derivative; Required for CFTC PPD time delay calculation."]
+    override leg2CommodityInstrumentID string (0..1)
+        [label "Leg 2 - Commodity Instrument ID"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Leg 2 - Commodity Instrument ID"
+            provision "UPI RDL: A lower-level description of the characteristics of an asset or contract underlying a derivative; Required for CFTC PPD time delay calculation."]
+    override maturityDateOfTheUnderlying date (0..1)
+        [label "Maturity Date of the Underlier"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Maturity Date of the Underlier"
+            provision "The date on which the underlying transaction settles if the option is exercised. In the case of swaptions, maturity date of the underlying swap."]
+    override optionStyle OptionStyleEnum (0..1)
+        [label "Option Style"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Option Style"
+            provision "Need field to determine exercise dates."]
+    override optionType string (0..1)
+        [label "Option Type"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250603" field "Option Type"
+            provision "'NonStandard' value is not reported because exotic/non-standard products are currently out of scope in CDM."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Option Type"
+            provision "The type of option reported."]
+    override otherPaymentPayerIDType string (0..18)
+        [label "Other Payment Payer ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Other Payment Payer ID Type"
+            provision "Identifier type of the payer of Other payment amount."]
+    override otherPaymentReceiverIDType string (0..18)
+        [label "Other Payment Receiver ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Other Payment Receiver ID Type"
+            provision "Identifier type of the receiver of Other payment amount."]
+    override primaryAssetClass AssetClassEnum (1..1)
+        [label "Primary Asset Class"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Primary Asset Class"
+            provision "UPI RDL: Indicates whether the asset, benchmark or another derivatives contract underlying a derivatives contract is, or references, an equity, rate, credit, commodity or foreign exchange asset."]
+    override productGrade commondtcc.ProductGradeReport (0..*)
+        [label "Product Grade"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Product Grade"
+            provision "Grade of product being delivered (e.g., grade of oil)."]
+    override productID string (0..1)
+        [label "Product ID"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250604" field "Product ID"
+            provision "A member raised that Product ID was previously considered mandatory, despite being reportable only for Commodities. Consequently, the field is now treated as optional, except for Commodities where it remains mandatory, which is the basis for this Validation Rule."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Product ID"
+            provision "Needed for GTR processing to derive validation based on ISDA taxonomy; A lower-level description of the characteristics of an asset or contract underlying a derivative."]
+    override responsibleDataSubmitterIDType PartyIdentifierTypeEnum (0..1)
+        [label "Responsible Data Submitter - ID Type"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Responsible Data Submitter - ID Type"
+            provision "Firms indicated they would not use Responsible Data Submitter - ID field. This field will be revisited after go-live; consequently, Responsible Data Submitter - ID Type will also remain empty until that time."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Responsible Data Submitter - ID Type"
+            provision "This field contains the ID Type associated with the Ultimate Data Submitter ID."]
+    override responsibleDataSubmitterID string (0..1)
+        [label "Responsible Data Submitter - ID"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Responsible Data Submitter - ID"
+            provision "Firms indicated they would not use this field. This field will be revisited after go-live; consequently, it will remain empty until that time."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Responsible Data Submitter - ID"
+            provision "This field should only populated by Third Party Submitters who have been permissioned to act on behalf of SEFs, and not by any other submitters. This field must be populated with the LEI of the SEF."]
+    override secondaryAssetClass AssetClassEnum (0..1)
+        [label "Secondary Asset Class"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Secondary Asset Class"
+            provision "Needed field to indicate edge cases."]
+    override settlementType string (0..1)
+        [label "Settlement Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Settlement Type"
+            provision "UPI RDL: Indicates whether a derivatives contract will deliver a physical asset or a cash equivalent at settlement."]
+    override submittedForParty LEIIdentifier (1..1)
+        [label "Submitted For Party"]
+        [docReference ISDA PeerReviewGroup date "20250507" field "Submitted For Party"
+            provision "Agreed to default the output to the LEI of the reporting party."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Submitted For Party"
+            provision "Need field for GTR Processing."]
+    override submittingPartyIDType PartyIdentifierTypeEnum (1..1)
+        [label "Submitting Party - ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Submitting Party - ID Type"
+            provision "GTR required Control Field."]
+    override tradeLegTypes string (0..1)
+        [label "Trade Leg Types"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Leg Types"
+            provision "Field is needed to define the Commodity product. "]
+    override tradeParty1ClearingBrokerIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Clearing Broker ID Type"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Trade Party 1 - Clearing Broker ID Type"
+            provision "Firms indicated they would only report LEI format. No expectation to have PLID format in Canadian reporting. No expectaion to have NPID format in Canadian reporting unless there is an update from ISDA CSA Data and Reporting Canadian WG."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 1 - Clearing Broker ID Type"
+            provision "GTR Control Field."]
+    override tradeParty1ExecutionAgentID string (0..1)
+        [label "Trade Party 1 - Execution Agent ID"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 1 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Execution Agent ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 1 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ReportingDestination SupervisoryBodyEnum (1..*)
+        [label "Trade Party 1 - Reporting Destination"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 1 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+    override tradeParty1TransactionID string (0..1)
+        [label "Trade Party 1 - Transaction ID"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 1 - Transaction ID"
+            provision "Internal trade identifier for Counterparty 1 to map to their internal system."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20251203" field "Trade Party 1 - Transaction ID"
+            provision "The modelling supports that the jurisdiction-specific internal trade identifier must be unique, and also allows the user to extract the first internal trade identifier from a list arbitrarily."]
+        [ruleReference DTCC_TradeParty1TransactionID]
+    override tradeParty2ExecutionAgentID string (0..1)
+        [label "Trade Party 2 - Execution Agent ID"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 2 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty2ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 2 - Execution Agent ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 2 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty2ReportingDestination SupervisoryBodyEnum (0..*)
+        [label "Trade Party 2 - Reporting Destination"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 2 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+    override leg1FloatingRateIndex string (0..1)
+        [label "Leg 1 - Floating Rate Index"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Leg 1 - Floating Rate Index"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+        [ruleReference DTCC_Leg1FloatingRateIndex]
+    override leg2FloatingRateIndex string (0..1)
+        [label "Leg 2 - Floating Rate Index"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Leg 2 - Floating Rate Index"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+        [ruleReference DTCC_Leg2FloatingRateIndex]
+    override underlyingAssetName string (0..20)
+        [label "Underlying Asset Name"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Underlying Asset Name"
+            provision "Needed for Multi jurisdiction reporting and field is currently used for public dissemination."]
+        [ruleReference DTCC_UnderlyingAssetName]
+    override executionVenueID string (0..1)
+        [label "Execution Venue - ID"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Execution Venue - ID"
+            provision "LEI of the electronic trading venue where the transaction was executed."]
+        [ruleReference DTCC_ExecutionVenueID]
+    override executionVenueIDType PartyIdentifierTypeEnum (0..1)
+        [label "Execution Venue - ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Execution Venue - ID Type"
+            provision "Identifier Type (LEI) of the electronic trading venue where the transaction was executed."]
+        [ruleReference DTCC_ExecutionVenueIDType]
+    override underlyingAsset commondtcc.UnderlyingAssetReport (0..*)
+        [label for underlyingAssetID "Underlying Asset ID"]
+        [docReference for underlyingAssetID CSA csaTrade.Trade DTCC_Specs field "Underlying Asset ID"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+        [label for underlyingAssetIDType "Underlying Asset ID Type"]
+        [docReference for underlyingAssetIDType CSA csaTrade.Trade DTCC_Specs field "Underlying Asset ID Type"
+            provision "UPI RDL: The origin, or publisher, of the associated underlier ID."]
+        [ruleReference DTCC_UnderlyingAssetReport]
+    tradeParty1IDType PartyIdentifierTypeEnum (1..1)
+        [label "Trade Party 1 - ID Type"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Trade Party 1 - ID Type"
+            provision "Firms indicated they would only report LEI format. No expectation to have NPID or any other format in Canadian reporting unless there is an update from ISDA CSA Data and Reporting Canadian WG."]
+        [docReference ISDA CanadianDataAndReporting date "20250508" field "Trade Party 1 - ID Type"
+            provision "Reporting firms on the WG call said they would be using an LEI. There is only a possible use case for crypto trades reporting by SEFs; however, DRR is not going to model this case until is demanded by firms."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 1 - ID Type"
+            provision "GTR required Control Field."]
+	    [ruleReference DTCC_TradeParty1IDType]
+    allocationType AllocationIndicatorEnum (0..1)
+        [label "Allocation Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Allocation Type"
+            provision "Indicator of whether the swap transaction is intended to be allocated, will not be allocated, or is a post allocation transaction."]
+	    [ruleReference DTCC_AllocationType]
+    usiID Max42AlphaNumericText (0..1)
+        [label "USI ID"]
+        [docReference ISDA PeerReviewGroup date "20220309" field "USI ID"
+            provision "Firms do expect to report USI/UTI in both formats: as a single identifier field as well as using Issuer + identifier. The functional model needs to handle both scenarios."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "USI ID"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+	    [ruleReference DTCC_USIID]
+    usiIDPrefix string (0..1)
+        [label "USI ID Prefix"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250327" field "USI ID Prefix"
+            provision "The group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "USI ID Prefix"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+	    [ruleReference DTCC_USIIDPrefix]
+    newSDRIdentifier string (0..1)
+        [label "New SDR Identifier"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "New SDR Identifier"
+            provision "Identifier of the new swap data repository where the swap transaction is transferred to."]
+        [docReference ISDA USComplianceGroup date "20220802" field "New SDR Identifier"
+            provision "Not returning anything until it gets modelled"]
+	    [ruleReference DTCC_NewSDRIdentifier]
+    messageID string (0..1)
+        [label "Message ID"]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250604" field "Message ID"
+            provision "Each Message ID must be unique, irrespective of the report type. This unique identification is achieved by concatenating with the Reporting Timestamp field."]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Message ID"
+            provision "Purpose of this field is to allow firms to submit a unique ID that will allow them to tie in specific submissions/modifications. For example if 5 modifications are submitted on a specific PET, this will allow the firm to ensure they receive responses for all 5 modifications."]
+	    [ruleReference DTCC_MessageID]
+    leg1CommodityUnderlyerID string (0..1)
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Leg 1 - Commodity Underlyer ID"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+        [label "Leg 1 - Commodity Underlyer ID"]
+	    [ruleReference DTCC_Leg1CommodityUnderlyerID]
+    leg2CommodityUnderlyerID string (0..1)
+        [label "Leg 2 - Commodity Underlyer ID"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Leg 2 - Commodity Underlyer ID"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+        [ruleReference DTCC_Leg2CommodityUnderlyerID]
+    messageTypeTransaction string (0..1)
+        [ruleReference DTCC_MessageTypeTransaction]
+    messageTypePPD string (0..1)
+        [label "Message Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Message Type (PPD)"
+            provision "Need to indicate what message is being submitted to GTR."]
+        [ruleReference DTCC_MessageTypePPD]
+    leg1SettlementPeriod string (0..1)
+        [label "Leg 1 - Settlement Period"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Leg 1 - Settlement Period"
+            provision "For power, the delivery days of the week. For power, the hours of day transmission starts and ends."]
+        [ruleReference DTCC_Leg1SettlementPeriod]
+    loadType string (0..1)
+        [label "Load Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Load Type"
+            provision "For power, load profile for the delivery."]
+        [ruleReference DTCC_LoadType]
+    tradeParty1BrokerIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Broker ID Type"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Trade Party 1 - Broker ID Type"
+            provision "Identifier type of a broker that acts as an intermediary for Counterparty 1 without becoming a counterparty."]
+        [ruleReference DTCC_TradeParty1BrokerIDType]
+    versionTransaction string (0..1)
+        [label "Version (Trade report)"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Version (Trade report)"
+            provision "Memo field. Used to identify the asset class and template type of submission."]
+        [ruleReference DTCC_VersionTransaction]
+    versionPPD string (0..1)
+        [label "Version (PPD report)"]
+        [docReference CSA csaTrade.Trade DTCC_Specs field "Version (PPD report)"
+            provision "Memo field. Used to identify the asset class and template type of submission."]
+        [ruleReference DTCC_VersionPPD]

@@ -1,0 +1,926 @@
+namespace drr.regulation.csa.rewrite.trade
+version "${project.version}"
+
+import cdm.product.qualification.*
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.trade.* as csa
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+corpus Dissemination PPD
+
+report CSA Trade in T+1
+  	from TransactionReportInstruction
+  	when ReportableProduct
+  	with type CSATransactionReportTrade
+
+report CSA PPD in T+1
+    from TransactionReportInstruction
+    when ReportableProductPPD
+    with type CSATransactionReportPPD
+
+eligibility rule ReportableProduct from TransactionReportInstruction: <"When eligible for CSA">
+    [docReference CSA Trade
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+eligibility rule ReportableProductPPD from TransactionReportInstruction: <"When eligible for CSA PPD">
+    [docReference CSA PPD
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+// CSA Definitions
+reporting rule emptyRule from TransactionReportInstruction:
+    empty
+
+reporting rule Counterparty2IdentifierSource from TransactionReportInstruction: <"Counterparty 2 Identifier Source">
+    // TH 24/01/25: this field will probably be fully aligned with CFTC 3.3
+    extract
+        if reportingSide -> reportingCounterparty -> person exists
+                and reportingSide -> reportingCounterparty -> person -> personId -> identifierType any = PLID
+        then Counterparty2IdentifierEnum -> PLID
+        else if reportingSide -> reportingCounterparty -> partyId -> identifierType any = LEI
+        then LEID
+        else common.party.Counterparty2IdentifierSource
+
+reporting rule BuyerIdentifier from TransactionReportInstruction: <"Buyer Identifier">
+    filter IsAllowableActionForCSA
+    then extract cde.party.Direction1BuyerIdentifier
+
+reporting rule SellerIdentifier from TransactionReportInstruction: <"Seller Identifier">
+    filter IsAllowableActionForCSA
+    then extract cde.party.Direction1SellerIdentifier
+
+reporting rule BrokerIdentifier from TransactionReportInstruction: <"Broker identifier">
+    filter IsAllowableActionForCSA
+    then extract common.party.BrokerID
+
+reporting rule CountryAndProvinceOrTerritoryOfIndividual from TransactionReportInstruction: <"Country and Province or Territory of individual (non-reporting counterparty)">
+    filter IsAllowableActionForCSA
+    then extract reportingSide -> reportingCounterparty
+    then extract
+        (if util.party.NaturalPersonBuyerOrSeller exists
+        then util.party.NaturalPersonBuyerOrSeller -> contactInformation -> address only-element
+            then extract if country = "CA" then state else country)
+
+reporting rule JurisdictionOfCounterparty1 from TransactionReportInstruction: <"Jurisdiction of Counterparty 1">
+    filter IsAllowableActionForCSA
+    then extract transaction [
+        reportableInformation -> jurisdictionInformation
+            then filter SupervisoryBodyForCSA any = supervisoryBody
+            then filter
+                partyInformation -> partyReference any = transaction -> reportingSide -> reportingParty
+            then filter
+                partyInformation -> csaPartyInformation -> localCounterparty any = True
+            then extract supervisoryBody to-string
+            then if item exists then item else "NON-CA" // Workaround due to defaulting bug. DSL issue #1064
+    ]
+
+reporting rule JurisdictionOfCounterparty2 from TransactionReportInstruction: <"Jurisdiction of Counterparty 2">
+    filter IsAllowableActionForCSA
+    then extract transaction [
+        reportableInformation -> jurisdictionInformation
+            then filter SupervisoryBodyForCSA any = supervisoryBody
+            then filter
+                partyInformation -> partyReference any = transaction -> reportingSide -> reportingCounterparty
+            then filter
+                partyInformation -> csaPartyInformation -> localCounterparty any = True
+            then extract supervisoryBody to-string
+            then if item exists then item else "NON-CA" // Workaround due to defaulting bug. DSL issue #1064
+    ]
+
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective date">
+    filter IsAllowableActionForCSA
+    then extract common.datetime.EffectiveDate
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"ExpirationDate">
+    filter IsAllowableActionForCSA
+    then extract common.datetime.ExpirationDate
+
+reporting rule ExecutionTimestamp from TransactionReportInstruction: <"Execution Timestamp">
+    filter IsAllowableActionForCSA
+    then cde.datetime.ExecutionTimestamp
+
+reporting rule UniqueTransactionIdentifier from TransactionReportInstruction: <"Unique Transaction Identifier (UTI)">
+    filter IsAllowableActionForCSA
+    then uti.GetUniqueTransactionIdentifier(
+                item -> reportableInformation,
+                SupervisoryBodyForCSA,
+                empty,
+                item
+            )
+    then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True
+
+reporting rule PriorUTI from TransactionReportInstruction: <"Prior UTI">
+    filter
+        IsAllowableActionForCSA and (IsActionTypeTERM = False and IsActionTypeEROR = False and IsActionTypePRTO = False)
+    then common.link.GetPriorTransactionIdentifier(item, RegimeNameEnum -> CSA)
+    then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True
+
+reporting rule SubsequentPositionUTI from TransactionReportInstruction: <"Subsequent Position UTI">
+    filter IsAllowableActionForCSA
+    then extract common.link.SubsequentPositionUTI
+
+reporting rule PriorUSI from TransactionReportInstruction: <"Prior USI">
+    filter
+        IsAllowableActionForCSA and (IsActionTypeTERM = False and IsActionTypeEROR = False and IsActionTypePRTO = False)
+    then common.link.PriorUSI
+
+reporting rule InterAffiliateIndicator from TransactionReportInstruction: <"Inter-affiliate indicator">
+    filter IsAllowableActionForCSA
+    then extract reportableInformation -> affiliated
+
+reporting rule SubmitterIdentifier from TransactionReportInstruction: <"Submitter Identifier">
+    extract common.party.ReportSubmittingEntity
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform Identifier">
+    filter IsAllowableActionForCSA
+    then extract
+        if IsCleared(originatingWorkflowStep) = False
+                or IntendedToClear(originatingWorkflowStep) = True
+        then common.execution.PlatformIdentifier(item, CSA, SupervisoryBodyForCSA)
+
+reporting rule PlatformAnonymousExecutionIndicator from TransactionReportInstruction: <"Platform anonymous execution indicator">
+    filter IsAllowableActionForCSA
+    then if (cde.event.ActionType = TERM
+                and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL] any = cde.event.EventType
+                and cde.execution.CentralCounterparty exists)
+        then (reportableInformation -> jurisdictionInformation
+            then filter SupervisoryBodyForCSA any = supervisoryBody
+            then extract
+                transactionInformation -> reportableExecutionVenue -> sefOrDcmAnonymousIndicator default False)
+        else (extract reportableInformation -> jurisdictionInformation
+        then extract
+            if ((filter SupervisoryBodyForCSA any = supervisoryBody
+                then exists
+                )
+                    and ([ExecutionVenueTypeEnum -> SEF, ExecutionVenueTypeEnum -> DCM] any = transactionInformation -> reportableExecutionVenue -> executionVenueType))
+            then (transactionInformation -> reportableExecutionVenue -> sefOrDcmAnonymousIndicator default False))
+
+reporting rule MasterAgreementType from TransactionReportInstruction: <"Master Agreement type">
+    filter IsAllowableActionForCSA
+    then extract common.contract.MasterAgreementType
+
+reporting rule MasterAgreementVersion from TransactionReportInstruction: <"Master Agreement version">
+    filter IsAllowableActionForCSA
+    then extract common.contract.MasterAgreementVersion
+
+reporting rule CallAmount from TransactionReportInstruction: <"Call Amount">
+    filter IsAllowableActionForCSA
+    then cde.quantity.CallAmount
+
+reporting rule CallCurrency from TransactionReportInstruction: <"Call Currency">
+    filter IsAllowableActionForCSA
+    then if IsFXOption(ProductForEvent) then cde.quantity.CallCurrency
+
+reporting rule PutAmount from TransactionReportInstruction: <"Put Amount">
+    filter IsAllowableActionForCSA
+    then cde.quantity.PutAmount
+
+reporting rule PutCurrency from TransactionReportInstruction: <"Put Currency">
+    filter IsAllowableActionForCSA
+    then if IsFXOption(ProductForEvent) then cde.quantity.PutCurrency
+
+reporting rule ExchangeRate from TransactionReportInstruction: <"Exchange Rate">
+    filter IsAllowableActionForCSA
+    then cde.price.ExchangeRate
+
+reporting rule ExchangeRateBasis from TransactionReportInstruction: <"Exchange Rate Basis">
+    filter IsAllowableActionForCSA
+    then cde.price.ExchangeRateBasis
+
+reporting rule Price from TransactionReportInstruction: <"Price">
+    filter IsAllowableActionForCSA
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+    then extract price.PriceFormatFromNotation(cde.price.PriceValue, PriceNotation)
+
+reporting rule PriceCurrency from TransactionReportInstruction: <"Price currency">
+    filter IsAllowableActionForCSA
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+    then extract cde.price.PriceCurrency
+
+reporting rule PriceNotation from TransactionReportInstruction: <"Price notation">
+    filter IsAllowableActionForCSA
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+    // Monetary and Decimal are the only allowabe values for this field. Thus, in case Percentage is notated, it will be reported as Decimal.
+    then price.DefaultPercentageToDecimal(cde.price.PriceNotation, False)
+
+reporting rule PriceUnitOfMeasure from TransactionReportInstruction: <"Price unit of measure">
+    filter IsAllowableActionForCSA
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+    then extract cde.price.PriceUnitOfMeasure default "OTHR"
+
+reporting rule ContractPriceSchedule from TransactionReportInstruction: <"Contract Price Schedule">
+    filter IsAllowableActionForCSA
+    then filter
+        Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+    then extract cde.price.GetReportablePricePeriod(item, DefaultPercentagetoDecimal)
+
+reporting rule StrikePrice from TransactionReportInstruction: <"Strike price">
+    filter IsAllowableActionForCSA
+    then extract
+        price.PriceFormatFromNotation(cde.price.StrikePriceValue, StrikePriceNotation)
+
+reporting rule StrikePriceCurrencyCurrencyPair from TransactionReportInstruction: <"Strike price currency/currency pair">
+    filter IsAllowableActionForCSA
+    then cde.price.StrikePriceCurrency
+
+reporting rule StrikePriceNotation from TransactionReportInstruction: <"Strike price notation">
+    filter IsAllowableActionForCSA
+    then extract price.DefaultPercentageToDecimal(cde.price.StrikePriceNotationEnum, False)
+
+reporting rule StrikePriceSchedule from TransactionReportInstruction: <"Strike Price Schedule">
+    filter IsAllowableActionForCSA
+    then extract cde.price.GetReportableStrikePricePeriod(item, DefaultPercentagetoDecimal)
+
+reporting rule NonStandardizedTermIndicator from TransactionReportInstruction: <"Non-standardized Term Indicator">
+    filter IsAllowableActionForCSA
+    then extract
+        if IsCleared(originatingWorkflowStep) = False
+                and originatingWorkflowStep -> nextEvent -> intent <> Clearing
+        then common.contract.NonStandardizedTermIndicator
+
+reporting rule Cleared from TransactionReportInstruction: <"Cleared">
+    filter IsAllowableActionForCSA
+    then cde.execution.Cleared
+
+reporting rule CentralCounterpartyIdentifier from TransactionReportInstruction: <"Central Counterparty Identifier">
+    filter IsAllowableActionForCSA
+    then cde.execution.CentralCounterparty
+
+reporting rule ClearingAccountOrigin from TransactionReportInstruction: <"Clearing Account Origin">
+    filter IsAllowableActionForCSA
+    then common.execution.ClearingAccountOrigin
+
+reporting rule ClearingMemberIdentifier from TransactionReportInstruction: <"Clearing Member Identifier">
+    filter IsAllowableActionForCSA
+    then cde.execution.ClearingMember
+
+reporting rule ClearingReceiptTimestamp from TransactionReportInstruction: <"Clearing Receipt Timestamp">
+    filter
+        IsAllowableActionForCSA and (IsActionTypeEROR = False and IsActionTypePRTO = False)
+    then common.datetime.ClearingReceiptTimestamp
+
+reporting rule ClearingExceptionsAndExemptionsCounterparty1 from TransactionReportInstruction: <"Clearing Exceptions And Exemptions Counterparty 1">
+    filter IsAllowableActionForCSA
+    then extract
+        ClearingExceptionsAndExemptionsCounterparty(
+                item,
+                item -> reportingSide -> reportingParty
+            )
+
+reporting rule ClearingExceptionsAndExemptionsCounterparty2 from TransactionReportInstruction: <"Clearing Exceptions And Exemptions Counterparty 2">
+    filter IsAllowableActionForCSA
+    then extract
+        ClearingExceptionsAndExemptionsCounterparty(
+                item,
+                item -> reportingSide -> reportingCounterparty
+            )
+
+reporting rule VariationMarginCollateralPortfolioCode from TransactionReportInstruction: <"Variation Margin Collateral Portfolio Code">
+    filter IsAllowableActionForCSA
+    then extract common.collateral.VariationMarginCollateralPortfolioCode
+
+reporting rule InitialMarginCollateralPortfolioCode from TransactionReportInstruction: <"Initial Margin Collateral Portfolio Code">
+    filter IsAllowableActionForCSA
+    then extract common.collateral.InitialMarginCollateralPortfolioCode
+
+reporting rule EventTimestamp from TransactionReportInstruction: <"Event Timestamp">
+    filter IsAllowableActionForCSA
+    then extract cde.datetime.EventTimestamp
+
+reporting rule Level from TransactionReportInstruction: <"Level">
+    filter IsAllowableActionForCSA
+    then extract cde.event.Level
+
+reporting rule EventIdentifier from TransactionReportInstruction: <"Event Identifier">
+    filter IsAllowableActionForCSA
+    then extract cde.event.EventIdentifier
+
+reporting rule EventType from TransactionReportInstruction: <"Event Type">
+    filter IsAllowableActionForCSA
+    then cde.event.EventType
+
+reporting rule AmendmentIndicator from TransactionReportInstruction: <"Amendment Indicator">
+    filter
+        IsAllowableActionForCSA and (IsActionTypeTERM = False and IsActionTypeEROR = False and IsActionTypePRTO = False)
+    then extract common.event.AmendmentIndicator
+
+reporting rule PackageIndicator from TransactionReportInstruction: <"Package Indicator">
+    filter IsAllowableActionForCSA
+    then extract common.link.PackageIndicator
+
+reporting rule PackageIdentifier from TransactionReportInstruction: <"Package Identifier">
+    filter IsAllowableActionForCSA
+    then extract cde.link.PackageIdentifier
+
+reporting rule PackageTransactionPrice from TransactionReportInstruction: <"Package Transaction Price">
+    filter IsAllowableActionForCSA
+    then extract
+        if cde.price.PackageTransactionPriceValue exists
+        then price.PriceFormatFromNotation(
+                    cde.price.PackageTransactionPriceValue,
+                    PackageTransactionPriceNotation
+                )
+        else (if PackageTransactionPriceNotation = Monetary
+        then price.PriceFormat {
+                monetary: 99999.9999999999999,
+                ...
+            }
+        else if PackageTransactionPriceNotation = Decimal
+        then price.PriceFormat {
+                decimal: 9.9999999999,
+                ...
+            })
+
+reporting rule PackageTransactionPriceCurrency from TransactionReportInstruction: <"Package Transaction Price Currency">
+    filter IsAllowableActionForCSA
+    then extract cde.price.PackageTransactionPriceCurrency
+
+reporting rule PackageTransactionSpread from TransactionReportInstruction: <"Package Transaction Spread">
+    filter IsAllowableActionForCSA
+    then extract
+        if cde.price.PackageTransactionSpreadValue exists
+        then price.PriceFormatFromNotation(
+                    cde.price.PackageTransactionSpreadValue,
+                    PackageTransactionSpreadNotation
+                )
+        else (if PackageTransactionSpreadNotation = Monetary
+        then price.PriceFormat {
+                monetary: 99999.9999999999999,
+                ...
+            }
+        else if PackageTransactionSpreadNotation = Decimal
+        then price.PriceFormat {
+                decimal: 9.9999999999,
+                ...
+            }
+        else if PackageTransactionSpreadNotation = Basis
+        then price.PriceFormat {
+                basis: 99999,
+                ...
+            })
+
+reporting rule PackageTransactionSpreadCurrency from TransactionReportInstruction:
+    filter IsAllowableActionForCSA
+    then extract cde.price.PackageTransactionSpreadCurrency
+
+reporting rule PackageTransactionSpreadNotation from TransactionReportInstruction: <"Package Transaction Spread Notation">
+    filter IsAllowableActionForCSA
+    then price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionSpreadNotationEnum,
+                False
+            )
+
+reporting rule PackageTransactionPriceNotation from TransactionReportInstruction: <"Package Transaction Price Notation">
+    filter IsAllowableActionForCSA
+    then price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionPriceNotationEnum,
+                False
+            )
+
+reporting rule UniqueProductIdentifier from TransactionReportInstruction: <"Unique Product Identifier">
+    filter IsAllowableActionForCSA
+    then extract upi.UniqueProductIdentifier
+
+reporting rule CDSIndexAttachmentPoint from TransactionReportInstruction: <"CDS Index Attachment Point">
+    filter IsAllowableActionForCSA
+    then extract
+        if IsCredit(ProductForEvent)
+        then cde.index.CDSIndexAttachmentPoint
+
+reporting rule CDSIndexDetachmentPoint from TransactionReportInstruction: <"CDS Index Detachment Point">
+    filter IsAllowableActionForCSA
+    then extract
+        if IsCredit(ProductForEvent)
+        then cde.index.CDSIndexDetachmentPoint
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index Factor">
+    filter IsAllowableActionForCSA
+    then extract common.index.IndexFactor
+
+reporting rule CustomBasketCode from TransactionReportInstruction: <"Custom Basket Code">
+    filter IsAllowableActionForCSA
+    then extract cde.basket.CustomBasketCode
+
+reporting rule CustomBasketIndicator from TransactionReportInstruction: <"Custom Basket Indicator">
+    filter IsAllowableActionForCSA
+    then extract ProductForEvent
+    then extract
+        if economicTerms -> payout -> SettlementPayout exists
+        then economicTerms -> payout -> SettlementPayout -> underlier -> Observable -> Basket exists
+        else if economicTerms -> payout -> OptionPayout exists
+        then economicTerms -> payout -> OptionPayout -> underlier -> Observable -> Basket exists
+                or economicTerms -> payout -> OptionPayout -> underlier -> Product -> NonTransferableProduct -> economicTerms -> payout -> CreditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+        else if economicTerms -> payout -> PerformancePayout exists
+        then economicTerms -> payout -> PerformancePayout -> underlier -> Observable -> Basket exists
+        else if economicTerms -> payout -> CreditDefaultPayout exists
+        then economicTerms -> payout -> CreditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+        else False
+
+//Sprint 2025-11: CSA basket constituents type should extend from common.basket.BasketConstituentsReport once DSL gets upgraded to support deserializing multi-cardinality sub-types
+reporting rule BasketConstituents from TransactionReportInstruction: <"Basket constituents">
+    filter IsAllowableActionForCSA and CustomBasketIndicator
+    then extract cde.basket.BasketConstituents
+
+reporting rule EmbeddedOptionType from TransactionReportInstruction: <"Embedded Option Type">
+    filter IsAllowableActionForCSA
+    then extract common.contract.EmbeddedOptionType
+
+reporting rule FinalContractualSettlementDate from TransactionReportInstruction: <"Final Contractual Settlement Date">
+    filter IsAllowableActionForCSA
+    then extract cde.execution.FinalContractualSettlementDate
+
+reporting rule SettlementLocation from TransactionReportInstruction: <"Settlement Location">
+    filter IsAllowableActionForCSA
+    then extract common.execution.SettlementLocation
+
+reporting rule OtherPayment from TransactionReportInstruction: <"Other Payment">
+    filter IsAllowableActionForCSA
+    then extract cde.payment.OtherPayment
+
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option Premium Amount">
+    filter IsAllowableActionForCSA
+    then common.price.OptionPremiumAmount
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction: <"Option Premium Currency">
+    filter IsAllowableActionForCSA
+    then cde.price.OptionPremiumCurrency
+
+reporting rule OptionPremiumPaymentDate from TransactionReportInstruction: <"Option Premium Payment Date">
+    filter IsAllowableActionForCSA
+    then cde.price.OptionPremiumPaymentDate
+
+reporting rule FirstExerciseDate from TransactionReportInstruction: <"First Exercise Date">
+    filter IsAllowableActionForCSA
+    then cde.price.FirstExerciseDate
+
+reporting rule InstrumentType from TransactionReportInstruction: <"Instrument Type (non-reportable)">
+    extract GetInstrumentType
+
+reporting rule ReturnorPayoutTrigger from TransactionReportInstruction: <"Return or Payout Trigger (non-reportable)">
+    extract
+        if IsReturnorPayoutTriggerCFD
+        then "Contract_for_Difference_CFD_"
+
+// Only modelled for Return or Payout Trigger considered in Validation Rules for CSA
+reporting rule ExecutionVenueType from TransactionReportInstruction: <"Execution Venue Type">
+    filter IsAllowableActionForCSA
+    then extract reportableInformation -> jurisdictionInformation
+    then filter SupervisoryBodyForCSA any = supervisoryBody
+    then extract
+        if item exists
+        then transactionInformation -> reportableExecutionVenue -> executionVenueType
+
+reporting rule DeliveryType from TransactionReportInstruction: <"Delivery Type (non-reportable)">
+    extract GetDeliveryTypeDSBRecord
+
+func IsAllowableActionForCSA: <"Indicates the allowable actions for CSA">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isAllowableAction boolean (1..1)
+
+    set isAllowableAction:
+        IsActionTypeNEWT(reportableEvent)
+            or IsActionTypeMODI(reportableEvent)
+            or IsActionTypePositionMODI(reportableEvent)
+            or IsActionTypeCORR(reportableEvent)
+            or IsActionTypeREVI(reportableEvent)
+            or IsActionTypeTERM(reportableEvent)
+            or IsActionTypeEROR(reportableEvent)
+            or IsActionTypePRTO(reportableEvent)
+
+func SupervisoryBodyForCSA: <"Contains all supervisory bodies that can be used for CSA">
+    output:
+        supervisoryBodyCSA SupervisoryBodyEnum (1..*)
+
+    add supervisoryBodyCSA:
+        [CA_AB_ASC, CA_BC_BCSC, CA_MB_MSC, CA_NB_FCSC, CA_NL_DSS, CA_NS_NSSC, CA_NT_NTSO, CA_NU_NSO, CA_ON_OSC, CA_PEI_OSS, CA_QC_AMF, CA_SK_FCAA, CA_YT_OSS]
+
+// CDE Leg fields
+reporting rule FixedRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 1">
+    filter IsAllowableActionForCSA
+    then extract common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 1">
+    filter IsAllowableActionForCSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 1">
+    filter IsAllowableActionForCSA
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 1">
+    filter IsAllowableActionForCSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 1">
+    filter IsAllowableActionForCSA
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 1">
+    filter IsAllowableActionForCSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRateLeg1 from TransactionReportInstruction: <"Fixed Rate - Leg 1">
+    filter IsAllowableActionForCSA
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg1)
+    then cde.price.FixedRate
+
+reporting rule FixedRateLeg2 from TransactionReportInstruction: <"Fixed Rate - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.payment.FixedInterestRatePayoutFromPayout(PayoutLeg2)
+    then cde.price.FixedRate
+
+reporting rule NotionalAmountLeg1 from TransactionReportInstruction: <"Notional of Leg 1">
+    filter IsAllowableActionForCSA
+    then cde.quantity.NotionalAmountFormat(
+                PayoutForQuantityLeg1,
+                99999999999999999999.99999
+            )
+
+reporting rule NotionalAmountLeg2 from TransactionReportInstruction: <"Notional Amount of Leg 2">
+    filter IsAllowableActionForCSA
+    then cde.quantity.NotionalAmountFormat(
+                PayoutForQuantityLeg2,
+                99999999999999999999.99999
+            )
+
+reporting rule NotionalCurrencyLeg1 from TransactionReportInstruction: <"Notional Currency - Leg 1">
+    filter IsAllowableActionForCSA
+    then cde.quantity.Notional(PayoutForQuantityLeg1)
+    then quantity.CurrencyFromNotional
+
+reporting rule NotionalCurrencyLeg2 from TransactionReportInstruction: <"Notional Currency - Leg 2">
+    filter IsAllowableActionForCSA
+    then cde.quantity.Notional(PayoutForQuantityLeg2)
+    then quantity.CurrencyFromNotional
+
+reporting rule TotalNotionalQuantityLeg1 from TransactionReportInstruction: <"Total Notional Quantity - Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsEquity(ProductForEvent) or IsCommodity(ProductForEvent)
+        then cde.quantity.TotalNotionalQuantity(PayoutLeg1, 99999999999999999999.99999)
+
+reporting rule TotalNotionalQuantityLeg2 from TransactionReportInstruction: <"Total Notional Quantity - Leg 2">
+    filter IsAllowableActionForCSA
+    then if IsCommoditySwap(ProductForEvent)
+                or (IsEquity(ProductForEvent) and csa.InterestRateLeg2(ProductForEvent) -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists)
+        then cde.quantity.TotalNotionalQuantity(PayoutLeg2, 99999999999999999999.99999)
+
+reporting rule NotionalAmountScheduleLeg1 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 1">
+    filter IsAllowableActionForCSA
+    then cde.quantity.NotionalAmountSchedule(PayoutLeg1)
+
+reporting rule NotionalAmountScheduleLeg2 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 2">
+    filter IsAllowableActionForCSA
+    then cde.quantity.NotionalAmountSchedule(PayoutLeg2)
+
+reporting rule NotionalQuantityScheduleLeg1 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 1">
+    filter IsAllowableActionForCSA
+    then cde.quantity.NotionalQuantitySchedule(PayoutLeg1)
+
+reporting rule NotionalQuantityScheduleLeg2 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 2">
+    filter IsAllowableActionForCSA
+    then cde.quantity.NotionalQuantitySchedule(PayoutLeg2)
+
+reporting rule SettlementCurrencyLeg1 from TransactionReportInstruction: <"Settlement Currency - Leg 1">
+    filter IsAllowableActionForCSA
+    then cde.execution.SettlementCurrency(PayoutLeg1)
+
+reporting rule SettlementCurrencyLeg2 from TransactionReportInstruction: <"Settlement Currency - Leg 2">
+    filter IsAllowableActionForCSA
+    then cde.execution.SettlementCurrency(PayoutLeg2)
+
+reporting rule SpreadLeg1 from TransactionReportInstruction: <"Spread - Leg 1">
+    filter IsAllowableActionForCSA
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(PayoutLeg1),
+                SpreadNotationLeg1
+            )
+
+reporting rule SpreadLeg2 from TransactionReportInstruction: <"Spread - Leg 2">
+    filter IsAllowableActionForCSA
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(PayoutLeg2),
+                SpreadNotationLeg2
+            )
+
+reporting rule SpreadNotationLeg1 from TransactionReportInstruction: <"Spread notation - Leg 1">
+    price.DefaultPercentageToDecimal(cde.price.SpreadNotationEnum(PayoutLeg1), False)
+
+reporting rule SpreadNotationLeg2 from TransactionReportInstruction: <"Spread notation - Leg 2">
+    price.DefaultPercentageToDecimal(cde.price.SpreadNotationEnum(PayoutLeg2), False)
+
+reporting rule SpreadCurrencyLeg1 from TransactionReportInstruction: <"Spread Currency - Leg 1">
+    filter IsAllowableActionForCSA
+    then cde.price.SpreadCurrency(PayoutLeg1)
+
+reporting rule SpreadCurrencyLeg2 from TransactionReportInstruction: <"Spread Currency - Leg 2">
+    filter IsAllowableActionForCSA
+    then cde.price.SpreadCurrency(PayoutLeg2)
+
+reporting rule QuantityUnitOfMeasureLeg1 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 1">
+    filter IsAllowableActionForCSA
+    then extract TradeForEvent
+    then extract
+        if Qualify_Commodity_Swap_Basis(ProductForTrade -> economicTerms) = True
+        then drr.regulation.csa.rewrite.trade.CommodityLeg1(ProductForTrade) -> priceQuantity -> quantitySchedule
+        else if Qualify_Commodity_Swap_FixedFloat(ProductForTrade -> economicTerms) = True
+        then EconomicTermsForProduct(ProductForTrade) -> payout -> FixedPricePayout only-element -> priceQuantity -> quantitySchedule
+        else if Qualify_Commodity_Swaption(product -> economicTerms) = True
+                and Qualify_Commodity_Swap_Basis(
+                        underlier.UnderlierForProduct(ProductForTrade) -> Product -> NonTransferableProduct -> economicTerms
+                    )
+        then EconomicTermsForProduct(ProductForTrade) -> payout -> OptionPayout only-element -> priceQuantity -> quantitySchedule
+        else if Qualify_Commodity_Swaption(product -> economicTerms) = True
+                and Qualify_Commodity_Swap_FixedFloat(
+                        underlier.UnderlierForProduct(ProductForTrade) -> Product -> NonTransferableProduct -> economicTerms
+                    )
+        then EconomicTermsForProduct(ProductForTrade) -> payout -> OptionPayout only-element -> priceQuantity -> quantitySchedule
+        else if IsCommodityOption(product)
+        then EconomicTermsForProduct(ProductForTrade) -> payout -> OptionPayout only-element -> priceQuantity -> quantitySchedule
+        else if IsEquityOption(ProductForTrade)
+                and EconomicTermsForProduct(ProductForTrade) -> payout -> OptionPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then EconomicTermsForProduct(ProductForTrade) -> payout -> OptionPayout only-element -> priceQuantity -> quantitySchedule
+        else if IsEquityForward(ProductForTrade)
+                and EconomicTermsForProduct(ProductForTrade) -> payout -> SettlementPayout only-element -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then EconomicTermsForProduct(ProductForTrade) -> payout -> SettlementPayout only-element -> priceQuantity -> quantitySchedule
+        else if EconomicTermsForProduct(ProductForTrade) -> payout -> PerformancePayout only-element -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then EconomicTermsForProduct(ProductForTrade) -> payout -> PerformancePayout only-element -> priceQuantity -> quantitySchedule
+        else if IsEquity(ProductForTrade)
+                and tradeLot -> priceQuantity -> quantity -> unit -> financialUnit exists
+        then (tradeLot only-element -> priceQuantity -> quantity
+            then filter unit -> financialUnit exists
+            then only-element)
+    then extract quantity.UnitOfMeasureFromQuantity default "OTHR"
+
+reporting rule QuantityUnitOfMeasureLeg2 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 2">
+    filter IsAllowableActionForCSA
+    then extract TradeForEvent
+    then extract
+        if IsCommoditySwap(product)
+        then drr.regulation.csa.rewrite.trade.CommodityLeg2(ProductForTrade) -> priceQuantity -> quantitySchedule
+        else if IsEquity(ProductForTrade)
+                and drr.regulation.common.InterestRateLeg2(ProductForTrade) -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then drr.regulation.common.InterestRateLeg2(ProductForTrade) -> priceQuantity -> quantitySchedule
+    then extract quantity.UnitOfMeasureFromQuantity default "OTHR"
+
+reporting rule Direction2Leg1 from TransactionReportInstruction: <"Direction2 - Leg 1">
+    filter IsAllowableActionForCSA
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    PayoutLeg1,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+reporting rule Direction2Leg2 from TransactionReportInstruction: <"Direction2 - Leg 2">
+    filter IsAllowableActionForCSA
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    PayoutLeg2,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+// Common Leg fields
+reporting rule NotionalQuantityLeg1 from TransactionReportInstruction: <"Notional Quantity - Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsSingleCommodityPayoutProduct(ProductForEvent) = False
+                and (IsEquity(ProductForEvent) or IsCommodity(ProductForEvent))
+        then extract common.quantity.NotionalQuantity(common.PayoutLeg1)
+
+reporting rule NotionalQuantityLeg2 from TransactionReportInstruction: <"Notional Quantity - Leg 2">
+    filter IsAllowableActionForCSA
+    then if IsEquity(ProductForEvent) or IsCommodity(ProductForEvent)
+        then common.quantity.NotionalQuantity(PayoutLeg2)
+
+reporting rule QuantityFrequencyPeriodLeg1 from TransactionReportInstruction: <"Notional Quantity Frequency Period - Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsSingleCommodityPayoutProduct(ProductForEvent) = False
+        then common.quantity.QuantityFrequency(PayoutLeg1) -> period
+
+reporting rule QuantityFrequencyPeriodLeg2 from TransactionReportInstruction: <"Notional Quantity Frequency Period - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.quantity.QuantityFrequency(PayoutLeg2) -> period
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsSingleCommodityPayoutProduct(ProductForEvent) = False
+        then common.quantity.QuantityFrequency(PayoutLeg1) -> periodMultiplier
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.quantity.QuantityFrequency(PayoutLeg2) -> periodMultiplier
+
+reporting rule FloatingRateResetFrequencyPeriodOfLeg1 from TransactionReportInstruction: <"Floating rate reset frequency period of leg 1">
+    filter IsAllowableActionForCSA
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then common.payment.FloatingRateResetFrequencyPeriod
+
+reporting rule FloatingRateResetFrequencyMultiplierOfLeg1 from TransactionReportInstruction: <"Floating rate reset frequency multiplier of leg 1">
+    filter IsAllowableActionForCSA
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then common.payment.FloatingRateResetFrequencyPeriodMultiplier
+
+reporting rule FloatingRateResetFrequencyPeriodOfLeg2 from TransactionReportInstruction: <"Floating rate reset frequency period of leg 2">
+    filter IsAllowableActionForCSA
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then common.payment.FloatingRateResetFrequencyPeriod
+
+reporting rule FloatingRateResetFrequencyMultiplierOfLeg2 from TransactionReportInstruction:
+    filter IsAllowableActionForCSA
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then common.payment.FloatingRateResetFrequencyPeriodMultiplier
+
+reporting rule FixingDateLeg1 from TransactionReportInstruction: <"Fixing Date - Leg 1">
+    filter IsAllowableActionForCSA
+    then common.datetime.FixingDate(PayoutLeg1)
+
+reporting rule FixingDateLeg2 from TransactionReportInstruction: <"Fixing Date - Leg 2">
+    filter IsAllowableActionForCSA
+    then common.datetime.FixingDate(PayoutLeg2)
+
+reporting rule PayerIdentifierLeg1 from TransactionReportInstruction: <"Payer Identifier-Leg 1">
+    filter IsAllowableActionForCSA
+    then if BuyerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        then // Ascent Uplift analysis - We are making an exception for IsVarianceSwap(ProductForEvent) or IsVolatilitySwap(ProductForEvent) as to mimic current behvaiour as still populate even if we only have a single leg
+        extract
+            PartyLeiAndPersonByRoles(
+                    cde.party.PayerParty(PayoutLeg1, CounterpartiesForEvent),
+                    reportingSide -> reportingParty
+                )
+
+reporting rule PayerIdentifierLeg2 from TransactionReportInstruction: <"Payer Identifier-Leg 2">
+    filter IsAllowableActionForCSA
+    then if BuyerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        then extract
+            PartyLeiAndPersonByRoles(
+                    cde.party.PayerParty(PayoutLeg2, CounterpartiesForEvent),
+                    reportingSide -> reportingParty
+                )
+
+reporting rule ReceiverIdentifierLeg1 from TransactionReportInstruction: <"Receiver Identifier-Leg 1">
+    filter IsAllowableActionForCSA
+    then if SellerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        then extract
+            PartyLeiAndPersonByRoles(
+                    cde.party.ReceiverParty(PayoutLeg1, CounterpartiesForEvent),
+                    reportingSide -> reportingParty
+                )
+
+reporting rule ReceiverIdentifierLeg2 from TransactionReportInstruction: <"Receiver Identifier-Leg 2">
+    filter IsAllowableActionForCSA
+    then if SellerIdentifier is absent
+                or IsVarianceSwap(ProductForEvent)
+                or IsVolatilitySwap(ProductForEvent)
+        then extract
+            PartyLeiAndPersonByRoles(
+                    cde.party.ReceiverParty(PayoutLeg2, CounterpartiesForEvent),
+                    reportingSide -> reportingParty
+                )
+
+reporting rule CryptoAssetUnderlyingIndicatorLeg1 from TransactionReportInstruction: <"Crypto asset underlying indicator-Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsCSALeg1Aligned = True
+        then (if Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            then cde.underlier.CryptoAssetUnderlyingIndicator)
+        else if IsCSALeg2Aligned = False
+        then (if IsCommoditySwapFloatFloat(ProductForEvent)
+                    or IsCommoditySwapFixedFloat(ProductForEvent)
+            then cde.underlier.CryptoAssetUnderlyingIndicator)
+
+reporting rule CryptoAssetUnderlyingIndicatorLeg2 from TransactionReportInstruction: <"Crypto asset underlying indicator-Leg 2">
+    filter IsAllowableActionForCSA
+    then if IsCSALeg2Aligned = True
+        then (if IsCommoditySwapFloatFloat(ProductForEvent)
+                    or IsCommoditySwapFixedFloat(ProductForEvent)
+            then cde.underlier.CryptoAssetUnderlyingIndicator)
+        else if IsCSALeg2Aligned = False
+        then (if Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+            then cde.underlier.CryptoAssetUnderlyingIndicator)
+
+reporting rule UnderlyingAssetTradingPlatformIdentifierLeg1 from TransactionReportInstruction: <"Underlying Asset Trading Platform Identifier-Leg 1">
+    filter IsAllowableActionForCSA
+    then extract
+        if IsEquity(ProductForEvent)
+                or IsEquityForward(ProductForEvent)
+                or Qualify_AssetClass_Credit(EconomicTermsForProduct(ProductForEvent))
+        then if IsCSALeg1Aligned = True
+            then cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg1
+            else cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg2
+
+reporting rule UnderlyingAssetTradingPlatformIdentifierLeg2 from TransactionReportInstruction: <"Underlying Asset Trading Platform Identifier-Leg 2">
+    filter IsAllowableActionForCSA
+    then extract
+        if IsEquity(ProductForEvent)
+                or IsEquityForward(ProductForEvent)
+                or Qualify_AssetClass_Credit(EconomicTermsForProduct(ProductForEvent))
+        then if IsCSALeg2Aligned = True
+            then cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg2
+            else cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg1
+
+reporting rule UnderlyingAssetPriceSourceLeg1 from TransactionReportInstruction: <"Underlying Asset Price Source-Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsUnderlierTOTV(reportableInformation)
+        then (if IsCSALeg1Aligned = True
+            then cde.underlier.UnderlyingAssetPriceSourceLeg1
+            else cde.underlier.UnderlyingAssetPriceSourceLeg2)
+
+reporting rule UnderlyingAssetPriceSourceLeg2 from TransactionReportInstruction: <"Underlying Asset Price Source-Leg 2">
+    filter IsAllowableActionForCSA
+    then if IsUnderlierTOTV(reportableInformation)
+        then (if IsCSALeg2Aligned = True
+            then cde.underlier.UnderlyingAssetPriceSourceLeg2
+            else cde.underlier.UnderlyingAssetPriceSourceLeg1)
+
+//DTCC Fields
+reporting rule UnderlierIDOtherLeg1 from TransactionReportInstructionBase: <"Underlier ID (Other) - Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsCSALeg1Aligned = True
+        then cde.underlier.UnderlierIDOtherLeg1
+        else cde.underlier.UnderlierIDOtherLeg2
+
+reporting rule UnderlierIDOtherLeg2 from TransactionReportInstructionBase: <"Underlier ID (Other) - Leg 2">
+    filter IsAllowableActionForCSA
+    then if IsCSALeg2Aligned = True
+        then cde.underlier.UnderlierIDOtherLeg2
+        else cde.underlier.UnderlierIDOtherLeg1
+
+reporting rule UnderlierIDOtherSourceLeg1 from TransactionReportInstructionBase: <"Underlier ID (Other) Source - Leg 1">
+    filter IsAllowableActionForCSA
+    then if IsCSALeg1Aligned = True
+        then cde.underlier.UnderlierIDOtherSourceLeg1
+        else cde.underlier.UnderlierIDOtherSourceLeg2
+
+reporting rule UnderlierIDOtherSourceLeg2 from TransactionReportInstructionBase: <"Underlier ID (Other) Source - Leg 2">
+    filter IsAllowableActionForCSA
+    then if IsCSALeg2Aligned = True
+        then cde.underlier.UnderlierIDOtherSourceLeg2
+        else cde.underlier.UnderlierIDOtherSourceLeg1
+
+reporting rule SettlementLocationLeg1 from TransactionReportInstruction: <"Settlement Location - Leg 1">
+    filter IsAllowableActionForCSA
+    then extract cde.execution.SettlementLocation(PayoutLeg1)

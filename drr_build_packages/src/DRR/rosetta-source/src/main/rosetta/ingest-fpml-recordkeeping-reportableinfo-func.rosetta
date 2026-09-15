@@ -1,0 +1,859 @@
+namespace drr.ingest.fpml.recordkeeping.reportableinfo
+version "${project.version}"
+
+import cdm.base.math.*
+import cdm.base.staticdata.party.*
+import cdm.ingest.fpml.confirmation.other.*
+import cdm.ingest.fpml.confirmation.party.*
+import cdm.observable.asset.*
+
+import drr.base.qualification.event.*
+import drr.base.trade.*
+import drr.ingest.fpml.recordkeeping.reportableinfo.*
+import drr.regulation.common.*
+import drr.regulation.csa.rewrite.trade.* as csa
+
+import fpml.consolidated.asset.* as fpml
+import fpml.consolidated.business.events.* as fpml
+import fpml.consolidated.doc.* as fpml
+import fpml.consolidated.msg.* as fpml
+import fpml.consolidated.shared.* as fpml
+
+func MapTradeHeaderToReportableInformation:
+    inputs:
+        fpmlTradeHeader fpml.TradeHeader (0..1)
+        fpmlWithdrawal fpml.Withdrawal (0..1)
+        fpmlPartyList fpml.Party (0..*)
+        fpmlQuote fpml.BasicQuotation (0..*)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+    output:
+        reportableInformation ReportableInformation (0..1)
+
+    alias fpmlPartyTradeInformation: fpmlTradeHeader -> partyTradeInformation
+
+    alias fpmlWithdrawalPartyTradeInformation: fpmlWithdrawal -> partyTradeInformation
+
+    alias globalPartyInformation:
+        if fpmlPartyTradeInformation exists
+        then fpmlPartyTradeInformation
+            extract
+                MapPartyTradeInformationToPartyInformation(
+                        item,
+                        fpmlPartyList,
+                        fpmlRequestMessageHeader
+                    )
+        else if fpmlWithdrawalPartyTradeInformation exists
+        then fpmlWithdrawalPartyTradeInformation
+            extract MapWithdrawalPartyTradeInformationToPartyInformation
+
+    alias confirmationMethod:
+        fpmlPartyTradeInformation -> confirmationMethod -> value
+            first
+            to-enum ConfirmationMethodEnum
+
+    alias originalExecutionTimestamp:
+        fpmlPartyTradeInformation -> executionDateTime -> value first
+
+    alias affiliated:
+        if (fpmlPartyTradeInformation -> reportingRegime -> tradePartyRelationshipType
+            filter value = "Affiliated"
+            then exists)
+        then True
+
+    alias jurisdictionInformation:
+        if fpmlPartyTradeInformation exists
+        then MapPartyTradeInformationListToReportableJurisdictionInformation(
+                    fpmlPartyTradeInformation,
+                    fpmlPartyList,
+                    fpmlRequestMessageHeader
+                )
+        else if fpmlWithdrawalPartyTradeInformation exists
+        then (fpmlWithdrawalPartyTradeInformation
+            extract
+                MapWithdrawalPartyTradeInformationToReportableJurisdictionInformation(
+                        item,
+                        fpmlRequestMessageHeader
+                    )
+            then flatten)
+
+    set reportableInformation:
+        ReportableInformation {
+            reportableAction: fpmlWithdrawal -> reason -> value
+                    first
+                    extract MapReportableActionEnum,
+            globalPartyInformation: globalPartyInformation,
+            jurisdictionInformation: jurisdictionInformation,
+            confirmationMethod: confirmationMethod,
+            originalExecutionTimestamp: originalExecutionTimestamp,
+            intragroup: MapPartyTradeInformationToIntragroup(fpmlPartyTradeInformation),
+            affiliated: affiliated,
+            underlyingAssetLastAvailableSpotPrice: MapLastAvailableSpotPriceToPriceSchedule(
+                        fpmlQuote
+                    ),
+            ...
+        }
+
+func MapLastAvailableSpotPriceToPriceSchedule:
+    inputs:
+        fpmlQuote fpml.BasicQuotation (0..*)
+    output:
+        cdmUnderlyingAssetLastAvailableSpotPrice PriceSchedule (0..1)
+
+    alias lastAvailableSpotPrice:
+        fpmlQuote
+            filter measureType -> value = "LastAvailableSpotPrice"
+            then only-element
+
+    set cdmUnderlyingAssetLastAvailableSpotPrice:
+        PriceSchedule {
+            value: lastAvailableSpotPrice then item -> value,
+            perUnitOf:
+                UnitType {
+                    capacityUnit: lastAvailableSpotPrice
+                            then item -> quoteUnits -> value to-enum CapacityUnitEnum,
+                    ...
+                },
+            priceType: if lastAvailableSpotPrice exists
+                    then AssetPrice,
+            unit:
+                UnitType {
+                    currency: lastAvailableSpotPrice then item -> currency -> value,
+                    ...
+                },
+            ...
+        }
+
+func MapPartyTradeInformationListToReportableJurisdictionInformation:
+    inputs:
+        fpmlPartyTradeInformationList fpml.PartyTradeInformation (0..*)
+        fpmlPartyList fpml.Party (0..*)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+    output:
+        reportableJurisdictionInformation ReportableJurisdictionInformation (0..*)
+
+    alias emirEsma:
+        BuildReportableJurisdictionInformation(
+                EMIR,
+                ESMA,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    alias ukEmirFca:
+        BuildReportableJurisdictionInformation(
+                UKEMIR,
+                FCA,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    alias jfsaJfsa:
+        BuildReportableJurisdictionInformation(
+                JFSA,
+                JFSA,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    alias csaCsa:
+        csa.SupervisoryBodyForCSA
+            then extract
+                BuildReportableJurisdictionInformation(
+                        CSA,
+                        item,
+                        fpmlPartyTradeInformationList,
+                        fpmlPartyList,
+                        fpmlRequestMessageHeader
+                    )
+
+    alias hkmaHkma:
+        BuildReportableJurisdictionInformation(
+                HKMA,
+                HKMA,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    alias cftcCftc:
+        BuildReportableJurisdictionInformation(
+                DoddFrankAct,
+                CFTC,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    alias secSec:
+        BuildReportableJurisdictionInformation(
+                DoddFrankAct,
+                SEC,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    alias asicAsic:
+        BuildReportableJurisdictionInformation(
+                ASIC,
+                ASIC,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    alias masMas:
+        BuildReportableJurisdictionInformation(
+                MAS,
+                MAS,
+                fpmlPartyTradeInformationList,
+                fpmlPartyList,
+                fpmlRequestMessageHeader
+            )
+
+    set reportableJurisdictionInformation:
+        [emirEsma, ukEmirFca, jfsaJfsa, csaCsa, hkmaHkma, cftcCftc, secSec, asicAsic, masMas]
+
+func IsReportingRegimeMatching:
+    inputs:
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        regimeName RegimeNameEnum (0..1)
+        supervisoryBodyValue SupervisoryBodyEnum (0..1)
+    output:
+        matches boolean (0..1)
+
+    alias currentRegimeName: MapRegimeNameEnum(fpmlReportingRegime -> name)
+
+    alias currentSupervisoryBodyValue:
+        fpmlReportingRegime -> supervisorRegistration -> supervisoryBody -> value
+            first
+            to-enum SupervisoryBodyEnum
+
+    set matches:
+        if supervisoryBodyValue exists
+                and currentSupervisoryBodyValue exists
+                and currentRegimeName exists
+                and regimeName exists
+        then currentRegimeName = regimeName
+                and currentSupervisoryBodyValue = supervisoryBodyValue
+        else if supervisoryBodyValue exists and currentSupervisoryBodyValue exists
+        then currentSupervisoryBodyValue = supervisoryBodyValue
+        else currentRegimeName = regimeName
+
+func BuildReportableJurisdictionInformation:
+    inputs:
+        regimeName RegimeNameEnum (0..1)
+        supervisoryBodyValue SupervisoryBodyEnum (0..1)
+        fpmlPartyTradeInformationList fpml.PartyTradeInformation (0..*)
+        fpmlPartyList fpml.Party (0..*)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+    output:
+        reportableJurisdictionInformation ReportableJurisdictionInformation (0..1)
+
+    alias matchingPartyTradeInformation:
+        fpmlPartyTradeInformationList
+            filter
+                (item -> reportingRegime
+                    extract
+                        IsReportingRegimeMatching(item, regimeName, supervisoryBodyValue)
+                    then any = True)
+
+    alias matchingReportingRegime:
+        matchingPartyTradeInformation -> reportingRegime
+            filter IsReportingRegimeMatching(item, regimeName, supervisoryBodyValue)
+            then first
+
+    alias supervisoryBody:
+        matchingReportingRegime -> supervisorRegistration -> supervisoryBody -> value
+            first
+            to-enum SupervisoryBodyEnum
+
+    set reportableJurisdictionInformation:
+        if matchingPartyTradeInformation exists
+        then ReportableJurisdictionInformation {
+                regimeName: regimeName,
+                supervisoryBody: supervisoryBody,
+                transactionInformation: MapTransactionInformation(
+                            fpmlPartyTradeInformationList,
+                            matchingReportingRegime,
+                            supervisoryBody
+                        ),
+                partyInformation: matchingPartyTradeInformation
+                        extract
+                            MapPartyTradeInformationToJurisdictionPartyInformation(
+                                    item,
+                                    regimeName,
+                                    supervisoryBodyValue,
+                                    fpmlPartyList,
+                                    fpmlRequestMessageHeader
+                                )
+            }
+
+func MapTransactionInformation:
+    inputs:
+        fpmlPartyTradeInformation fpml.PartyTradeInformation (0..*)
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        transactionInformation TransactionInformation (0..1)
+
+    alias executionVenueType:
+        fpmlPartyTradeInformation -> executionVenueType -> value
+            first
+            to-enum ExecutionVenueTypeEnum
+
+    alias largeSizeTrade:
+        if supervisoryBody = CFTC
+        then fpmlPartyTradeInformation -> largeSizeTrade first
+        else empty
+
+    set transactionInformation:
+        TransactionInformation {
+            transactionIdentifier: empty,
+            priorTransactionIdentifier: empty,
+            reportableExecutionVenue:
+                ReportableExecutionVenue {
+                    executionVenueType: executionVenueType,
+                    ...
+                },
+            largeSizeTrade: largeSizeTrade,
+            duration: empty,
+            ...
+        }
+
+func MapPartyTradeInformationToJurisdictionPartyInformation:
+    inputs:
+        fpmlPartyTradeInformation fpml.PartyTradeInformation (0..1)
+        regimeName RegimeNameEnum (0..1)
+        supervisoryBodyValue SupervisoryBodyEnum (0..1)
+        fpmlPartyList fpml.Party (0..*)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+    output:
+        jurisdictionPartyInformation JurisdictionPartyInformation (0..1)
+
+    alias fpmlParty:
+        fpmlPartyList
+            filter id = fpmlPartyTradeInformation -> partyReference -> href
+            then first
+
+    alias matchingReportingRegime:
+        fpmlPartyTradeInformation -> reportingRegime
+            filter IsReportingRegimeMatching(item, regimeName, supervisoryBodyValue)
+            then first
+
+    alias supervisoryBody:
+        matchingReportingRegime -> supervisorRegistration -> supervisoryBody -> value
+            first
+            to-enum SupervisoryBodyEnum
+
+    set jurisdictionPartyInformation:
+        if matchingReportingRegime exists
+        then MapJurisdictionPartyInformation(
+                    fpmlPartyTradeInformation,
+                    matchingReportingRegime,
+                    fpmlParty,
+                    fpmlRequestMessageHeader,
+                    regimeName,
+                    supervisoryBody
+                )
+
+func MapJurisdictionPartyInformation:
+    inputs:
+        fpmlPartyTradeInformation fpml.PartyTradeInformation (0..1)
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        fpmlParty fpml.Party (0..1)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+        regimeName RegimeNameEnum (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        jurisdictionPartyInformation JurisdictionPartyInformation (0..1)
+
+    set jurisdictionPartyInformation:
+        JurisdictionPartyInformation {
+            partyReference: MapPartyReference(
+                        fpmlPartyTradeInformation -> partyReference -> href
+                    ),
+            mandatorilyClearable: MapMandatorilyClearableEnum(
+                        fpmlReportingRegime -> mandatorilyClearable
+                    ),
+            esmaPartyInformation: MapReportingRegimeToESMAPartyInformation(
+                        fpmlReportingRegime,
+                        fpmlParty,
+                        supervisoryBody
+                    ),
+            fcaPartyInformation: MapReportingRegimeToFCAPartyInformation(
+                        fpmlReportingRegime,
+                        fpmlParty,
+                        supervisoryBody
+                    ),
+            hkmaPartyInformation: MapReportingRegimeToHKMAPartyInformation(
+                        fpmlReportingRegime,
+                        fpmlParty,
+                        supervisoryBody
+                    ),
+            cftcPartyInformation: MapReportingRegimeToCFTCPartyInformation(
+                        fpmlReportingRegime,
+                        fpmlParty,
+                        supervisoryBody
+                    ),
+            secPartyInformation: MapReportingRegimeToSECPartyInformation(
+                        fpmlReportingRegime,
+                        fpmlParty,
+                        supervisoryBody
+                    ),
+            reportingRole: fpmlReportingRegime -> reportingRole -> value to-enum ReportingRoleEnum,
+            technicalRecordId: MapTechnicalRecordId(
+                        fpmlRequestMessageHeader,
+                        supervisoryBody
+                    ),
+            postPricedIndicator: fpmlReportingRegime -> postPricedIndicator,
+            ...
+        }
+
+func MapPartyTradeInformationToPartyInformation:
+    inputs:
+        fpmlPartyTradeInformation fpml.PartyTradeInformation (0..1)
+        fpmlPartyList fpml.Party (0..*)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+    output:
+        partyInformation PartyInformation (0..1)
+
+    alias fpmlParty:
+        fpmlPartyList
+            filter id = fpmlPartyTradeInformation -> partyReference -> href
+            then first
+
+    set partyInformation:
+        PartyInformation {
+            partyReference: MapPartyReference(
+                        fpmlPartyTradeInformation -> partyReference -> href
+                    ),
+            relatedPerson: fpmlPartyTradeInformation -> relatedPerson
+                    extract MapRelatedPersonToNaturalPersonRole,
+            relatedParty: fpmlPartyTradeInformation -> relatedParty extract MapRelatedParty,
+        }
+
+func MapWithdrawalPartyTradeInformationToPartyInformation:
+    inputs:
+        fpmlWithdrawalPartyTradeInformation fpml.WithdrawalPartyTradeInformation (0..1)
+    output:
+        partyInformation PartyInformation (0..1)
+
+    set partyInformation:
+        PartyInformation {
+            partyReference: MapPartyReference(
+                        fpmlWithdrawalPartyTradeInformation -> partyReference -> href
+                    ),
+            relatedParty: fpmlWithdrawalPartyTradeInformation -> relatedParty
+                    extract MapRelatedParty,
+            ...
+        }
+
+func MapWithdrawalPartyTradeInformationToReportableJurisdictionInformation:
+    inputs:
+        fpmlWithdrawalPartyTradeInformation fpml.WithdrawalPartyTradeInformation (0..1)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+    output:
+        reportableJurisdictionInformation ReportableJurisdictionInformation (0..*)
+
+    set reportableJurisdictionInformation:
+        fpmlWithdrawalPartyTradeInformation -> reportingRegime
+            extract
+                MapWithdrawalReportableJurisdictionInformation(
+                        fpmlWithdrawalPartyTradeInformation,
+                        item,
+                        fpmlRequestMessageHeader
+                    )
+
+func MapWithdrawalReportableJurisdictionInformation:
+    inputs:
+        fpmlWithdrawalPartyTradeInformation fpml.WithdrawalPartyTradeInformation (0..1)
+        fpmlReportingRegime fpml.ReportingRegimeIdentifier (0..1)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+    output:
+        reportableJurisdictionInformation ReportableJurisdictionInformation (0..1)
+
+    alias supervisoryBody:
+        fpmlReportingRegime -> supervisorRegistration -> supervisoryBody -> value
+            first
+            to-enum SupervisoryBodyEnum
+
+    alias regimeName: MapRegimeNameEnum(fpmlReportingRegime -> name)
+
+    set reportableJurisdictionInformation:
+        ReportableJurisdictionInformation {
+            regimeName: regimeName,
+            supervisoryBody: supervisoryBody,
+            transactionInformation: MapWithdrawalTransactionInformation(
+                        fpmlWithdrawalPartyTradeInformation,
+                        fpmlReportingRegime
+                    ),
+            partyInformation: [
+                    MapWithdrawalJurisdictionPartyInformation(
+                            fpmlWithdrawalPartyTradeInformation,
+                            fpmlRequestMessageHeader,
+                            regimeName,
+                            supervisoryBody
+                        )
+                ]
+        }
+
+func MapWithdrawalJurisdictionPartyInformation:
+    inputs:
+        fpmlWithdrawalPartyTradeInformation fpml.WithdrawalPartyTradeInformation (0..1)
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+        regimeName RegimeNameEnum (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        jurisdictionPartyInformation JurisdictionPartyInformation (0..1)
+
+    set jurisdictionPartyInformation:
+        JurisdictionPartyInformation {
+            partyReference: MapPartyReference(
+                        fpmlWithdrawalPartyTradeInformation -> partyReference -> href
+                    ),
+            mandatorilyClearable: empty,
+            esmaPartyInformation: empty,
+            fcaPartyInformation: empty,
+            hkmaPartyInformation: empty,
+            cftcPartyInformation: empty,
+            secPartyInformation: empty,
+            reportingRole: empty,
+            technicalRecordId: MapTechnicalRecordId(
+                        fpmlRequestMessageHeader,
+                        supervisoryBody
+                    ),
+            ...
+        }
+
+func MapWithdrawalTransactionInformation:
+    inputs:
+        fpmlWithdrawalPartyTradeInformation fpml.WithdrawalPartyTradeInformation (0..1)
+        fpmlReportingRegime fpml.ReportingRegimeIdentifier (0..1)
+    output:
+        transactionInformation TransactionInformation (0..1)
+
+    set transactionInformation:
+        TransactionInformation {
+            transactionIdentifier: empty,
+            priorTransactionIdentifier: empty,
+            reportableExecutionVenue:
+                ReportableExecutionVenue {
+                    executionVenueType: OffFacility,
+                    ...
+                },
+            largeSizeTrade: empty,
+            duration: empty,
+            ...
+        }
+
+func MapRelatedParty:
+    inputs:
+        fpmlRelatedParty fpml.RelatedParty (0..1)
+    output:
+        relatedParty RelatedParty (0..1)
+
+    set relatedParty:
+        RelatedParty {
+            partyReference: MapPartyReference(fpmlRelatedParty -> partyReference -> href),
+            role: MapPartyRoleEnum(fpmlRelatedParty -> role -> value),
+            ...
+        }
+
+func MapRegimeNameEnum:
+    inputs:
+        reportingRegimeName fpml.ReportingRegimeName (0..1)
+    output:
+        regimeNameEnum RegimeNameEnum (0..1)
+
+    set regimeNameEnum:
+        reportingRegimeName -> value switch
+            "CA.Rule.91-507" then CSA,
+            "HKTR" then HKMA,
+            default reportingRegimeName -> value to-enum RegimeNameEnum
+
+func MapMandatorilyClearableEnum:
+    inputs:
+        mandatorilyClearable fpml.ReportingBoolean (0..1)
+    output:
+        mandatorilyClearableEnum MandatorilyClearableEnum (0..1)
+
+    set mandatorilyClearableEnum:
+        mandatorilyClearable -> value switch
+            "true" then ProductAndCptyMandatory,
+            "false" then ProductMandatoryButNotCpty,
+            "X" then ProductNotMandatory
+
+func MapReportingRegimeToESMAPartyInformation:
+    inputs:
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        fpmlParty fpml.Party (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        esmaPartyInformation ESMAPartyInformation (0..1)
+
+    alias esmaCorporateSectorScheme:
+        "http://www.fpml.org/coding-scheme/esma-emir-refit-regulatory-corporate-sector"
+
+    alias partyEntityClassifications:
+        fpmlReportingRegime -> partyEntityClassification
+            filter partyReference -> href = fpmlParty -> id
+            then extract entityClassification -> value
+            then first
+
+    // TODO: need to investigate why this doesn't always work for example on sample: 5.10 - prdoucts credit/ Credit Single Name ex01
+    alias natureOfParty:
+        if fpmlReportingRegime -> entityClassification -> value exists
+        then fpmlReportingRegime -> entityClassification -> value to-enum NatureOfPartyEnum
+        else if partyEntityClassifications exists
+        then partyEntityClassifications to-enum NatureOfPartyEnum
+
+    set esmaPartyInformation:
+        if supervisoryBody = ESMA
+        then ESMAPartyInformation {
+                natureOfParty: natureOfParty,
+                corporateSector: MapCorporateSector(esmaCorporateSectorScheme, fpmlParty),
+                exceedsClearingThreshold: fpmlReportingRegime -> exceedsClearingThreshold,
+                directlyLinkedActivity: fpmlReportingRegime -> directlyLinkedActivity
+            }
+
+func MapReportingRegimeToFCAPartyInformation:
+    inputs:
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        fpmlParty fpml.Party (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        fCAPartyInformation FCAPartyInformation (0..1)
+
+    alias esmaCorporateSectorScheme:
+        "http://www.fpml.org/coding-scheme/esma-emir-refit-regulatory-corporate-sector"
+
+    set fCAPartyInformation:
+        if supervisoryBody = FCA
+        then FCAPartyInformation {
+                natureOfParty: fpmlReportingRegime -> entityClassification -> value to-enum NatureOfPartyEnum,
+                corporateSector: MapCorporateSector(esmaCorporateSectorScheme, fpmlParty),
+                exceedsClearingThreshold: fpmlReportingRegime -> exceedsClearingThreshold,
+                directlyLinkedActivity: fpmlReportingRegime -> directlyLinkedActivity
+            }
+
+func MapReportingRegimeToHKMAPartyInformation:
+    inputs:
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        fpmlParty fpml.Party (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        hKMAPartyInformation HKMAPartyInformation (0..1)
+
+    alias hkmaCorporateSectorScheme:
+        "http://www.fpml.org/coding-scheme/hkma-rewrite-regulatory-corporate-sector"
+
+    set hKMAPartyInformation:
+        if supervisoryBody = HKMA
+        then HKMAPartyInformation {
+                natureOfParty: fpmlReportingRegime -> entityClassification -> value to-enum NatureOfPartyEnum,
+                corporateSector: MapCorporateSector(hkmaCorporateSectorScheme, fpmlParty),
+                ...
+            }
+
+func MapReportingRegimeToCFTCPartyInformation:
+    inputs:
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        fpmlParty fpml.Party (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        cftcPartyInformation CFTCPartyInformation (0..1)
+
+    alias partyEntityClassification:
+        fpmlReportingRegime -> partyEntityClassification
+            filter partyReference -> href = fpmlParty -> id
+            then first
+
+    set cftcPartyInformation:
+        if supervisoryBody = CFTC
+        then CFTCPartyInformation {
+                financialEntity: partyEntityClassification -> entityClassification -> value to-enum CFTCFinancialEntityClassificationEnum,
+                ...
+            }
+
+func MapReportingRegimeToSECPartyInformation:
+    inputs:
+        fpmlReportingRegime fpml.ReportingRegime (0..1)
+        fpmlParty fpml.Party (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        secPartyInformation SECPartyInformation (0..1)
+
+    alias partyEntityClassification:
+        fpmlReportingRegime -> partyEntityClassification
+            filter partyReference -> href = fpmlParty -> id
+            then first
+
+    set secPartyInformation:
+        if supervisoryBody = SEC
+        then SECPartyInformation {
+                financialEntity: partyEntityClassification -> entityClassification -> value to-enum CFTCFinancialEntityClassificationEnum
+            }
+
+func MapRelatedPersonToNaturalPersonRole:
+    inputs:
+        fpmlRelatedPerson fpml.RelatedPerson (0..1)
+    output:
+        naturalPersonRole NaturalPersonRole (0..1)
+
+    set naturalPersonRole:
+        NaturalPersonRole {
+            personReference: MapNaturalPersonRoleReference(
+                        fpmlRelatedPerson -> personReference -> href
+                    ),
+            role: [fpmlRelatedPerson -> role -> value to-enum NaturalPersonRoleEnum]
+        }
+
+func MapNaturalPersonRoleReference:
+    inputs:
+        href string (0..1)
+    output:
+        personReference NaturalPerson (0..1)
+            [metadata reference]
+
+    set personReference:
+        if href exists
+        then empty with-meta {
+            reference: href
+        }
+
+func MapCorporateSector:
+    inputs:
+        corporateSectorScheme string (0..1)
+        fpmlParty fpml.Party (0..1)
+    output:
+        corporateSector CorporateSector (0..1)
+
+    alias classification:
+        fpmlParty -> classification
+            filter industryClassificationScheme = corporateSectorScheme
+
+    alias financialSector: classification then extract value to-enum FinancialSectorEnum
+
+    alias nonFinancialSector:
+        classification -> value
+            filter exists
+            then extract
+                NonFinancialSector {
+                    nonFinancialSectorIndicator: item to-enum NonFinancialSectorEnum,
+                    ordinal: GetOrdinalForNonFinancialSectorEnum(
+                                item to-enum NonFinancialSectorEnum
+                            )
+                }
+
+    set corporateSector:
+        CorporateSector {
+            financialSector: financialSector,
+            nonFinancialSector: nonFinancialSector
+        }
+
+func GetOrdinalForNonFinancialSectorEnum:
+    inputs:
+        nonFinancialSectorEnum NonFinancialSectorEnum (0..1)
+    output:
+        ordinal int (0..1)
+
+    set ordinal:
+        nonFinancialSectorEnum switch
+            A then 1,
+            B then 2,
+            C then 3,
+            D then 4,
+            ^E then 5,
+            F then 6,
+            G then 7,
+            H then 8,
+            I then 9,
+            J then 10,
+            K then 11,
+            L then 12,
+            M then 13,
+            N then 14,
+            O then 15,
+            P then 16,
+            Q then 17,
+            R then 18,
+            S then 19,
+            T then 20,
+            U then 21 default 0
+
+func MapTechnicalRecordId:
+    inputs:
+        fpmlRequestMessageHeader fpml.RequestMessageHeader (0..1)
+        supervisoryBody SupervisoryBodyEnum (0..1)
+    output:
+        technicalRecordId TechnicalRecordId (0..1)
+
+    alias relevantSupervisoryBodies:
+        [SupervisoryBodyEnum -> ASIC, SupervisoryBodyEnum -> JFSA, SupervisoryBodyEnum -> MAS]
+
+    alias messageIdValue:
+        fpmlRequestMessageHeader -> messageId
+            filter
+                messageIdScheme = "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            then extract value
+
+    alias id:
+        if (relevantSupervisoryBodies
+            filter item = supervisoryBody
+            then exists)
+        then messageIdValue
+
+    set technicalRecordId:
+        TechnicalRecordId {
+            id: id with-meta {
+                    scheme: "http://www.fpml.org/coding-scheme/external/technical-record-id"
+                },
+            ...
+        }
+
+func MapPartyTradeInformationToIntragroup:
+    inputs:
+        partyTradeInformation fpml.PartyTradeInformation (0..*)
+    output:
+        isIntraGroup boolean (0..1)
+
+    alias dtccIntraGroupScheme: "http://www.dtcc.com/intragroup"
+
+    alias categorySchemeIsDtcc:
+        partyTradeInformation -> category filter categoryScheme = dtccIntraGroupScheme
+
+    alias categoryValueExistsAndSchemeMatches:
+        partyTradeInformation -> category
+            filter value exists and categoryScheme = dtccIntraGroupScheme
+            then first
+
+    alias isIntraGroupByCategory:
+        if categoryValueExistsAndSchemeMatches exists
+        then categoryValueExistsAndSchemeMatches -> value extract item = "True"
+        else if categorySchemeIsDtcc exists
+        then True
+        else empty
+
+    alias isIntragroupByTradePartyRelationshipType:
+        partyTradeInformation -> reportingRegime -> tradePartyRelationshipType -> value
+            filter item = "Intragroup"
+
+    set isIntraGroup:
+        if isIntraGroupByCategory exists
+        then isIntraGroupByCategory
+        else if isIntragroupByTradePartyRelationshipType exists
+        then True
+
+func MapReportableActionEnum:
+    inputs:
+        reason string (0..1)
+    output:
+        reportableAction ReportableActionEnum (0..1)
+
+    set reportableAction:
+        reason switch
+            "RaisedInError" then ReportableActionEnum -> Error

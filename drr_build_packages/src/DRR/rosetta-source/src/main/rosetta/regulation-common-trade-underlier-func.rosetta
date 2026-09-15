@@ -1,0 +1,108 @@
+namespace drr.regulation.common.trade.underlier
+version "${project.version}"
+
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+
+func GetUnderlyingAssetName: <"Extraction of the GTR Control field called Underlying Asset Name which requests the name of the underlying index.">
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        regimeName RegimeNameEnum (1..1)
+    output:
+        name string (0..20)
+
+    add name:
+        if transactionReportInstruction -> reportableInformation -> jurisdictionInformation -> regimeName any = regimeName and transactionReportInstruction -> reportableInformation -> jurisdictionInformation count > 1
+        then ProductForEvent(transactionReportInstruction)
+            then filter Qualify_AssetClass_Credit(EconomicTermsForProduct)
+            then extract ProductOrUnderlierProduct
+            then extract
+                if EconomicTermsForProduct -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+                then EconomicTermsForProduct -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> name
+                else if EconomicTermsForProduct(
+                        underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+                    ) -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+                then EconomicTermsForProduct(
+                            underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+                        ) -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> name
+                else if underlier.UnderlierProductIdentifier(item, empty) exists
+                then (underlier.UnderlierProductIdentifier(item, empty)
+                    then filter identifierType = Name
+                    then identifier)
+
+func GetUnderlierIDForIndex: <"Extracts the index identifier of the underlier.">
+    inputs:
+        product NonTransferableProduct (1..1)
+    output:
+        indexId string (0..*)
+
+    add indexId:
+        if underlier.UnderlierForProduct(product) -> Observable -> Index exists
+        then underlier.UnderlierForProduct(product) -> Observable -> Index ->> identifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then EconomicTermsForProduct(product) -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> identifier -> identifier
+        else if EconomicTermsForProduct(
+                underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+            ) -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then EconomicTermsForProduct(
+                    underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+                ) -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> identifier -> identifier
+
+func IsUnderlierForIndex: <"Checks whether the index identifier of the underlier exists.">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        result boolean (0..1)
+
+    set result:
+        ProductForEvent(reportableEvent)
+            then extract
+                (if IsCreditSwaption
+                then underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+                else item)
+            then extract
+                (if GetUnderlierIDForIndex exists
+                then True
+                else False)
+
+func GetUnderlierIDForBasket: <"Extracts the basket identifier of the underlier.">
+    inputs:
+        product NonTransferableProduct (1..1)
+    output:
+        basketId string (0..*)
+
+    add basketId:
+        if underlier.UnderlierForProduct(product) -> Observable -> Basket exists
+        then underlier.UnderlierForProduct(product) -> Observable -> Basket -> identifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> PerformancePayout -> underlier -> Observable -> Basket exists
+        then EconomicTermsForProduct(product) -> payout -> PerformancePayout -> underlier -> Observable -> Basket -> identifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> CreditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+        then EconomicTermsForProduct(product) -> payout -> CreditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId
+        else if EconomicTermsForProduct(
+                underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+            ) -> payout -> CreditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+        then EconomicTermsForProduct(
+                    underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+                ) -> payout -> CreditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId
+
+func GetUnderlierLEIForCredit: <"Extracts the LEI of a credit.">
+    inputs:
+        product NonTransferableProduct (1..1)
+    output:
+        lei string (0..*)
+
+    add lei:
+        if EconomicTermsForProduct(product) -> payout -> CreditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity -> entityIdentifier exists
+        then EconomicTermsForProduct(product) -> payout -> CreditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity -> entityIdentifier
+        else if EconomicTermsForProduct(
+                underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+            ) -> payout -> CreditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity -> entityIdentifier exists
+        then EconomicTermsForProduct(
+                    underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+                ) -> payout -> CreditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity -> entityIdentifier
+            then filter identifierType = LEI
+            then extract identifier

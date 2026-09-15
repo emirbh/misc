@@ -1,0 +1,34 @@
+namespace drr.standards.iosco.cde.version3.price
+version "${project.version}"
+
+import cdm.observable.asset.*
+
+import drr.base.trade.*
+import drr.standards.iosco.cde.version2.* as cdeV2
+
+func GetReportablePricePeriod: <"Extracts the period for a price schedule">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+        defaultingType price.DefaultingType (0..1)
+    output:
+        reportablePeriod price.PricePeriod (1..*)
+
+    add reportablePeriod:
+        cdeV2.price.GetReportablePricePeriod(reportableEvent, defaultingType)
+
+func GetReportableStrikePricePeriod: <"Extracts the period for a strike price schedule">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+        defaultingType price.DefaultingType (0..1)
+    output:
+        reportablePeriod price.PricePeriod (1..*)
+
+    add reportablePeriod:
+        cdeV2.price.GetReportableStrikePricePeriod(reportableEvent, defaultingType)
+
+func StrikePrice: <"Extracts the period for a strike price schedule">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        prices PriceSchedule (0..1)
+    set prices: cdeV2.price.StrikePrice(reportableEvent)

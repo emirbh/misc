@@ -1,0 +1,63 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "POST",
+  "blockTradeElectionIndicator" : false,
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty1FederalEntityIndicator" : false,
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI050000000035",
+  "counterparty2FederalEntityIndicator" : false,
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "mandatoryClearingIndicator" : false,
+    "messageType" : "Trade State",
+    "physicalCommodityContractIndicator" : false,
+    "sefOrDcmIndicator" : true,
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC", "SEC" ],
+    "version" : "CORE1.0"
+  },
+  "eventIdentifier" : "example-11",
+  "eventTimestamp" : "2018-04-01T09:00:00Z",
+  "eventType" : "ALOC",
+  "executionTimestamp" : "2018-04-01T14:15:36Z",
+  "jurisdiction" : "MIXX",
+  "leg1" : {
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifierFormat" : "Lei"
+  },
+  "leg2" : {
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifierFormat" : "Lei"
+  },
+  "nonReportable" : {
+    "buyerIdentifierFormat" : "Lei",
+    "counterparty1Format" : "Lei",
+    "counterparty2Format" : "Lei",
+    "deliveryType" : "CASH",
+    "executionVenueType" : "SEF",
+    "instrumentType" : "Other",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH"
+        },
+        "Header" : {
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "sellerIdentifierFormat" : "Lei"
+  },
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z"
+}

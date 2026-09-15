@@ -1,0 +1,676 @@
+namespace drr.regulation.mas.rewrite.trade
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.product.qualification.*
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.mas.*
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+report MAS Trade in T+1
+    from TransactionReportInstruction
+    when ReportableProduct
+    with type MASTransactionReport
+
+// eligibility rules
+eligibility rule ReportableProduct from TransactionReportInstruction:
+    [docReference MAS Trade
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+//reporting rules
+reporting rule Counterparty2 from TransactionReportInstruction: <"Counterparty 2">
+    extract common.party.Counterparty2
+
+reporting rule TradingCapacityOfSpecifiedPerson from TransactionReportInstruction: <"Trading Capacity Of Specified Person">
+    filter IsAllowableActionForMAS
+    then extract common.execution.Extract_TradingCapacity(item, MAS)
+
+reporting rule Direction from TransactionReportInstruction: <"Direction">
+    // 4 alphabetic characters:
+    // BYER = buyer
+    // SLLR = seller
+    filter IsAllowableActionForMAS
+    then extract cde.party.Direction1
+
+reporting rule ReportingSpecifiedPerson from TransactionReportInstruction: <"Reporting specified person">
+    extract ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule UniqueTransactionIdentifier from TransactionReportInstruction: <"Unique Transaction Identifier (UTI)">
+    uti.GetUniqueTransactionIdentifier(item -> reportableInformation, MAS, empty, item)
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UniqueTransactionIdentifierProprietary from TransactionReportInstruction: <"Unique Transaction Identifier (UTI)">
+    uti.GetUniqueTransactionIdentifier(item -> reportableInformation, MAS, empty, item)
+        then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule UniqueProductIdentifier from TransactionReportInstruction: <"Unique product identifier (UPI)">
+    filter
+        IsAllowableActionForMAS or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO
+    then extract upi.UniqueProductIdentifier
+
+reporting rule PriorUTI from TransactionReportInstruction: <"Prior UTI">
+    filter IsAllowableActionForMAS
+    then common.link.GetPriorTransactionIdentifier(item, MAS)
+    then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule PriorUTIProprietary from TransactionReportInstruction: <"Prior UTI (Proprietary)">
+    filter IsAllowableActionForMAS
+    then common.link.GetPriorTransactionIdentifier(item, MAS)
+    then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule ContractType from TransactionReportInstruction: <"Contract Type">
+    filter
+        IsAllowableActionForMAS or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO
+    then extract common.contract.ContractType
+
+reporting rule AssetClass from TransactionReportInstruction: <"Asset Class">
+    filter
+        IsAllowableActionForMAS or IsActionTypeEROR or IsActionTypePRTO or IsActionTypeTERM
+    then common.contract.AssetClass
+
+reporting rule Underlying from TransactionReportInstruction: <"Underlying">
+    filter IsAllowableActionForMAS
+    then extract common.underlier.UnderlyingIdentification
+
+reporting rule UnderlyingIdentificationTypeDTCC from TransactionReportInstruction: <"Underlying Identification Type (DTCC)">
+    filter IsAllowableActionForMAS
+    then extract
+        if GetUnderlyingIdentificationType exists
+        then GetUnderlyingIdentificationType
+        else if UnderlyingIdOtherDTCC exists
+        then O
+
+reporting rule UnderlyingIdOtherDTCC from TransactionReportInstruction: <"Underlying ID (Other) (DTCC)">
+    filter IsAllowableActionForMAS
+    then extract ProductForEvent
+    then filter Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct) = False
+    then extract
+        if IsCommodity
+        then (ExtractCommodityClassification(EconomicTermsForProduct, MAS, 1)
+            then (if ["GROS", "DIRY", "LSTK", "FRST", "SOFT", "OILP", "NGAS", "COAL", "ELEC", "INRG", "PRME", "NPRM", "WTHR", "EMIS", "FRGT"] any = item
+                then item
+                else if item exists
+                then "OTHER"))
+        else if underlier.UnderlierProductIdentifier(item, ISIN) is absent
+                and underlier.UnderlierProductIdentifier(item, empty) exists
+        then (underlier.UnderlierProductIdentifier(item, empty)
+            then ExtractProductIdentifierBySource
+            then identifier)
+
+reporting rule UnderlyingIdOtherSourceDTCC from TransactionReportInstruction: <"Underlying ID (Other) Source (DTCC)">
+    filter IsAllowableActionForMAS
+    then extract ProductForEvent
+    then filter Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct) = False
+    then extract
+        if IsCommodity
+        then (ExtractCommodityClassification(EconomicTermsForProduct, MAS, 1)
+            then (if ["GROS", "DIRY", "LSTK", "FRST", "SOFT", "OILP", "NGAS", "COAL", "ELEC", "INRG", "PRME", "NPRM", "WTHR", "EMIS", "FRGT"] any = item
+                then item to-enum AssetIdTypeEnum
+                else if item exists
+                then Other))
+        else if underlier.UnderlierProductIdentifier(item, ISIN) is absent
+                and underlier.UnderlierProductIdentifier(item, empty) exists
+        then (underlier.UnderlierProductIdentifier(item, empty)
+            then ExtractProductIdentifierBySource
+            then identifierType)
+
+reporting rule NameOfTheUnderlyingIndexDTCC from TransactionReportInstruction: <"Name of the underlying index (DTCC)">
+    filter IsAllowableActionForMAS
+    then common.underlier.NameOfTheUnderlyingIndex
+
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule OptionType from TransactionReportInstruction: <"Option Type">
+    filter IsAllowableActionForMAS
+    then filter (common.contract.ContractType = OPTN or common.contract.ContractType = SWPT)
+    then extract common.contract.OptionType
+
+reporting rule OptionStyle from TransactionReportInstruction: <"Option Style">
+    filter IsAllowableActionForMAS
+    then filter (common.contract.ContractType = OPTN or common.contract.ContractType = SWPT)
+    then extract common.contract.OptionStyle
+
+reporting rule FirstExerciseDate from TransactionReportInstruction: <"First Exercise Date">
+    filter IsAllowableActionForMAS
+    then filter (common.contract.ContractType = OPTN or common.contract.ContractType = SWPT)
+    then cde.price.FirstExerciseDate
+
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective Date">
+    filter IsAllowableActionForMAS
+    then extract common.datetime.EffectiveDate
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"Expiration Date">
+    filter IsAllowableActionForMAS
+    then extract common.datetime.ExpirationDate
+
+reporting rule SwapLinkID from TransactionReportInstruction: <"Swap link ID">
+    filter
+        IsAllowableActionForMAS and Qualify_ForeignExchange_Spot_Forward(
+                ProductForEvent -> economicTerms
+            )
+    then extract cde.link.PackageIdentifier
+
+reporting rule PackageIdentifier from TransactionReportInstruction: <"Package identifier">
+    filter IsAllowableActionForMAS
+    then extract cde.link.PackageIdentifier
+
+reporting rule DeliveryType from TransactionReportInstruction:
+    filter IsAllowableActionForMAS
+    then extract common.contract.DeliveryType
+
+// ToDo Note also we don't have Bond Forward, Equity Forward examples yet.
+// ToDo - Credit Options are inconsistent & use settlementType - awaiting clarification on harmonisation potential before coding (and in any case, no DRR examples yet!)
+// ToDo Commodities also likely to have other nuances?
+//TODO: Add Equity Swap Samples to test this part of the code
+reporting rule FinalContractualSettlementDate from TransactionReportInstruction: <"Final Contractual Settlement Date">
+    filter IsAllowableActionForMAS
+    then extract
+        if Qualify_InterestRate_Fra(TradeForEvent -> product -> economicTerms)
+        then InterestRateLeg2(ProductForTrade(TradeForEvent)) -> paymentDate -> unadjustedDate
+        else cde.execution.FinalContractualSettlementDate
+
+reporting rule Cleared from TransactionReportInstruction: <"Cleared">
+    filter IsAllowableActionForMAS
+    then cde.execution.Cleared
+
+reporting rule CentralCounterparty from TransactionReportInstruction: <"Central Counterparty">
+    filter IsAllowableActionForMAS
+    then cde.execution.CentralCounterparty
+
+reporting rule ClearingMember from TransactionReportInstruction: <"Clearing member">
+    filter IsAllowableActionForMAS
+    then extract cde.execution.ClearingMember
+
+reporting rule ClearingTimestamp from TransactionReportInstruction: <"Clearing Timestamp">
+    filter IsAllowableActionForMAS
+    then extract originatingWorkflowStep -> timestamp
+    then filter qualification = clearingDateTime
+    then only-element
+    then extract dateTime
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform Identifier">
+    filter IsAllowableActionForMAS
+    then common.execution.PlatformIdentifier(item, MAS, MAS)
+
+reporting rule BookingLocation from TransactionReportInstruction: <"Booking location">
+    filter IsAllowableActionForMAS
+    then extract common.execution.BookingLocation
+
+reporting rule TraderLocation from TransactionReportInstruction: <"Trader location">
+    filter IsAllowableActionForMAS
+    then extract common.execution.TraderLocation
+
+reporting rule Confirmed from TransactionReportInstruction: <"Confirmed">
+    filter IsAllowableActionForMAS
+    then common.execution.Confirmed
+
+reporting rule ConfirmationTimestamp from TransactionReportInstruction: <"Confirmation Timestamp">
+    filter IsAllowableActionForMAS
+    then common.datetime.ConfirmationTimestamp
+
+reporting rule ExecutionTimestamp from TransactionReportInstruction: <"Execution Timestamp">
+    filter IsAllowableActionForMAS or IsActionTypeTERM
+    then cde.datetime.ExecutionTimestamp
+
+reporting rule BasketConstituents from TransactionReportInstruction:
+    filter IsAllowableActionForMAS
+    then extract cde.basket.BasketConstituents
+    then extract
+        basket.BasketConstituentsReport {
+            identifier: identifier,
+            source: source,
+            ...
+        }
+
+reporting rule ValuationAmount from TransactionReportInstruction: <"Valuation amount">
+    filter IsActionTypeVALU
+    then cde.valuation.ValuationAmount
+
+reporting rule ValuationCurrency from TransactionReportInstruction: <"Valuation currency">
+    filter IsActionTypeVALU
+    then cde.valuation.ValuationCurrency
+
+reporting rule ValuationMethod from TransactionReportInstruction: <"Valuation method">
+    filter IsActionTypeVALU
+    then extract cde.valuation.ValuationMethod(valuation.GetValuation)
+
+reporting rule ValuationTimestamp from TransactionReportInstruction: <"Valuation Timestamp">
+    filter IsActionTypeVALU
+    then cde.datetime.ValuationTimestamp
+
+reporting rule CollateralPortfolioIndicator from TransactionReportInstruction: <"Collateral Portfolio Indicator">
+    filter IsAllowableActionForMAS
+    then extract cde.collateral.CollateralPortfolioIndicator
+
+reporting rule InitialMarginCollateralPortfolioCodeDTCC from TransactionReportInstruction: <"Initial margin collateral portfolio code (DTCC)">
+    filter IsAllowableActionForMAS
+    then extract common.collateral.InitialMarginCollateralPortfolioCode
+
+reporting rule VariationMarginCollateralPortfolioCodeDTCC from TransactionReportInstruction: <"Variation margin collateral portfolio code (DTCC)">
+    filter IsAllowableActionForMAS
+    then extract common.collateral.VariationMarginCollateralPortfolioCode
+
+reporting rule CallAmount from TransactionReportInstruction: <"Call Amount">
+    filter IsAllowableActionForMAS
+    then cde.quantity.CallAmount
+
+reporting rule CallCurrency from TransactionReportInstruction: <"Call Currency">
+    filter IsAllowableActionForMAS
+    then cde.quantity.CallCurrency
+
+reporting rule PutAmount from TransactionReportInstruction: <"Put Amount">
+    filter IsAllowableActionForMAS
+    then cde.quantity.PutAmount
+
+reporting rule PutCurrency from TransactionReportInstruction: <"Put Currency">
+    filter IsAllowableActionForMAS
+    then cde.quantity.PutCurrency
+
+reporting rule Price from TransactionReportInstruction: <"Price">
+    filter IsAllowableActionForMAS
+    then extract
+        price.PriceFormatFromNotation(
+                if common.price.IsDefaultPrice
+                then 99999999999
+                else cde.price.PriceValue,
+                PriceNotation
+            )
+
+reporting rule PriceCurrency from TransactionReportInstruction: <"Price Currency">
+    filter IsAllowableActionForMAS
+    then extract
+        if cde.price.PriceNotation = Percentage or common.price.IsDefaultPrice
+        then empty
+        else cde.price.PriceCurrency
+
+reporting rule PriceNotation from TransactionReportInstruction: <"Price Notation Enum">
+    filter IsAllowableActionForMAS
+    then price.DefaultPercentageToDecimal(
+                cde.price.PriceNotation,
+                common.price.IsDefaultPrice
+            )
+
+reporting rule PriceUnitOfMeasure from TransactionReportInstruction: <"Price Unit Of Measure">
+    filter IsAllowableActionForMAS
+    then if (Qualify_AssetClass_InterestRate(EconomicTermsForProduct(ProductForEvent))
+                    and cde.price.PriceValue exists)
+                or (cde.price.Price -> priceType = CashPrice
+                    and (cde.price.Price -> priceExpression = PercentageOfNotional
+                        or cde.price.Price -> priceExpression = AbsoluteTerms))
+        then "ACCY"
+        else cde.price.PriceUnitOfMeasure
+
+reporting rule ContractPriceSchedule from TransactionReportInstruction: <"Contract Price Schedule">
+    filter IsAllowableActionForMAS
+    then extract cde.price.GetReportablePricePeriod(item, DefaultPercentagetoDecimal)
+
+reporting rule StrikePrice from TransactionReportInstruction: <"Strike Price">
+    filter IsAllowableActionForMAS
+    then price.PriceFormatFromNotation(cde.price.StrikePriceValue, StrikePriceNotation)
+
+reporting rule StrikePriceCurrencyCurrencyPair from TransactionReportInstruction: <"Strike price currency/currency pair">
+    filter IsAllowableActionForMAS
+    then cde.price.StrikePriceCurrency
+
+reporting rule StrikePriceNotation from TransactionReportInstruction: <"Strike price notation">
+    filter IsAllowableActionForMAS
+    then price.DefaultPercentageToDecimal(
+                cde.price.StrikePriceNotationEnum,
+                cde.price.StrikePriceNotationEnum = Monetary
+                    and (IsVarianceSwap(ProductForEvent) or IsVolatilitySwap(ProductForEvent))
+            )
+
+//Repeatable fields modelling
+reporting rule StrikePriceSchedule from TransactionReportInstruction: <"Strike Price Schedule">
+    filter IsAllowableActionForMAS
+    then extract cde.price.GetReportableStrikePricePeriod(item, DefaultPercentagetoDecimal)
+
+//End of repeatable fields
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option premium amount">
+    filter IsAllowableActionForMAS
+    then filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then common.price.OptionPremiumAmount
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction: <"Option premium currency">
+    filter IsAllowableActionForMAS
+    then filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then common.price.OptionPremiumCurrency
+
+reporting rule ExchangeRate from TransactionReportInstruction: <"Exchange Rate">
+    filter IsAllowableActionForMAS
+    then cde.price.ExchangeRate
+
+reporting rule ExchangeRateBasis from TransactionReportInstruction: <"Exchange Rate Basis">
+    filter IsAllowableActionForMAS
+    then cde.price.ExchangeRateBasis
+
+// Repeatable Field modelling
+// Other Payment Report
+reporting rule OtherPayment from TransactionReportInstruction:
+    filter IsAllowableActionForMAS or IsActionTypeTERM
+    then extract cde.payment.OtherPayment
+    then sort [ date to-string + payer + receiver + paymentType to-string ]
+
+// End of Repeatable Field modelling
+reporting rule TechnicalRecordId from TransactionReportInstruction: <"Technical Record Id (ISO)">
+    extract ReportableEvent [
+        if common.link.TechnicalRecordId(reportableInformation, MAS) -> isUnique
+        then common.link.TechnicalRecordId(reportableInformation, MAS) -> id
+        else (common.link.TechnicalRecordId(reportableInformation, MAS) -> id
+            then extract
+                item + "_" + (cde.datetime.ReportingTimestamp(ReportableEvent) to-string))
+    ]
+
+reporting rule ExecutionAgentCounterparty1DTCC from TransactionReportInstruction: <"Execution agent of Counterparty 1 (DTCC)">
+    filter
+        IsAllowableActionForMAS or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO
+    then extract common.party.ExecutionAgentCounterparty1
+
+reporting rule ExecutionAgentCounterparty2DTCC from TransactionReportInstruction: <"Execution agent of Counterparty 2 (DTCC)">
+    filter
+        IsAllowableActionForMAS or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO
+    then common.party.ExecutionAgentCounterparty2
+
+reporting rule Counterparty2NameDTCC from TransactionReportInstruction: <"Counterparty 2 name (DTCC)">
+    filter
+        IsAllowableActionForMAS or IsActionTypeTERM or IsActionTypeEROR or IsActionTypePRTO
+    then extract common.party.Counterparty2Name
+
+func IsAllowableActionForMAS:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isAllowableAction boolean (1..1)
+
+    set isAllowableAction:
+        IsActionTypeNEWT(reportableEvent)
+            or IsActionTypeMODI(reportableEvent)
+            or IsActionTypePositionMODI(reportableEvent)
+            or IsActionTypeCORR(reportableEvent)
+            or IsActionTypeREVI(reportableEvent)
+            or IsActionTypePOSC(reportableEvent)
+
+// CDE Leg fields
+reporting rule FixedRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRateLeg1 from TransactionReportInstruction: <"Fixed Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.price.FixedRate
+
+reporting rule FixedRateLeg2 from TransactionReportInstruction: <"Fixed Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.price.FixedRate
+
+reporting rule NotionalAmountLeg1 from TransactionReportInstruction: <"Notional of Leg 1">
+    filter IsAllowableAction
+    then cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg1,
+                9999999999999999999999999
+            )
+
+reporting rule NotionalAmountLeg2 from TransactionReportInstruction: <"Notional Amount of Leg 2">
+    filter IsAllowableAction
+    then cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg2,
+                9999999999999999999999999
+            )
+
+reporting rule NotionalCurrencyLeg1 from TransactionReportInstruction: <"Notional Currency - Leg 1">
+    filter IsAllowableActionForMAS
+    then cde.quantity.Notional(common.PayoutForQuantityLeg1)
+    then quantity.CurrencyFromNotional
+
+reporting rule NotionalCurrencyLeg2 from TransactionReportInstruction: <"Notional Currency - Leg 2">
+    filter IsAllowableActionForMAS
+    then cde.quantity.Notional(common.PayoutForQuantityLeg2)
+    then quantity.CurrencyFromNotional
+
+reporting rule TotalNotionalQuantityLeg1 from TransactionReportInstruction: <"Total Notional Quantity - Leg 1">
+    filter IsAllowableActionForMAS
+    then if IsEquity(ProductForEvent) or IsCommodity(ProductForEvent)
+        then cde.quantity.TotalNotionalQuantity(
+                    common.PayoutLeg1,
+                    9999999999999999999999999
+                )
+
+reporting rule TotalNotionalQuantityLeg2 from TransactionReportInstruction: <"Total Notional Quantity - Leg 2">
+    filter IsAllowableActionForMAS
+    then if IsCommoditySwap(ProductForEvent)
+                or (IsEquity(ProductForEvent) and InterestRateLeg2(ProductForEvent) -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists)
+        then cde.quantity.TotalNotionalQuantity(
+                    common.PayoutLeg2,
+                    9999999999999999999999999
+                )
+
+reporting rule NotionalAmountScheduleLeg1 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 1">
+    filter IsAllowableActionForMAS
+    then cde.quantity.NotionalAmountSchedule(common.PayoutLeg1)
+
+reporting rule NotionalAmountScheduleLeg2 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 2">
+    filter IsAllowableActionForMAS
+    then cde.quantity.NotionalAmountSchedule(common.PayoutLeg2)
+
+reporting rule NotionalQuantityScheduleLeg1 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 1">
+    filter IsAllowableActionForMAS
+    then cde.quantity.NotionalQuantitySchedule(common.PayoutLeg1)
+
+reporting rule NotionalQuantityScheduleLeg2 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 2">
+    filter IsAllowableActionForMAS
+    then cde.quantity.NotionalQuantitySchedule(common.PayoutLeg2)
+
+reporting rule SettlementCurrencyLeg1 from TransactionReportInstruction: <"Settlement Currency - Leg 1">
+    filter IsAllowableActionForMAS
+    then cde.execution.SettlementCurrency(common.PayoutLeg1)
+
+reporting rule SettlementCurrencyLeg2 from TransactionReportInstruction: <"Settlement Currency - Leg 2">
+    filter IsAllowableActionForMAS
+    then cde.execution.SettlementCurrency(common.PayoutLeg2)
+
+reporting rule SpreadLeg1 from TransactionReportInstruction: <"Spread - Leg 1">
+    filter IsAllowableActionForMAS
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg1),
+                SpreadNotationLeg1
+            )
+
+reporting rule SpreadLeg2 from TransactionReportInstruction: <"Spread - Leg 2">
+    filter IsAllowableActionForMAS
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg2),
+                SpreadNotationLeg2
+            )
+
+reporting rule SpreadNotationLeg1 from TransactionReportInstruction: <"Spread notation - Leg 1">
+    [docReference MAS Trade dataElement "20" field "Spread Notation of Leg 1"
+        provision "Manner in which Spread of leg 1 is expressed, where applicable."]
+    price.DefaultPercentageToDecimal(cde.price.SpreadNotationEnum(common.PayoutLeg1), False)
+
+reporting rule SpreadNotationLeg2 from TransactionReportInstruction: <"Spread notation - Leg 2">
+    [docReference MAS Trade dataElement "26" field "Spread notation of leg 2"
+        provision "Manner in which 'Spread of leg 2' is expressed, where applicable."]
+    price.DefaultPercentageToDecimal(cde.price.SpreadNotationEnum(common.PayoutLeg2), False)
+
+reporting rule SpreadCurrencyLeg1 from TransactionReportInstruction: <"Spread Currency - Leg 1">
+    filter IsAllowableActionForMAS
+    then cde.price.SpreadCurrency(common.PayoutLeg1)
+
+reporting rule SpreadCurrencyLeg2 from TransactionReportInstruction: <"Spread Currency - Leg 2">
+    filter IsAllowableActionForMAS
+    then cde.price.SpreadCurrency(common.PayoutLeg2)
+
+reporting rule QuantityUnitOfMeasureLeg1 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 1">
+    filter IsAllowableActionForMAS
+    then cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg1)
+
+reporting rule QuantityUnitOfMeasureLeg2 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 2">
+    filter IsAllowableActionForMAS
+    then cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg2)
+
+reporting rule Direction2Leg1 from TransactionReportInstruction: <"Direction2 - Leg 1">
+    filter IsAllowableActionForMAS
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    common.PayoutLeg1,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+reporting rule Direction2Leg2 from TransactionReportInstruction: <"Direction2 - Leg 2">
+    filter IsAllowableActionForMAS
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    common.PayoutLeg2,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+// Common Leg fields
+reporting rule FloatingRateIdentifierLeg1 from TransactionReportInstruction:
+    filter IsAllowableActionForMAS
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateIdentifier
+
+reporting rule FloatingRateIdentifierLeg2 from TransactionReportInstruction:
+    filter IsAllowableActionForMAS
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateIdentifier
+
+reporting rule NameOfTheFloatingRateLeg1 from TransactionReportInstruction: <"Name Of The Floating Rate - Leg 1">
+    filter IsAllowableActionForMAS
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule NameOfTheFloatingRateLeg2 from TransactionReportInstruction: <"Name Of The Floating Rate - Leg 2">
+    filter IsAllowableActionForMAS
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule NotionalQuantityLeg1 from TransactionReportInstruction: <"Notional Quantity - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.quantity.NotionalQuantityLeg1
+
+reporting rule NotionalQuantityLeg2 from TransactionReportInstruction: <"Notional Quantity - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.quantity.NotionalQuantityLeg2
+
+reporting rule QuantityFrequencyPeriodLeg1 from TransactionReportInstruction: <"Notional Quantity Frequency Period - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.quantity.QuantityFrequencyPeriodLeg1
+
+reporting rule QuantityFrequencyPeriodLeg2 from TransactionReportInstruction: <"Notional Quantity Frequency Period - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.quantity.QuantityFrequencyPeriodLeg2
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 1">
+    filter IsAllowableActionForMAS
+    then common.quantity.QuantityFrequencyPeriodMultiplierLeg1
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 2">
+    filter IsAllowableActionForMAS
+    then common.quantity.QuantityFrequencyPeriodMultiplierLeg2
+
+reporting rule FloatingRateResetFrequencyPeriodOfLeg1 from TransactionReportInstruction: <"Floating rate reset frequency period of leg 1">
+    filter IsAllowableAction
+    then extract common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> period
+
+reporting rule FloatingRateResetFrequencyMultiplierOfLeg1 from TransactionReportInstruction: <"Floating rate reset frequency multiplier of leg 1">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> periodMultiplier
+
+reporting rule FloatingRateResetFrequencyPeriodOfLeg2 from TransactionReportInstruction: <"Floating rate reset frequency period of leg 2">
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> period
+
+reporting rule FloatingRateResetFrequencyMultiplierOfLeg2 from TransactionReportInstruction:
+    filter IsAllowableAction
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then AdjustFrequencyPeriod(
+                common.payment.FloatingRateResetFrequencyPeriod,
+                common.payment.FloatingRateResetFrequencyPeriodMultiplier
+            ) -> periodMultiplier

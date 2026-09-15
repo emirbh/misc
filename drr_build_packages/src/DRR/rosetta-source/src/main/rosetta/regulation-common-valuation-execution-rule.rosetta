@@ -1,0 +1,20 @@
+namespace drr.regulation.common.valuation.execution
+version "${project.version}"
+
+import drr.regulation.common.*
+
+reporting rule LastFloatingReferenceValueLeg1 from ValuationReportInstruction: <"Last Floating Reference Value-Leg 1">
+    extract
+        valuationDetails -> tradeInformation -> lastFloatingReference -> lastFloatingReferenceValueLeg1
+
+reporting rule LastFloatingReferenceValueLeg2 from ValuationReportInstruction: <"Last Floating Reference Value-Leg 2">
+    extract
+        valuationDetails -> tradeInformation -> lastFloatingReference -> lastFloatingReferenceValueLeg2
+
+reporting rule LastFloatingReferenceResetDateLeg1 from ValuationReportInstruction: <"Last Floating Reference Reset Date-Leg 1">
+    extract
+        valuationDetails -> tradeInformation -> lastFloatingReference -> lastFloatingReferenceResetDateLeg1
+
+reporting rule LastFloatingReferenceResetDateLeg2 from ValuationReportInstruction: <"Last Floating Reference Reset Date-Leg 2">
+    extract
+        valuationDetails -> tradeInformation -> lastFloatingReference -> lastFloatingReferenceResetDateLeg2

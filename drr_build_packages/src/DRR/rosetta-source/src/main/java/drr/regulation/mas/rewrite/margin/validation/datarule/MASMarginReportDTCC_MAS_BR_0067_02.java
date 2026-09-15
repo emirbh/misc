@@ -1,0 +1,69 @@
+package drr.regulation.mas.rewrite.margin.validation.datarule;
+
+import cdm.base.staticdata.asset.common.ISOCurrencyCodeEnum;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.annotations.RosettaDataRule;
+import com.rosetta.model.lib.expression.CardinalityOperator;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import drr.regulation.mas.rewrite.margin.MASMarginReport;
+import drr.standards.iso.MarginActionEnum;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+/**
+ * @version 7.7.0
+ */
+@RosettaDataRule("MASMarginReportDTCC_MAS_BR_0067_02")
+@ImplementedBy(MASMarginReportDTCC_MAS_BR_0067_02.Default.class)
+public interface MASMarginReportDTCC_MAS_BR_0067_02 extends Validator<MASMarginReport> {
+	
+	String NAME = "MASMarginReportDTCC_MAS_BR_0067_02";
+	String DEFINITION = "if [MarginActionEnum -> CORR, MarginActionEnum -> MARU] any = actionType and variationMarginPostedByTheCounterparty1PostHaircut exists then variationMarginPostedByCounterparty1Currency exists and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XTS, ISOCurrencyCodeEnum -> XXX] all <> variationMarginPostedByCounterparty1Currency";
+	
+	class Default implements MASMarginReportDTCC_MAS_BR_0067_02 {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, MASMarginReport mASMarginReport) {
+			ComparisonResult result = executeDataRule(mASMarginReport);
+			if (result.getOrDefault(true)) {
+				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "MASMarginReport", path, DEFINITION));
+			}
+			
+			String failureMessage = result.getError();
+			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+				failureMessage = "Condition has failed.";
+			}
+			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "MASMarginReport", path, DEFINITION, failureMessage));
+		}
+		
+		private ComparisonResult executeDataRule(MASMarginReport mASMarginReport) {
+			try {
+				if (areEqual(MapperC.<MarginActionEnum>of(MapperS.of(MarginActionEnum.CORR), MapperS.of(MarginActionEnum.MARU)), MapperS.of(mASMarginReport).<MarginActionEnum>map("getActionType", _mASMarginReport -> _mASMarginReport.getActionType()), CardinalityOperator.Any).andNullSafe(exists(MapperS.of(mASMarginReport).<BigDecimal>map("getVariationMarginPostedByTheCounterparty1PostHaircut", _mASMarginReport -> _mASMarginReport.getVariationMarginPostedByTheCounterparty1PostHaircut()))).getOrDefault(false)) {
+					return exists(MapperS.of(mASMarginReport).<ISOCurrencyCodeEnum>map("getVariationMarginPostedByCounterparty1Currency", _mASMarginReport -> _mASMarginReport.getVariationMarginPostedByCounterparty1Currency())).andNullSafe(notEqual(MapperC.<ISOCurrencyCodeEnum>of(MapperS.of(ISOCurrencyCodeEnum.XAG), MapperS.of(ISOCurrencyCodeEnum.XAU), MapperS.of(ISOCurrencyCodeEnum.XBA), MapperS.of(ISOCurrencyCodeEnum.XBB), MapperS.of(ISOCurrencyCodeEnum.XBC), MapperS.of(ISOCurrencyCodeEnum.XBD), MapperS.of(ISOCurrencyCodeEnum.XDR), MapperS.of(ISOCurrencyCodeEnum.XPD), MapperS.of(ISOCurrencyCodeEnum.XPT), MapperS.of(ISOCurrencyCodeEnum.XTS), MapperS.of(ISOCurrencyCodeEnum.XXX)), MapperS.of(mASMarginReport).<ISOCurrencyCodeEnum>map("getVariationMarginPostedByCounterparty1Currency", _mASMarginReport -> _mASMarginReport.getVariationMarginPostedByCounterparty1Currency()), CardinalityOperator.All));
+				}
+				return ComparisonResult.ofEmpty();
+			}
+			catch (Exception ex) {
+				return ComparisonResult.failure(ex.getMessage());
+			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	class NoOp implements MASMarginReportDTCC_MAS_BR_0067_02 {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, MASMarginReport mASMarginReport) {
+			return Collections.emptyList();
+		}
+	}
+}

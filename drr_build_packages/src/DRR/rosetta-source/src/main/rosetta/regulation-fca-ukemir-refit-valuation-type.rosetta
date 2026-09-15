@@ -1,0 +1,381 @@
+namespace drr.regulation.fca.ukemir.refit.valuation
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.enrichment.common.*
+import drr.regulation.common.*
+import drr.regulation.common.emir.*
+import drr.regulation.fca.*
+import drr.regulation.fca.ukemir.*
+import drr.regulation.fca.ukemir.refit.*
+import drr.standards.iso.*
+
+type FCAValuationReport extends valuation.CommonValuationReport:
+    [rootType]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "1.1 Reporting Timestamp"]
+        [docReference FCA UKEMIR Valuation table "1" dataElement "1" field "Reporting timestamp"
+            provision "Date and time of the submission of the report to the trade repository."]
+    override reportSubmittingEntityID string (1..1)
+        [label "1.2 Report Submitting entity ID"]
+        [docReference FCA UKEMIR Valuation table "1" dataElement "2" field "Report Submitting entity ID"
+            provision "In the case where the entity responsible for reporting has delegated the submission of the report to a third party or to the other counterparty, that entity has to be identified in this field by a unique code. Otherwise the entity responsible for reporting should be identified in this field."]
+    override entityResponsibleForReporting LEIIdentifier (0..1)
+        [label "1.3 Entity responsible for reporting"]
+        [docReference FCA UKEMIR Valuation table "1" dataElement "3" field "Entity responsible for reporting"
+            provision "Where a financial counterparty is solely responsible, and legally liable, for reporting on behalf of both counterparties in accordance with Article 9(1a) of Regulation (EU) No 648/2012 and the non-financial counterparty does not decide to report itself the details of its OTC derivative contracts with the financial counterparty, the unique code identifying that financial counterparty. Where a management company is responsible, and legally liable, for reporting on behalf of an Undertaking for Collective Investment in Transferable Securities (UCITS) in accordance with Article 9(1b) of that Regulation, the unique code identifying that management company. Where an Alternative Investment Fund Manager (AIFM) is responsible, and legally liable, for reporting on behalf of an Alternative Investment Fund (AIF) in accordance with Article 9(1c) of that Regulation, the unique code identifying that AIFM. Where the trustees or managers of an occupational pension scheme are responsible, and legally liable, for reporting on its behalf in accordance with Article 9(1d) of that Regulation, the unique code identifying those trustees or managers. This field is applicable only to the OTC derivatives."]
+        [ruleReference EntityResponsibleForReporting]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "1.4 Counterparty 1 (reporting counterparty)"]
+        [docReference FCA UKEMIR Valuation table "1" dataElement "4" field "Counterparty 1 (reporting counterparty)"
+            provision "Identifier of the counterparty to a derivative transaction who is fulfilling its reporting obligation via the report in question. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty."]
+    override counterparty2IdentifierType boolean (1..1)
+        [label "1.8 Counterparty 2 Identifier Type"]
+        [docReference FCA UKEMIR Valuation table "1" dataElement "8" field "Counterparty 2 Identifier Type"
+            provision "Indicator of whether LEI was used to identify counterparty 2."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "1.9 Counterparty 2"]
+        [docReference FCA UKEMIR Valuation table "1" dataElement "9" field "Counterparty 2"
+            provision "Identifier of the second counterparty to a derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty."]
+    override uniqueTransactionIdentifier UTIIdentifier (1..1)
+        [label  "2.1 UTI"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "1" field "UTI"
+            provision "Unique Transaction Identifier as referred to in Article 8 of the EMIR Technical Standards on the Standards, Formats, Frequency and Methods and Arrangements for Reporting 2023."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20251203" field "UTI"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifier]
+    override uniqueTransactionIdentifierProprietary UTIIdentifierLegacy (0..1)
+        [label "2.1 UTI (Proprietary)"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "1" field "UTI"
+            provision "Unique Transaction Identifier as referred to in Article 8 of the EMIR Technical Standards on the Standards, Formats, Frequency and Methods and Arrangements for Reporting 2023."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20251203" field "UTI"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UtiProprietary]
+    override valuationAmount ShortFraction5DecimalNumber (1..1)
+        [label "2.21 Valuation amount"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "21" field "Valuation amount"
+            provision "Mark-to-market valuation of the contract, or mark-to-model valuation as referred to in Article 6 of these Technical Standards.The CCPs valuation to be used for a cleared trade."]
+    override valuationCurrency ISOCurrencyCodeEnum (1..1)
+        [label "2.22 Valuation currency"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "22" field "Valuation currency"
+            provision "Currency in which the valuation amount is denominated."]
+    override valuationTimestamp zonedDateTime (1..1)
+        [label "2.23 Valuation Timestamp"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "23" field "Valuation timestamp"
+            provision "Date and time of the last valuation marked to market, provided by the CCP or calculated using the current or last available market price of the inputs."]
+    override valuationMethod ValuationType1Code (1..1)
+        [label "2.24 Valuation method"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "24" field "Valuation method"
+            provision "Source and method used for the valuation of the transaction by counterparty 1. If at least one valuation input is used that is classified as mark-to-model in the below table, then the whole valuation is classified as mark-to-model. If only inputs are used that are classified as mark-to-market in the table below, then the whole valuation is classified as mark-to-market."]
+    override delta ShortFraction5DecimalNumber (0..1)
+        [label "2.25 Delta"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "25" field "Delta"
+            provision "The ratio of the absolute change in price of a derivative transaction to the change in price of the underlier. This field is applicable only to options and swaptions. Updated delta shall be reported on a daily basis by financial counterparties and non-financial counterparties as referred to in Article 10 of Regulation (EU) No 648/2012."]
+    override actionType ActionTypeEnum (1..1)
+        [label "2.151 Action type"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "151" field "Action type"
+            provision "- New: A report of a derivative, at a trade or position level, for the first time. 
+            - Modify: A modification to the terms or details of a previously reported derivative, at a trade or position level, but not a correction of a report. 
+            - Correction: A report correcting the erroneous data fields of a previously submitted report. 
+            - Terminate: A Termination of an existing derivative, at a trade or position level. 
+            - Error: A cancellation of a wrongly submitted entire report in case the derivative, at a trade or position level, never came into existence or was not subject to Regulation (EU) No 648/2012 reporting requirements but was reported to a trade repository by mistake or a cancellation of a duplicate report. 
+            - Revive: Re-opening of a derivative, at a trade or position level, that was cancelled with action type Error or terminated by mistake. 
+            - Valuation: An update of a valuation of a derivative, at a trade or position level.
+            - Position component: A report of a new derivative that is included in a separate position report on the same day."]
+        [docReference FCA UKEMIR Valuation Guidelines paragraph "132"
+            provision "The categories of derivatives eligible for reporting at position level are: ETDs, centrally cleared OTC derivatives netted by CCPs and Contracts For Difference (CFDs). Although in the case of such derivatives the information concerning positions is most relevant for the assessment of systemic risk, reporting only at position level is not in line with EMIR requirements under Article 9 of EMIR, which requires all counterparties to report e.g. conclusion of a derivative at transaction level."]
+        [docReference ISDA TechnicalExecutionGroup date "2023"
+            provision "ETDs transactions are reported with POSC as action type and with a subsequent position UTI according to ESMA EMIR RTS Guidelines paragraph 132. The subsequent position UTI is reported as UTI at position level."]
+    override eventDate ISODate (1..1)
+        [label "2.153 Event Date"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "153" field "Event date"
+            provision "Date on which the reportable event relating to the derivative contract and captured by the report took place or, in case of a modification when the modification become effective."]
+    override level ReportLevelEnum (1..1)
+        [label "2.154 Level"]
+        [docReference FCA UKEMIR Valuation table "2" dataElement "154" field "Level"
+            provision "Indication whether the report is done at trade or position level. Position level report can be used only as a supplement to trade level reporting to report post- trade events and only if individual trades in fungible products have been replaced by the position."]
+    override counterparty2IdentifierSource Max4Text (0..1)
+        [ruleReference empty]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override nextFloatingReferenceResetDateLeg1 date (0..1)
+        [ruleReference empty]
+    override nextFloatingReferenceResetDateLeg2 date (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceValueLeg1 Max11Number (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceValueLeg2 Max11Number (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceResetDateLeg1 date (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceResetDateLeg2 date (0..1)
+        [ruleReference empty]
+    nonReportable NonReportable (0..1)
+
+    condition UKEMIR_VR_1001_05: <"Reporting timestamp - Condition 5">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "1" validationRule "Valuation"
+      provision "The reporting timestamp should be equal or later than 2024-09-30"]
+        ReportingTimestamp_05_Validation_UK(reportingTimestamp)
+
+    condition UKEMIR_VR_1002_01: <"Report submitting entity ID - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "2" validationRule "Valuation"
+      provision "For action types 'NEWT', 'MODI', 'VALU', 'CORR', 'REVI' and 'POSC': this field shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        ReportSubmittingEntityID_01_Validation(
+                nonReportable -> enrichment,
+                reportSubmittingEntityID
+            )
+
+    condition UKEMIR_VR_1002_02: <"Report submitting entity ID - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "2" validationRule "Valuation"
+      provision "The status of the LEI for all the above action types shall be 'Issued', 'Lapsed', 'Pending transfer' or 'Pending archival'. Correct status of the LEI should be verified as of the date reported in the field 1.1 Reporting timestamp."]
+        ReportSubmittingEntityID_02_Validation(
+                nonReportable -> enrichment,
+                reportSubmittingEntityID
+            )
+
+    condition UKEMIR_VR_1002_04: <"Report submitting entity ID - Condition 4">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "2" validationRule "Valuation"
+      provision "The LEI shall pertain to a legal entity and not a branch."]
+        ReportSubmittingEntityID_04_Validation(
+                nonReportable -> enrichment,
+                reportSubmittingEntityID
+            )
+
+    condition UKEMIR_VR_1003_02: <"Entity responsible for reporting - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "3" validationRule "Valuation"
+      provision "When populated, it shall contain for action types 'NEWT', 'MODI', 'VALU', 'CORR' and 'POSC': this field shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        EntityResponsibleForReporting_02_Validation(
+                nonReportable -> enrichment,
+                entityResponsibleForReporting
+            )
+
+    condition UKEMIR_VR_1003_03: <"Entity responsible for reporting - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "3" validationRule "Valuation"
+      provision "When populated, it shall contain the status of the LEI for all the above action types shall be 'Issued', 'Pending transfer' or 'Pending archival'.
+        Correct status of the LEI should be verified as of the date reported in the field 1.1 Reporting timestamp.
+        Validation of the status should not be applied if 2.153 Event date is earlier than the day preceding the date reported in 1.1 Reporting timestamp."]
+        EntityResponsibleForReporting_03_Validation(
+                nonReportable -> enrichment,
+                entityResponsibleForReporting,
+                reportingTimestamp,
+                eventDate
+            )
+
+    condition UKEMIR_VR_1003_05: <"Entity responsible for reporting - Condition 5">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "3" validationRule "Valuation"
+      provision "When populated, it shall contain: the LEI shall pertain to a legal entity and not a branch."]
+        EntityResponsibleForReporting_05_Validation(
+                nonReportable -> enrichment,
+                entityResponsibleForReporting
+            )
+
+    condition UKEMIR_VR_1004_01: <"Counterparty 1 (Reporting counterparty) - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "4" validationRule "Valuation"
+      provision "For action types 'NEWT', 'MODI', 'VALU', 'CORR' and 'POSC': this field shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        Counterparty1_01_Validation(nonReportable -> enrichment, counterparty1)
+
+    condition UKEMIR_VR_1004_02: <"Counterparty 1 (Reporting counterparty) - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "4" validationRule "Valuation"
+      provision "The status of the LEI for all the above action types shall be 'Issued', 'Pending transfer' or 'Pending archival'. Correct status of the LEI should be verified as of the date reported in the field 1.1 Reporting timestamp. Validation of the status should not be applied if 2.153 Event date is earlier than the day preceding the date reported in 1.1 Reporting timestamp."]
+        [docReference ISDA TechnicalExecutionGroup 
+      provision "'above action types' means 'NEWT', 'MODI', 'VALU', 'CORR' and 'POSC'"]
+        Counterparty1_02_Validation(
+                nonReportable -> enrichment,
+                counterparty1,
+                eventDate,
+                reportingTimestamp
+            )
+
+    condition UKEMIR_VR_1004_04: <"Counterparty 1 (Reporting counterparty) - Condition 4">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "4" validationRule "Valuation"
+      provision "The LEI shall pertain to a legal entity and not a branch."]
+        Counterparty1_04_Validation(nonReportable -> enrichment, counterparty1)
+
+    condition UKEMIR_VR_1004_05: <"Counterparty 1 (Reporting counterparty) - Condition 5">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "4" validationRule "Valuation"
+      provision "The value populated in this field when the trade is reported for the first time, shall not be modified in the subsequent reports."]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled"]
+        True
+
+    condition UKEMIR_VR_1008_01: <"Counterparty 2 identifier type - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "8" validationRule "Valuation"
+      provision "Shall only contain one of the following values: LEI (if this field is TRUE) or Natural Person Identifier (if this field is FALSE)."]
+        Counterparty2IdentifierType_01_Validation(counterparty2IdentifierType)
+
+    condition UKEMIR_VR_1008_02: <"Counterparty 2 identifier type - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "8" validationRule "Valuation"
+      provision "The value populated in this field when the trade is reported for the first time, shall not be modified in the subsequent reports."]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled."]
+        True
+
+    condition UKEMIR_VR_1009_01: <"Counterparty 2 - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "9" validationRule "Valuation"
+      provision "If an LEI has been reported to identify Counterparty 2: For action types 'NEWT', 'MODI', 'VALU', 'CORR' and 'POSC': this field shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        Counterparty2_01_Validation(
+                nonReportable -> enrichment,
+                counterparty2IdentifierType,
+                counterparty2
+            )
+
+    condition UKEMIR_VR_1009_02: <"Counterparty 2 - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "9" validationRule "Valuation"
+      provision "If an LEI has been reported to identify Counterparty 2: The status of the LEI for all the above action types shall be 'Issued', 'Lapsed', 'Pending transfer'or 'Pending archival'. Correct status of the LEI should be verified as of the date reported in the field 1.1 Reporting timestamp. Validation of the status should not be applied if 2.153 Event date is earlier than the day preceding the date reported in 1.1 Reporting timestamp."]
+        Counterparty2_02_Validation(
+                nonReportable -> enrichment,
+                counterparty2IdentifierType,
+                counterparty2,
+                eventDate,
+                reportingTimestamp
+            )
+
+    condition UKEMIR_VR_1009_04: <"Counterparty 2 - Condition 4">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "9" validationRule "Valuation"
+      provision "The LEI shall pertain to a legal entity and not a branch. Correct status of the LEI should be verified as of the date reported in the field 1.1 Reporting timestamp. Validation of the status should not be applied if 2.153 7. Event date is earlier than the day preceding the date reported in 1.1 Reporting timestamp."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+      provision "UKEMIR_VR_1009_02 covers LEI status"]
+        Counterparty2_04_Validation(
+                nonReportable -> enrichment,
+                counterparty2IdentifierType,
+                counterparty2
+            )
+
+    condition UKEMIR_VR_1009_06: <"Counterparty 2 - Condition 6">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "9" validationRule "Valuation"
+      provision "If a natural person identifier has been reported to identify Counterparty 2: this field shall contain up to 72 alphanumeric characters."]
+        Counterparty2_06_Validation(counterparty2IdentifierType, counterparty2)
+
+    condition UKEMIR_VR_1009_08: <"Counterparty 2 - Condition 8">
+        [docReference FCA UKEMIR ValidationRules table "1" dataElement "9" validationRule "Valuation"
+      provision "The value populated in this field when the trade is reported for the first time, shall not be modified in the subsequent reports."]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled."]
+        True
+
+    // ToDo: Need to add Format validation
+    condition UKEMIR_VR_2001_03: <"UTI - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "1" validationRule "Valuation"
+      provision "Not allowed to change the content of this field once it is reported."]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled."]
+        True
+
+    condition UKEMIR_VR_2022_01: <"Valuation currency - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "22" validationRule "Valuation"
+      provision "If field 2.21 is populated, this field shall be populated and shall contain ISO 4217 Currency Code (official list only), 3 alphabetical characters."]
+        ValuationCurrency_01_Validation(valuationAmount, valuationCurrency)
+
+    condition UKEMIR_VR_2022_02: <"Valuation currency - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "22" validationRule "Valuation"
+      provision "The following special currency codes are not allowed: XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XXX."]
+        ValuationCurrency_02_Validation(valuationCurrency)
+
+    condition UKEMIR_VR_2022_03: <"Valuation currency - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "22" validationRule "Valuation"
+      provision "Otherwise, the field shall be left blank."]
+        ValuationCurrency_03_Validation(valuationAmount, valuationCurrency)
+
+    condition UKEMIR_VR_2023_01: <"Valuation timestamp - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "23" validationRule "Valuation"
+      provision "If field 2.21 is populated, this field shall be populated in a common input format: YYYY-MM-DDThh:mm:ssZ."]
+        ValuationTimestamp_01_Validation(valuationAmount, valuationTimestamp)
+
+    condition UKEMIR_VR_2023_04: <"Valuation timestamp - Condition 4">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "23" validationRule "Valuation"
+      provision "The valuation timestamp shall not be greater than the reporting timestamp."]
+        ValuationTimestamp_04_Validation(
+                valuationAmount,
+                valuationTimestamp,
+                reportingTimestamp
+            )
+
+    condition UKEMIR_VR_2023_06: <"Valuation timestamp - Condition 6">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "23" validationRule "Valuation"
+      provision "The date part of the valuation timestamp shall be equal to 2.153 Event date"]
+        ValuationTimestamp_06_Validation(valuationAmount, valuationTimestamp, eventDate)
+
+    condition UKEMIR_VR_2023_07: <"Valuation timestamp - Condition 7">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "23" validationRule "Valuation"
+      provision "Otherwise, the field shall be left blank."]
+        ValuationTimestamp_07_Validation(valuationAmount, valuationTimestamp)
+
+    condition UKEMIR_VR_2024_03: <"Valuation method - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "24" validationRule "Valuation"
+      provision "Otherwise, the field shall be left blank."]
+        ValuationMethod_03_Validation(valuationAmount, valuationMethod)
+
+    condition UKEMIR_VR_2025_02: <"Delta - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "25" validationRule "Valuation"
+      provision "When populated, this field shall contain up to 25 numeric characters including up to 5 decimal places. Otherwise this field shall be left blank.
+                The decimal mark is not counted as a numeric character. If populated, it shall be represented by a dot."]
+        Delta_02_Validation(delta)
+
+    condition UKEMIR_VR_2025_03: <"Delta - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "25" validationRule "Valuation"
+      provision "Any value between -1 and 1 (including -1 and 1) is allowed.
+                The negative symbol, if populated, shall not be counted as a numerical character."]
+        Delta_03_Validation(delta)
+
+    condition UKEMIR_VR_2151_01: <"Action type Validation - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "151" validationRule "Valuation"
+      provision "This field shall contain one of the following values: 'NEWT', 'MODI', 'CORR', 'TERM', 'EROR', 'REVI', 'VALU', or 'POSC'. 4 alphabetical characters."]
+        actionType = VALU
+
+    condition UKEMIR_VR_2151_02: <"Action type Validation - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "151" validationRule "Valuation"
+      provision "The first report received for a given UTI by the reporting counterparty shall only contain value 'NEWT' or 'POSC' in this field."]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled."]
+        True
+
+    condition UKEMIR_VR_2151_03: <"Action type Validation - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "151" validationRule "Valuation"
+      provision "Only one report with the action type 'NEWT' or 'POSC' for a given combination of Counterparty ID-UTI shall be accepted. "]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled."]
+        True
+
+    condition UKEMIR_VR_2151_04: <"Action type Validation - Condition 4">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "151" validationRule "Valuation"
+      provision "After action type 'EROR' is reported by a counterparty, the only allowed action type to be submitted by that counterparty for the given UTI is 'REVI'. Only when 'REVI' is accepted, other action types can be reported for that UTI. "]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled."]
+        True
+
+    condition UKEMIR_VR_2151_05: <"Action type Validation - Condition 5">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "151" validationRule "Valuation"
+      provision "Where a derivative is non-outstanding, the only action types allowed for that UTI are 'EROR', 'REVI', 'MODI', 'CORR' and 'VALU'."]
+        True
+
+    condition UKEMIR_VR_2153_03: <"Event date Validation - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "153" validationRule "Valuation"
+      provision "The event date should be equal or later than 2014-02-12."]
+        EventDate_03_Validation(eventDate)
+
+    condition UKEMIR_VR_2153_04: <"Event date Validation - Condition 4">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "153" validationRule "Valuation"
+      provision "The event date should be equal or earlier than the date part of the reporting timestamp (field 1.1)."]
+        EventDate_04_Validation(eventDate, reportingTimestamp)
+
+    condition UKEMIR_VR_2154_01: <"Level Validation - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "154" validationRule "Valuation"
+      provision "This field shall contain one of the following values: 'TCTN' or 'PSTN'. 4 alphabetical characters."]
+        Level_01_Validation(level)
+
+    condition UKEMIR_VR_2154_03: <"Level Validation - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "2" dataElement "154" validationRule "Valuation"
+      provision "The content of this field can be modified only with action type 'CORR' "]
+        [docReference ISDA TechnicalExecutionGroup date "20230822"
+      provision "DRR being stateless, this cannot be modelled."]
+        True
+
+type NonReportable:
+    enrichment EnrichmentData (0..1) <"Populated by pre-enrichment process">
+        [nonReportable]
+        [ruleReference ValuationEnrichmentData]

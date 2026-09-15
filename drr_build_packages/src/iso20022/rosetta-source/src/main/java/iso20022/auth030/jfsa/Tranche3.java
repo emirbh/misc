@@ -1,0 +1,252 @@
+package iso20022.auth030.jfsa;
+
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import iso20022.auth030.jfsa.meta.Tranche3Meta;
+import java.math.BigDecimal;
+import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version ${project.version}
+ */
+@RosettaDataType(value="Tranche3", builder=Tranche3.Tranche3BuilderImpl.class, version="${project.version}")
+@RuneDataType(value="Tranche3", model="iso20022", builder=Tranche3.Tranche3BuilderImpl.class, version="${project.version}")
+public interface Tranche3 extends RosettaModelObject {
+
+	Tranche3Meta metaData = new Tranche3Meta();
+
+	/*********************** Getter Methods  ***********************/
+	BigDecimal getAttchmntPt();
+	BigDecimal getDtchmntPt();
+
+	/*********************** Build Methods  ***********************/
+	Tranche3 build();
+	
+	Tranche3.Tranche3Builder toBuilder();
+	
+	static Tranche3.Tranche3Builder builder() {
+		return new Tranche3.Tranche3BuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends Tranche3> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends Tranche3> getType() {
+		return Tranche3.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("attchmntPt"), BigDecimal.class, getAttchmntPt(), this);
+		processor.processBasic(path.newSubPath("dtchmntPt"), BigDecimal.class, getDtchmntPt(), this);
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface Tranche3Builder extends Tranche3, RosettaModelObjectBuilder {
+		Tranche3.Tranche3Builder setAttchmntPt(BigDecimal attchmntPt);
+		Tranche3.Tranche3Builder setDtchmntPt(BigDecimal dtchmntPt);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("attchmntPt"), BigDecimal.class, getAttchmntPt(), this);
+			processor.processBasic(path.newSubPath("dtchmntPt"), BigDecimal.class, getDtchmntPt(), this);
+		}
+		
+
+		Tranche3.Tranche3Builder prune();
+	}
+
+	/*********************** Immutable Implementation of Tranche3  ***********************/
+	class Tranche3Impl implements Tranche3 {
+		private final BigDecimal attchmntPt;
+		private final BigDecimal dtchmntPt;
+		
+		protected Tranche3Impl(Tranche3.Tranche3Builder builder) {
+			this.attchmntPt = builder.getAttchmntPt();
+			this.dtchmntPt = builder.getDtchmntPt();
+		}
+		
+		@Override
+		@RosettaAttribute("attchmntPt")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("attchmntPt")
+		public BigDecimal getAttchmntPt() {
+			return attchmntPt;
+		}
+		
+		@Override
+		@RosettaAttribute("dtchmntPt")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dtchmntPt")
+		public BigDecimal getDtchmntPt() {
+			return dtchmntPt;
+		}
+		
+		@Override
+		public Tranche3 build() {
+			return this;
+		}
+		
+		@Override
+		public Tranche3.Tranche3Builder toBuilder() {
+			Tranche3.Tranche3Builder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(Tranche3.Tranche3Builder builder) {
+			ofNullable(getAttchmntPt()).ifPresent(builder::setAttchmntPt);
+			ofNullable(getDtchmntPt()).ifPresent(builder::setDtchmntPt);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			Tranche3 _that = getType().cast(o);
+		
+			if (!Objects.equals(attchmntPt, _that.getAttchmntPt())) return false;
+			if (!Objects.equals(dtchmntPt, _that.getDtchmntPt())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (attchmntPt != null ? attchmntPt.hashCode() : 0);
+			_result = 31 * _result + (dtchmntPt != null ? dtchmntPt.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "Tranche3 {" +
+				"attchmntPt=" + this.attchmntPt + ", " +
+				"dtchmntPt=" + this.dtchmntPt +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of Tranche3  ***********************/
+	class Tranche3BuilderImpl implements Tranche3.Tranche3Builder {
+	
+		protected BigDecimal attchmntPt;
+		protected BigDecimal dtchmntPt;
+		
+		@Override
+		@RosettaAttribute("attchmntPt")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("attchmntPt")
+		public BigDecimal getAttchmntPt() {
+			return attchmntPt;
+		}
+		
+		@Override
+		@RosettaAttribute("dtchmntPt")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dtchmntPt")
+		public BigDecimal getDtchmntPt() {
+			return dtchmntPt;
+		}
+		
+		@RosettaAttribute("attchmntPt")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("attchmntPt")
+		@Override
+		public Tranche3.Tranche3Builder setAttchmntPt(BigDecimal _attchmntPt) {
+			this.attchmntPt = _attchmntPt == null ? null : _attchmntPt;
+			return this;
+		}
+		
+		@RosettaAttribute("dtchmntPt")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("dtchmntPt")
+		@Override
+		public Tranche3.Tranche3Builder setDtchmntPt(BigDecimal _dtchmntPt) {
+			this.dtchmntPt = _dtchmntPt == null ? null : _dtchmntPt;
+			return this;
+		}
+		
+		@Override
+		public Tranche3 build() {
+			return new Tranche3.Tranche3Impl(this);
+		}
+		
+		@Override
+		public Tranche3.Tranche3Builder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public Tranche3.Tranche3Builder prune() {
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getAttchmntPt()!=null) return true;
+			if (getDtchmntPt()!=null) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public Tranche3.Tranche3Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			Tranche3.Tranche3Builder o = (Tranche3.Tranche3Builder) other;
+			
+			
+			merger.mergeBasic(getAttchmntPt(), o.getAttchmntPt(), this::setAttchmntPt);
+			merger.mergeBasic(getDtchmntPt(), o.getDtchmntPt(), this::setDtchmntPt);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			Tranche3 _that = getType().cast(o);
+		
+			if (!Objects.equals(attchmntPt, _that.getAttchmntPt())) return false;
+			if (!Objects.equals(dtchmntPt, _that.getDtchmntPt())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (attchmntPt != null ? attchmntPt.hashCode() : 0);
+			_result = 31 * _result + (dtchmntPt != null ? dtchmntPt.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "Tranche3Builder {" +
+				"attchmntPt=" + this.attchmntPt + ", " +
+				"dtchmntPt=" + this.dtchmntPt +
+			'}';
+		}
+	}
+}

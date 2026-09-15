@@ -1,0 +1,24 @@
+namespace drr.standards.iosco.upi
+version "${project.version}"
+
+import drr.base.trade.*
+import drr.regulation.common.*
+
+reporting rule UniqueProductIdentifier from TransactionReportInstruction: <"Unique product identifier">
+    extract TradeForEvent
+    then extract product -> identifier
+    then filter source = UPI
+    then only-element
+    then extract identifier
+
+reporting rule ProductClassification from TransactionReportInstruction: <"Product classification">
+    extract ProductForEvent
+    then extract [
+        [
+            taxonomy,
+            economicTerms -> payout -> SettlementPayout -> underlier -> Observable ->> taxonomy
+        ]
+            filter source = CFI
+            then only-element
+            then extract value -> name
+    ]

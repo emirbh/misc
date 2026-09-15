@@ -1,0 +1,73 @@
+{
+  "actionType" : "NEWT",
+  "cleared" : "I",
+  "counterparty1" : "5493001RKR55V4X61F71",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "549300O5MFEP1XJ40B46",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "BANKX00012024-04-29T00:00Z",
+    "primaryAssetClass" : "Equity",
+    "submittedForParty" : "5493001RKR55V4X61F71",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC" ],
+    "underlyingAsset" : [ {
+      "underlyingAssetID" : "PHGe.AS",
+      "underlyingAssetIDType" : "RIC"
+    }, {
+      "underlyingAssetID" : "NL0000009322",
+      "underlyingAssetIDType" : "ISIN"
+    }, {
+      "underlyingAssetID" : "PHILIPS BUY BACK ORD",
+      "underlyingAssetIDType" : "SingleOther"
+    } ]
+  },
+  "effectiveDate" : "2008-06-02",
+  "eventTimestamp" : "2011-02-04T16:42:16Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2011-02-04T16:20:47Z",
+  "expirationDate" : "2008-06-04",
+  "leg1" : {
+    "notionalAmount" : 300000,
+    "notionalCurrency" : "EUR",
+    "settlementCurrency" : "EUR"
+  },
+  "leg2" : {
+    "notionalAmount" : 300000,
+    "notionalCurrency" : "EUR",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRatePaymentFrequencyPeriod" : "ADHO",
+      "floatingRateResetFrequencyMultiplier" : 1,
+      "floatingRateResetFrequencyPeriod" : "MNTH"
+    },
+    "settlementCurrency" : "EUR"
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "EUR",
+          "UnderlierID" : "EUR-EURIBOR-Reuters"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "packageIndicator" : false,
+  "platformIdentifier" : "XNAS",
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "5493001RKR55V4X61F71",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIMOCKUPPOSTPRI0141"
+}

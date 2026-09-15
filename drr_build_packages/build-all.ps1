@@ -1,0 +1,336 @@
+# Build every library in src\ and collect the JARs into build\.
+# Run from the directory that contains src\. Requires JDK 21 and Maven 3.9+.
+# Build only - nothing is deployed.
+#
+#   src\    source only; never written to by this script
+#   temp\   everything the build regenerates: work\ (the copy of src\ that is
+#           built), m2\ (local Maven repository), logs\, poms\, toolchains.xml.
+#           Delete it to remove all build byproducts.
+#   build\  the collected JARs
+#Requires -Version 5.1
+$ErrorActionPreference = 'Stop'
+
+$Root   = (Get-Location).Path
+$Src    = Join-Path $Root 'src'
+$Out    = Join-Path $Root 'build'
+$Temp   = Join-Path $Root 'temp'
+$Work   = Join-Path $Temp 'work'
+$Logs   = Join-Path $Temp 'logs'
+$M2     = Join-Path $Temp 'm2'    # dedicated local repo, so a collected JAR can be proven built here
+$DrrSrc = if ($env:DRR_SRC) { $env:DRR_SRC } else { Join-Path $Src 'DRR' }
+
+# ---- Preflight: every source directory must exist before anything is built ----
+# A directory counts only if it contains pom.xml. For each missing one, print the
+# commands that create it, then stop. Re-run once they are all in place.
+$Required = @(
+    @{ Dir = 'emf-R2_33_0';              Kind = 'git'; Url = 'https://github.com/eclipse-emf/org.eclipse.emf.git';        Tag = 'R2_33_0' }
+    @{ Dir = 'emf-R2_46_0';              Kind = 'git'; Url = 'https://github.com/eclipse-emf/org.eclipse.emf.git';        Tag = 'R2_46_0' }
+    @{ Dir = 'joda-convert';             Kind = 'git'; Url = 'https://github.com/JodaOrg/joda-convert.git';               Tag = 'v2.0' }
+    @{ Dir = 'joda-beans';               Kind = 'git'; Url = 'https://github.com/JodaOrg/joda-beans.git';                 Tag = 'v2.1' }
+    @{ Dir = 'joda-time';                Kind = 'git'; Url = 'https://github.com/JodaOrg/joda-time.git';                  Tag = 'v2.10.14' }
+    @{ Dir = 'strata';                   Kind = 'git'; Url = 'https://github.com/OpenGamma/Strata.git';                   Tag = 'v1.7.0' }
+    @{ Dir = 'jackson-annotations';      Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-annotations.git';      Tag = 'jackson-annotations-2.17.1' }
+    @{ Dir = 'jackson-core';             Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-core.git';             Tag = 'jackson-core-2.17.1' }
+    @{ Dir = 'jackson-databind';         Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-databind.git';         Tag = 'jackson-databind-2.17.1' }
+    @{ Dir = 'jackson-dataformat-xml';   Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-dataformat-xml.git';   Tag = 'jackson-dataformat-xml-2.17.1' }
+    @{ Dir = 'jackson-dataformats-text'; Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-dataformats-text.git'; Tag = 'jackson-dataformats-text-2.17.1' }
+    @{ Dir = 'jackson-modules-java8';    Kind = 'git'; Url = 'https://github.com/FasterXML/jackson-modules-java8.git';    Tag = 'jackson-modules-java8-2.17.1' }
+    @{ Dir = 'rune-dsl-9.83.0';          Kind = 'git'; Url = 'https://github.com/finos/rune-dsl.git';                     Tag = '9.83.0' }
+    @{ Dir = 'rune-dsl-9.85.1';          Kind = 'git'; Url = 'https://github.com/finos/rune-dsl.git';                     Tag = '9.85.1' }
+    @{ Dir = 'rune-common';              Kind = 'git'; Url = 'https://github.com/finos/rune-common.git';                  Tag = '11.121.2' }
+    @{ Dir = 'rune-common-11.124.2';     Kind = 'git'; Url = 'https://github.com/finos/rune-common.git';                  Tag = '11.124.2' }
+    @{ Dir = 'common-domain-model';      Kind = 'git'; Url = 'https://github.com/finos/common-domain-model.git';          Tag = '6.23.0' }
+    @{ Dir = 'rune-fpml';                Kind = 'copy'; What = 'rune-fpml rosetta-source 2.1.1 source (pom.xml + sources)' }
+    @{ Dir = 'iso20022';                 Kind = 'copy'; What = 'iso20022 rosetta-source 1.42.0 source (pom.xml + sources)' }
+    @{ Dir = 'DRR';                      Kind = 'copy'; What = 'DRR 7.7.0 source tree' }
+)
+$missingSrc = 0
+foreach ($r in $Required) {
+    $path = if ($r.Dir -eq 'DRR') { $DrrSrc } else { Join-Path $Src $r.Dir }
+    if (Test-Path (Join-Path $path 'pom.xml')) { continue }
+    $show = if ($path.StartsWith($Root)) { $path.Substring($Root.Length + 1) } else { $path }
+    $missingSrc++
+    Write-Host "MISSING: $show"
+    switch ($r.Kind) {
+        'git' {
+            Write-Host "  git -c core.longpaths=true clone --depth 1 --branch $($r.Tag) $($r.Url) `"$show`""
+        }
+        'copy' {
+            Write-Host "  copy the $($r.What) into `"$show`""
+        }
+    }
+    Write-Host ''
+}
+if ($missingSrc -gt 0) {
+    Write-Host "Missing source directories: $missingSrc of $($Required.Count)."
+    Write-Host 'Create them with the commands above, then re-run this script.'
+    exit 1
+}
+Write-Host "All $($Required.Count) source directories present."
+
+# java and mvn write to stderr; under 'Stop', Windows PowerShell 5.1 turns that into
+# a terminating error. Native calls run with 'Continue' and are checked by exit code.
+$ErrorActionPreference = 'Continue'
+$javaVersion = (& java -version 2>&1 | Out-String)
+$ErrorActionPreference = 'Stop'
+if ($javaVersion -notmatch 'version "21') { throw 'JDK 21 required' }
+
+New-Item -ItemType Directory -Force -Path $Out, $Logs | Out-Null
+Remove-Item (Join-Path $Out '*.jar') -ErrorAction SilentlyContinue
+
+# Build a copy, so no build output, generated code or build-applied edit
+# (versions, POM fixes) ever lands in src\. Mirrors src\ into temp\work\.
+function Copy-Mirror([string]$From, [string]$To) {
+    New-Item -ItemType Directory -Force -Path $To | Out-Null
+    if (Get-Command robocopy -ErrorAction SilentlyContinue) {
+        # robocopy handles paths beyond 260 characters; exit codes below 8 mean success.
+        $ErrorActionPreference = 'Continue'
+        & robocopy $From $To /MIR /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
+        $code = $LASTEXITCODE
+        $ErrorActionPreference = 'Stop'
+        if ($code -ge 8) { throw "robocopy failed ($code): $From -> $To" }
+    } else {
+        Remove-Item $To -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item $From $To -Recurse -Force
+    }
+}
+Write-Host '==> copying src\ to temp\work\'
+Copy-Mirror $Src $Work
+if ($DrrSrc -ne (Join-Path $Src 'DRR')) { Copy-Mirror $DrrSrc (Join-Path $Work 'DRR') }
+$Src    = $Work
+$DrrSrc = Join-Path $Work 'DRR'
+
+# Every -D argument is quoted: unquoted, PowerShell splits -Dmaven.repo.local=... at the dot.
+# Only JARs are built: no javadoc, sources or signature artifacts.
+$Mvn = @('-B', '-ntp', '-DskipTests', '-Dmaven.javadoc.skip=true', '-Dmaven.source.skip=true', '-Dgpg.skip=true', "-Dmaven.repo.local=$M2")
+$Failed = New-Object System.Collections.Generic.List[string]
+
+# EMF compiles through a Maven toolchain; point it at the JDK running this build.
+$ErrorActionPreference = 'Continue'
+$jdkHome = ((& java -XshowSettings:properties -version 2>&1 | Out-String) -split "`n" |
+            Where-Object { $_ -match '^\s*java\.home = ' } | Select-Object -First 1) -replace '^\s*java\.home = ', ''
+$ErrorActionPreference = 'Stop'
+$Toolchains = Join-Path $Temp 'toolchains.xml'
+@"
+<?xml version="1.0" encoding="UTF-8"?>
+<toolchains>
+  <toolchain>
+    <type>jdk</type>
+    <provides><id>JavaSE-21</id><version>21</version></provides>
+    <configuration><jdkHome>$($jdkHome.Trim())</jdkHome></configuration>
+  </toolchain>
+</toolchains>
+"@ | Set-Content -Path $Toolchains -Encoding ascii
+
+function Invoke-Build([string]$Name, [string]$Dir, [string[]]$Extra = @()) {
+    Write-Host "==> $Name"
+    if (-not (Test-Path $Dir)) { Write-Warning "FAILED: $Name - $Dir not found"; $Failed.Add($Name); return }
+    $log = Join-Path $Logs "$Name.log"
+    $ErrorActionPreference = 'Continue'
+    Push-Location $Dir
+    try { & mvn @Mvn clean install @Extra 2>&1 | Out-File -FilePath $log -Encoding utf8 }
+    finally { Pop-Location }
+    if ($LASTEXITCODE -ne 0) { Write-Warning "FAILED: $Name - see $log"; $Failed.Add($Name) }
+}
+
+# rune-dsl, rune-common and CDM tags carry placeholder versions (e.g.
+# 0.0.0.9.x.x-SNAPSHOT). Their release pipelines set the real version before
+# building; so does this.
+function Set-ProjectVersion([string]$Name, [string]$Dir, [string]$Version) {
+    Write-Host "==> ${Name}: set version $Version"
+    $log = Join-Path $Logs "$Name-set-version.log"
+    $ErrorActionPreference = 'Continue'
+    Push-Location $Dir
+    try { & mvn @Mvn versions:set '-DgenerateBackupPoms=false' '-DallowSnapshots=true' "-DnewVersion=$Version" 2>&1 | Out-File -FilePath $log -Encoding utf8 }
+    finally { Pop-Location }
+    if ($LASTEXITCODE -ne 0) { Write-Warning "FAILED: $Name set version - see $log"; $Failed.Add("$Name-set-version") }
+}
+
+# Rosetta model projects rebuilt from their published sources (DRR, iso20022,
+# rune-fpml): the published Java already includes the generated code, so code
+# generation is skipped. Parent POM first, then the rosetta-source module.
+# Checkstyle and license-header checks need config files that are not part of
+# the published sources, so they are skipped.
+function Invoke-ModelBuild([string]$Name, [string]$Dir) {
+    Invoke-Build "$Name-parent" $Dir @('-N', '-Dcheckstyle.skip', '-Dlicense.skip=true')
+    Invoke-Build $Name (Join-Path $Dir 'rosetta-source') @('-Dxtext.generator.skip=true', '-Dcheckstyle.skip', '-Dlicense.skip=true')
+}
+
+# Tycho stamps -SNAPSHOT on EMF bundles; re-install each at its release version.
+# The POM Tycho embeds in the jar lists OSGi runtime bundles as dependencies,
+# which pulls banned artifacts (reload4j) into CDM and DRR; the POM Eclipse
+# publishes for the release lists the real Maven dependencies, so that is used.
+function Install-EmfRelease([string]$RepoDir, [string]$Bundle, [string]$Version) {
+    $target = Join-Path $Src "$RepoDir/plugins/$Bundle/target"
+    $jar = Get-ChildItem $target -Filter "$Bundle-*.jar" -ErrorAction SilentlyContinue |
+           Where-Object { $_.Name -notlike '*-sources.jar' } | Select-Object -First 1
+    if (-not $jar) { Write-Warning "FAILED: $Bundle - no built jar"; $Failed.Add($Bundle); return }
+    Remove-Item (Join-Path $M2 "org/eclipse/emf/$Bundle/$Version") -Recurse -Force -ErrorAction SilentlyContinue
+    $poms = Join-Path $Temp 'poms'
+    $log = Join-Path $Logs 'emf-install.log'
+    $ErrorActionPreference = 'Continue'
+    & mvn @Mvn dependency:copy "-Dartifact=org.eclipse.emf:${Bundle}:${Version}:pom" "-DoutputDirectory=$poms" 2>&1 |
+        Out-File -FilePath $log -Append -Encoding utf8
+    if ($LASTEXITCODE -eq 0) {
+        & mvn @Mvn install:install-file "-Dfile=$($jar.FullName)" "-DpomFile=$(Join-Path $poms "$Bundle-$Version.pom")" `
+            '-DgroupId=org.eclipse.emf' "-DartifactId=$Bundle" "-Dversion=$Version" '-Dpackaging=jar' 2>&1 |
+            Out-File -FilePath $log -Append -Encoding utf8
+    }
+    if ($LASTEXITCODE -ne 0) { Write-Warning "FAILED: $Bundle install-file"; $Failed.Add($Bundle) }
+}
+
+# 1. Eclipse EMF
+# R2_33_0 (codegen 2.23.0): its pinned Tycho 2.7.5 cannot run on JDK 21, so
+# Tycho 3.0.5 is used. The 2022-12 target platform lists an update site that no
+# longer exists (download.itemis.com 2.1.0); a copy points at its successor,
+# the site EMF itself moved to in later releases. The original is not modified.
+$tp = Join-Path $Src 'emf-R2_33_0/releng/org.eclipse.emf.parent/tp'
+if (Test-Path (Join-Path $tp '2022-12.target')) {
+    (Get-Content (Join-Path $tp '2022-12.target') -Raw) -replace
+        [regex]::Escape('https://download.itemis.com/updates/releases/2.1.0'),
+        'https://xtext.github.io/download/updates/releases/2.1.1' |
+        Set-Content -Path (Join-Path $tp '2022-12-local.target') -Encoding utf8 -NoNewline
+}
+# Tycho 3 moved tycho-buildtimestamp-jgit from org.eclipse.tycho.extras to
+# org.eclipse.tycho; this is the one reference in the EMF 2.33 POMs to update.
+$emfParent = Join-Path $Src 'emf-R2_33_0/releng/org.eclipse.emf.parent/pom.xml'
+if (Test-Path $emfParent) {
+    $pomText = Get-Content $emfParent -Raw
+    $pomText = [regex]::Replace($pomText,
+        '<groupId>org\.eclipse\.tycho\.extras</groupId>(\s*<artifactId>tycho-buildtimestamp-jgit</artifactId>)',
+        '<groupId>org.eclipse.tycho</groupId>$1')
+    Set-Content -Path $emfParent -Value $pomText -Encoding utf8 -NoNewline
+}
+Invoke-Build emf-R2_33_0 (Join-Path $Src 'emf-R2_33_0') @('-t', $Toolchains, '-DjavaVersion=21', '-Dtarget-platform=2022-12-local', '-Dtycho-version=3.0.5',
+    '-pl', 'releng/org.eclipse.emf.parent/tp,plugins/org.eclipse.emf.common,plugins/org.eclipse.emf.codegen', '-am')
+# R2_46_0 (codegen.ecore 2.46.0, codegen.ecore.xtext 1.8.0): 2026-03 target
+# platform, as 2026-06 lists a withdrawn integration-build site.
+Invoke-Build emf-R2_46_0 (Join-Path $Src 'emf-R2_46_0') @('-t', $Toolchains, '-DjavaVersion=21', '-Dtarget-platform=2026-03',
+    '-pl', 'releng/org.eclipse.emf.parent/tp,plugins/org.eclipse.emf.codegen.ecore,plugins/org.eclipse.emf.codegen.ecore.xtext', '-am')
+Install-EmfRelease emf-R2_33_0 org.eclipse.emf.codegen             2.23.0
+Install-EmfRelease emf-R2_46_0 org.eclipse.emf.codegen.ecore       2.46.0
+Install-EmfRelease emf-R2_46_0 org.eclipse.emf.codegen.ecore.xtext 1.8.0
+
+# 2. Joda and Strata. JDK 21 compiles no lower than Java 8; these target 5 and 6.
+Invoke-Build joda-convert (Join-Path $Src 'joda-convert') @('-Djoda.release.version=8')
+Invoke-Build joda-beans   (Join-Path $Src 'joda-beans')   @('-Djoda.release.version=8')
+Invoke-Build joda-time    (Join-Path $Src 'joda-time')    @('-Dmaven.compiler.source=8', '-Dmaven.compiler.target=8')
+# Strata targets Java 8: compiled against the Java 8 API (--release 8), since
+# JDK 21's List.addFirst/removeFirst clash with its own methods. Its test
+# sources do not compile on JDK 21 at all, so they are not compiled.
+Invoke-Build strata       (Join-Path $Src 'strata') @('-Dmaven.test.skip=true', '-Dmaven.compiler.release=8', '-pl', 'modules/basics,modules/collect', '-am')
+
+# 3. Jackson
+Invoke-Build jackson-annotations     (Join-Path $Src 'jackson-annotations') @('-Djavac.src.version=1.8', '-Djavac.target.version=1.8')
+Invoke-Build jackson-core            (Join-Path $Src 'jackson-core')
+# jackson-databind's java21 profile activates on JDK 21 and raises the main
+# compile to release 21, which would make the jar require Java 21 at runtime;
+# the published 2.17.1 is Java 8 bytecode. The profile is deactivated.
+Invoke-Build jackson-databind        (Join-Path $Src 'jackson-databind') @('-P', '!java21')
+Invoke-Build jackson-dataformat-xml  (Join-Path $Src 'jackson-dataformat-xml')
+Invoke-Build jackson-dataformat-csv  (Join-Path $Src 'jackson-dataformats-text') @('-pl', 'csv', '-am')
+Invoke-Build jackson-datatype-jsr310 (Join-Path $Src 'jackson-modules-java8')    @('-pl', 'datetime', '-am')
+
+# 4. Rune DSL
+# Only the modules that produce JARs used here, plus rune-testing (a test-scope
+# dependency of rune-common, which Maven resolves even with tests skipped).
+# Not built: rune-ide (the VS Code extension, which needs Node.js and npm),
+# rune-tools, rune-profiling and rune-integration-tests - nothing depends on them.
+$RuneModules     = 'rune-xcore-plugin-dependencies,rune-runtime,rune-lang,rune-testing,rune-maven-plugin'
+$BackportModules = 'rosetta-xcore-plugin-dependencies,rosetta-runtime,rosetta-lang,rosetta-testing,rosetta-maven-plugin'
+Set-ProjectVersion rune-dsl-9.83.0 (Join-Path $Src 'rune-dsl-9.83.0') 9.83.0
+Invoke-Build rune-dsl-9.83.0 (Join-Path $Src 'rune-dsl-9.83.0') @('-pl', $RuneModules, '-am')
+# The com.regnosys.rosetta* compatibility artifacts are a separate build in
+# rune-dsl's release, run after the main one against the same version.
+Set-ProjectVersion rune-dsl-9.83.0-backport (Join-Path $Src 'rune-dsl-9.83.0/rosetta-backport') 9.83.0
+Invoke-Build rune-dsl-9.83.0-backport (Join-Path $Src 'rune-dsl-9.83.0/rosetta-backport') @('-pl', $BackportModules, '-am')
+Set-ProjectVersion rune-dsl-9.85.1 (Join-Path $Src 'rune-dsl-9.85.1') 9.85.1
+Invoke-Build rune-dsl-9.85.1 (Join-Path $Src 'rune-dsl-9.85.1') @('-pl', "$RuneModules,rune-generator-api", '-am')
+Set-ProjectVersion rune-dsl-9.85.1-backport (Join-Path $Src 'rune-dsl-9.85.1/rosetta-backport') 9.85.1
+Invoke-Build rune-dsl-9.85.1-backport (Join-Path $Src 'rune-dsl-9.85.1/rosetta-backport') @('-pl', $BackportModules, '-am')
+
+# 5. Rune Common: 11.121.2 for CDM and rune-fpml, 11.124.2 for iso20022 and DRR
+Set-ProjectVersion rune-common (Join-Path $Src 'rune-common') 11.121.2
+Invoke-Build rune-common (Join-Path $Src 'rune-common')
+Set-ProjectVersion rune-common-11.124.2 (Join-Path $Src 'rune-common-11.124.2') 11.124.2
+Invoke-Build rune-common-11.124.2 (Join-Path $Src 'rune-common-11.124.2')
+
+# 6. Built from published sources
+# ingest-test-framework 11.121.2 is not built: 8 of its 127 classes
+# (IngestionTest, AssertIngestion, ExpectationManager, ...) have no published
+# source, and the libraries it bundles (translate-lib, translate-code-gen)
+# publish none. CDM resolves the published artifact; the summary reports it.
+Invoke-ModelBuild rune-fpml (Join-Path $Src 'rune-fpml')
+
+# 7. CDM
+Set-ProjectVersion cdm (Join-Path $Src 'common-domain-model') 6.23.0
+Invoke-Build cdm (Join-Path $Src 'common-domain-model') @('-pl', 'rosetta-source', '-am')
+
+# 8. ISO 20022 and DRR
+Invoke-ModelBuild iso20022 (Join-Path $Src 'iso20022')
+# A DRR tree rebuilt from the published sources already has the generated Java
+# in src/main/java. DRR's rosetta-maven-plugin has no skip setting, so its
+# generate execution is unbound instead. A real DRR git checkout (no generated
+# code in src/main/java) is left untouched and generates as normal.
+$drrGenerated = Join-Path $DrrSrc 'rosetta-source/src/main/java/drr/regulation/cftc/rewrite/trade/CFTCPart45TransactionReport.java'
+if (Test-Path $drrGenerated) {
+    $drrPom = Join-Path $DrrSrc 'rosetta-source/pom.xml'
+    $pomText = [regex]::Replace((Get-Content $drrPom -Raw),
+        '(<id>default-cli</id>\s*)<phase>generate-sources</phase>', '${1}<phase>none</phase>')
+    Set-Content -Path $drrPom -Value $pomText -Encoding utf8 -NoNewline
+}
+Invoke-ModelBuild drr      $DrrSrc
+$DrrVersion = 'unknown'
+$drrPom = Join-Path $DrrSrc 'pom.xml'
+if (Test-Path $drrPom) { $DrrVersion = ([xml](Get-Content $drrPom -Raw)).project.version }
+
+# Collect. A JAR is taken only if _remote.repositories records a local install -
+# anything resolved from a remote repository is reported, not copied.
+$Artifacts = @(
+    'org.eclipse.emf:org.eclipse.emf.codegen:2.23.0'
+    'org.eclipse.emf:org.eclipse.emf.codegen.ecore:2.46.0'
+    'org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:1.8.0'
+    'org.joda:joda-convert:2.0'
+    'org.joda:joda-beans:2.1'
+    'joda-time:joda-time:2.10.14'
+    'com.opengamma.strata:strata-basics:1.7.0'
+    'com.opengamma.strata:strata-collect:1.7.0'
+    'com.fasterxml.jackson.core:jackson-annotations:2.17.1'
+    'com.fasterxml.jackson.core:jackson-core:2.17.1'
+    'com.fasterxml.jackson.core:jackson-databind:2.17.1'
+    'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.1'
+    'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.17.1'
+    'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1'
+    'org.finos.rune:rune-maven-plugin:9.83.0'
+    'org.finos.rune:rune-xcore-plugin-dependencies:9.83.0'
+    'com.regnosys.rosetta:com.regnosys.rosetta.lib:9.83.0'
+    'com.regnosys.rosetta:rosetta-maven-plugin:9.83.0'
+    'org.finos.rune:rune-lang:9.85.1'
+    'org.finos.rune:rune-runtime:9.85.1'
+    'org.finos.rune:rune-generator-api:9.85.1'
+    'com.regnosys.rosetta:com.regnosys.rosetta:9.85.1'
+    'com.regnosys:rosetta-common:11.121.2'
+    'com.regnosys:serialization:11.121.2'
+    'com.regnosys:rosetta-common:11.124.2'
+    'com.regnosys:serialization:11.124.2'
+    'com.regnosys:ingest-test-framework:11.121.2'
+    'com.regnosys.rune-fpml:rosetta-source:2.1.1'
+    'org.finos.cdm:cdm-java:6.23.0'
+    'org.iso20022:rosetta-source:1.42.0'
+    "com.regnosys.drr:rosetta-source:$DrrVersion"
+)
+$Missing = New-Object System.Collections.Generic.List[string]
+foreach ($coord in $Artifacts) {
+    $g, $a, $v = $coord -split ':'
+    $dir    = Join-Path $M2 (($g -replace '\.', '/') + "/$a/$v")
+    $jar    = Join-Path $dir "$a-$v.jar"
+    $remote = Join-Path $dir '_remote.repositories'
+    $local  = (Test-Path $remote) -and (Select-String -Path $remote -SimpleMatch "$a-$v.jar>=" -Quiet)
+    if ((Test-Path $jar) -and $local) { Copy-Item $jar $Out -Force } else { $Missing.Add($coord) }
+}
+
+Write-Host ''
+Write-Host "Collected $($Artifacts.Count - $Missing.Count) of $($Artifacts.Count) JARs into $Out"
+foreach ($m in $Missing) { Write-Host "  missing: $m" }
+foreach ($f in $Failed)  { Write-Host "  failed build: $f" }
+if ($Missing.Count -gt 0) { exit 1 }

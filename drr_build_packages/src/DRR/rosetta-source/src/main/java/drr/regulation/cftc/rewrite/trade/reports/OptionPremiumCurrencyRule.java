@@ -1,0 +1,49 @@
+package drr.regulation.cftc.rewrite.trade.reports;
+
+import cdm.base.staticdata.asset.common.ISOCurrencyCodeEnum;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.reports.ReportFunction;
+import drr.regulation.cftc.rewrite.trade.functions.IsAllowableActionForCFTC;
+import drr.regulation.common.TransactionReportInstruction;
+import javax.inject.Inject;
+
+
+@ImplementedBy(OptionPremiumCurrencyRule.OptionPremiumCurrencyRuleDefault.class)
+public abstract class OptionPremiumCurrencyRule implements ReportFunction<TransactionReportInstruction, ISOCurrencyCodeEnum> {
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected IsAllowableActionForCFTC isAllowableActionForCFTC;
+	@Inject protected drr.standards.iosco.cde.version3.price.reports.OptionPremiumCurrencyRule optionPremiumCurrencyRule;
+
+	/**
+	* @param input 
+	* @return output 
+	*/
+	@Override
+	public ISOCurrencyCodeEnum evaluate(TransactionReportInstruction input) {
+		ISOCurrencyCodeEnum output = doEvaluate(input);
+		
+		return output;
+	}
+
+	protected abstract ISOCurrencyCodeEnum doEvaluate(TransactionReportInstruction input);
+
+	public static class OptionPremiumCurrencyRuleDefault extends OptionPremiumCurrencyRule {
+		@Override
+		protected ISOCurrencyCodeEnum doEvaluate(TransactionReportInstruction input) {
+			ISOCurrencyCodeEnum output = null;
+			return assignOutput(output, input);
+		}
+		
+		protected ISOCurrencyCodeEnum assignOutput(ISOCurrencyCodeEnum output, TransactionReportInstruction input) {
+			final MapperS<TransactionReportInstruction> thenArg = MapperS.of(input)
+				.filterSingleNullSafe(item -> isAllowableActionForCFTC.evaluate(item.get()));
+			output = thenArg
+				.mapSingleToItem(item -> MapperS.of(optionPremiumCurrencyRule.evaluate(item.get()))).get();
+			
+			return output;
+		}
+	}
+}

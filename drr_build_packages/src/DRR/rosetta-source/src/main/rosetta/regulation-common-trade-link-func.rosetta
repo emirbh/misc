@@ -1,0 +1,82 @@
+namespace drr.regulation.common.trade.link
+version "${project.version}"
+
+import cdm.event.qualification.*
+
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version3.* as cde
+
+func GetPriorTransactionIdentifier:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        regime RegimeNameEnum (1..1)
+    output:
+        uti string (1..1)
+
+    alias AfterTradeIdentifier:
+        TradeForEvent(transactionReportInstruction) -> tradeIdentifier first -> assignedIdentifier -> identifier
+    alias BeforeTradeIdentifier:
+        BeforeTradeForEvent(transactionReportInstruction) -> tradeIdentifier first -> assignedIdentifier -> identifier
+
+    set uti:
+        if AfterTradeIdentifier exists
+                and BeforeTradeIdentifier exists
+                and AfterTradeIdentifier <> BeforeTradeIdentifier
+                and Qualify_Compression(
+                        transactionReportInstruction -> originatingWorkflowStep -> businessEvent
+                    ) = False
+        then cde.link.PriorUTI(transactionReportInstruction)
+        else (transactionReportInstruction -> reportableInformation -> jurisdictionInformation
+            then filter regimeName = regime
+            then extract transactionInformation -> priorTransactionIdentifier
+            then filter identifierType = UniqueTransactionIdentifier
+            then extract assignedIdentifier -> identifier
+            then flatten
+            then distinct
+            then only-element)
+
+func TechnicalRecordId:
+    inputs:
+        reportableInformation ReportableInformation (1..1)
+        regime RegimeNameEnum (1..1)
+    output:
+        technicalRecordIdentifier TechnicalRecordId (1..1)
+
+    set technicalRecordIdentifier:
+        reportableInformation -> jurisdictionInformation
+            then filter regimeName = regime
+            then extract partyInformation -> technicalRecordId
+            then flatten distinct only-element
+
+func MessageID: <"Determines the unique trade Message ID by concatenating the ID with the Reporting Timestamp field.">
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        regimeName RegimeNameEnum (1..1)
+    output:
+        messageID string (0..1)
+
+    set messageID:
+        transactionReportInstruction
+            then extract ReportableEvent [
+                if TechnicalRecordId(reportableInformation, regimeName) -> isUnique
+                then TechnicalRecordId(reportableInformation, regimeName) -> id
+                else (TechnicalRecordId(reportableInformation, regimeName) -> id default originatingWorkflowStep -> messageInformation -> messageId
+                    then extract
+                        item + (cde.datetime.ReportingTimestamp(ReportableEvent) to-string))
+            ]
+
+func PostPricedSwapIndicator: <"Specifies whether the transaction in a certain jurisdiction satisfies the definition of a Post-priced Swap">
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        supervisory SupervisoryBodyEnum (1..1)
+    output:
+        result boolean (0..1)
+
+    set result:
+        transactionReportInstruction -> reportableInformation -> jurisdictionInformation
+            then filter supervisoryBody = supervisory
+            then only-element
+            then extract partyInformation -> postPricedIndicator distinct
+            then if item exists then item else False
+            then only-element

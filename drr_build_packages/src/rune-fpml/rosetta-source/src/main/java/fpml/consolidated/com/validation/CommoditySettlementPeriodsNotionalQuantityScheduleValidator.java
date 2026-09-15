@@ -1,0 +1,36 @@
+package fpml.consolidated.com.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.com.CommoditySettlementPeriodsNotionalQuantitySchedule;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class CommoditySettlementPeriodsNotionalQuantityScheduleValidator implements Validator<CommoditySettlementPeriodsNotionalQuantitySchedule> {
+
+	private List<ComparisonResult> getComparisonResults(CommoditySettlementPeriodsNotionalQuantitySchedule o) {
+		return Lists.<ComparisonResult>newArrayList(
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, CommoditySettlementPeriodsNotionalQuantitySchedule o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("CommoditySettlementPeriodsNotionalQuantitySchedule", ValidationResult.ValidationType.CARDINALITY, "CommoditySettlementPeriodsNotionalQuantitySchedule", path, "", res.getError());
+				}
+				return success("CommoditySettlementPeriodsNotionalQuantitySchedule", ValidationResult.ValidationType.CARDINALITY, "CommoditySettlementPeriodsNotionalQuantitySchedule", path, "");
+			})
+			.collect(toList());
+	}
+
+}

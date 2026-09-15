@@ -1,0 +1,79 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "cleared" : "N",
+  "counterparty1" : "213800IV9PCAC364HN60",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "213800WWTABZ1GOJHH37",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "001229414555123459991234569BR7771234567892024-04-29T00:00Z",
+    "primaryAssetClass" : "Commodity",
+    "submittedForParty" : "213800IV9PCAC364HN60",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "COMMODITYSWAPMETAL01",
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ]
+  },
+  "effectiveDate" : "2014-02-01",
+  "eventIdentifier" : "001229414555123459991234569BR777123456789",
+  "eventTimestamp" : "2019-03-21T17:37:38Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2022-03-17T14:44:58Z",
+  "expirationDate" : "2014-05-21",
+  "finalContractualSettlementDate" : "2014-05-21",
+  "leg1" : {
+    "payerIdentifier" : "213800IV9PCAC364HN60",
+    "quantityUnitOfMeasure" : "TONE",
+    "receiverIdentifier" : "213800WWTABZ1GOJHH37",
+    "settlementCurrency" : "USD",
+    "spread" : {
+      "monetary" : 326.4
+    },
+    "spreadCurrency" : "USD",
+    "spreadNotation" : "Monetary",
+    "totalNotionalQuantity" : 3744.57
+  },
+  "leg2" : {
+    "payerIdentifier" : "213800WWTABZ1GOJHH37",
+    "quantityUnitOfMeasure" : "TONE",
+    "receiverIdentifier" : "213800IV9PCAC364HN60",
+    "settlementCurrency" : "USD",
+    "spread" : {
+      "monetary" : 0
+    },
+    "spreadCurrency" : "USD",
+    "spreadNotation" : "Monetary",
+    "totalNotionalQuantity" : 3744.57
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "ReturnorPayoutTrigger" : "Total Return",
+          "UnderlierID" : "OIL-WTI-PLATTS MARKETWIRE",
+          "UnderlierIDSource" : "COMM"
+        },
+        "Header" : {
+          "AssetClass" : "Commodities",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Swap"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "platformIdentifier" : "XXXX",
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "213800IV9PCAC364HN60",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTICOMMODITYSWAP0263"
+}

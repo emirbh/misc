@@ -1,0 +1,65 @@
+namespace drr.regulation.common.trade.datetime
+version "${project.version}"
+
+import cdm.base.datetime.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version3.* as cde
+
+reporting rule ClearingTimestamp from TransactionReportInstruction: <"Clearing Timestamp">
+    extract originatingWorkflowStep -> timestamp
+    then filter qualification = clearingDateTime
+    then only-element
+    then extract dateTime
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"Expiration Date">
+    extract GetExpirationDate
+
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective Date">
+    extract
+        if Qualify_InterestRate_Fra(ProductForEvent -> economicTerms)
+        then (if TradeForEvent exists
+            then TradeForEvent -> tradeDate
+            else if PositionForEvent exists
+            then PositionForEvent -> openDateTime -> date)
+        else cde.datetime.EffectiveDate
+
+reporting rule MaturityDateOfTheUnderlier from TransactionReportInstruction: <"Maturity date of the underlier">
+    extract ProductForEvent
+    then extract
+        if product.IsIRSwaption or product.IsCreditSwaption or product.IsCommoditySwaption
+        then cde.datetime.ExpirationDate(
+                    underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+                )
+
+reporting rule FixingDate from PayoutLegWithAuxiliary: <"Fixing date-Leg 2">
+    extract payout [
+        payout -> interestRatePayout -> settlementTerms
+            then default payout -> optionPayout -> settlementTerms
+            then default payout -> settlementPayout -> settlementTerms
+            then default payout -> settlementTerms
+    ]
+    then extract
+        cashSettlementTerms only-element -> valuationDate -> fxFixingDate -> fxFixingDate -> adjustableDate
+    then extract adjustedDate default unadjustedDate
+    then ToDateTime
+
+reporting rule ConfirmationTimestamp from TransactionReportInstruction: <"Confirmation Timestamp">
+    extract
+        if event.IsCleared(originatingWorkflowStep) = False
+        then originatingWorkflowStep -> timestamp
+    then filter qualification = confirmationDateTime
+    then distinct only-element
+    then extract dateTime
+
+reporting rule ClearingReceiptTimestamp from TransactionReportInstruction: <"Clearing Receipt Timestamp">
+    extract
+        if ((event.IsCleared(originatingWorkflowStep) or (event.IntendedToClear(originatingWorkflowStep) and event.IsActionTypeTERM))
+                and cde.event.EventType = CLRG)
+        then originatingWorkflowStep -> timestamp
+    then filter qualification = clearingReceiptDateTime
+    then only-element
+    then extract dateTime

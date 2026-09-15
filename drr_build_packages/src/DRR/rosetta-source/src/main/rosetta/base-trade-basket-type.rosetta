@@ -1,0 +1,17 @@
+namespace drr.base.trade.basket
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.standards.iso.*
+
+type CustomBasket: <"Specifies the identifiers for custom Basket">
+    basketStructurerLei PartyIdentifier (1..1)
+    customBasketCode string (0..1)
+
+type BasketConstituentsReport:
+    identifier Max210Text (0..1)
+    source AssetIdTypeEnum (0..1)
+    numberOfUnits Max18D13Number (0..1)
+    unitOfMeasure Max4Text (0..1)

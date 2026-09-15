@@ -1,0 +1,107 @@
+namespace drr.standards.iosco.uti
+version "${project.version}"
+
+import cdm.event.common.*
+
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+func UniqueTransactionIdentifier_Validation: <"UniqueTransactionIdentifier.">
+    inputs:
+        uniqueTransactionIdentifier Max52AlphaNumericText (0..1)
+        uniqueTransactionIdentifierProprietary UTIProprietaryIDFormat (0..1)
+        priorUTI Max52AlphaNumericText (0..1)
+        priorUTIProprietary UTIProprietaryIDFormat (0..1)
+        actionType ActionTypeEnum (1..1)
+    output:
+        result boolean (0..1)
+    set result:
+        if [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> REVI] any = actionType
+        then (uniqueTransactionIdentifier <> priorUTI
+                and uniqueTransactionIdentifierProprietary <> priorUTIProprietary)
+                and (if ActionTypeEnum -> NEWT = actionType
+                            and uniqueTransactionIdentifierProprietary exists
+                    then uniqueTransactionIdentifier is absent
+                    else True)
+
+func GetUniqueSwapIdentifier:
+// TH 25/04/25: A generalized function merging GetUniqueTransactionIdentifier and GetUniqueSwapIdentifier needs to be considered
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+        supervisoryBody SupervisoryBodyEnum (1..*)
+    output:
+        uti string (1..1)
+
+    set uti:
+        if GetRegimeSpecificIdentifiers(
+                transaction -> reportableInformation,
+                supervisoryBody,
+                UniqueSwapIdentifier
+            )
+            exists
+        then GetRegimeSpecificIdentifiers(
+                    transaction -> reportableInformation,
+                    supervisoryBody,
+                    UniqueSwapIdentifier
+                )
+        else if TradeForEvent(transaction) exists
+        then (TradeForEvent(transaction) -> tradeIdentifier
+            filter identifierType = UniqueSwapIdentifier
+            then assignedIdentifier -> identifier)
+        else if PositionForEvent(transaction) exists
+        then (PositionForEvent(transaction) -> positionIdentifier
+            filter identifierType = UniqueSwapIdentifier
+            then assignedIdentifier -> identifier)
+            then distinct
+            then only-element
+
+func GetUniqueTransactionIdentifier: <"Extracts the Unique Transaction Identifier for Valuation and Margin">
+    inputs:
+        reportableInformation ReportableInformation (1..1)
+        supervisoryBody SupervisoryBodyEnum (1..*)
+        utidentifier TradeIdentifier (0..1)
+        transaction TransactionReportInstruction (0..1)
+    output:
+        uti string (1..1)
+
+    alias utiFromReportableInformation:
+        GetRegimeSpecificIdentifiers(
+                reportableInformation,
+                supervisoryBody,
+                UniqueTransactionIdentifier
+            ) default utidentifier -> assignedIdentifier -> identifier
+
+    alias utiFromTrade:
+        (TradeForEvent(transaction) -> tradeIdentifier
+            filter identifierType = UniqueTransactionIdentifier
+            then assignedIdentifier -> identifier)
+
+    alias utiFromPosition:
+        (PositionForEvent(transaction) -> positionIdentifier
+            filter identifierType = UniqueTransactionIdentifier
+            then assignedIdentifier -> identifier)
+
+    set uti:
+        ((utiFromReportableInformation default utiFromTrade) default utiFromPosition)
+            then distinct only-element
+
+func UniqueSwapIdentifierForValuation:
+    inputs:
+        valuationReportInstruction ValuationReportInstruction (1..1)
+        supervisoryBody SupervisoryBodyEnum (1..*)
+    output:
+        usi string (1..1)
+
+    set usi:
+        GetRegimeSpecificIdentifiers(
+                valuationReportInstruction -> reportableInformation,
+                supervisoryBody,
+                UniqueSwapIdentifier
+            )
+            default (valuationReportInstruction -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier
+                then filter identifierType = UniqueSwapIdentifier
+                then extract assignedIdentifier -> identifier
+                )
+            then distinct
+            then only-element

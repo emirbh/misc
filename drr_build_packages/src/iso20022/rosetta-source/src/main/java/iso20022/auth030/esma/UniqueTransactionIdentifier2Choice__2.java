@@ -1,0 +1,275 @@
+package iso20022.auth030.esma;
+
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import iso20022.auth030.esma.meta.UniqueTransactionIdentifier2Choice__2Meta;
+import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * Element is a choice between a standard identifier and a proprietary code.
+ * @version ${project.version}
+ */
+@RosettaDataType(value="UniqueTransactionIdentifier2Choice__2", builder=UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2BuilderImpl.class, version="${project.version}")
+@RuneDataType(value="UniqueTransactionIdentifier2Choice__2", model="iso20022", builder=UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2BuilderImpl.class, version="${project.version}")
+public interface UniqueTransactionIdentifier2Choice__2 extends RosettaModelObject {
+
+	UniqueTransactionIdentifier2Choice__2Meta metaData = new UniqueTransactionIdentifier2Choice__2Meta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 * Unique trade identifier (UTI) as agreed with the counterparty.
+	 */
+	String getUnqTxIdr();
+	/**
+	 * Trade identifier expressed in a proprietary notation.
+	 */
+	GenericIdentification175__2 getPrtry();
+
+	/*********************** Build Methods  ***********************/
+	UniqueTransactionIdentifier2Choice__2 build();
+	
+	UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder toBuilder();
+	
+	static UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder builder() {
+		return new UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2BuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends UniqueTransactionIdentifier2Choice__2> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends UniqueTransactionIdentifier2Choice__2> getType() {
+		return UniqueTransactionIdentifier2Choice__2.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("unqTxIdr"), String.class, getUnqTxIdr(), this);
+		processRosetta(path.newSubPath("prtry"), processor, GenericIdentification175__2.class, getPrtry());
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface UniqueTransactionIdentifier2Choice__2Builder extends UniqueTransactionIdentifier2Choice__2, RosettaModelObjectBuilder {
+		GenericIdentification175__2.GenericIdentification175__2Builder getOrCreatePrtry();
+		@Override
+		GenericIdentification175__2.GenericIdentification175__2Builder getPrtry();
+		UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder setUnqTxIdr(String unqTxIdr);
+		UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder setPrtry(GenericIdentification175__2 prtry);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("unqTxIdr"), String.class, getUnqTxIdr(), this);
+			processRosetta(path.newSubPath("prtry"), processor, GenericIdentification175__2.GenericIdentification175__2Builder.class, getPrtry());
+		}
+		
+
+		UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder prune();
+	}
+
+	/*********************** Immutable Implementation of UniqueTransactionIdentifier2Choice__2  ***********************/
+	class UniqueTransactionIdentifier2Choice__2Impl implements UniqueTransactionIdentifier2Choice__2 {
+		private final String unqTxIdr;
+		private final GenericIdentification175__2 prtry;
+		
+		protected UniqueTransactionIdentifier2Choice__2Impl(UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder builder) {
+			this.unqTxIdr = builder.getUnqTxIdr();
+			this.prtry = ofNullable(builder.getPrtry()).map(f->f.build()).orElse(null);
+		}
+		
+		@Override
+		@RosettaAttribute("unqTxIdr")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("unqTxIdr")
+		public String getUnqTxIdr() {
+			return unqTxIdr;
+		}
+		
+		@Override
+		@RosettaAttribute("prtry")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("prtry")
+		public GenericIdentification175__2 getPrtry() {
+			return prtry;
+		}
+		
+		@Override
+		public UniqueTransactionIdentifier2Choice__2 build() {
+			return this;
+		}
+		
+		@Override
+		public UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder toBuilder() {
+			UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder builder) {
+			ofNullable(getUnqTxIdr()).ifPresent(builder::setUnqTxIdr);
+			ofNullable(getPrtry()).ifPresent(builder::setPrtry);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			UniqueTransactionIdentifier2Choice__2 _that = getType().cast(o);
+		
+			if (!Objects.equals(unqTxIdr, _that.getUnqTxIdr())) return false;
+			if (!Objects.equals(prtry, _that.getPrtry())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (unqTxIdr != null ? unqTxIdr.hashCode() : 0);
+			_result = 31 * _result + (prtry != null ? prtry.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "UniqueTransactionIdentifier2Choice__2 {" +
+				"unqTxIdr=" + this.unqTxIdr + ", " +
+				"prtry=" + this.prtry +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of UniqueTransactionIdentifier2Choice__2  ***********************/
+	class UniqueTransactionIdentifier2Choice__2BuilderImpl implements UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder {
+	
+		protected String unqTxIdr;
+		protected GenericIdentification175__2.GenericIdentification175__2Builder prtry;
+		
+		@Override
+		@RosettaAttribute("unqTxIdr")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("unqTxIdr")
+		public String getUnqTxIdr() {
+			return unqTxIdr;
+		}
+		
+		@Override
+		@RosettaAttribute("prtry")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("prtry")
+		public GenericIdentification175__2.GenericIdentification175__2Builder getPrtry() {
+			return prtry;
+		}
+		
+		@Override
+		public GenericIdentification175__2.GenericIdentification175__2Builder getOrCreatePrtry() {
+			GenericIdentification175__2.GenericIdentification175__2Builder result;
+			if (prtry!=null) {
+				result = prtry;
+			}
+			else {
+				result = prtry = GenericIdentification175__2.builder();
+			}
+			
+			return result;
+		}
+		
+		@RosettaAttribute("unqTxIdr")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("unqTxIdr")
+		@Override
+		public UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder setUnqTxIdr(String _unqTxIdr) {
+			this.unqTxIdr = _unqTxIdr == null ? null : _unqTxIdr;
+			return this;
+		}
+		
+		@RosettaAttribute("prtry")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("prtry")
+		@Override
+		public UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder setPrtry(GenericIdentification175__2 _prtry) {
+			this.prtry = _prtry == null ? null : _prtry.toBuilder();
+			return this;
+		}
+		
+		@Override
+		public UniqueTransactionIdentifier2Choice__2 build() {
+			return new UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Impl(this);
+		}
+		
+		@Override
+		public UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder prune() {
+			if (prtry!=null && !prtry.prune().hasData()) prtry = null;
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getUnqTxIdr()!=null) return true;
+			if (getPrtry()!=null && getPrtry().hasData()) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder o = (UniqueTransactionIdentifier2Choice__2.UniqueTransactionIdentifier2Choice__2Builder) other;
+			
+			merger.mergeRosetta(getPrtry(), o.getPrtry(), this::setPrtry);
+			
+			merger.mergeBasic(getUnqTxIdr(), o.getUnqTxIdr(), this::setUnqTxIdr);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			UniqueTransactionIdentifier2Choice__2 _that = getType().cast(o);
+		
+			if (!Objects.equals(unqTxIdr, _that.getUnqTxIdr())) return false;
+			if (!Objects.equals(prtry, _that.getPrtry())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (unqTxIdr != null ? unqTxIdr.hashCode() : 0);
+			_result = 31 * _result + (prtry != null ? prtry.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "UniqueTransactionIdentifier2Choice__2Builder {" +
+				"unqTxIdr=" + this.unqTxIdr + ", " +
+				"prtry=" + this.prtry +
+			'}';
+		}
+	}
+}

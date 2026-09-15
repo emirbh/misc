@@ -1,0 +1,112 @@
+namespace drr.standards.iosco.cde.version1.quantity
+version "${project.version}"
+
+import cdm.base.*
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.*
+import drr.base.trade.*
+import drr.base.util.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version1.* as cdeV1
+import drr.standards.iso.*
+
+reporting rule Delta from TransactionReportInstructionBase: <"Delta">
+    extract DeltaFromValuation(valuation.GetValuation)
+
+reporting rule CallAmount from TransactionReportInstructionBase: <"Call Amount"> //If merge conflicts take Vineets PR
+    [docReference CPMI_IOSCO cdeV1.CDE section "2" field "72"
+        provision "For foreign exchange options, the monetary amount that the option gives the right to buy."]
+    [docReference ISDA ISDAWorkingGroup date "20210728" // BlackRock
+        provision "The Call Amount can be determined as the currency amount being received by the buyer of the option"]
+    quantity.GetTradeForQuantity
+        filter Qualify_AssetClass_ForeignExchange(product -> economicTerms)
+        then OptionAmountAndCurrency(
+                    EconomicTermsForProduct(product) -> payout -> OptionPayout only-element,
+                    tradeLot -> priceQuantity -> quantity,
+                    Call
+                ) -> value
+        then FormatToShortFraction5DecimalNumber
+        then if item > 0 then item
+
+reporting rule PutAmount from TransactionReportInstructionBase: <"Put Amount"> //If merge conflicts take Vineets PR
+    [docReference CPMI_IOSCO cdeV1.CDE section "2" field "73"
+        provision "For foreign exchange options, the monetary amount that the option gives the right to sell."]
+    [docReference ISDA ISDAWorkingGroup date "20210728" // REGnosys
+        provision "The Call Amount can be determined as the currency amount being received by the buyer of the option"]
+    quantity.GetTradeForQuantity
+        filter Qualify_AssetClass_ForeignExchange(product -> economicTerms)
+        then OptionAmountAndCurrency(
+                    EconomicTermsForProduct(product) -> payout -> OptionPayout only-element,
+                    tradeLot -> priceQuantity -> quantity,
+                    Put
+                ) -> value
+        then FormatToShortFraction5DecimalNumber
+        then if item > 0 then item
+
+reporting rule CallCurrency from TransactionReportInstructionBase: <"Call Currency">
+    [docReference CPMI_IOSCO cdeV1.CDE section "2" field "75"
+        provision "For foreign exchange options, the currency in which the Call amount is denominated."]
+    [docReference ISDA ISDAWorkingGroup date "unknown" // REGnosys-Saeid
+        provision "The call currency is determined by a validation rule which determines who is the buyer of the option."]
+    quantity.GetTradeForQuantity
+        filter Qualify_AssetClass_ForeignExchange(product -> economicTerms)
+        then OptionAmountAndCurrency(
+                    EconomicTermsForProduct(product) -> payout -> OptionPayout only-element,
+                    tradeLot -> priceQuantity -> quantity,
+                    Call
+                ) -> unit -> currency
+        then extract ConvertNonISOToISOCurrency
+
+reporting rule PutCurrency from TransactionReportInstructionBase: <"Put Currency">
+    [docReference CPMI_IOSCO cdeV1.CDE section "2" field "76"
+        provision "For foreign exchange options, the currency in which the Put amount is denominated."]
+    [docReference ISDA ISDAWorkingGroup date "unknown" // REGnosys-Saeid
+        provision "The put currency is determined by a validation rule which determines who is the buyer of the option."]
+    quantity.GetTradeForQuantity
+        filter Qualify_AssetClass_ForeignExchange(product -> economicTerms)
+        then OptionAmountAndCurrency(
+                    EconomicTermsForProduct(product) -> payout -> OptionPayout only-element,
+                    tradeLot -> priceQuantity -> quantity,
+                    Put
+                ) -> unit -> currency
+        then extract ConvertNonISOToISOCurrency
+
+reporting rule NotionalCurrency from PayoutLegWithAuxiliary: <"Notional Currency">
+    Notional then quantity.CurrencyFromNotional
+
+reporting rule NotionalAmountSchedule from PayoutLegWithAuxiliary:
+    quantity.QuantitySchedule
+        then filter unit -> currency exists
+        then extract datedValue
+        then extract notionalAmountPeriod [
+            // use value and dates from quantity period
+            quantity.NotionalPeriod {
+                value: notionalAmountPeriod -> value
+                        then FormatToNonNegativeShortFraction5DecimalNumber,
+                effectiveDate: notionalAmountPeriod -> date,
+                endDate: empty
+            }
+        ]
+
+reporting rule NotionalQuantitySchedule from PayoutLegWithAuxiliary:
+    datetime.EnrichDatedValueWithEndDate(
+            quantity.QuantitySchedule
+                then filter unit -> currency is absent
+                then extract datedValue,
+            quantity.CustomSchedule
+        )
+        extract
+            quantity.NotionalPeriod {
+                value: value then FormatToShortFraction5DecimalNumber,
+                effectiveDate: effectiveDate,
+                endDate: endDate
+            }
+
+reporting rule CommodityOptionNotional from OptionPayout: <"Commodity Option Notional">
+    if strike -> strikePrice -> value exists
+    then if priceQuantity -> quantitySchedule -> value exists
+        then strike -> strikePrice -> value * priceQuantity -> quantitySchedule -> value
+        else if priceQuantity -> quantitySchedule -> datedValue exists
+        then strike -> strikePrice -> value * priceQuantity -> quantitySchedule -> datedValue -> value sum

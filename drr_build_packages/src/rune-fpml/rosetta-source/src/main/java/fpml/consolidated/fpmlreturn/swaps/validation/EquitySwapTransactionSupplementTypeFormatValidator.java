@@ -1,0 +1,41 @@
+package fpml.consolidated.fpmlreturn.swaps.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.fpmlreturn.swaps.EquitySwapTransactionSupplement;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkNumber;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.stream.Collectors.toList;
+
+public class EquitySwapTransactionSupplementTypeFormatValidator implements Validator<EquitySwapTransactionSupplement> {
+
+	private List<ComparisonResult> getComparisonResults(EquitySwapTransactionSupplement o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkNumber("breakFeeRate", o.getBreakFeeRate(), empty(), empty(), of(new BigDecimal("0")), empty())
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, EquitySwapTransactionSupplement o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("EquitySwapTransactionSupplement", ValidationResult.ValidationType.TYPE_FORMAT, "EquitySwapTransactionSupplement", path, "", res.getError());
+				}
+				return success("EquitySwapTransactionSupplement", ValidationResult.ValidationType.TYPE_FORMAT, "EquitySwapTransactionSupplement", path, "");
+			})
+			.collect(toList());
+	}
+
+}

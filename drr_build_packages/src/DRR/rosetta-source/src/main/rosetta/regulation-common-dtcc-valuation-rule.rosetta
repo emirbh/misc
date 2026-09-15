@@ -1,0 +1,148 @@
+namespace drr.regulation.common.dtcc.valuation
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+
+reporting rule DTCC_TradeParty1IDType from ValuationReportInstruction: <"Trade Party 1 - ID Type">
+    extract
+        if PartyLei(reportingSide -> reportingParty -> partyId) exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_SubmittingPartyIDType from ValuationReportInstruction: <"Submitting Party - ID Type">
+    extract
+        if ExtractReportSubmittingPartyIdentifier(reportingSide) exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_SubmittedForParty from ValuationReportInstruction: <"Submitted For Party">
+    extract PartyLei(reportingSide -> reportingParty -> partyId)
+
+reporting rule DTCC_TradeParty1ReportingDestination from ValuationReportInstruction: <"Trade Party 1 - Reporting Destination">
+    extract valuation [
+        reportableInformation -> jurisdictionInformation
+            then filter
+                csaTrade.SupervisoryBodyForCSA any = supervisoryBody
+                    or [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC] any = supervisoryBody
+            then filter
+                partyInformation -> partyReference any = valuation -> reportingSide -> reportingParty
+            then distinct
+            then extract supervisoryBody
+    ]
+
+reporting rule DTCC_TradeParty2ReportingDestination from ValuationReportInstruction: <"Trade Party 2 - Reporting Destination">
+    extract valuation [
+        reportableInformation -> jurisdictionInformation
+            then filter
+                csaTrade.SupervisoryBodyForCSA all <> supervisoryBody
+                    and [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC] all <> supervisoryBody
+            then filter
+                partyInformation -> partyReference any = valuation -> reportingSide -> reportingCounterparty
+            then distinct
+            then extract supervisoryBody
+    ]
+
+reporting rule DTCC_PrimaryAssetClass from ValuationReportInstruction: <"Primary Asset Class">
+    extract valuationDetails -> tradeInformation -> assetClass
+    then extract
+        if item = INTR
+        then AssetClassEnum -> InterestRate
+        else if item = CRDT
+        then AssetClassEnum -> Credit
+        else if item = EQUI
+        then AssetClassEnum -> Equity
+        else if item = COMM
+        then AssetClassEnum -> Commodity
+        else if item = CURR
+        then AssetClassEnum -> ForeignExchange
+
+reporting rule DTCC_Comment1 from ValuationReportInstruction: <"Comment 1">
+    empty
+
+reporting rule DTCC_MessageID from ValuationReportInstruction: <"Message ID">
+    extract
+        if common.link.TechnicalRecordId(reportableInformation, DoddFrankAct) -> isUnique
+        then common.link.TechnicalRecordId(reportableInformation, DoddFrankAct) -> id
+        else common.link.TechnicalRecordId(reportableInformation, DoddFrankAct) -> id + (valuation.datetime.ReportingTimestamp to-string)
+
+reporting rule DTCC_MessageType from ValuationReportInstruction: <"Message Type">
+    "Valuation"
+
+reporting rule DTCC_TradeParty2ExecutionAgentID from ValuationReportInstruction: <"Trade Party 2 - Execution Agent ID">
+    extract reportableValuation [
+        reportableValuation -> reportableInformation -> globalPartyInformation
+            filter
+                partyReference = reportableValuation -> reportingSide -> reportingCounterparty
+            then distinct only-element
+            then extract
+                ExtractPartyFromRelatedPartyByRole(
+                        relatedParty,
+                        PartyRoleEnum -> ExecutionAgent
+                    )
+            then extract PartyLei(partyId)
+    ]
+
+reporting rule DTCC_TradeParty2ExecutionAgentIDType from ValuationReportInstruction: <"Trade Party 2 - Execution Agent ID Type">
+    extract reportableValuation [
+        reportableValuation -> reportableInformation -> globalPartyInformation
+            filter
+                partyReference = reportableValuation -> reportingSide -> reportingCounterparty
+            then distinct only-element
+            then extract
+                ExtractPartyFromRelatedPartyByRole(
+                        relatedParty,
+                        PartyRoleEnum -> ExecutionAgent
+                    )
+            then extract
+                if PartyLei(partyId) exists
+                then PartyIdentifierTypeEnum -> LEI
+    ]
+
+reporting rule DTCC_TradeParty1ExecutionAgentID from ValuationReportInstruction: <"Trade Party 1 - Execution Agent ID">
+    extract reportableValuation [
+        reportableValuation -> reportableInformation -> globalPartyInformation
+            filter partyReference = reportableValuation -> reportingSide -> reportingParty
+            then distinct only-element
+            then extract
+                ExtractPartyFromRelatedPartyByRole(
+                        relatedParty,
+                        PartyRoleEnum -> ExecutionAgent
+                    )
+            then extract PartyLei(partyId)
+    ]
+
+reporting rule DTCC_TradeParty1ExecutionAgentIDType from ValuationReportInstruction: <"Trade Party 1 - Execution Agent ID Type">
+    extract reportableValuation [
+        reportableValuation -> reportableInformation -> globalPartyInformation
+            then filter
+                partyReference = reportableValuation -> reportingSide -> reportingParty
+            then distinct only-element
+            then extract
+                ExtractPartyFromRelatedPartyByRole(
+                        relatedParty,
+                        PartyRoleEnum -> ExecutionAgent
+                    )
+            then extract
+                if PartyLei(partyId) exists
+                then PartyIdentifierTypeEnum -> LEI
+    ]
+
+reporting rule DTCC_TradeParty1TransactionID from ValuationReportInstruction: <"Trade Party 1 - Transaction ID">
+    extract valuationReportInstruction [
+        valuationDetails -> tradeInformation -> uniqueTradeIdentifier
+            then filter
+                issuerReference = valuationReportInstruction -> reportingSide -> reportingParty
+            then filter
+                identifierType <> UniqueTransactionIdentifier
+                    and identifierType <> UniqueSwapIdentifier
+            then extract assignedIdentifier -> identifier
+            then distinct
+            then only-element
+    ]
+
+reporting rule DTCC_Version from ValuationReportInstruction: <"Version">
+    "CORE1.0"

@@ -1,0 +1,111 @@
+namespace drr.base.util.datetime
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.datetime.*
+import cdm.base.math.*
+import cdm.product.template.*
+
+func AdjustableDateResolution: <"A fall back for unadjustedDate when adjustedDate is only available. If an adjusted date is only provided then fields requiring an unadjusted date are left blank which will result in a NACK from the TR.">
+    inputs:
+        adjustableDate AdjustableDate (1..1)
+    output:
+        date date (0..1)
+
+    set date:
+        if adjustableDate -> unadjustedDate exists
+        then adjustableDate -> unadjustedDate
+        else adjustableDate -> adjustedDate
+
+func MinAdjustableDateResolution: <"Finds the earliest date in the list.">
+    inputs:
+        adjustableDates AdjustableDate (0..*)
+    output:
+        date date (0..1)
+
+    set date:
+        adjustableDates
+            extract AdjustableDateResolution(item)
+            then min
+
+func MaxAdjustableDate:
+    inputs:
+        date1 AdjustableDate (0..1)
+        date2 AdjustableDate (0..1)
+    output:
+        date date (0..1)
+
+    set date:
+        if AdjustableDateResolution(date1) > AdjustableDateResolution(date2)
+        then AdjustableDateResolution(date1)
+        else AdjustableDateResolution(date2)
+
+func AdjustableDatesResolution: <"A fall back for unadjustedDate when adjustedDate is only available. If an adjusted date is only provided then fields requiring an unadjusted date are left blank which will result in a NACK from the TR.">
+    inputs:
+        adjustableDates AdjustableDates (1..1)
+    output:
+        date date (0..*)
+
+    add date:
+        if adjustableDates -> unadjustedDate exists
+        then adjustableDates -> unadjustedDate
+        else adjustableDates -> adjustedDate
+
+func AdjustableOrAdjustedOrRelativeDateResolution:
+    inputs:
+        adjustableDate AdjustableOrAdjustedOrRelativeDate (1..1)
+    output:
+        date date (0..1)
+    set date:
+        if adjustableDate -> unadjustedDate exists
+        then adjustableDate -> unadjustedDate
+        else adjustableDate -> adjustedDate
+
+// TH Review: Date comparison results:
+// .    - result is empty if date is empty
+// - result < 0 -> date is lesser than;
+// - result > 0 -> date is greater than;
+// - result = 0 -> date is equal
+func CompareDateTo:
+    inputs:
+        date date (0..1)
+        year int (1..1)
+        month int (1..1)
+        day int (1..1)
+    output:
+        result int (0..1)
+
+    set result:
+        if date is absent
+        then empty
+        else if date -> year <> year
+        then date -> year - year
+        else if date -> month <> month
+        then date -> month - month
+        else if date -> day <> day
+        then date -> day - day
+        else 0
+
+func EnrichDatedValueWithEndDate:
+    inputs:
+        datedValue DatedValue (0..*)
+        calculationSchedule CalculationSchedule (0..1)
+    output:
+        valuePeriod ValuePeriod (1..*)
+    add valuePeriod:
+        datedValue
+            extract period [
+                // loop through each datedValue
+                ValuePeriod {
+                    value: period -> value,
+                    effectiveDate: period -> date,
+                    endDate: if calculationSchedule exists
+                        then calculationSchedule -> schedulePeriod // then loop through each schedulePeriod
+                            filter customPeriod [
+                                period -> date = customPeriod -> calculationPeriod -> startDate
+                            ]
+                            then extract calculationPeriod -> endDate
+                            then only-element
+                }
+            ]
+            then sort [ item -> effectiveDate ]

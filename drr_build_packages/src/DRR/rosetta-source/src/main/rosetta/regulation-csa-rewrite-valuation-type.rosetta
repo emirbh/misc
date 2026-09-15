@@ -1,0 +1,243 @@
+namespace drr.regulation.csa.rewrite.valuation
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.*
+import drr.regulation.csa.rewrite.dtcc.valuation.*
+import drr.standards.iso.*
+
+type CSAValuationReport extends valuation.CommonValuationReport:
+    [rootType]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "15 Reporting timestamp"]
+        [docReference CSA Valuation dataElement "15" field "Reporting Timestamp"
+            provision "Date and time of the submission of the report as reported to the trade repository."]
+        [docReference CSA Valuation dataElement "15" field "Reporting Timestamp" footnote "14"
+            provision "Reporting timestamp (#15) is recorded and reported by the submitter."]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "1 Counterparty 1 (reporting counterparty)"]
+        [docReference CSA Valuation dataElement "1" field "Counterparty 1 (reporting counterparty)"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question. 
+        In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty.
+        In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty. However, if the allocation of the block trade to specific funds does not take place prior to the reporting deadline, then the fund manager executing the transaction behalf of the fund can be reported as the counterparty.
+        If a trading facility is fulfilling the reporting obligation, the identifier of Counterparty 1 identifies one of the counterparties to the transaction."]
+        [docReference CSA Valuation dataElement "1" field "Counterparty 1 (reporting counterparty)" footnote "4"
+            provision "References to OTC derivative and transaction in CDE data element explanations and in the Appendices to the Technical Manual should be read to mean derivative."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 1 (reporting counterparty)"
+            provision "The same CDE Counterparty 1 extraction is required."]
+        [docReference ISDA CanadianDataAndReporting date "20250508" field "Counterparty 1 (reporting counterparty)"
+            provision "Reporting firms on the WG call said they would be using an LEI. There is only a possible use case for crypto trades reporting by SEFs; however, DRR is not going to model this case until is demanded by firms."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "2 Counterparty 2 (non-reporting counterparty)"]
+        [docReference CSA Valuation dataElement "2" field "Counterparty 2"
+            provision "Identifier of the second counterparty to an OTC derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty. However, if the allocation of the block trade to specific funds does not take place prior to the reporting deadline, then the fund manager executing the transaction on behalf of the fund can be reported as the counterparty."]
+        [docReference CSA Valuation dataElement "2" field "Counterparty 2 (non-reporting counterparty)" footnote "5"
+            provision "Only one counterparty should be reported. In cases where multiple counterparties are legally responsible as the second counterparty (for example joint and several liability, or solidary liability in Quebec), report only one of the counterparties and use the same counterparty for all continuation data and lifecycle events."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 2 (non-reporting counterparty)"
+            provision "The same CDE Counterparty 2 extraction is required."]
+    override counterparty2IdentifierSource Max4Text (1..1)
+        [label "3 Counterparty 2 identifier source"]
+        [docReference CSA Valuation dataElement "3" field "Counterparty 2 Identifier Source"
+            provision "Source used to identify the Counterparty 2."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 2 Identifier Source"
+            provision "Improvement on the logic was done to consider first if person exists. If not, then consider party."]
+    override uniqueTransactionIdentifier UTIdentifier (1..1)
+        [label "16 Unique Transaction Identifier (UTI)"]
+        [docReference CSA Valuation dataElement "16" field "Unique Transaction Identifier (UTI)"
+            provision "A unique identifier assigned at the transaction or position level which identifies them uniquely throughout their lifecycle and used for all recordkeeping and reporting."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250327" field "Unique Transaction Identifier (UTI)"
+            provision "The group agreed on not considering [UTI ID Prefix] due to it comes from an old format and it had been agreed to only consider one field, that is [UTI ID], considering the concatenation of both fields. Thus, [UTI ID] is the only field that can be populated."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20251203" field "Unique Transaction Identifier (UTI)"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifier]
+    override actionType ActionTypeEnum (1..1)
+        [label "98 Action Type"]
+        [docReference CSA Valuation dataElement "98" field "Action Type"
+            provision "Type of action taken on the transaction or type of end-of-day reporting. See Appendix 3.8 for a description of the allowable values."]
+        [docReference CSA Valuation dataElement "98" field "Action Type" footnote "50"
+            provision "Only one Action type value is allowed per submission. Multiple Action type values should not be submitted in one transaction report. For example, if a data element needs to be corrected on a previously submitted transaction that is getting terminated, the Correct (CORR) value should be submitted as a separate submission prior to the submission of the Terminate (TERM) transaction."]
+    override valuationTimestamp zonedDateTime (1..1)
+        [label "104 Valuation Timestamp"]
+        [docReference CSA Valuation dataElement "104" field "Valuation Timestamp"
+            provision "Date and time of the last valuation marked to market, provided by the central counterparty (CCP) or calculated using the current or last available market price of the inputs. If for example a currency exchange rate is the basis for a transactions valuation, then the valuation timestamp reflects the moment in time that exchange rate was current."]
+        [docReference CSA Valuation dataElement "104" field "Valuation Timestamp" footnote "52"
+            provision "Reported by the clearing agency for cleared derivatives and by the derivatives dealer for uncleared derivatives."]
+        [docReference CSA Valuation dataElement "104" field "Valuation Timestamp" footnote "53"
+            provision "The timestamp portion is not required to be represented for Valuation timestamp. The format must be reported as YYYY-MM-DD."]
+    override valuationMethod ValuationType1Code (1..1)
+        [label "103 Valuation Method"]
+        [docReference CSA Valuation dataElement "103" field "Valuation Method"
+            provision "Source and method used for the valuation of the transaction by the reporting counterparty. If at least one valuation input is used that is classified as mark-to-model in Appendix 3.3, then the whole valuation is classified as mark-to-model. If only inputs are used that are classified as mark-tomarket in Appendix 3.3, then the whole valuation is classified as mark-to-market."]
+    override delta ShortFraction5DecimalNumber (0..1)
+        [label  "108 Delta"]
+        [docReference CSA Valuation dataElement "108" field "Delta"
+            provision "The ratio of the change in the price of an OTC derivative transaction to the change in the price of the underlier."]
+        [docReference CSA Valuation dataElement "108" field "Delta" footnote "54"
+            provision "Delta must be reported daily regardless of whether there is a change in the value since the last reporting."]
+    override valuationAmount ShortFraction5DecimalNumber (1..1)
+        [label "101 Valuation Amount"]
+        [docReference CSA Valuation dataElement "101" field "Valuation Amount"
+            provision "Current value of the outstanding contract without applying any valuation adjustments (some examples include XVA adjustment such as CVA, DVA, etc). Valuation amount is expressed as the exit cost of the contract or components of the contract, i.e., the price that would be received to sell the contract (in the market in an orderly transaction at the valuation date)."]
+        [docReference CSA Valuation dataElement "101" field "Valuation Amount" footnote "51"
+            provision "Valuation amount must be reported daily regardless of whether there is a change in the value since the last reporting."]
+    override valuationCurrency ISOCurrencyCodeEnum (1..1)
+            [label "102 Valuation Currency"]
+        [docReference CSA Valuation dataElement "102" field "Valuation Currency"
+            provision "Currency in which the valuation amount is denominated."]
+    override nextFloatingReferenceResetDateLeg1 ISODate (0..1)
+        [label "105 Next Floating Reference Reset Date-Leg 1"]
+        [docReference CSA Valuation dataElement "105" field "Next Floating Reference Reset Date-Leg 1"
+            provision "The nearest date in the future that the floating reference resets on."]
+    override nextFloatingReferenceResetDateLeg2 ISODate (0..1)
+        [label "105 Next Floating Reference Reset Date-Leg 2"]
+        [docReference CSA Valuation dataElement "105" field "Next Floating Reference Reset Date-Leg 2"
+            provision "The nearest date in the future that the floating reference resets on."]
+    override reportSubmittingEntityID string (1..1)
+        [label "21 Submitter identifier"]
+        [docReference CSA Valuation dataElement "21" field "Submitter Identifier"
+            provision "Identifier of the entity submitting the data to the swap data repository (TR), the submitter identifier will be the same as the reporting counterparty or  swap execution facility (SEF) unless they use a third-party service provider, to submit the data to SDR in which case, report the underlier of the third party service provider. "]
+        [docReference CSA Valuation dataElement "21" field "Submitter Identifier" footnote "15"
+            provision "References to swap data repository or SDR in CFTC data element explanations should be read to mean designated / recognized trade repository."]
+        [docReference CSA Valuation dataElement "21" field "Submitter Identifier" footnote "16"
+            provision "References to swap execution facility or SEF in CFTC data element explanations should be read to mean derivatives trading facility / facility or platform for trading derivatives."]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "93 Variation Margin Collateral Portfolio Code"]
+        [docReference CSA Valuation dataElement "93" field "Variation Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate variation margin related to a set of open transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [docReference CSA Valuation dataElement "93" field "Variation Margin Collateral Portfolio Code" footnote "46"
+            provision "If collateralization was performed on a transaction level basis, TRANSACTIONLEVEL is accepted. NOTAPPLICABLE is accepted if (i)collateralization was performed on a portfolio basis and there is no VM portfolio code, or (ii) it is a submission from a DCO."]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "94 Initial Margin Collateral Portfolio Code"]
+        [docReference CSA Valuation dataElement "94" field "Initial Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate initial margin of a set of open transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [docReference CSA Valuation dataElement "94" field "Initial Margin Collateral Portfolio Code" footnote "47"
+            provision "If collateralization was performed on a transaction level basis, TRANSACTIONLEVEL is accepted. NOTAPPLICABLE is accepted if (i)collateralization was performed on a portfolio basis and there is no VM portfolio code, or (ii) it is a submission from a DCO."]
+    override lastFloatingReferenceValueLeg1 Max11Number (0..1)
+        [label "106 Last Floating Reference Value-Leg 1"]
+        [docReference CSA Valuation dataElement "106" field "Last Floating Reference Value-Leg 1"
+            provision "The most recent sampling of the value of the floating reference for the purposes of determining cash flow. Ties to Last floating reference reset date data element."]
+    override lastFloatingReferenceValueLeg2 Max11Number (0..1)
+        [label "106 Last Floating Reference Value-Leg 2"]
+        [docReference CSA Valuation dataElement "106" field "Last Floating Reference Value-Leg 2"
+            provision "The most recent sampling of the value of the floating reference for the purposes of determining cash flow. Ties to Last floating reference reset date data element."]
+    override lastFloatingReferenceResetDateLeg1 date (0..1)
+        [label "107 Last Floating Reference Reset Date-Leg 1"]
+        [docReference CSA Valuation dataElement "107" field "Last Floating Reference Reset Date-Leg 1"
+            provision "The date of the most recent sampling of the floating reference for the purposes of determining cash flow. Ties to Last floating reference value data element."]
+    override lastFloatingReferenceResetDateLeg2 date (0..1)
+        [label "107 Last Floating Reference Reset Date-Leg 2"]
+        [docReference CSA Valuation dataElement "107" field "Last Floating Reference Reset Date-Leg 2"
+            provision "The date of the most recent sampling of the floating reference for the purposes of determining cash flow. Ties to Last floating reference value data element."]
+    override counterparty2IdentifierType boolean (0..1)
+        [ruleReference empty]
+    override entityResponsibleForReporting LEIIdentifier (0..1)
+        [ruleReference empty]
+    override  eventDate ISODate (0..1)
+        [ruleReference empty]
+    dtccValuationFields DTCCAdditionalValuationFields (0..1)
+    uniqueProductIdentifier Max52AlphaNumericText (1..1)
+        [label "117 Unique Product Identifier"]
+        [docReference CSA Valuation dataElement "117" field "Unique Product Identifier"
+            provision "A unique set of characters that represents a particular OTC derivative."]
+        [docReference CSA Valuation dataElement "117" field "Unique Product Identifier" footnote "60"
+            provision "Refer to section 1.2.6 Use of UPI Instrument Types for explanation on Unique Product Identifiers."]
+        [ruleReference UniqueProductIdentifier]
+
+    condition DTCC_CSA_VR_0002_01: <"Counterparty 2 (non-reporting counterparty)">
+        [docReference CSA Valuation DTCC_Specs dataElement "2" validationRule "Valuation"
+      provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade.
+        - However, if there is more than one live trade (for the same UTI/USI)  where [Trade Party 1 - ID] and [Trade Party 1 - ID Type] are the same, the submission will NACK."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_CSA_VR_0003_01: <"Counterparty 2 Identifier Source">
+        [docReference CSA Valuation DTCC_Specs dataElement "3" validationRule "Valuation"
+      provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_CSA_VR_0016_01: <"Unique Transaction Identifier">
+        [docReference CSA Valuation DTCC_Specs dataElement "16" validationRule "Valuation"
+      provision "Required when [NoA - Action Type] = 'NEWT' or when [USI ID] is blank."]
+        if actionType = NEWT or dtccValuationFields -> usiID is absent
+        then uniqueTransactionIdentifier exists
+
+    condition DTCC_CSA_VR_0093_01: <"Variation Margin Collateral Portfolio Code">
+        [docReference CSA Valuation DTCC_Specs dataElement "93" validationRule "Valuation"
+      provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank.
+      Where a portfolio code is not applicable per the description, 'NOTAPPLICABLE' is an accepted value."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then variationMarginCollateralPortfolioCode is absent
+
+    condition DTCC_CSA_VR_0094_01: <"Initial Margin Collateral Portfolio Code">
+        [docReference CSA Valuation DTCC_Specs dataElement "94" validationRule "Valuation"
+      provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank.
+      Where a portfolio code is not applicable per the description, 'NOTAPPLICABLE' is an accepted value."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then initialMarginCollateralPortfolioCode is absent
+
+    condition CSA_VR_0098_01: <"Action Type">
+        [docReference CSA Valuation dataElement "98" validationRule "Valuation"
+      provision "M, must equal VALU"]
+        actionType = VALU
+
+    condition CSA_VR_0103_01: <"Valuation Method">
+        [docReference CSA Valuation dataElement "103" validationRule "Valuation"
+      provision "M, when populated with CCPV, [Cleared] must be Y"]
+        // TH Sprint 2025-19: Dependence with Trade fields. Currently, it is unable to access Trade fields from Valuation. Awaiting possible solution.
+        True
+
+    condition CSA_VR_0108_01: <"Delta">
+        [docReference CSA Valuation dataElement "108" validationRule "Valuation"
+      provision "C if UPI.[Instrument type] = Option, else {blank}."]
+            [docReference ISDA ISDAWorkingGroup date "unknown"
+      provision "Not modelled until UPI is available."]
+        True
+
+    condition DTCC_CSA_VR_0108_01: <"Delta">
+        [docReference CSA Valuation DTCC_Specs dataElement "108" validationRule "Valuation"
+      provision "CR/EQ/FX/IR - Required if UPI.[Instrument type] = Option, else {blank}."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+      provision "Not modelled until UPI is available."]
+        True
+
+    condition DTCC_CSA_VR_DTCC_01: <"Submitted For Party">
+        [docReference CSA Valuation DTCC_Specs field "Submitted For Party" validationRule "Valuation"
+      provision "If the value is not 'Party1' or 'BOTH', then the value must = the value in [Trade Party 1 - ID]."]
+        if ["Party1", "BOTH"] all <> dtccValuationFields -> submittedForParty
+        then dtccValuationFields -> submittedForParty = counterparty1
+
+    condition DTCC_CSA_VR_DTCC_02: <"Trade Party 1 - Execution Agent ID">
+        [docReference CSA Valuation DTCC_Specs field "Trade Party 1 - Execution Agent ID" validationRule "Valuation"
+      provision "Required if [Trade Party 1 - Execution Agent ID Type] is populated."]
+        if dtccValuationFields -> tradeParty1ExecutionAgentIDType exists
+        then dtccValuationFields -> tradeParty1ExecutionAgentID exists
+
+    condition DTCC_CSA_VR_DTCC_03: <"Trade Party 2 - Execution Agent ID">
+        [docReference CSA Valuation DTCC_Specs field "Trade Party 2 - Execution Agent ID" validationRule "Valuation"
+      provision "Required if [Trade Party 2 - Execution Agent ID Type] is populated."]
+        if dtccValuationFields -> tradeParty2ExecutionAgentIDType exists
+        then dtccValuationFields -> tradeParty2ExecutionAgentID exists
+
+    condition DTCC_CSA_VR_DTCC_04: <"Trade Party 1 - Execution Agent ID Type">
+        [docReference CSA Valuation DTCC_Specs field "Trade Party 1 - Execution Agent ID Type" validationRule "Valuation"
+      provision "Required if [Trade Party 1 - Execution Agent ID] is populated."]
+        if dtccValuationFields -> tradeParty1ExecutionAgentID exists
+        then dtccValuationFields -> tradeParty1ExecutionAgentIDType exists
+
+    condition DTCC_CSA_VR_DTCC_05: <"Trade Party 2 - Execution Agent ID Type">
+        [docReference CSA Valuation DTCC_Specs field "Trade Party 2 - Execution Agent ID Type" validationRule "Valuation"
+      provision "Required if [Trade Party 2 - Execution Agent ID] is populated."]
+        if dtccValuationFields -> tradeParty2ExecutionAgentID exists
+        then dtccValuationFields -> tradeParty2ExecutionAgentIDType exists

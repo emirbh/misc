@@ -1,0 +1,130 @@
+namespace drr.regulation.cftc.rewrite.margin
+version "${project.version}"
+
+import cdm.base.staticdata.identifier.*
+import cdm.base.staticdata.party.*
+
+import drr.base.util.party.*
+import drr.regulation.cftc.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Margin
+
+corpus Dissemination DTCC_Harmonized
+
+report CFTC Margin in T+1
+    from CollateralReportInstruction
+    when ReportableProduct
+    with type CFTCMarginReport
+
+eligibility rule ReportableProduct from CollateralReportInstruction: <"When eligible for CFTC">
+    [docReference CFTC Margin
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+// CFTC Definitions
+reporting rule Counterparty2IdentifierSource from CollateralReportInstruction: <"Counterparty 2 Identifier Source">
+    extract reportingSide -> reportingCounterparty
+    then extract
+        if person exists
+                and [PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID]
+                    any = person -> personId -> identifierType first
+        then (person -> personId -> identifierType
+            then filter
+                ([PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID]) any = item
+            then first
+            then extract item to-string)
+        else if partyId -> identifierType any = LEI
+        then "LEID"
+
+reporting rule UniqueSwapIdentifier from CollateralReportInstruction: <"Unique Swap Identifier (USI)">
+    extract
+        if GetRegimeSpecificIdentifiers(
+                reportableInformation,
+                CFTC,
+                TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+            )
+            exists
+        then GetRegimeSpecificIdentifiers(
+                    reportableInformation,
+                    CFTC,
+                    TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+                )
+        else (extract collateralDetails -> uniqueTradeIdentifier
+        then filter identifierType = TradeIdentifierTypeEnum -> UniqueSwapIdentifier
+        then extract assignedIdentifier -> identifier)
+    then distinct
+    then only-element
+
+reporting rule UniqueTransactionIdentifier from CollateralReportInstruction: <"Unique Transaction Identifier (UTI)">
+    uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            CFTC,
+            item -> collateralDetails -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True
+
+reporting rule PortfolioContainingNonReportableComponentIndicator from CollateralReportInstruction: <"Portfolio containing nonreportable component indicator">
+    extract item -> reportableInformation -> jurisdictionInformation
+    then filter supervisoryBody = CFTC
+    then only-element
+    then extract
+        partyInformation -> cftcPartyInformation -> nonReportedTradePortfolio distinct
+    then extract if item exists then item else False
+    then only-element
+
+reporting rule AffiliatedCounterpartyForMarginAndCapitalIndicator from CollateralReportInstruction: <"Affiliated Counterparty for Margin and Capital Indicator">
+    reportableInformation
+        then extract r [
+            r -> globalPartyInformation
+                then filter
+                    partyReference = RegimePartySupervisoryBody(
+                            r -> jurisdictionInformation,
+                            CFTC
+                        )
+                        only-element
+        ]
+        then only-element
+        then extract relatedParty -> role contains MarginAffiliate
+
+reporting rule DTCC_TradeParty1IDType from CollateralReportInstruction: <"Trade Party 1 - ID Type">
+    extract
+        if PartyLei(reportingSide -> reportingParty -> partyId) exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_SubmittingPartyIDType from CollateralReportInstruction: <"Submitting Party - ID Type">
+    extract
+        if ExtractReportSubmittingPartyIdentifier(reportingSide) exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_TradeParty1ReportingDestination from CollateralReportInstruction: <"Trade Party 1 - Reporting Destination">
+    extract collateral [
+        reportableInformation -> jurisdictionInformation
+            then filter
+                csaTrade.SupervisoryBodyForCSA any = supervisoryBody
+                    or [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC] any = supervisoryBody
+            then filter
+                partyInformation -> partyReference any = collateral -> reportingSide -> reportingParty
+            then distinct
+            then extract supervisoryBody
+    ]
+
+reporting rule DTCC_Comment1 from CollateralReportInstruction: <"Comment 1">
+    empty
+
+reporting rule DTCC_MessageID from CollateralReportInstruction: <"Message ID">
+    extract
+        if common.link.TechnicalRecordId(reportableInformation, DoddFrankAct) -> isUnique
+        then common.link.TechnicalRecordId(reportableInformation, DoddFrankAct) -> id
+        else common.link.TechnicalRecordId(reportableInformation, DoddFrankAct) -> id + (margin.datetime.ReportingTimestamp to-string)
+
+reporting rule DTCC_MessageType from CollateralReportInstruction: <"Message Type">
+    "CollateralValue"
+
+reporting rule DTCC_Version from CollateralReportInstruction: <"Version">
+    "Coll1.0"

@@ -1,0 +1,44 @@
+package drr.standards.iosco.cde.version2.payment.reports;
+
+import cdm.event.common.TransferState;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.reports.ReportFunction;
+import drr.base.util.party.PartyIdentifierFormatEnum;
+import drr.standards.iosco.cde.version1.payment.reports.OtherPaymentPayerFormatRule;
+import javax.inject.Inject;
+
+
+@ImplementedBy(OtherPaymentReceiverFormatRule.OtherPaymentReceiverFormatRuleDefault.class)
+public abstract class OtherPaymentReceiverFormatRule implements ReportFunction<TransferState, PartyIdentifierFormatEnum> {
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected OtherPaymentPayerFormatRule otherPaymentPayerFormatRule;
+
+	/**
+	* @param input 
+	* @return output 
+	*/
+	@Override
+	public PartyIdentifierFormatEnum evaluate(TransferState input) {
+		PartyIdentifierFormatEnum output = doEvaluate(input);
+		
+		return output;
+	}
+
+	protected abstract PartyIdentifierFormatEnum doEvaluate(TransferState input);
+
+	public static class OtherPaymentReceiverFormatRuleDefault extends OtherPaymentReceiverFormatRule {
+		@Override
+		protected PartyIdentifierFormatEnum doEvaluate(TransferState input) {
+			PartyIdentifierFormatEnum output = null;
+			return assignOutput(output, input);
+		}
+		
+		protected PartyIdentifierFormatEnum assignOutput(PartyIdentifierFormatEnum output, TransferState input) {
+			output = otherPaymentPayerFormatRule.evaluate(input);
+			
+			return output;
+		}
+	}
+}

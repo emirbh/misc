@@ -1,0 +1,347 @@
+namespace drr.regulation.hkma.rewrite.margin
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.datetime.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.margin.*
+import drr.regulation.hkma.*
+import drr.standards.iso.*
+
+type HKMAMarginReport extends CommonMarginReport:
+    [rootType]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "4 Reporting timestamp"]
+        [docReference HKMA Margin dataElement "4" field "Reporting Timestamp"
+            provision "Date and time when the contract was reported to the trade repository."]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "6 Counterparty 1"]
+        [docReference HKMA Margin dataElement "6" field "Counterparty 1"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question. In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "7 Counterparty 2"]
+        [docReference HKMA Margin dataElement "7" field "Counterparty 2"
+            provision "Identifier of the second counterparty to an OTC derivative transaction.
+        For Party ID SWIFTBIC and BRN, party should input the first eight digits only. 
+        e.g. SwiftBIC: HKMAHKHHXXX should be inputted as HKMAHKHH
+            BRN: 12345678 - 000 - 04 - 11 - A should be inputted as 12345678.
+
+        For Party ID CICR, party should input all character(s) and digits.
+        e.g. For Local company (CI): Seven digits such as 9999999 .
+            For Non-local company (CR): Character(s) plus seven digits 
+                such as X9999999 or XX9999999."]
+    override counterparty2IdentifierType boolean (1..1)
+        [label "9 Counterparty 2 identifier type indicator"]
+        [docReference HKMA Margin dataElement "9" field "Counterparty 2 identifier type indicator"
+            provision "Indicator of whether LEI was used to identify the Counterparty 2."]
+    override collateralPortfolioIndicator boolean (0..1)
+        [label "38 Collateral portfolio indicator"]
+        [docReference HKMA Margin dataElement "38" field "Collateral portfolio indicator"
+            provision "Indicator of whether the collateralisation was performed on a portfolio basis, if applicable. By on a portfolio basis, it is meant a set of transactions that are margined together (either on a net or a gross basis) contrary to the scenario where the margin is calculated and posted for each individual transaction separately."]
+    override initialMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label  "39 Initial margin posted by the reporting counterparty 1 (pre-haircut)"]
+        [docReference HKMA Margin dataElement "39" field "Initial margin posted by the counterparty 1 (pre-haircut)"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements, if applicable. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction. This refers to the total current value of the initial margin, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e. committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override initialMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "40 Initial margin posted by the counterparty 1 (post-haircut)"]
+        [docReference HKMA Margin dataElement "40" field "Initial margin posted by the counterparty 1 (post-haircut)"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements, if applicable. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction. This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e. committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override initialMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "41 Currency of initial margin posted (pre-haircut/post-haircut)"]
+        [docReference HKMA Margin dataElement "41" field "Currency of initial margin posted (pre-haircut/post-haircut)"
+            provision "Currency in which the initial margin posted (pre-haircut/post-haircut) is denominated, if applicable. If the initial margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted initial margins."]
+    override initialMarginCollectedByCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "42 Initial margin collected by the counterparty 1 (pre-haircut)"]
+        [docReference HKMA Margin dataElement "42" field "Initial margin collected by the counterparty 1 (pre-haircut)"
+            provision "Monetary value of initial margin that has been collected by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements, if applicable. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction. This refers to the total current value of the initial margin, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the central counterparty as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override initialMarginCollectedByCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "43 Initial margin collected by the counterparty 1 (post-haircut)"]
+        [docReference HKMA Margin dataElement "43" field "Initial margin collected by the counterparty 1 (post-haircut)"
+            provision "Monetary value of initial margin that has been collected by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction. This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the central counterparty as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override initialMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "44 Currency of initial margin collected (pre-haircut/post-haircut)"]
+        [docReference HKMA Margin dataElement "44" field "Currency of initial margin collected (pre-haircut/post-haircut)"
+            provision "Currency in which the initial margin collected (pre-haircut/post-haircut) is denominated, if applicable. If the initial margin collected is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected initial margins."]
+    override variationMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "45 Variation margin posted by the counterparty 1 (pre-haircut)"]
+        [docReference HKMA Margin dataElement "45" field "Variation margin posted by the counterparty 1 (pre-haircut)"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements, if applicable. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin posted relates to such single transaction. This data element refers to the total current value of the variation margin, cumulated since the first reporting of variation margins posted for the portfolio/transaction. If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override variationMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "46 Variation margin posted by the counterparty 1 (post-haircut)"]
+        [docReference HKMA Margin dataElement "46" field "Variation margin posted by the counterparty 1 (post-haircut)"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements, if applicable. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin posted relates to such single transaction. This data element refers to the total current value of the variation margin after application of the haircut (if applicable), cumulated since the first reporting of posted variation margins for the portfolio/transaction. If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override variationMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "47 Currency of variation margin posted (pre-haircut/post-haircut)"]
+        [docReference HKMA Margin dataElement "47" field "Currency of variation margin posted (pre-haircut/post-haircut)"
+            provision "Currency in which the variation margin posted (pre-haircut/post-haircut) is denominated, if applicable. If the variation margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted variation margins."]
+    override variationMarginCollectedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "48 Variation margin collected by the counterparty 1 (pre-haircut)"]
+        [docReference HKMA Margin dataElement "48" field "Variation margin collected by the counterparty 1 (pre-haircut)"
+            provision "Monetary value of the variation margin collected by the reporting counterparty (including the cash- settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements, if applicable. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin collected relates to such single transaction. This refers to the total current value of the variation margin, cumulated since the first reporting of collected variation margins for the portfolio/transaction. If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override variationMarginCollectedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "49 Variation margin collected by the counterparty 1 (post-haircut)"]
+        [docReference HKMA Margin dataElement "49" field "Variation margin collected by the counterparty 1 (post-haircut)"
+            provision "Monetary value of the variation margin collected by the reporting counterparty (including the cash- settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements, if applicable. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin collected relates to such single transaction. This refers to the total current value of the variation margin collected after application of the haircut (if applicable), cumulated since the first reporting of collected variation margins for the portfolio/transaction. If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+    override variationMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "50  Currency of variation margin collected (pre-haircut/post-haircut)"]
+        [docReference HKMA Margin dataElement "50" field "Currency of variation margin collected (pre-haircut/post-haircut)"
+            provision "Currency in which the variation margin collected (pre-haircut/post-haircut) is denominated, if applicable. If the variation margin collected is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected variation margins."]
+    override excessCollateralPostedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [label "51 Excess collateral posted by the counterparty 1"]
+        [docReference HKMA Margin dataElement "51" field "Excess collateral posted by the counterparty 1"
+            provision "Monetary value of any additional collateral posted by the reporting counterparty separate and independent from initial and variation margin. This refers to the total current value of the excess collateral before application of the haircut (if applicable), rather than to its daily change. Any initial or variation margin amount posted that exceeds the required initial margin or required variation margin, is reported as part of the initial margin posted or variation margin posted respectively rather than included as excess collateral posted. For centrally cleared transactions, excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+    override currencyOfTheExcessCollateralPosted string (0..1)
+        [label "52 Currency of excess collateral posted"]
+        [docReference HKMA Margin dataElement "52" field "Currency of excess collateral posted"
+            provision "Currency in which the excess collateral posted is denominated, if applicable. If the excess collateral posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted excess collateral."]
+    override excessCollateralCollectedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [label "53 Excess collateral collected by the counterparty 1"]
+        [docReference HKMA Margin dataElement "53" field "Excess collateral collected by the counterparty 1"
+            provision "Monetary value of any additional collateral collected by the reporting counterparty separate and independent from initial and variation margin. This data element refers to the total current value of the excess collateral before application of the haircut (if applicable), rather than to its daily change. Any initial or variation margin amount collected that exceeds the required initial margin or required variation margin, is reported as part of the initial margin collected or variation margin collected respectively, rather than included as excess collateral collected. For centrally cleared transactions excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+    override currencyOfTheExcessCollateralCollected string (0..1)
+        [label "54 Currency of excess collateral collected"]
+        [docReference HKMA Margin dataElement "54" field "Currency of excess collateral collected"
+            provision "Currency in which the excess collateral collected is denominated, if applicable. If the excess collateral is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected excess collateral."]
+    override collateralisationCategory CollateralisationType3Code (0..1)
+        [label "55 Collateralisation category"]
+        [docReference HKMA Margin dataElement "55" field "Collateralisation category"
+            provision "Indicator of whether a collateral agreement (or collateral agreements) between the counterparties exists (uncollateralised/partially collateralised/one-way collateralised/fully collateralised), if applicable. This data element is provided for each transaction or each portfolio, depending on whether the collateralisation is performed at the transaction or portfolio level, and is applicable to both cleared and uncleared transactions."]
+    override actionType MarginActionEnum (0..1)
+        [label "134 Action type"]
+        [docReference HKMA Margin dataElement "134" field "Action type"
+            provision "Type of action taken on the transaction or type of end-of-day reporting."]
+    override eventTimestamp zonedDateTime (1..1)
+        [nonReportable]
+        [label "Event date (Non Reportable)"]
+        [docReference HKMA Margin field "Event date (Non Reportable)"
+            provision "Date on which the reportable event relating to the derivative contract and captured by the report took place. In the case of collateral update - the date for which the information contained in the report is provided."]
+    override uti UTIIdentifier (0..1)
+        [label "138 Unique Transaction Identifier (UTI)"]
+        [docReference HKMA Margin dataElement "138" field "Unique Transaction Identifier (UTI)"
+            provision "The unique transaction identifier as described in the Technical Guidance on the Harmonization of the Unique Transaction Identifier published by the Committee on Payments and Market Infrastructures and Board of International Organization of Securities Commissions in February 2017. "]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "150 Initial margin collateral portfolio code"]
+        [docReference HKMA Margin dataElement "150" field "Initial margin collateral portfolio code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate initial margin of a set of open swap transactions, if applicable. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received or if only one collateral portfolio of amounts of margin that does not distinguish between margin that is initial margin and margin that is variation margin."]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "152 Variation margin collateral portfolio code"]
+        [docReference HKMA Margin dataElement "152" field "Variation margin collateral portfolio code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate variation margin related to a set of open swap transactions, if applicable. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received or if only one collateral portfolio of amounts of margin that does not distinguish between margin that is initial margin and margin that is variation margin."]
+    override reportSubmittingEntityID string (1..1)
+        [label "153 Submitter identifier"]
+        [docReference HKMA Margin dataElement "153" field "Submitter Identifier"
+            provision "Identifier of the entity submitting the OTC derivative transaction to the Trade Repository."]
+    override collateralTimestamp zonedDateTime (0..1)
+        [label "184 Collateral timestamp"]
+        [docReference HKMA Margin dataElement "184" field "Collateral timestamp"
+            provision "Date and time of the last margin update. Collateral timestamp reflects the moment in time that reported margin values were current."]
+    override eventDate date (0..1)
+        [ruleReference empty]
+    override collateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    numberRecords ShortFraction5DecimalNumber (1..1)
+        [label "199 Number records"]
+        [docReference HKMA Margin dataElement "199" field "Number records"
+            provision "Indicates the number of trade action in the request file."]
+        [ruleReference NumberRecords]
+    technicalRecordId string (1..1)
+        [label "200 Technical record identification"]
+        [docReference HKMA Margin dataElement "200" field "Technical record identification"
+            provision "Unique identifier of a trade action used as part of error management and status advice message."]
+        [ruleReference TechnicalRecordId]
+    counterparty2Name Max105AlphaNumericText (1..1)
+        [label "8 Counterparty 2 name"]
+        [docReference HKMA Margin dataElement "8" field "Counterparty 2 name"
+            provision "If the identifier reported for Counterparty 2 is not an LEI, or SWIFTBIC, the legal name of Counterparty 2."]
+        [ruleReference Counterparty2Name]
+    counterparty2IdentifierFormat PartyIdentifierFormat2Enum (0..1)
+        [nonReportable]
+        [label "Counterparty 2 Identifier Format (Non Reportable)"]
+        [docReference HKMA Margin field "Counterparty 2 Identifier Format (Non Reportable)"
+            provision "Determines the identifier format of Counterparty 2 based on role or identifier type"]
+        [ruleReference Counterparty2IdentifierFormat]
+    portfolioContainingNonReportableComponentIndicator boolean (1..1)
+        [label "151 Portfolio containing non-reportable component indicator"]
+        [docReference HKMA Margin dataElement "151" field "Portfolio containing nonreportable component indicator"
+            provision "If collateral is reported on a portfolio basis, indicator of whether the collateral portfolio includes swap transactions exempt from reporting., if applicable."]
+        [ruleReference PortfolioContainingNonReportableComponentIndicator]
+    entityResponsibleForReporting LEIIdentifier (0..1)
+        [label "154 Entity responsible for reporting"]
+        [docReference HKMA Margin dataElement "154" field "Entity responsible for reporting"
+            provision "Identification code of the Reporting Party who has the obligation to report the transaction."]
+        [ruleReference EntityResponsibleForReporting]
+
+    condition DOC0010: <"Reporting timestamp">
+        [docReference HKMA HKMA_Specs table "1" dataElement "4" validationRule "Reporting timestamp"
+    provision "The [Reporting timestamp] is expected to fall on or after the [Execution timestamp] of original trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DOC0011: <"Reporting timestamp">
+        [docReference HKMA HKMA_Specs table "1" dataElement "4" validationRule "Reporting timestamp"
+    provision "The [Reporting timestamp] must not be a future timestamp."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+        then reportingTimestamp <= Now
+
+    condition DOC0016: <"Counterparty 1">
+        [docReference HKMA HKMA_Specs table "1" dataElement "6" validationRule "Counterparty 1"
+    provision "The [Counterparty 1] and [Counterparty 2] must be the same as original trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DOC0143: <"Counterparty 1">
+        [docReference HKMA HKMA_Specs table "1" dataElement "6" validationRule "Counterparty 1"
+    provision "For portfolio-level margin and collateral reporting, both [Counterparty 1] and [Counterparty 2] must be valid parties. A valid party is either a registered party or a non-registered party. In the case of a non-registered party, it must have been included in a prior trade reported to the repository before submitting margin data for that portfolio."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DOC0128: <"Initial margin posted by the counterparty 1 (pre-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "39" validationRule "Initial margin posted by the counterparty 1 (pre-haircut)"
+    provision "The [Initial margin posted by the counterparty 1 (pre-haircut)] is required if the [Collateralisation category] is populated with OWC1 or OWP1 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginPostedByTheCounterparty1PreHaircut exists
+
+    condition DOC0129: <"Initial margin posted by the counterparty 1 (pre-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "40" validationRule "Initial margin posted by the counterparty 1 (pre-haircut)"
+    provision "The [Initial margin posted by the counterparty 1 (post-haircut)] is required if the [Collateralisation category] is populated with OWC1 or OWP1 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginPostedByTheCounterparty1PostHaircut exists
+
+    condition DOC0130: <"Initial margin collected by the counterparty 1 (pre-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "42" validationRule "Initial margin posted by the counterparty 1 (pre-haircut)"
+    provision "The [Initial margin collected by the counterparty 1 (pre-haircut)] is required if the [Collateralisation category] is populated with OWC2 or OWP2 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginCollectedByCounterparty1PreHaircut exists
+
+    condition DOC0131: <"Initial margin collected by the counterparty 1 (post-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "43" validationRule "Initial margin collected by the counterparty 1 (post-haircut)"
+    provision "The [Initial margin collected by the counterparty 1 (post-haircut)] is required if the [Collateralisation category] is populated with OWC2 or OWP2 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginCollectedByCounterparty1PostHaircut exists
+
+    condition DOC0132: <"Variation margin posted by the counterparty 1 (pre-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "45" validationRule "Variation margin posted by the counterparty 1 (pre-haircut)"
+    provision "The [Variation margin posted by the counterparty 1 (pre-haircut)] is required if the [Collateralisation category] is populated with PRC1 or PRCL or OWC1 or OWP1 or OWP2 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> PRC1, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then variationMarginPostedByTheCounterparty1PreHaircut exists
+
+    condition DOC0133: <"Variation margin posted by the counterparty 1 (post-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "46" validationRule "Variation margin posted by the counterparty 1 (post-haircut)"
+    provision "The [Variation margin posted by the counterparty 1 (post-haircut)] is required if the [Collateralisation category] is populated with PRC1 or PRCL or OWC1 or OWP1 or OWP2 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> PRC1, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then variationMarginPostedByTheCounterparty1PostHaircut exists
+
+    condition DOC0134: <"Variation margin collected by the counterparty 1 (pre-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "48" validationRule "Variation margin collected by the counterparty 1 (pre-haircut)"
+    provision "The [Variation margin collected by the counterparty 1 (pre-haircut)] is required if the [Collateralisation category] is populated with PRC1 or PRCL or OWC1 or OWP1 or OWP2 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> PRC1, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then variationMarginCollectedByTheCounterparty1PreHaircut exists
+
+    condition DOC0135: <"Variation margin collected by the counterparty 1 (post-haircut)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "49" validationRule "Variation margin collected by the counterparty 1 (post-haircut)"
+    provision "The [Variation margin collected by the counterparty 1 (post-haircut)] is required if the [Collateralisation category] is populated with PRC1 or PRCL or OWC1 or OWP1 or OWP2 or FLCL."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and [CollateralisationType3Code -> PRC1, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then variationMarginCollectedByTheCounterparty1PostHaircut exists
+
+    condition DOC0140: <"Event timestamp">
+        [docReference HKMA HKMA_Specs table "1" dataElement "136" validationRule "Event timestamp"
+    provision "The [Event date] must be equal to or later than the [Execution timestamp] of original trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DOC0141: <"Event timestamp">
+        [docReference HKMA HKMA_Specs table "1" dataElement "136" validationRule "Event timestamp"
+    provision "The [Event timestamp] must not be a future timestamp."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+        then eventTimestamp -> date <= Now -> date
+
+    condition DOC0104: <"Unique Transaction Identifier (UTI)">
+        [docReference HKMA HKMA_Specs table "1" dataElement "138" validationRule "Unique Transaction Identifier (UTI)"
+    provision "The [Unique Transaction Identifier] is required if the [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are populated with 'NOAP' in XML tag '<NoPrtfl>' and/or blank. "]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DOC0112_1: <"Initial margin collateral portfolio code">
+        [docReference HKMA HKMA_Specs table "1" dataElement "150" validationRule "Initial margin collateral portfolio code"
+    provision "If the [Unique Transaction Identifier] is populated, [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] must be populated with 'NOAP' in XML tag '<NoPrtfl>' or blank if applicable."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and uti exists
+        then initialMarginCollateralPortfolioCode = "NOAP"
+        else initialMarginCollateralPortfolioCode is absent
+
+    condition DOC0112_2: <"Variation margin collateral portfolio code">
+        [docReference HKMA HKMA_Specs table "1" dataElement "152" validationRule "Variation margin collateral portfolio code"
+    provision "If the [Unique Transaction Identifier] is populated, [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] must be populated with 'NOAP' in XML tag '<NoPrtfl>' or blank if applicable."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+                and uti exists
+        then variationMarginCollateralPortfolioCode = "NOAP"
+        else variationMarginCollateralPortfolioCode is absent
+
+    // TH: Sprint 2025-09. This validation rule appears in the regulator specification but not in the DTCC specification.
+    condition DOC0114: <"[Submitter Identifier]*">
+        [docReference HKMA HKMA_Specs table "1" dataElement "153" validationRule "[Submitter Identifier]*"
+    provision "The [Submitter identifier] in the message does not match with the [Submitting party (From) ] in the Business Application Header"]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled."]
+        True
+
+    // TH: Sprint 2025-09. This validation rule appears in the regulator specification but not in the DTCC specification.
+    condition DOC0115: <"Entity responsible for reporting">
+        [docReference HKMA HKMA_Specs table "1" dataElement "154" validationRule "Entity responsible for reporting"
+    provision "The [Entity responsible for reporting] of a action must be the same as other trade actions in the same request file."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled."]
+        True
+
+    // TH: Sprint 2025-09. This validation rule appears in the regulator specification but not in the DTCC specification.
+    condition DOC0136: <"Entity responsible for reporting">
+        [docReference HKMA HKMA_Specs table "1" dataElement "154" validationRule "Entity responsible for reporting"
+    provision "The [Entity responsible for reporting] must be an active TR participant with reporting service."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled."]
+        True
+
+    condition DOC0123: <"Collateral timestamp">
+        [docReference HKMA HKMA_Specs table "1" dataElement "184" validationRule "Collateral timestamp"
+    provision "The [Collateral timestamp] must not be a future timestamp."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+        then collateralTimestamp <= Now
+
+    condition DOC0124: <"Collateral timestamp">
+        [docReference HKMA HKMA_Specs table "1" dataElement "184" validationRule "Collateral timestamp"
+    provision "The [Collateral timestamp] must be equal to or later than the [Execution timestamp] of original trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DOC0142: <"Collateral timestamp">
+        [docReference HKMA HKMA_Specs table "1" dataElement "184" validationRule "Collateral timestamp"
+    provision "The date part of the [Collateral timestamp] shall be equal to [Event date]."]
+       [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "The condition cannot be executed in a stateless environment."]
+        eventTimestamp -> date = collateralTimestamp -> date
+
+    // TH: Sprint 2025-09. This validation rule appears in the regulator specification but not in the DTCC specification.
+    condition DOC0127: <"Technical record identification">
+        [docReference HKMA HKMA_Specs table "1" dataElement "200" validationRule "Technical record identification"
+    provision "The [Technical record identification] must be unique for the [Entity responsible for reporting]."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+    provision "Not modelled."]
+        True

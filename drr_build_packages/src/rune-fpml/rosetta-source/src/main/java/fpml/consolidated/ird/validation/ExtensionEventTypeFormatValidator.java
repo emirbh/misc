@@ -1,0 +1,36 @@
+package fpml.consolidated.ird.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.ird.ExtensionEvent;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class ExtensionEventTypeFormatValidator implements Validator<ExtensionEvent> {
+
+	private List<ComparisonResult> getComparisonResults(ExtensionEvent o) {
+		return Lists.<ComparisonResult>newArrayList(
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, ExtensionEvent o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("ExtensionEvent", ValidationResult.ValidationType.TYPE_FORMAT, "ExtensionEvent", path, "", res.getError());
+				}
+				return success("ExtensionEvent", ValidationResult.ValidationType.TYPE_FORMAT, "ExtensionEvent", path, "");
+			})
+			.collect(toList());
+	}
+
+}

@@ -1,0 +1,477 @@
+namespace drr.regulation.jfsa.rewrite.margin
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.regulation.common.margin.*
+import drr.regulation.jfsa.*
+import drr.regulation.jfsa.rewrite.*
+import drr.standards.iso.*
+
+type JFSAMarginReport extends CommonMarginReport:
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "4 Reporting Timestamp"]
+        [docReference JFSA Margin dataElement "4" field "Reporting timestamp"
+            provision "Date and time of the submission of the report as reported to the trade repository."]
+        [docReference JFSA Margin dataElement "4" field "Reporting timestamp - Remark"
+            provision "System input time, data generation time, and system connection time are to be considered as acceptable values. In addition, if determining the time up to the seconds is impossible due to system restrictions, setting the seconds to 00 shall be acceptable. If it can be determined that the reporting date and time are the same as the trade date, then Trade Date, may be used as a substitute value. (If different, substitution will not be permitted.)"]
+    override reportSubmittingEntityID string (1..1)
+        [label "12 Submitter Identifier"]
+        [docReference JFSA Margin dataElement "12" field "Submitter Identifier"
+            provision "Identifier of the entity submitting the data to the swap data repository (SDR).
+                   The Submitter identifier will be the same as the reporting counterparty or swap execution facility (SEF), unless they use a third-party service provider to submit the data to SDR in which case, report the identifier of the third-party service provider."]
+        [docReference JFSA Margin dataElement "12" field "Submitter identifier - Remark"
+            provision "See 'Entity responsible for reporting'. Applicable for central counterparty and financial institutions. If reporting is conducted using a platform, then the platform is deemed to be the submitter."]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "7 Counterparty 1 (reporting counterparty)"]
+        [docReference JFSA Margin dataElement "7" field "Counterparty 1 (reporting counterparty)"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question. In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty."]
+        [docReference JFSA Margin dataElement "7" field "Counterparty 1 (reporting counterparty) - Remark"
+            provision "Reporting using branch/international branch LEI is not allowed."]
+    override counterparty2 Min20Max72AlphaNumericText (0..1)
+        [label "8 Counterparty 2"]
+        [docReference JFSA Margin dataElement "8" field "Counterparty 2"
+            provision "Identifier of the second counterparty to a derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty."]
+        [docReference JFSA Margin dataElement "8" field "Counterparty 2 - Remark"
+            provision "If LEI cannot be obtained, a tentative LEI is permitted. Tentative LEI must have a unique alphanumeric string to ensure the party can be uniquely identified.
+        Examples for assigning tentative LEI: [In the case of financial institutions] Tentative LEI = Party LEI + Counterparty BIC Code
+        [In the case of corporations and individuals] Tentative LEI = Trading Party LEI + Unique Alphanumeric Code (Control number assigned by the financial institution, etc.)
+        If a fund LEI is yet to be obtained, the Trust Bank must share a tentative LEI for the fund (Trust Bank LEI + Unique Alphanumeric Code) with its counterparty financial institution.
+        Enter the LEI of the clearing organization if the company transacts with a clearing organization prescribed in JFSA Notification No.105.
+        Reporting using branch/international branch LEI is not allowed."]
+    override counterparty2IdentifierType boolean (0..1)
+        [label "9 Counterparty 2 identifier type"]
+        [docReference JFSA Margin dataElement "9" field "Counterparty 2 identifier type"
+            provision "Indicator of whether LEI was used to identify the counterparty 2."]
+        [docReference JFSA Margin dataElement "9" field "Counterparty 2 identifier type - Remark"
+            provision "Under the CDE Guidance, legal entity is to be reported as True and individual as False. However, for cases where a tentative LEI is used to report for a legal entity, it should be reported as False."]
+    override uti CollateralUTIString (0..1)
+        [label "25 Unique transaction identifier (UTI)"]
+        [docReference JFSA Margin dataElement "25" field "Unique transaction identifier (UTI)"
+            provision "A unique identifier assigned to all swap transactions which identifies the swap uniquely throughout its lifecycle."]
+        [ruleReference UniqueTransactionIdentifier]
+    override collateralPortfolioIndicator boolean (0..1)
+        [label "44 Collateral portfolio indicator"]
+        [docReference JFSA Margin dataElement "44" field "Collateral Portfolio Indicator"
+            provision "Indicator of whether the collateralisation was performed on a portfolio basis. By on a portfolio basis, it is meant a set of transactions that are margined together (either on a net or a gross basis) contrary to the scenario where the margin is calculated and posted for each individual transaction separately."]
+        [docReference JFSA Margin dataElement "44" field "Collateral Portfolio Indicator - Remark"
+            provision "True, if collateralisation has been set for each parties involved in the transaction. Whether or not the collateralisation is set will be assumed based on CSA agreement, however it should also include any independently created collateral agreements other than CSA agreement. True, if there is a collateral agreement that covers more than one transaction even if there is only one currently outstanding balance."]
+    override collateralisationCategory CollateralisationType3Code (0..1) 
+        [label "61 Collateralisation category"]
+        [docReference JFSA Margin dataElement "61" field "Collateralisation category"
+            provision "Indicator of whether a collateral agreement (or collateral agreements) between the counterparties exists (uncollateralised/partially collateralised/one-way collateralised/fully collateralised). This data element is provided for each transaction or each portfolio, depending on whether the collateralisation is performed at the transaction or portfolio level, and is applicable to both cleared and uncleared transactions."]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "62 Initial margin Collateral portfolio code"]
+        [docReference JFSA Margin dataElement "62" field "Initial margin Collateral portfolio code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate initial margin of a set of open swap transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [docReference JFSA Margin dataElement "62" field "Initial margin Collateral portfolio code - Remark"
+            provision "Report the unique code assigned by the financial institution. If collateralisation is performed separately for each parties involved in the transaction, report the code per each party."]
+        [docReference JFSA Margin dataElement "62" field "Initial margin collateral portfolio code" footnote "1"
+            provision "Note: If the [Initial margin collateral portfolio code] is not applicable to your trade, clients could submit the value [NOAP] to represent 'No Applicable' in '/NoPrtfl' XML."]
+        [docReference ISDA PeerReviewGroup date "20221005"
+            provision "Members agreed DRR rules should not default the field value."]
+    override initialMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "45 Initial margin posted by the reporting counterparty (pre-haircut)"]
+        [docReference JFSA Margin dataElement "45" field "Initial margin posted by the reporting counterparty (pre-haircut)"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction.
+        This refers to the total current value of the initial margin, rather than to its daily change.
+        The data element refers both to uncleared and centrally cleared transactions.
+        For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e., committed credit lines.
+        If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "45" field "Initial margin posted by the reporting counterparty (pre-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override initialMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "46 Initial margin posted by the reporting counterparty (post-haircut)"]
+        [docReference JFSA Margin dataElement "46" field "Initial margin posted by the reporting counterparty (post-haircut)"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. 
+        If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction.
+        This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change.
+        The data element refers both to uncleared and centrally cleared transactions.
+        For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e., committed credit lines.
+        If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "46" field "Initial margin posted by the reporting counterparty (post-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override initialMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "47 Currency of the initial margins posted" ]
+        [docReference JFSA Margin dataElement "47" field "Currency of the variation margins posted"
+            provision "Currency in which the initial margin posted is denominated.
+        If the initial margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted initial margins."]
+        [docReference JFSA Margin dataElement "47" field "Currency of the variation margins posted - Remark"
+            provision "'Initial margin posted by the reporting counterparty (prehaircut)' and 'Initial margin posted by the reporting counterparty (post-haircut' shall be reported."]
+    override initialMarginCollectedByCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "48 Initial margin collected by the reporting counterparty (pre-haircut)"]
+        [docReference JFSA Margin dataElement "48" field "Initial margin collected by the reporting counterparty (pre-haircut)"
+            provision "Monetary value of initial margin that has been collected by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction.
+        This refers to the total current value of the initial margin, rather than to its daily change.
+        The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the central counterparty as part of its investment activity.
+        If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "48" field "Initial margin collected by the reporting counterparty (pre-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override initialMarginCollectedByCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)    
+        [label "49 Initial margin collected by the reporting counterparty (post-haircut)"]
+        [docReference JFSA Margin dataElement "49" field "Initial margin collected by the counterparty 1 (post-haircut)"
+            provision "Monetary value of initial margin that has been collected by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction.
+        This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change.
+        The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the central counterparty as part of its investment activity.
+        If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "49" field "Initial margin collected by the counterparty 1 (post-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override initialMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "50 Currency of initial margin collected"]
+        [docReference JFSA Margin dataElement "50" field "Currency of initial margin collected"
+            provision "Currency in which the initial margin collected is denominated.
+        If the initial margin collected is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected initial margins."]
+        [docReference JFSA Margin dataElement "50" field "Currency of initial margin collected - Remark"
+            provision "'Initial margin collected by the reporting counterparty (pre-haircut)' and 'Initial margin collected by the reporting counterparty (post-haircut' shall be reported."]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "63 Variation Margin Collateral portfolio code"]
+        [docReference JFSA Margin dataElement "63" field "Variation Margin Collateral portfolio code"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        Contingent variation margin is not included.
+        If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin posted relates to such single transaction.
+        This data element refers to the total current value of the variation margin, cumulated since the first reporting of variation margins posted for the portfolio/transaction.
+        If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "63" field "Variation margin collateral portfolio code - Remark"
+            provision "Report the unique code assigned by the financial institution. If collateralisation is performed separately for each parties involved in the transaction, report the code per each party."]
+        [docReference JFSA Margin dataElement "63" field "Variation margin collateral portfolio code" footnote "1"
+            provision "Note: If the [Variation margin collateral portfolio code] is not applicable to your trade, clients could submit the value [NOAP] to represent 'No Applicable' in '/NoPrtfl' XML."]
+        [docReference ISDA PeerReviewGroup date "20221005"
+            provision "Members agreed DRR rules should not default the field value."]
+    override variationMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "51 Variation margin posted by the reporting counterparty (pre-haircut)"]
+        [docReference JFSA Margin dataElement "51" field "Variation margin posted by the reporting counterparty (pre-haircut)"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        Contingent variation margin is not included.
+        If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin posted relates to such single transaction.
+        This data element refers to the total current value of the variation margin, cumulated since the first reporting of variation margins posted for the portfolio/transaction.
+        If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "51" field "Variation margin posted by the reporting counterparty (pre-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override variationMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "52 Variation margin posted by the reporting counterparty (post-haircut)"]
+        [docReference JFSA Margin dataElement "52" field "Variation margin posted by the reporting counterparty (post-haircut)"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        Contingent variation margin is not included.
+        If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin posted relates to such single transaction.
+        This data element refers to the total current value of the variation margin after application of the haircut (if applicable), cumulated since the first reporting of posted variation margins for the portfolio/transaction.
+        If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "52" field "Variation margin posted by the reporting counterparty (post-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override variationMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "53 Currency of the variation margins posted"]
+        [docReference JFSA Margin dataElement "53" field "Currency of the variation margins posted"
+            provision "Currency in which the variation margin posted is denominated.
+        If the variation margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted variation margins."]
+        [docReference JFSA Margin dataElement "53" field "Currency of the variation margins posted - Remark"
+            provision "'Variation margin posted by the reporting counterparty (pre-haircut)' and 'Variation margin posted by the reporting counterparty (post-haircut)' shall be reported."]
+    override variationMarginCollectedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "54 Variation margin collected by the reporting counterparty (pre-haircut)"]
+        [docReference JFSA Margin dataElement "54" field "Variation margin collected by the reporting counterparty (pre-haircut)"
+            provision "Monetary value of the variation margin collected by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        Contingent variation margin is not included.
+        If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin collected relates to such single transaction.
+        This refers to the total current value of the variation margin, cumulated since the first reporting of collected variation margins for the portfolio/transaction.
+        If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "54" field "Variation margin collected by the reporting counterparty (pre-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override variationMarginCollectedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "55 Variation margin collected by the reporting counterparty (post-haircut)"]
+        [docReference JFSA Margin dataElement "55" field "Variation margin collected by the reporting counterparty (post-haircut)"
+            provision "Monetary value of the variation margin collected by the reporting counterparty (including the cash-settled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements.
+        Contingent variation margin is not included.
+        If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin collected relates to such single transaction.
+        This refers to the total current value of the variation margin collected after application of the haircut (if applicable), cumulated since the first reporting of collected variation margins for the portfolio/transaction.
+        If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference JFSA Margin dataElement "55" field "Variation margin collected by the reporting counterparty (post-haircut) - Remark"
+            provision "Collateral reporting shall be separate from transaction reporting. If the collateralisation is performed at portfolio level, then the portfolio code and the amount of collateral (gross amount) should be reported together at the time of collateral reporting."]
+    override variationMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "56 Currency of variation margin collected"]
+        [docReference JFSA Margin dataElement "56" field "Currency of variation margin collected"
+            provision "Currency in which the variation margin collected is denominated.
+        If the variation margin collected is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected variation margins."]
+        [docReference JFSA Margin dataElement "56" field "Currency of variation margin collected - Remark"
+            provision "'Variation margin collected by the reporting counterparty (pre-haircut)' and 'Variation margin collected by the reporting counterparty (post-haircut)' shall be reported."]
+    override excessCollateralPostedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [label "57 Excess collateral posted by the reporting counterparty"]
+        [docReference JFSA Margin dataElement "57" field "Excess collateral posted by the reporting counterparty"
+            provision "Monetary value of any additional collateral posted by the reporting counterparty separate and independent from initial and variation margin. This refers to the total current value of the excess collateral before application of the haircut (if applicable), rather than to its daily change.
+        Any initial or variation margin amount posted that exceeds the required initial margin or required variation margin, is reported as part of the initial margin posted or variation margin posted respectively rather than included as excess collateral posted.
+        For centrally cleared transactions, excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+        [docReference JFSA Margin dataElement "57" field "Excess collateral posted by the counterparty 1 - Remark"
+            provision "By definition, excess collateral should be managed separately from both initial margin and variation margin. (Example : Independent Amount"]
+    override currencyOfTheExcessCollateralPosted string (0..1)
+        [label "58 Currency of the excess collateral posted"]
+        [docReference JFSA Margin dataElement "58" field "Currency of the excess collateral posted"
+            provision "Currency in which the excess collateral posted is denominated.
+        If the excess collateral posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted excess collateral."]
+        [docReference JFSA Margin dataElement "58" field "Currency of the excess collateral posted - Remark"
+            provision "By definition, excess collateral should be managed separately from both initial margin and variation margin. (Example : Independent Amount"]
+    override excessCollateralCollectedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [label "59 Excess Collateral Collected By The reporting counterparty"]
+        [docReference JFSA Margin dataElement "59" field "Excess collateral collected by the reporting counterparty"
+            provision "Monetary value of any additional collateral collected by the reporting counterparty separate and independent from initial and variation margin. This data element refers to the total current value of the excess collateral before application of the haircut (if applicable), rather than to its daily change.
+        Any initial or variation margin amount collected that exceeds the required initial margin or required variation margin, is reported as part of the initial margin collected or variation margin collected respectively, rather than included as excess collateral collected.
+        For centrally cleared transactions excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+        [docReference JFSA Margin dataElement "59" field "Excess collateral collected by the counterparty 1 - Remark"
+            provision "By definition, excess collateral should be managed separately from both initial margin and variation margin. (Example : Independent Amount"]
+    override currencyOfTheExcessCollateralCollected string (0..1)
+        [label "60 Currency of excess collateral collected"]
+        [docReference JFSA Margin dataElement "60" field "Currency of excess collateral collected"
+            provision "Currency in which the excess collateral collected is denominated. If the excess collateral is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected excess collateral."]
+        [docReference JFSA Margin dataElement "60" field "Currency of excess collateral collected - Remark"
+            provision "By definition, excess collateral should be managed separately from both initial margin and variation margin. (Example : Independent Amount"]
+    override eventTimestamp zonedDateTime (1..1)
+        [label "104 Event timestamp"]
+        [docReference JFSA Margin dataElement "104" field "Event timestamp"
+            provision "Date and time of occurrence of the event as determined by the reporting counterparty or a service provider. In the case of a clearing event, date and time when the original swap is accepted by the derivative clearing organization (DCO) for clearing and recorded by the DCOs system should be reported in this data element. The time element is as specific as technologically practicable."]
+        [docReference JFSA Margin dataElement "104" field "Event timestamp - Remark"
+            provision "System input time, data generation time, and system connection time are to be considered as acceptable values. In addition, if determining the time up to the seconds is impossible due to system restrictions, setting the seconds to '00' shall be acceptable.
+        Cancellation report of alpha - transactions by financial institutions do not necessarily have to match the date and time recorded by the central counterparty's system.
+        The date and time recorded by the central counterparty's system will be submitted by the central counterparty when they report their  and  transactions."]
+    override actionType MarginActionEnum (0..1)
+        [label "101 Action Type"]
+        [docReference JFSA Margin dataElement "101" field "Action type"
+            provision "Type of action taken on the swap transaction or type of end-of-day reporting.
+        Actions may include, but are not limited to, new, modify, correct, error, terminate, revive, transfer out, valuation, and collateral.
+        New: An action that reports a new swap transaction. It applies to the first message relating to a new UTI.
+        Modify: An action that modifies the state of a previously submitted transaction (e.g., credit event) or changes a term of a previously submitted transaction due to a newly negotiated modification (amendment) or updates previously missing information (e.g., post price swap). It does not include correction of a previous transaction.
+        Correct: An action that corrects erroneous data of a previously submitted transaction.
+        Error: An action of cancellation of a wrongly submitted entire transaction in case it never came into existence or was not subject to the reporting requirements but was reported erroneously, or a cancellation of duplicate report.
+        Terminate: An action that closes an existing transaction because of a new event (e.g., Compression, Novation). This does not apply to transactions that terminate at contractual maturity date.
+        Revive: An action that reinstates a swap transaction that was reported as error or terminated by mistake.
+        Transfer out: An action that transfers swap transaction from one SDR to another SDR (change of swap data repository).
+        Valuation: An update to valuation data. There will be no corresponding Event type.
+        Collateral: An update to collateral margin data. There will be no corresponding Event type."]
+        [docReference JFSA Margin dataElement "101" field "Action Type - Remark"
+            provision "Status for reporting items such as 'LEI' and 'Confirm' could change during contract period. For those updates which does not involve contractual changes or error corrections, use Action Type: Modify.
+        If New, Correct, or Modify occurs on the same day as the valuation for a same transaction, report the correction and valuation separately.
+        [Specific example] (Specific example 1) Where an equity option transaction is knocked-out (currently reported as modify with a notional amount of 0)
+        Report 'ACTION TYPE' as 'Terminate (TERM)' and 'EVENT TYPE' as 'Early Termination (EART)'.
+        (Specific Example 2) Where a customer cancels an equity option transaction (currently reported as cancel) Report 'ACTION TYPE' as 'Terminate (TERM)' and 'EVENT TYPE' as 'Early Termination (EART)'.
+        (Specific example 3) Exercise of equity option transactions (previously excluded from reporting) Report 'ACTION TYPE' as 'Terminate (TERM)' 'EVENT TYPE' as 'Exercise (EXER)'.
+        In cases where the rights are exercised, it is expectd to be reported as 'Terminate' and 'Exercise'."]
+    override eventDate date (0..1)
+        [ruleReference empty]
+    override collateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override collateralTimestamp zonedDateTime (0..1)
+        [ruleReference empty]
+    entityResponsibleForReporting LEIIdentifier (0..1)
+        [label "6 Entity responsible for reporting"]
+        [docReference JFSA Margin dataElement "6" field "Entity responsible for reporting"
+            provision "The identifier of the financial institution that has the reporting obligation."]
+        [docReference JFSA Margin dataElement "6" field "Entity responsible for reporting - Remark"
+            provision "Reporting party of the trades will be determined based on the identifier reported for 'Entity responsible for reporting' and by 'Submitter identifier'. Examples of who the reporting party is:
+        [Case 1] Where a party to a transaction is other than a fund (normal case):
+        'Entity responsible for reporting' = Financial institution with reporting obligation and involved in the transaction as Counterparty 1
+        'Counterparty 1 (reporting counterparty)' = Same as above
+        'Submitter identifier' = Same as above
+        [Case 2] Where a trading party is a fund:
+        'Entity responsible for reporting' = Trust Bank LEI
+        'Counterparty 1 (reporting counterparty)' = Fund LEI
+        'Submitter identifier' = Trust bank LEI 
+        [Case 3] Reporting party is an agent, etc. (where a regional bank requests the Trust Bank, etc. to report):
+        'Entity responsible for reporting' = Financial institution with reporting obligation and involved in the transaction as Counterparty 1
+        'Counterparty 1 (reporting counterparty)' = Same as above
+        'Submitter identifier' = LEI of the agent acting as the service provider for reporting"]
+        [ruleReference EntityResponsibleForReporting]
+    technicalRecordId string (0..1)
+        [label "[Internal] Technical Record Id (ISO)"]
+        [docReference JFSA Margin dataElement "[Internal]" field "Technical Record Id (ISO)"
+            provision "Unique technical identification of the original data for which the status is provided for the BDR. Not sent to JFSA."]
+        [ruleReference TechnicalRecordId]
+
+    condition DTCC_JFSA_BR_0004_03: <"Reporting timestamp Condition 3">
+        [docReference JFSA DTCC_Specs dataElement "4" field "Reporting timestamp"
+          provision "[Reporting timestamp] must be equal to or before the [Message Received timestamp] derived by the TR. The date value of the [Reporting timestamp] must NOT be more than 2 days before the date value of the [Message Received timestamp]."]
+        // This field is set to True as this data is known post submission.
+        if actionType = MarginActionEnum -> MARU then (True)
+
+    condition DTCC_JFSA_BR_0007_01: <"Counterparty 1 Condition">
+        [docReference JFSA DTCC_Specs dataElement "7" field "Counterparty 1"
+          provision "[Counterparty 1] must NOT = [Counterparty 2] if [Counterparty 2 identifier type] is = LEI"]
+        if actionType = MarginActionEnum -> MARU
+        then (if counterparty2IdentifierType = True then counterparty1 <> counterparty2)
+
+    condition DTCC_JFSA_BR_0008_01: <"Counterparty 2 Condition">
+        [docReference JFSA DTCC_Specs dataElement "8" field "Counterparty 2"
+          provision "[Counterparty 1] must NOT = [Counterparty 2] if [Counterparty 2 identifier type] is = LEI"]
+        if actionType = MarginActionEnum -> MARU
+        then (if counterparty2IdentifierType = True then counterparty2 <> counterparty1)
+
+    condition DTCC_JFSA_BR_0025_01: <"Unique transaction identifier (UTI) Condition">
+        [docReference JFSA DTCC_Specs dataElement "25" field "Unique transaction identifier (UTI)"
+          provision "Required if [Initial margin collateral portfolio code] = 'NOAP' and [Variation margin collateral portfolio code] is = 'NOAP' or blank."]
+        if actionType = MarginActionEnum -> MARU
+        then (if initialMarginCollateralPortfolioCode = "NOAP" and initialMarginCollateralPortfolioCode = "NOAP" or initialMarginCollateralPortfolioCode is absent then uti exists)
+
+    condition DTCC_JFSA_BR_0045_01: <"Initial margin posted by the reporting counterparty (pre-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "45" field "Initial margin posted by the reporting counterparty (pre-haircut)"
+          provision "Required if [Collateralisation category] = 'OWC1' or 'OWP1' or 'FLCL'.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                initialMarginPostedByTheCounterparty1PreHaircut,
+                [CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0046_01: <"Initial margin posted by the reporting counterparty (post-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "46" field "Initial margin posted by the reporting counterparty (post-haircut)"
+          provision "Required if [Collateralisation category] = 'OWC1' or 'OWP1' or 'FLCL'.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                initialMarginPostedByTheCounterparty1PostHaircut,
+                [CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0047_01: <"Currency of initial margin posted Condition">
+        [docReference JFSA DTCC_Specs dataElement "47" field "Currency of initial margin posted"
+          provision "Required if [Initial margin posted by the reporting counterparty (pre-haircut)] is populated. Required if [Initial margin posted by the reporting counterparty (post-haircut)] is populated."]
+        if actionType = MarginActionEnum -> MARU
+        then (if initialMarginPostedByTheCounterparty1PreHaircut exists or initialMarginPostedByTheCounterparty1PostHaircut exists then initialMarginPostedByCounterparty1Currency exists)
+
+    condition DTCC_JFSA_BR_0048_01: <"Initial margin collected by the reporting counterparty (pre-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "48" field "Initial margin collected by the reporting counterparty (pre-haircut)"
+          provision "Required if [Collateralisation category] = OWC2 or OWP2 or FLCL.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                initialMarginCollectedByCounterparty1PreHaircut,
+                [CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0049_01: <"Initial margin collected by the reporting counterparty (post-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "49" field "Initial margin collected by the reporting counterparty (post-haircut)"
+          provision "Required if [Collateralisation category] = OWC2 or OWP2 or FLCL.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                initialMarginCollectedByCounterparty1PostHaircut,
+                [CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0050_01: <"Currency of initial margin collected Condition">
+        [docReference JFSA DTCC_Specs dataElement "50" field "Currency of initial margin collected"
+          provision "Required if [Initial margin collected by the reporting counterparty (pre-haircut)] is populated. Required if [Initial margin collected by the reporting counterparty (post-haircut)] is populated."]
+        if actionType = MarginActionEnum -> MARU
+        then (if initialMarginCollectedByCounterparty1PreHaircut exists or initialMarginCollectedByCounterparty1PostHaircut exists then initialMarginCollectedByCounterparty1Currency exists)
+
+    condition DTCC_JFSA_BR_0051_01: <"Variation margin posted by the reporting counterparty (pre-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "51" field "Variation margin posted by the reporting counterparty (pre-haircut)"
+          provision "Required if [Collateralisation category] = 'PRC1' or 'PRCL' or 'OWC1' or 'OWP1' or 'OWP2' or 'FLCL'.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                variationMarginPostedByTheCounterparty1PreHaircut,
+                [CollateralisationType3Code -> PRC1, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0052_01: <"Variation margin posted by the reporting counterparty (post-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "52" field "Variation margin posted by the reporting counterparty (post-haircut)"
+          provision "Required if [Collateralisation category] = 'PRC1' or 'PRCL' or 'OWC1' or 'OWP1' or 'OWP2' or 'FLCL'.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                variationMarginPostedByTheCounterparty1PostHaircut,
+                [CollateralisationType3Code -> PRC1, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0053_01: <"Currency of variation margin posted Condition">
+        [docReference JFSA DTCC_Specs dataElement "53" field "Currency of variation margin posted"
+          provision "Required if [Variation margin posted by the reporting counterparty (pre-haircut)] is populated. Required if [Variation margin posted by the reporting counterparty (post-haircut)] is populated."]
+        if actionType = MarginActionEnum -> MARU
+        then (if variationMarginPostedByTheCounterparty1PreHaircut exists or variationMarginPostedByTheCounterparty1PostHaircut exists then variationMarginPostedByCounterparty1Currency exists)
+
+    condition DTCC_JFSA_BR_0054_01: <"Variation margin collected by the reporting counterparty (pre-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "54" field "Variation margin collected by the reporting counterparty (pre-haircut)"
+          provision "Required if [Collateralisation category] = 'PRC2' or 'PRCL' or 'OWC2' or 'OWP1' or 'OWP2' or 'FLCL'.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                variationMarginCollectedByTheCounterparty1PreHaircut,
+                [CollateralisationType3Code -> PRC2, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0055_01: <"Variation margin collected by the reporting counterparty (post-haircut) Condition">
+        [docReference JFSA DTCC_Specs dataElement "55" field "Variation margin collected by the reporting counterparty (post-haircut)"
+          provision "Required if [Collateralisation category] = 'PRC2' or 'PRCL' or 'OWC2' or 'OWP1' or 'OWP2' or 'FLCL'.
+          Reject if Negative."]
+        MarginAmount_Validation(
+                actionType,
+                collateralisationCategory,
+                variationMarginCollectedByTheCounterparty1PostHaircut,
+                [CollateralisationType3Code -> PRC2, CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL]
+            )
+
+    condition DTCC_JFSA_BR_0056_01: <"Currency of variation margin collected Condition">
+        [docReference JFSA DTCC_Specs dataElement "56" field "Currency of variation margin collected"
+          provision "Required if [Variation margin collected by the reporting counterparty (pre-haircut)] is populated. Required if [Variation margin collected by the reporting counterparty (post-haircut)] is populated."]
+        if actionType = MarginActionEnum -> MARU
+        then (if variationMarginCollectedByTheCounterparty1PreHaircut exists or variationMarginCollectedByTheCounterparty1PostHaircut exists then variationMarginCollectedByCounterparty1Currency exists)
+
+    condition DTCC_JFSA_BR_0057_01: <"Excess collateral posted by the reporting counterparty Condition">
+        [docReference JFSA DTCC_Specs dataElement "57" field "Excess collateral posted by the reporting counterparty"
+          provision "Reject if Negative."]
+        if actionType = MarginActionEnum -> MARU
+        then (if excessCollateralPostedByTheCounterparty1 < 0 then False)
+
+    condition DTCC_JFSA_BR_0058_01: <"Currency of excess collateral posted Condition">
+        [docReference JFSA DTCC_Specs dataElement "58" field "Currency of excess collateral posted"
+          provision "Required if [Excess collateral posted by the reporting counterparty] is populated."]
+        if actionType = MarginActionEnum -> MARU
+        then (if excessCollateralPostedByTheCounterparty1 exists then currencyOfTheExcessCollateralPosted exists)
+
+    condition DTCC_JFSA_BR_0059_01: <"Excess collateral collected by the reporting counterparty Condition">
+        [docReference JFSA DTCC_Specs dataElement "59" field "Excess collateral collected by the reporting counterparty"
+          provision "Reject if Negative."]
+        if actionType = MarginActionEnum -> MARU
+        then (if excessCollateralCollectedByTheCounterparty1 < 0 then False)
+
+    condition DTCC_JFSA_BR_0060_01: <"Currency of excess collateral collected Condition">
+        [docReference JFSA DTCC_Specs dataElement "60" field "Currency of excess collateral collected"
+          provision "Required if [Excess collateral collected by the reporting counterparty] is populated."]
+        if actionType = MarginActionEnum -> MARU
+        then (if excessCollateralCollectedByTheCounterparty1 exists then currencyOfTheExcessCollateralCollected exists)
+
+    condition DTCC_JFSA_BR_0062_02: <"Initial margin collateral portfolio code Condition 2">
+        [docReference JFSA DTCC_Specs dataElement "62" field "Initial margin collateral portfolio code"
+          provision "Reject if [UTI] is populated and [Initial margin collateral portfolio code] does NOT = 'NOAP'. Reject if the value [NOAP] is submitted in '/Prtfl/Cd'."]
+        // [NOAP] value for '/Prtfl/Cd' = 'False' value for [Collateral portfolio indicator]
+        if actionType = MarginActionEnum -> MARU
+        then (if uti exists and initialMarginCollateralPortfolioCode <> "NOAP"
+            then initialMarginCollateralPortfolioCode is absent
+            else if collateralPortfolioIndicator = False
+            then variationMarginCollateralPortfolioCode is absent)
+
+    condition DTCC_JFSA_BR_0063_03: <"Variation margin collateral portfolio code Condition 3">
+        [docReference JFSA DTCC_Specs dataElement "63" field "Variation margin collateral portfolio code"
+          provision "Required if [Initial margin collateral portfolio code] = 'NOAP' and [Unique transaction identifier (UTI)] is blank. Reject if the value [NOAP] is submitted in '/Prtfl/Cd'. Reject if [UTI] is populated and [Variation margin collateral portfolio code] does NOT = 'NOAP'."]
+        // [NOAP] value for '/Prtfl/Cd' = 'False' value for [Collateral portfolio indicator]
+        if actionType = MarginActionEnum -> MARU
+        then (if uti is absent and initialMarginCollateralPortfolioCode = "NOAP"
+            then variationMarginCollateralPortfolioCode exists
+            else if collateralPortfolioIndicator = False
+            then variationMarginCollateralPortfolioCode is absent
+            else if uti exists and variationMarginCollateralPortfolioCode = "NOAP"
+            then False)
+
+    condition DTCC_JFSA_BR_0104_04: <"Event timestamp Condition 4">
+        [docReference JFSA DTCC_Specs dataElement "104" field "Event timestamp"
+          provision "The date value in the [Event timestamp] must be equal to or before the date value in the [Reporting timestamp]. [Event timestamp] should not be before the [Initial Event timestamp] of the NEWT Message."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+            provision "The logic regarding the [Initial event timestamp] is not modelled. The condition cannot be executed in a stateless environment."]
+        if actionType = MarginActionEnum -> MARU
+        then (eventTimestamp <= reportingTimestamp)

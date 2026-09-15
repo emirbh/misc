@@ -1,0 +1,406 @@
+namespace drr.regulation.asic.rewrite.margin
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.regulation.asic.*
+import drr.regulation.common.*
+import drr.regulation.common.margin.*
+import drr.standards.iso.*
+
+type ASICMarginReport extends CommonMarginReport:
+    [rootType]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "3.3 Counterparty 1"]
+        [docReference ASIC Margin table "3" dataElement "3" field "Counterparty 1"
+            provision "The current LEI of:
+            If the Reporting Entity is an RE, Trustee or corporate director of the managed investment scheme, trust or CCIV that holds the OTC Derivative the subject of the Reportable Transaction, the managed investment scheme, trust or CCIV.
+            Otherwise, the Reporting Entity."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "3.5 Counterparty 2"]
+        [docReference ASIC Margin table "3" dataElement "5" field "Counterparty 2"
+            provision "The LEI or another identifier, determined in accordance with subrule S1.3.1(2), of the entity that is:
+            If the counterparty of the OTC Derivative the subject of the Reportable Transaction whose identifier is not reported at Counterparty 1 (item 3 above) is an RE or Trustee of the managed investment scheme or trust that holds the OTC Derivative the subject of the Reportable Transaction, the managed investment scheme or trust;
+            Otherwise, the counterparty of the OTC Derivative the subject of the Reportable Transaction whose identifier is not reported at Counterparty 1 (item 3 above)."]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "[Not in regulation] Reporting timestamp"]
+        [docReference ASIC Margin dataElement "[Not in regulation]" field "Reporting timestamp"
+            provision "The date and time of the submission of a report of information set out in this table to the Derivative Trade Repository."]
+    override reportSubmittingEntityID string (1..1)
+        [label "3.24 Report submitting entity"]
+        [docReference ASIC Margin table "3" dataElement "24" field "Report submitting entity"
+            provision "The LEI of the person submitting the report of information set out in this table."]
+    override counterparty2IdentifierType boolean (0..1)
+        [label "3.3_1 Counterparty 2 identifier type"]
+        [docReference ASIC Margin table "3" dataElement "3_1" field "Counterparty 2 identifier type"
+            provision "Indicator of whether LEI was used to identify the counterparty 2."]
+    override uti Max52AlphaNumericText (0..1)
+        [label "10 Unique Transaction Identifier (UTI)"]
+        [docReference ASIC Margin table "3" dataElement "1" field "Unique transaction identifier"
+            provision "For a report made under Rule 2.2.2, if one transaction identifier was reported for the Reportable Transaction, the transaction identifier.
+            If more than one transaction identifier was reported for the Reportable Transaction, one of those transaction identifiers."]
+        [docReference ISDA APACJFSAPeerReviewGroup date "20251203" field "Unique Transaction Identifier"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifier]
+    override collateralTimestamp zonedDateTime (0..1)
+        [label "3.6 Collateral timestamp"]
+        [docReference ASIC Margin table "3" dataElement "6" field "Collateral timestamp"
+            provision "Latest date, or date and time, that an amount reported for items 12, 13, 15, 16, 18 or 20 was determined."]
+    override collateralisationCategory CollateralisationType3Code (0..1)
+        [label "3.7 Collateralisation category"]
+        [docReference ASIC Margin table "3" dataElement "7" field "Collateralisation category"
+            provision "An indicator of whether the OTC Derivative the subject of the Reportable Transaction is included in a collateral agreement (or collateral agreements) between the counterparties and of the kind of the collateral posting arrangements under the collateral agreement (or collateral agreements)."]
+    override collateralPortfolioIndicator boolean (0..1)
+        [label "3.8 Collateral portfolio indicator"]
+        [docReference ASIC Margin table "3" dataElement "8" field "Collateral portfolio indicator"
+            provision "If the OTC Derivative the subject of the Reportable Transaction is collateralised, the True or False indicator specified in the applicable paragraph of column 5 of this item"]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+    [label "3.10 Collateral portfolio code (IM)"]
+        [docReference ASIC Margin table "3" dataElement "10" field "Collateral portfolio code (IM)"
+            provision "If the OTC Derivative the subject of the Reportable Transaction is collateralised and collateral is reported on a Portfolio Basis, a unique code, determined by the Reporting Entity to identify the collateral portfolio of amounts of initial margin, unless the collateralisation does not involve amounts of initial margin.
+            If there is only one collateral portfolio of amounts of margin that does not distinguish between margin that is initial margin and margin that is variation margin, the unique code is of that portfolio."]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "3.11 Collateral portfolio code (VM)"]
+        [docReference ASIC Margin table "3" dataElement "11" field "Collateral portfolio code (VM)"
+            provision "If the OTC Derivative the subject of the Reportable Transaction is collateralised and collateral is reported on a Portfolio Basis, a unique code, determined by the Reporting Entity to identify the collateral portfolio of amounts of variation margin, unless the collateralisation does not involve amounts of variation margin.
+            This data element is not reported if there is only one collateral portfolio of amounts of margin that does not distinguish between margin that is initial margin and margin that is variation margin, and the collateral portfolio code of the collateral portfolio is reported as Collateral portfolio code (initial margin) (item 10 above)."]
+    override initialMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.12 Initial margin posted by the Reporting Entity (pre-haircut)"]
+        [docReference ASIC Margin table "3" dataElement "12" field "Initial margin posted by the Reporting Entity (pre-haircut)"
+            provision "The monetary value of initial margin that has been posted by the Reporting Entity to the other counterparty.
+            This refers to the total current value of the initial margin rather than to its daily change.
+            Where a single amount of margin is posted that does not distinguish between margin that is initial margin and margin that is variation margin, the single amount of margin is reported for this data element"]
+    override initialMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.13 Initial margin posted by the Reporting Entity (post-haircut)"]
+        [docReference ASIC Margin table "3" dataElement "13" field "Initial margin posted by the Reporting Entity (post-haircut)"
+            provision "The monetary value that is the amount reported for Initial margin posted by the Reporting Entity (pre-haircut) (item 12 above) less the amount, if any, (the haircut) that is not counted as satisfying a term of margin posting of the collateralisation arrangement"]
+    override initialMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.14 Currency of initial margin posted"]
+        [docReference ASIC Margin table "3" dataElement "14" field "Currency of initial margin posted"
+            provision "The currency code of the currency in which the amount reported for Initial margin posted by the Reporting Entity (pre-haircut) (item 12 above) is denominated."]
+    override initialMarginCollectedByCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.15 Initial margin collected by the Reporting Entity (pre-haircut)"]
+        [docReference ASIC Margin table "3" dataElement "15" field "Initial margin collected by the Reporting Entity (pre-haircut)"
+            provision "The monetary value of initial margin that has been collected by the Reporting Entity from the other counterparty.
+        This refers to the total current value of the initial margin rather than to its daily change.
+        Where a single amount of margin is collected that does not distinguish between margin that is initial margin and margin that is variation margin, the single amount of margin is reported for this data element."]
+    override initialMarginCollectedByCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.16 Initial margin collected by the Reporting Entity (post-haircut)"]
+        [docReference ASIC Margin table "3" dataElement "16" field "Initial margin collected by the Reporting Entity (post-haircut)"
+            provision "The monetary value that is the amount reported for Initial margin collected by the Reporting Entity (pre-haircut) (item 15 above) less the amount, if any, (the haircut) that is not counted as satisfying a term of margin posting of the collateralisation arrangement."]
+    override initialMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.17 Currency of initial margin collected"]
+        [docReference ASIC Margin table "3" dataElement "17" field "Currency of initial margin collected"
+            provision "The currency code of the currency in which the amount reported for Initial margin collected by the Reporting Entity (pre-haircut) (item 15 above) is denominated."]
+    override variationMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.18 Variation margin posted by the Reporting Entity (pre-haircut)"]
+        [docReference ASIC Margin table "3" dataElement "18" field "Variation margin posted by the Reporting Entity (pre-haircut)"
+            provision "The monetary value of variation margin that has been posted by the Reporting Entity to the other counterparty.
+        This refers to the total current value of the variation margin rather than to its daily change"]
+    override variationMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.19 Currency of variation margin posted."]
+        [docReference ASIC Margin table "3" dataElement "19" field "Currency of variation margin posted"
+            provision "The currency code of the currency in which the amount reported for variation margin posted by the Reporting Entity (pre-haircut) (item 18 above) is denominated."]
+    override variationMarginCollectedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.20 Variation margin collected by the Reporting Entity (pre-haircut)"]
+        [docReference ASIC Margin table "3" dataElement "20" field "Variation margin collected by the Reporting Entity (pre-haircut)"
+            provision "The monetary value of variation margin that has been collected by the Reporting Entity from the other counterparty.
+        This refers to the total current value of the variation margin rather than to its daily change"]
+    override variationMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.21 Currency of variation margin collected."]
+        [docReference ASIC Margin table "3" dataElement "21" field "Currency of variation margin collected"
+            provision "The currency code of the currency in which the amount reported for variation margin collected by the Reporting Entity (pre-haircut) (item 20 above) is denominated."]
+    override actionType MarginActionEnum (0..1)
+        [label "3.22 Action type"]
+        [docReference ASIC Margin table "3" dataElement "22" field "Action type"
+            provision "An indicator of whether the report being made relates to:
+        (a) reporting collateral arrangements information in a Reportable Transaction that is the entry into an OTC Derivative;
+        (b) the modification of collateral arrangements information in a report previously made;
+        (c) an update of collateral amounts information; or
+        (d) a correction to collateral arrangements information or collateral amounts information in a report previously made."]
+    override collateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override excessCollateralPostedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override excessCollateralCollectedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override eventDate date (0..1)
+        [ruleReference empty]
+    override eventTimestamp zonedDateTime (0..1)
+        [ruleReference empty]
+    override variationMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override variationMarginCollectedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    uniqueTransactionIdentifierProprietary UTIProprietaryIDFormat (0..1)
+        [label "10 Unique Transaction Identifier (Proprietary)"]
+        [docReference ASIC Margin table "3" dataElement "1" field "Unique transaction identifier"
+            provision "For a report made under Rule 2.2.2, if one transaction identifier was reported for the Reportable Transaction, the transaction identifier.
+            If more than one transaction identifier was reported for the Reportable Transaction, one of those transaction identifiers."]
+        [docReference ISDA APACJFSAPeerReviewGroup date "20251203"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifierProprietary]
+    reportingEntity string (1..1)
+        [label "3.2 Reporting entity"]
+        [docReference ASIC Margin table "3" dataElement "2" field "Reporting entity"
+            provision "The current LEI of the Reporting Entity"]
+        [ruleReference ReportingEntity]
+    smallScaleBuySideEntityIndicator string (1..1)
+        [label "3.4 Small-scale Buy-side Entity indicator"]
+        [docReference ASIC Margin table "3" dataElement "4" field "Small-scale Buy-side Entity indicator"
+            provision "If applicable, an indicator that the Reporting Entity is making the report as a Small-scale Buy-side Entity."]
+        [ruleReference SmallScaleBuySideEntityIndicator]
+    portfolioContainingNonReportedComponentIndicator boolean (0..1)
+        [label "3.9 Portfolio containing non-reported component indicator"]
+        [docReference ASIC Margin table "3" dataElement "9" field "Portfolio containing non-reported component indicator"
+            provision "An indicator of whether the collateral portfolio in which the OTC Derivative the subject of the Reportable Transaction includes transactions that are not reported under these Rules."]
+        [ruleReference PortfolioContainingNonReportedComponentIndicator]
+    technicalRecordId string (1..1)
+        [label "[Internal] Technical Record Id (ISO)"]
+        [docReference ASIC Margin dataElement "[Internal]" field "Technical Record Id (ISO)"
+            provision "Unique technical identification of the original data for which the status is provided for the BDR."]
+    
+        [ruleReference TechnicalRecordId]
+    executionAgentOfCounterparty1 LEIIdentifier (1..1)
+        [label "N/A Execution agent of Counterparty 1"]
+        [docReference ASIC Margin dataElement "N/A" field "Execution agent of Counterparty 1"
+            provision "If applicable, the LEI of the entity that entered into the Reportable Transaction as agent for the Reporting Entity without becoming a counterparty themselves."]
+    
+        [ruleReference ExecutionAgentOfCounterparty1]
+
+    condition DTCC_ASIC_BR_1006_01: <"Counterparty 1">
+        [docReference ASIC DTCC_Specs table "1" dataElement "6" validationRule "Transaction"
+        provision "When [Action Type] = NEWT, MODI, CORR, REVI, TERM, PRTO, ERROR, MARU, VALU then [Counterparty 1] must NOT = [Counterparty 2]."]
+        trade.party.Counterparty_Validation(
+                actionType to-enum ActionTypeEnum,
+                counterparty1,
+                counterparty2
+            )
+
+    condition DTCC_ASIC_BR_1007_01: <"Counterparty 2">
+        [docReference ASIC DTCC_Specs table "1" dataElement "7" validationRule "Transaction"
+        provision "When [Action Type] = NEWT, MODI, CORR, REVI, TERM, PRTO, ERROR, MARU, VALU then [Counterparty 1] must NOT = [Counterparty 2]."]
+        trade.party.Counterparty_Validation(
+                actionType to-enum ActionTypeEnum,
+                counterparty1,
+                counterparty2
+            )
+
+    condition DTCC_ASIC_BR_3001_01: <"Unique transaction identifier">
+        [docReference ASIC DTCC_Specs table "3" dataElement "1" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Initial margin collateral portfolio code] = 'NOAP' and [Variation margin collateral portfolio code] is = 'NOAP' or blank. (Hence required if [Collateral portfolio indicator] = False)
+            Reject if [Collateral portfolio indicator] = True."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if initialMarginCollateralPortfolioCode = "NOAP"
+                    and variationMarginCollateralPortfolioCode = "NOAP"
+                    and collateralPortfolioIndicator = False
+            then required choice uti, uniqueTransactionIdentifierProprietary
+            else if collateralPortfolioIndicator = True
+            then (uti is absent and uniqueTransactionIdentifierProprietary is absent)
+
+    condition DTCC_ASIC_BR_3006_01: <"Collateral Timestamp">
+        [docReference ASIC DTCC_Specs table "3" dataElement "6" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then The date value in the [Collateral timestamp] must be equal to or before the date value in the [Reporting timestamp].
+            [Collateral timestamp] should not be before the [Initial Event timestamp] of the NEWT Message."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+            provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then collateralTimestamp -> date <= reportingTimestamp -> date
+
+    condition DTCC_ASIC_BR_3009_01: <"Portfolio containing non-reported component indicator">
+        [docReference ASIC DTCC_Specs table "3" dataElement "9" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Collateral portfolio indicator] = True"]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if collateralPortfolioIndicator = True
+            then portfolioContainingNonReportedComponentIndicator exists
+
+    condition DTCC_ASIC_BR_3010_01: <"Collateral portfolio code (IM)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "10" validationRule "Collateral"
+        provision "when [Action Type] = NEWT, MODI, CORR, REVI then Required if [Collateral portfolio code (variation margin)] = 'NOAP'.
+            Reject if the value [NOAP]  is submitted in '/Prtfl/Cd'.
+            Note: If the [Collateral portfolio code (initial margin)] is not applicable to your trade, clients could submit the value [NOAP] to represent 'No Applicable' in '/NoPrtfl' XML."]
+        if actionType <> MarginActionEnum -> MARU
+        then if initialMarginCollateralPortfolioCode = "NOAP"
+            then False
+            else True
+
+    condition DTCC_ASIC_BR_3010_02: <"Collateral portfolio code (IM)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "10" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Collateral portfolio code (variation margin)] = 'NOAP' and [Unique transaction identifier (UTI)] is blank.
+        Reject if the value [NOAP]  is submitted in '/Prtfl/Cd'.
+        Reject if [UTI] is populated and [Collateral portfolio code (initial margin)] does NOT = 'NOAP'.
+        Note: If the [Collateral portfolio code (initial margin)] is not applicable to your trade, clients could submit the value [NOAP] to represent 'No Applicable' in '/NoPrtfl' XML."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if (uti exists or uniqueTransactionIdentifierProprietary exists)
+                    and initialMarginCollateralPortfolioCode <> "NOAP"
+            then False
+
+    condition DTCC_ASIC_BR_3011_01: <"Collateral portfolio code (VM)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "11" validationRule "Collateral"
+        provision "when [Action Type] = NEWT, MODI, CORR, REVI then Reject if the value [NOAP]  is submitted in '/Prtfl/Cd'.
+        Note: If the [Collateral portfolio code (variation margin)] is not applicable to your trade, clients should submit the value [NOAP] to represent 'No Applicable' in '/NoPrtfl' XML."]
+        if actionType <> MarginActionEnum -> MARU
+        then if initialMarginCollateralPortfolioCode = "NOAP"
+            then variationMarginCollateralPortfolioCode exists
+
+    condition DTCC_ASIC_BR_3011_02: <"Collateral portfolio code (VM)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "11" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Reject if [UTI] is populated and [Collateral portfolio code (variation margin)] does NOT = 'NOAP'.
+            Reject if the value [NOAP]  is submitted in '/Prtfl/Cd'.
+            Note: If the [Collateral portfolio code (variation margin)] is not applicable to your trade, clients should submit the value [NOAP] to represent 'No Applicable' in '/NoPrtfl' XML."]
+        if actionType = MarginActionEnum -> MARU
+                or actionType = MarginActionEnum -> CORR
+                    and initialMarginCollateralPortfolioCode = "NOAP"
+                    and (uti is absent and uniqueTransactionIdentifierProprietary is absent)
+        then variationMarginCollectedByTheCounterparty1PreHaircut exists
+        else if (uti exists or uniqueTransactionIdentifierProprietary exists)
+                    and variationMarginCollateralPortfolioCode <> "NOAP"
+                or initialMarginCollateralPortfolioCode = "NOAP"
+        then variationMarginCollateralPortfolioCode is absent
+
+    condition DTCC_ASIC_BR_3012_01: <"Initial margin posted by the Reporting Entity (pre-haircut)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "12" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Collateralisation category] = OWC1 or OWP1 or FLCL.
+        Reject if [Collateralisation category] does not equal to OWC1 or OWP1 or FLCL.
+        Reject if Negative"]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if collateralisationCategory = CollateralisationType3Code -> OWC1
+                    or collateralisationCategory = CollateralisationType3Code -> OWP1
+                    or collateralisationCategory = CollateralisationType3Code -> FLCL
+            then initialMarginPostedByTheCounterparty1PreHaircut exists and initialMarginPostedByTheCounterparty1PreHaircut >= 0
+            else initialMarginPostedByTheCounterparty1PreHaircut is absent
+
+    condition DTCC_ASIC_BR_3013_01: <"Initial margin posted by the Reporting Entity (post-haircut)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "13" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Collateralisation category] = OWC1 or OWP1 or FLCL.
+        Reject if [Collateralisation category] does not equal to OWC1 or OWP1 or FLCL.
+        Reject if Negative"]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if collateralisationCategory = CollateralisationType3Code -> OWC1
+                    or collateralisationCategory = CollateralisationType3Code -> OWP1
+                    or collateralisationCategory = CollateralisationType3Code -> FLCL
+            then initialMarginCollectedByCounterparty1PreHaircut exists and initialMarginCollectedByCounterparty1PreHaircut >= 0
+            else initialMarginCollectedByCounterparty1PreHaircut is absent
+
+    condition DTCC_ASIC_BR_3014_01: <"Currency of initial margin posted">
+        [docReference ASIC DTCC_Specs table "3" dataElement "14" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Initial margin posted by the reporting counterparty (pre-haircut)] is populated.
+        Reject if [Currency of initial margin posted (pre-haircut)] = XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XTS, XXX."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if initialMarginPostedByTheCounterparty1PreHaircut exists
+            then initialMarginPostedByCounterparty1Currency exists
+                    and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX, ISOCurrencyCodeEnum -> XTS] any <> initialMarginPostedByCounterparty1Currency
+
+    condition DTCC_ASIC_BR_3014_02: <"Currency of initial margin posted">
+        [docReference ASIC DTCC_Specs table "3" dataElement "14" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Initial margin posted by the reporting counterparty (post- haircut)] is populated.
+        Reject if [Currency of initial margin posted (post-haircut)] = XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XTS, XXX."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if initialMarginPostedByTheCounterparty1PostHaircut exists
+            then initialMarginPostedByCounterparty1Currency exists
+                    and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XTS, ISOCurrencyCodeEnum -> XXX] any <> initialMarginPostedByCounterparty1Currency
+
+    condition DTCC_ASIC_BR_3015_01: <"Initial margin collected by the Reporting Entity (pre-haircut)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "15" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Collateralisation category] = OWC1 or OWP1 or FLCL.
+        Reject if [Collateralisation category] does not equal to OWC1 or OWP1 or FLCL.
+        Reject if Negative"]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if (collateralisationCategory = CollateralisationType3Code -> OWC1 or collateralisationCategory = CollateralisationType3Code -> OWP1 or collateralisationCategory = CollateralisationType3Code -> FLCL)
+            then initialMarginCollectedByCounterparty1PreHaircut exists and initialMarginCollectedByCounterparty1PreHaircut >= 0
+            else if (collateralisationCategory <> CollateralisationType3Code -> OWC1 or collateralisationCategory <> CollateralisationType3Code -> OWP1 or collateralisationCategory <> CollateralisationType3Code -> FLCL)
+            then initialMarginCollectedByCounterparty1PreHaircut is absent
+
+    condition DTCC_ASIC_BR_3016_01: <"Initial margin collected by the Reporting Entity (post-haircut)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "16" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Small-scale Buy-side Entity indicator] is NOT equal to 'SSBS' and [Collateralisation category] = OWC1 or OWP1 or FLCL.
+        Reject if [Collateralisation category] does not equal to OWC1 or OWP1 or FLCL.
+        Reject if Negative"]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if (smallScaleBuySideEntityIndicator <> "SSBS" and (collateralisationCategory = CollateralisationType3Code -> OWC1 or collateralisationCategory = CollateralisationType3Code -> OWP1 or collateralisationCategory = CollateralisationType3Code -> FLCL))
+            then initialMarginCollectedByCounterparty1PreHaircut exists and initialMarginCollectedByCounterparty1PreHaircut >= 0
+            else if (collateralisationCategory <> CollateralisationType3Code -> OWC1 or collateralisationCategory <> CollateralisationType3Code -> OWP1 or collateralisationCategory <> CollateralisationType3Code -> FLCL)
+            then initialMarginCollectedByCounterparty1PreHaircut is absent
+
+    condition DTCC_ASIC_BR_3017_01: <"Currency of initial margin collected">
+        [docReference ASIC DTCC_Specs table "3" dataElement "17" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Initial margin collected by the reporting counterparty (pre-haircut)] is populated.
+        Reject if [Currency of initial margin collected (pre-haircut)] = XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XTS, XXX."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if initialMarginCollectedByCounterparty1PreHaircut exists
+            then initialMarginCollectedByCounterparty1Currency exists
+                    and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX, ISOCurrencyCodeEnum -> XTS] any <> initialMarginCollectedByCounterparty1Currency
+
+    condition DTCC_ASIC_BR_3017_02: <"Currency of initial margin collected">
+        [docReference ASIC DTCC_Specs table "3" dataElement "17" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Initial margin collected by the reporting counterparty (post-haircut)] is populated.
+        Reject if [Currency of initial margin collected (post-haircut)] = XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XTS, XXX."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if initialMarginCollectedByCounterparty1PreHaircut exists
+            then initialMarginCollectedByCounterparty1Currency exists
+                    and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX, ISOCurrencyCodeEnum -> XTS] any <> initialMarginCollectedByCounterparty1Currency
+
+    condition DTCC_ASIC_BR_3018_01: <"Variation margin posted by the Reporting Entity (pre-haircut)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "18" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Collateralisation category] = PRC1 or PRCL or OWC1 or OWP1 or OWP2 or FLCL.
+        Reject if [Collateralisation category] does not equal to PRC1 or PRCL or OWC1 or OWP1 or OWP2 or FLCL.
+        Reject if Negative"]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if collateralisationCategory = CollateralisationType3Code -> PRC1
+                    or collateralisationCategory = CollateralisationType3Code -> PRCL
+                    or collateralisationCategory = CollateralisationType3Code -> OWC1
+                    or collateralisationCategory = CollateralisationType3Code -> OWP1
+                    or collateralisationCategory = CollateralisationType3Code -> OWP2
+                    or collateralisationCategory = CollateralisationType3Code -> FLCL
+            then variationMarginPostedByTheCounterparty1PreHaircut exists and variationMarginPostedByTheCounterparty1PreHaircut >= 0
+            else variationMarginPostedByTheCounterparty1PreHaircut is absent
+
+    condition DTCC_ASIC_BR_3019_01: <"Currency of variation margin posted">
+        [docReference ASIC DTCC_Specs table "3" dataElement "19" validationRule "Collateral"
+        provision "when [Action Type] = MARU then Required if [Variation margin posted by the Reporting Entity (pre-haircut)] is populated.
+        Reject if [Currency of variation margin posted] = XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XTS, XXX."]
+        if actionType = MarginActionEnum -> MARU
+        then if variationMarginPostedByTheCounterparty1PreHaircut exists
+            then variationMarginPostedByCounterparty1Currency exists
+                    and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XTS, ISOCurrencyCodeEnum -> XXX] any <> variationMarginPostedByCounterparty1Currency
+
+    condition DTCC_ASIC_BR_3020_01: <"Variation margin collected by the Reporting Entity (pre-haircut)">
+        [docReference ASIC DTCC_Specs table "3" dataElement "20" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Small-scale Buy-side Entity indicator] is NOT equal to 'SSBS' and [Collateralisation category] = PRC2 or PRCL or OWC2 or OWP1 or OWP2 or FLCL.
+        Reject if [Small-scale Buy-side Entity indicator] is NOT equal to 'SSBS and if [Collateralisation category] does not equal to PRC2 or PRCL or OWC2 or OWP1 or OWP2 or FLCL.
+        Reject if Negative"]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if (smallScaleBuySideEntityIndicator <> "SSBS" and (collateralisationCategory = CollateralisationType3Code -> PRC2 or collateralisationCategory = CollateralisationType3Code -> PRCL or collateralisationCategory = CollateralisationType3Code -> OWC2 or collateralisationCategory = CollateralisationType3Code -> OWP1 or collateralisationCategory = CollateralisationType3Code -> OWP2 or collateralisationCategory = CollateralisationType3Code -> FLCL))
+            then variationMarginCollectedByTheCounterparty1PreHaircut exists and variationMarginCollectedByTheCounterparty1PreHaircut >= 0
+            else if (smallScaleBuySideEntityIndicator <> "SSBS" and (collateralisationCategory <> CollateralisationType3Code -> PRC2 or collateralisationCategory <> CollateralisationType3Code -> PRCL or collateralisationCategory <> CollateralisationType3Code -> OWC2 or collateralisationCategory <> CollateralisationType3Code -> OWP1 or collateralisationCategory <> CollateralisationType3Code -> OWP2 or collateralisationCategory <> CollateralisationType3Code -> FLCL))
+            then variationMarginCollectedByTheCounterparty1PreHaircut is absent
+
+    condition DTCC_ASIC_BR_3021_01: <"Currency of variation margin collected">
+        [docReference ASIC DTCC_Specs table "3" dataElement "21" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then Required if [Variation margin collected by the Reporting Entity (pre-haircut)] is populated.
+        Reject if [Currency of variation margin collected] = XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XTS, XXX."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if variationMarginCollectedByTheCounterparty1PreHaircut exists
+            then variationMarginCollectedByCounterparty1Currency exists
+                    and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XTS, ISOCurrencyCodeEnum -> XXX] any <> variationMarginCollectedByCounterparty1Currency
+
+    condition DTCC_ASIC_BR_3023_01: <"Reporting Timestamp">
+        [docReference ASIC DTCC_Specs table "3" dataElement "23" validationRule "Collateral"
+        provision "when [Action Type] = MARU, CORR then [Reporting timestamp] must be equal to or before the [Message Received timestamp] derived by the TR.
+            Reject if the date value of the [Reporting timestamp] is more than 2 days before the date value of the [Message Received timestamp]."]
+        if actionType = MarginActionEnum -> MARU or actionType = MarginActionEnum -> CORR
+        then if variationMarginCollectedByTheCounterparty1PreHaircut exists
+            then True
+
+// The logic regarding the [Message Received timestamp] is not included as this data is known post submission.
+    condition DTCC_ASIC_BR_0013_02: <"Execution agent of the Counterparty 1">
+        [docReference ASIC DTCC_Specs dataElement "N/A" validationRule "Transaction"
+        provision "When [Action Type] = MARU/CORR then [Execution agent of Counterparty 1] must NOT = [Counterparty 1] or [Counterparty 2] or [Reporting Entity]"]
+        [docReference ISDA APACJFSAPeerReviewGroup date "20230515"
+        provision "DTCC has provided clarification stating that the [Reporting Entity] in business rules for data field Execution Agent of the Counterparty 1 refers to [Data Submitter] field in MAS message spec v0.4."]
+        if [MarginActionEnum -> CORR, MarginActionEnum -> MARU] any = actionType
+        then executionAgentOfCounterparty1 <> counterparty1
+                or executionAgentOfCounterparty1 <> counterparty2
+                or executionAgentOfCounterparty1 <> reportingEntity

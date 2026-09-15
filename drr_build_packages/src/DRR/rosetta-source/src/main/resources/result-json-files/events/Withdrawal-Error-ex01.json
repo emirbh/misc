@@ -1,0 +1,182 @@
+{
+  "originatingWorkflowStep" : {
+    "proposedEvent" : {
+      "instruction" : [ {
+        "before" : {
+          "value" : {
+            "trade" : {
+              "tradeIdentifier" : [ {
+                "issuer" : {
+                  "value" : "549300K7EEOSKRJDRI19",
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+                  }
+                },
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "value" : "WITHDRAWALERRORE0122",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                    }
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "f2240e4e"
+                },
+                "identifierType" : "UniqueTransactionIdentifier"
+              } ],
+              "party" : [ {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "549300K7EEOSKRJDRI19",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    }
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "ddab3047"
+                  }
+                } ],
+                "name" : {
+                  "value" : "Bank X (reportingParty)"
+                },
+                "meta" : {
+                  "globalKey" : "271f023c",
+                  "externalKey" : "party1"
+                }
+              }, {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "549300O5MFEP1XJ40B46",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    }
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "927fcae8"
+                  }
+                } ],
+                "name" : {
+                  "value" : "Bank Y"
+                },
+                "meta" : {
+                  "globalKey" : "67e3087d",
+                  "externalKey" : "party2"
+                }
+              } ],
+              "meta" : {
+                "globalKey" : "71fc5b87"
+              }
+            },
+            "meta" : {
+              "globalKey" : "71fc5b87"
+            }
+          }
+        }
+      } ]
+    },
+    "messageInformation" : {
+      "messageId" : {
+        "value" : "X001",
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+        }
+      },
+      "sentBy" : {
+        "value" : "BANKX"
+      },
+      "sentTo" : [ {
+        "value" : "SDR01"
+      } ]
+    },
+    "timestamp" : [ {
+      "dateTime" : "2011-02-04T16:42:16Z",
+      "qualification" : "eventCreationDateTime"
+    } ],
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "X001"
+        }
+      } ],
+      "meta" : {
+        "globalKey" : "28bad9"
+      }
+    } ],
+    "action" : "Cancel",
+    "meta" : {
+      "globalKey" : "38637ffd"
+    }
+  },
+  "reportableInformation" : {
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "globalReference" : "271f023c",
+        "externalReference" : "party1"
+      },
+      "relatedParty" : [ {
+        "partyReference" : {
+          "globalReference" : "271f023c",
+          "externalReference" : "party1"
+        },
+        "role" : "TradeSource"
+      }, {
+        "partyReference" : {
+          "globalReference" : "67e3087d",
+          "externalReference" : "party2"
+        },
+        "role" : "Counterparty"
+      } ]
+    }, {
+      "partyReference" : {
+        "globalReference" : "67e3087d",
+        "externalReference" : "party2"
+      },
+      "relatedParty" : [ {
+        "partyReference" : {
+          "globalReference" : "271f023c",
+          "externalReference" : "party1"
+        },
+        "role" : "TradeSource"
+      }, {
+        "partyReference" : {
+          "globalReference" : "67e3087d",
+          "externalReference" : "party2"
+        },
+        "role" : "Counterparty"
+      } ]
+    } ],
+    "reportableAction" : "Error",
+    "jurisdictionInformation" : [ {
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "271f023c",
+          "externalReference" : "party1"
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "CFTC"
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "67e3087d",
+          "externalReference" : "party2"
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    } ]
+  }
+}

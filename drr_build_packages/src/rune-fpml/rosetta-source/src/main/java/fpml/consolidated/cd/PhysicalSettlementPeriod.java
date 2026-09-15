@@ -1,0 +1,354 @@
+package fpml.consolidated.cd;
+
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import fpml.consolidated.cd.meta.PhysicalSettlementPeriodMeta;
+import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision 
+ *
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "confirmation-5.13"
+ *
+ * Provision 
+ *
+ */
+@RosettaDataType(value="PhysicalSettlementPeriod", builder=PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilderImpl.class, version="2.1.1")
+@RuneDataType(value="PhysicalSettlementPeriod", model="fpml", builder=PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilderImpl.class, version="2.1.1")
+public interface PhysicalSettlementPeriod extends RosettaModelObject {
+
+	PhysicalSettlementPeriodMeta metaData = new PhysicalSettlementPeriodMeta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision An explicit indication that a number of business days are not specified and therefore ISDA fallback provisions should apply.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision An explicit indication that a number of business days are not specified and therefore ISDA fallback provisions should apply.
+	 *
+	 */
+	Boolean getBusinessDaysNotSpecified();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision A number of business days. Its precise meaning is dependant on the context in which this element is used. ISDA 2003 Term: Business Day
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision A number of business days. Its precise meaning is dependant on the context in which this element is used. ISDA 2003 Term: Business Day
+	 *
+	 */
+	Integer getBusinessDays();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision A maximum number of business days. Its precise meaning is dependant on the context in which this element is used. Intended to be used to limit a particular ISDA fallback provision.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision A maximum number of business days. Its precise meaning is dependant on the context in which this element is used. Intended to be used to limit a particular ISDA fallback provision.
+	 *
+	 */
+	Integer getMaximumBusinessDays();
+
+	/*********************** Build Methods  ***********************/
+	PhysicalSettlementPeriod build();
+	
+	PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder toBuilder();
+	
+	static PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder builder() {
+		return new PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends PhysicalSettlementPeriod> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends PhysicalSettlementPeriod> getType() {
+		return PhysicalSettlementPeriod.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("businessDaysNotSpecified"), Boolean.class, getBusinessDaysNotSpecified(), this);
+		processor.processBasic(path.newSubPath("businessDays"), Integer.class, getBusinessDays(), this);
+		processor.processBasic(path.newSubPath("maximumBusinessDays"), Integer.class, getMaximumBusinessDays(), this);
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface PhysicalSettlementPeriodBuilder extends PhysicalSettlementPeriod, RosettaModelObjectBuilder {
+		PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder setBusinessDaysNotSpecified(Boolean businessDaysNotSpecified);
+		PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder setBusinessDays(Integer businessDays);
+		PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder setMaximumBusinessDays(Integer maximumBusinessDays);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("businessDaysNotSpecified"), Boolean.class, getBusinessDaysNotSpecified(), this);
+			processor.processBasic(path.newSubPath("businessDays"), Integer.class, getBusinessDays(), this);
+			processor.processBasic(path.newSubPath("maximumBusinessDays"), Integer.class, getMaximumBusinessDays(), this);
+		}
+		
+
+		PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder prune();
+	}
+
+	/*********************** Immutable Implementation of PhysicalSettlementPeriod  ***********************/
+	class PhysicalSettlementPeriodImpl implements PhysicalSettlementPeriod {
+		private final Boolean businessDaysNotSpecified;
+		private final Integer businessDays;
+		private final Integer maximumBusinessDays;
+		
+		protected PhysicalSettlementPeriodImpl(PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder builder) {
+			this.businessDaysNotSpecified = builder.getBusinessDaysNotSpecified();
+			this.businessDays = builder.getBusinessDays();
+			this.maximumBusinessDays = builder.getMaximumBusinessDays();
+		}
+		
+		@Override
+		@RosettaAttribute("businessDaysNotSpecified")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessDaysNotSpecified")
+		public Boolean getBusinessDaysNotSpecified() {
+			return businessDaysNotSpecified;
+		}
+		
+		@Override
+		@RosettaAttribute("businessDays")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessDays")
+		public Integer getBusinessDays() {
+			return businessDays;
+		}
+		
+		@Override
+		@RosettaAttribute("maximumBusinessDays")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("maximumBusinessDays")
+		public Integer getMaximumBusinessDays() {
+			return maximumBusinessDays;
+		}
+		
+		@Override
+		public PhysicalSettlementPeriod build() {
+			return this;
+		}
+		
+		@Override
+		public PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder toBuilder() {
+			PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder builder) {
+			ofNullable(getBusinessDaysNotSpecified()).ifPresent(builder::setBusinessDaysNotSpecified);
+			ofNullable(getBusinessDays()).ifPresent(builder::setBusinessDays);
+			ofNullable(getMaximumBusinessDays()).ifPresent(builder::setMaximumBusinessDays);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			PhysicalSettlementPeriod _that = getType().cast(o);
+		
+			if (!Objects.equals(businessDaysNotSpecified, _that.getBusinessDaysNotSpecified())) return false;
+			if (!Objects.equals(businessDays, _that.getBusinessDays())) return false;
+			if (!Objects.equals(maximumBusinessDays, _that.getMaximumBusinessDays())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (businessDaysNotSpecified != null ? businessDaysNotSpecified.hashCode() : 0);
+			_result = 31 * _result + (businessDays != null ? businessDays.hashCode() : 0);
+			_result = 31 * _result + (maximumBusinessDays != null ? maximumBusinessDays.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "PhysicalSettlementPeriod {" +
+				"businessDaysNotSpecified=" + this.businessDaysNotSpecified + ", " +
+				"businessDays=" + this.businessDays + ", " +
+				"maximumBusinessDays=" + this.maximumBusinessDays +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of PhysicalSettlementPeriod  ***********************/
+	class PhysicalSettlementPeriodBuilderImpl implements PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder {
+	
+		protected Boolean businessDaysNotSpecified;
+		protected Integer businessDays;
+		protected Integer maximumBusinessDays;
+		
+		@Override
+		@RosettaAttribute("businessDaysNotSpecified")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessDaysNotSpecified")
+		public Boolean getBusinessDaysNotSpecified() {
+			return businessDaysNotSpecified;
+		}
+		
+		@Override
+		@RosettaAttribute("businessDays")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessDays")
+		public Integer getBusinessDays() {
+			return businessDays;
+		}
+		
+		@Override
+		@RosettaAttribute("maximumBusinessDays")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("maximumBusinessDays")
+		public Integer getMaximumBusinessDays() {
+			return maximumBusinessDays;
+		}
+		
+		@RosettaAttribute("businessDaysNotSpecified")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("businessDaysNotSpecified")
+		@Override
+		public PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder setBusinessDaysNotSpecified(Boolean _businessDaysNotSpecified) {
+			this.businessDaysNotSpecified = _businessDaysNotSpecified == null ? null : _businessDaysNotSpecified;
+			return this;
+		}
+		
+		@RosettaAttribute("businessDays")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("businessDays")
+		@Override
+		public PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder setBusinessDays(Integer _businessDays) {
+			this.businessDays = _businessDays == null ? null : _businessDays;
+			return this;
+		}
+		
+		@RosettaAttribute("maximumBusinessDays")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("maximumBusinessDays")
+		@Override
+		public PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder setMaximumBusinessDays(Integer _maximumBusinessDays) {
+			this.maximumBusinessDays = _maximumBusinessDays == null ? null : _maximumBusinessDays;
+			return this;
+		}
+		
+		@Override
+		public PhysicalSettlementPeriod build() {
+			return new PhysicalSettlementPeriod.PhysicalSettlementPeriodImpl(this);
+		}
+		
+		@Override
+		public PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder prune() {
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getBusinessDaysNotSpecified()!=null) return true;
+			if (getBusinessDays()!=null) return true;
+			if (getMaximumBusinessDays()!=null) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder o = (PhysicalSettlementPeriod.PhysicalSettlementPeriodBuilder) other;
+			
+			
+			merger.mergeBasic(getBusinessDaysNotSpecified(), o.getBusinessDaysNotSpecified(), this::setBusinessDaysNotSpecified);
+			merger.mergeBasic(getBusinessDays(), o.getBusinessDays(), this::setBusinessDays);
+			merger.mergeBasic(getMaximumBusinessDays(), o.getMaximumBusinessDays(), this::setMaximumBusinessDays);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			PhysicalSettlementPeriod _that = getType().cast(o);
+		
+			if (!Objects.equals(businessDaysNotSpecified, _that.getBusinessDaysNotSpecified())) return false;
+			if (!Objects.equals(businessDays, _that.getBusinessDays())) return false;
+			if (!Objects.equals(maximumBusinessDays, _that.getMaximumBusinessDays())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (businessDaysNotSpecified != null ? businessDaysNotSpecified.hashCode() : 0);
+			_result = 31 * _result + (businessDays != null ? businessDays.hashCode() : 0);
+			_result = 31 * _result + (maximumBusinessDays != null ? maximumBusinessDays.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "PhysicalSettlementPeriodBuilder {" +
+				"businessDaysNotSpecified=" + this.businessDaysNotSpecified + ", " +
+				"businessDays=" + this.businessDays + ", " +
+				"maximumBusinessDays=" + this.maximumBusinessDays +
+			'}';
+		}
+	}
+}

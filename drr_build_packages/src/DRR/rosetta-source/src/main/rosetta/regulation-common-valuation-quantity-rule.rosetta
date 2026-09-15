@@ -1,0 +1,8 @@
+namespace drr.regulation.common.valuation.quantity
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version1.* as cde
+
+reporting rule Delta from ValuationReportInstruction: <"Delta">
+    extract cde.quantity.DeltaFromValuation(valuationDetails -> valuation)

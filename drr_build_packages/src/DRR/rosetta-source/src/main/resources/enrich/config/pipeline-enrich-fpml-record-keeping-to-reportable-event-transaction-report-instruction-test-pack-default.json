@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default",
+  "name" : "Transaction Report Instruction Test Pack Default",
+  "transform" : {
+    "type" : "ENRICH",
+    "function" : "drr.enrichment.common.test.functions.Enrich_TransactionReportInstructionTestPackDefault",
+    "inputType" : "drr.regulation.common.ReportableEvent",
+    "outputType" : "drr.regulation.common.TransactionReportInstruction"
+  },
+  "upstreamPipelineId" : "pipeline-translate-fpml-record-keeping-to-reportable-event"
+}

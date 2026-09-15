@@ -1,0 +1,129 @@
+namespace drr.regulation.csa.rewrite.margin
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Margin
+
+report CSA Margin in T+1
+    from CollateralReportInstruction
+    when ReportableProduct
+    with type CSAMarginReport
+
+eligibility rule ReportableProduct from CollateralReportInstruction: <"When eligible for CSA">
+    [docReference CSA Margin
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+// CSA Definitions
+reporting rule Counterparty2IdentifierSource from CollateralReportInstruction: <"Counterparty 2 Identifier Source">
+    extract reportingSide -> reportingCounterparty
+    then extract
+        if person exists
+                and [PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID]
+                    any = person -> personId -> identifierType first
+        then (person -> personId -> identifierType
+            then filter
+                ([PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID]) any = item
+            then first
+            then extract item to-string)
+        else if partyId -> identifierType any = LEI
+        then "LEID"
+
+reporting rule UniqueTransactionIdentifier from CollateralReportInstruction: <"Unique Transaction Identifier (UTI)">
+    uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            csaTrade.SupervisoryBodyForCSA,
+            item -> collateralDetails -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True
+
+reporting rule PortfolioContainingNonReportableComponentIndicator from CollateralReportInstruction: <"Portfolio containing nonreportable component indicator">
+    extract item -> reportableInformation -> jurisdictionInformation
+    then filter csaTrade.SupervisoryBodyForCSA any = supervisoryBody
+    then extract partyInformation
+    then flatten
+    then extract
+        if csaPartyInformation -> nonReportedTradePortfolio exists
+        then csaPartyInformation -> nonReportedTradePortfolio
+        else False
+
+reporting rule DTCC_TradeParty1IDType from CollateralReportInstruction: <"Trade Party 1 - ID Type">
+    extract
+        if PartyLei(reportingSide -> reportingParty -> partyId) exists
+        then PartyIdentifierTypeEnum -> LEI
+        as "Trade Party 1 - ID Type"
+
+reporting rule DTCC_SubmittingPartyIDType from CollateralReportInstruction: <"Submitting Party - ID Type">
+    [docReference CSA Margin DTCC_Specs field "Submitting Party - ID Type"
+        provision "GTR required Control Field."]
+    extract
+        if ExtractReportSubmittingPartyIdentifier(reportingSide) exists
+        then PartyIdentifierTypeEnum -> LEI
+        as "Submitting Party - ID Type"
+
+reporting rule DTCC_USIID from CollateralReportInstruction: <"USI ID">
+    [docReference CSA Margin DTCC_Specs field "USI ID"
+        provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+    extract
+        if GetRegimeSpecificIdentifiers(
+                reportableInformation,
+                csaTrade.SupervisoryBodyForCSA,
+                UniqueSwapIdentifier
+            )
+            exists
+        then GetRegimeSpecificIdentifiers(
+                    reportableInformation,
+                    csaTrade.SupervisoryBodyForCSA,
+                    UniqueSwapIdentifier
+                )
+        else (extract collateralDetails -> uniqueTradeIdentifier
+        then filter identifierType = UniqueSwapIdentifier
+        then extract assignedIdentifier -> identifier)
+    then distinct
+    then only-element
+        as "USI ID"
+
+reporting rule DTCC_TradeParty1ReportingDestination from CollateralReportInstruction: <"Trade Party 1 - Reporting Destination">
+    [docReference CSA Margin DTCC_Specs field "Trade Party 1 - Reporting Destination"
+        provision "Needed to report Jurisdiction."]
+    extract collateral [
+        reportableInformation -> jurisdictionInformation
+            then filter
+                csaTrade.SupervisoryBodyForCSA any = supervisoryBody
+                    or [SupervisoryBodyEnum -> CFTC, SupervisoryBodyEnum -> SEC] any = supervisoryBody
+            then filter
+                partyInformation -> partyReference any = collateral -> reportingSide -> reportingParty
+            then distinct
+            then extract supervisoryBody
+    ]
+        as "Trade Party 1 - Reporting Destination"
+
+reporting rule DTCC_MessageID from CollateralReportInstruction: <"Message ID">
+    extract
+        if common.link.TechnicalRecordId(reportableInformation, CSA) -> isUnique
+        then common.link.TechnicalRecordId(reportableInformation, CSA) -> id
+        else common.link.TechnicalRecordId(reportableInformation, CSA) -> id + (margin.datetime.ReportingTimestamp to-string)
+        as "Message ID"
+
+reporting rule DTCC_MessageType from CollateralReportInstruction: <"Message Type">
+    [docReference CSA Margin DTCC_Specs field "Message Type"
+        provision "Need to indicate what message is being submitted to GTR."]
+    "CollateralValue"
+        as "Message Type"
+
+reporting rule DTCC_Version from CollateralReportInstruction: <"Version">
+    [docReference CSA Margin DTCC_Specs field "Version"
+        provision "Memo field. Used to identify the asset class and template type of submission."]
+    "Coll1.0"
+        as "Version"

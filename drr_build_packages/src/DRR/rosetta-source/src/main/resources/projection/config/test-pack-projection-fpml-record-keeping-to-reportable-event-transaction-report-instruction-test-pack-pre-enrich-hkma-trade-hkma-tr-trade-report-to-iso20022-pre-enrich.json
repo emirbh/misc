@@ -1,0 +1,26 @@
+{
+  "id" : "test-pack-projection-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich-hkma-trade-hkma-tr-trade-report-to-iso20022-pre-enrich",
+  "pipelineId" : "pipeline-projection-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich-hkma-trade-hkma-tr-trade-report-to-iso20022",
+  "name" : "Pre enrich",
+  "samples" : [ {
+    "id" : "mockup-pre-enrich",
+    "name" : "mockup pre enrich",
+    "inputPath" : "regulatory-reporting/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-pre-enrich/hkma-trade/pre-enrich/mockup-pre-enrich.json",
+    "outputPath" : "projection/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-pre-enrich/hkma-trade/hkma-tr-trade-report-to-iso20022/pre-enrich/mockup-pre-enrich.xml",
+    "assertions" : {
+      "modelValidationFailures" : 2,
+      "schemaValidationFailure" : false,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-pre-enrich-ssbs",
+    "name" : "mockup pre enrich ssbs",
+    "inputPath" : "regulatory-reporting/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-pre-enrich/hkma-trade/pre-enrich/mockup-pre-enrich-ssbs.json",
+    "outputPath" : "projection/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-pre-enrich/hkma-trade/hkma-tr-trade-report-to-iso20022/pre-enrich/mockup-pre-enrich-ssbs.xml",
+    "assertions" : {
+      "modelValidationFailures" : 2,
+      "schemaValidationFailure" : false,
+      "runtimeError" : false
+    }
+  } ]
+}

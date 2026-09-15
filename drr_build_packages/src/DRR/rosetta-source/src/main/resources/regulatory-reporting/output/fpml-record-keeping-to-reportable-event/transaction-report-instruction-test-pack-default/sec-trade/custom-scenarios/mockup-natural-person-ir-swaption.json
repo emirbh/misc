@@ -1,0 +1,67 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "buyerIdentifier" : "DUMMYLEI010000000037jjones",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037jjones",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "maturityDateOfTheUnderlying" : "2024-04-03",
+    "messageID" : "SEF1232024-04-29T00:00Z",
+    "primaryAssetClass" : "InterestRate",
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC", "SEC" ],
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ]
+  },
+  "effectiveDate" : "2018-04-01",
+  "eventIdentifier" : "SEF123",
+  "eventTimestamp" : "2018-04-01T14:15:36Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2018-04-01T14:15:36Z",
+  "expirationDate" : "2019-04-01",
+  "finalContractualSettlementDate" : "2019-04-01",
+  "firstExerciseDate" : "2019-04-01",
+  "jurisdiction" : "MIXX",
+  "leg1" : {
+    "notionalAmount" : 13000,
+    "notionalCurrency" : "EUR",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A001",
+      "fixedRatePaymentFrequencyPeriod" : "YEAR",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 1
+    }
+  },
+  "leg2" : {
+    "floatingRateIndex" : "EUR-EURIBOR-Telerate",
+    "notionalAmount" : 13000,
+    "notionalCurrency" : "EUR",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRatePaymentFrequencyPeriod" : "MNTH",
+      "floatingRatePaymentFrequencyPeriodMultiplier" : 6,
+      "floatingRateResetFrequencyMultiplier" : 6,
+      "floatingRateResetFrequencyPeriod" : "MNTH"
+    }
+  },
+  "level" : "TCTN",
+  "nonStandardizedTermIndicator" : false,
+  "optionPremiumAmount" : 100000,
+  "optionPremiumCurrency" : "EUR",
+  "optionPremiumPaymentDate" : "2018-04-01",
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "sellerIdentifier" : "DUMMYLEI020000000085",
+  "strikePrice" : {
+    "decimal" : 0.05
+  },
+  "strikePriceNotation" : "Decimal",
+  "uniqueTransactionIdentifier" : "UTIMOCKUPNATURAL0111"
+}

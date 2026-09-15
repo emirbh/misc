@@ -1,0 +1,28 @@
+schemas:
+  - name: "fpml-5-13-confirmation"
+    location: "schemas/fpml-5-13-7-rec-1/confirmation/fpml-main-5-13.xsd"
+    version: "confirmation-5.13"
+    mergeMode: SYMMETRIC
+  - name: "fpml-5-13-recordkeeping"
+    location: "schemas/fpml-5-13-7-rec-1/recordkeeping/fpml-main-5-13.xsd"
+    version: "recordkeeping-5.13"
+    mergeMode: SYMMETRIC
+
+target:
+  defaultNamespace: "fpml.consolidated"
+  namespaceDefinition: "fpml definition"
+  namespaceGrouping:
+    groupByNamespace: true
+    regex: "^.*/fpml-(?<name>.*)-(?<version>[0-9]*-[0-9]*)\\.xsd$"
+    captureGroup: "name"
+  nameOverrides:
+    "Agent Bank": "AgentBank_Deprecated"
+  preferences:
+    generateDocRefs: true
+    xsdDateHandlingStrategy: "AS_RUNE_ZONED_DATE_TIME"
+    enumValueCasing: "KeepOriginal"
+    flattenLevel: single
+    flattenGroups: true
+  docReference:
+    body: "ISDA"
+    corpus: "FPML"

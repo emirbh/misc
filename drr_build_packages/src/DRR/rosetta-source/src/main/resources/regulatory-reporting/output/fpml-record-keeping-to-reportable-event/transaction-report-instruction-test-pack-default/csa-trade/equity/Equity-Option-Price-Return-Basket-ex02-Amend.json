@@ -1,0 +1,83 @@
+{
+  "actionType" : "NEWT",
+  "basketConstituents" : [ {
+    "identifier" : "ENR1n.DE",
+    "numberOfUnits" : 0.3333333333,
+    "source" : "RIC"
+  }, {
+    "identifier" : "SIEGn.DE",
+    "numberOfUnits" : 0.6666666667,
+    "source" : "RIC"
+  } ],
+  "buyerIdentifier" : "DUMMYLEI010000000037",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : true,
+  "dtccAdditionalFields" : {
+    "allocationType" : "UNAL",
+    "messageID" : "2067a2d6dc8d47dca1d0cc9a716c89922024-04-29T00:00Z",
+    "messageTypeTransaction" : "Trade State",
+    "primaryAssetClass" : "Equity",
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CA.ON.OSC" ],
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "underlyingAsset" : [ {
+      "underlyingAssetIDType" : "Basket"
+    } ],
+    "versionTransaction" : "CORE1.0"
+  },
+  "effectiveDate" : "2020-09-17",
+  "eventIdentifier" : "2067a2d6dc8d47dca1d0cc9a716c8992",
+  "eventTimestamp" : "2020-09-30T09:18:49.3348088Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2020-09-17T16:25:19Z",
+  "expirationDate" : "2020-10-16",
+  "finalContractualSettlementDate" : "2020-10-16",
+  "firstExerciseDate" : "2020-09-17",
+  "jurisdictionOfCounterparty1" : [ "NON-CA" ],
+  "jurisdictionOfCounterparty2" : [ "NON-CA" ],
+  "leg1" : {
+    "totalNotionalQuantity" : 99999999999999999999.99999
+  },
+  "level" : "TCTN",
+  "masterAgreementType" : "ISDA",
+  "masterAgreementVersion" : 2002,
+  "nonReportable" : {
+    "deliveryType" : "PHYS",
+    "instrumentType" : "Option",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "PHYS",
+          "OptionExerciseStyle" : "AMER",
+          "OptionType" : "CALL"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Option",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "optionPremiumAmount" : 48011.94,
+  "optionPremiumCurrency" : "EUR",
+  "optionPremiumPaymentDate" : "2020-09-21",
+  "packageIndicator" : false,
+  "priceUnitOfMeasure" : "OTHR",
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "sellerIdentifier" : "DUMMYLEI020000000085",
+  "strikePrice" : {
+    "monetary" : 128
+  },
+  "strikePriceCurrency" : "EUR",
+  "strikePriceNotation" : "Monetary",
+  "uniqueTransactionIdentifier" : "UTIEQUITYOPTIONP0195"
+}

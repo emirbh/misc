@@ -1,0 +1,178 @@
+namespace drr.base.trade.quantity
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.math.*
+import cdm.base.staticdata.asset.common.*
+import cdm.event.common.*
+import cdm.observable.asset.*
+import cdm.product.asset.*
+import cdm.product.template.*
+
+import drr.base.qualification.event.*
+import drr.base.trade.*
+
+func GetTradeForQuantity:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        trade Trade (1..1)
+    set trade:
+        if IsActionTypeTERM(reportableEvent)
+        then BeforeTradeForEvent(reportableEvent)
+        else TradeForEvent(reportableEvent)
+
+func GetProductForQuantity:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        product TradableProduct (1..1)
+    set product:
+        if IsActionTypeTERM(reportableEvent)
+        then BeforeTradeForEvent(reportableEvent)
+        else TradableProductForEvent(reportableEvent)
+
+func CurrencyFromNotional:
+    inputs:
+        measure Measure (0..1)
+    output:
+        notionalCurrency ISOCurrencyCodeEnum (0..1)
+    set notionalCurrency: measure -> unit -> currency to-enum ISOCurrencyCodeEnum
+
+func CommodityObservablePriceQuantity:
+    inputs:
+        tradeLot TradeLot (1..1)
+        commodityPayout CommodityPayout (1..1)
+    output:
+        priceQuantity PriceQuantity (1..1)
+
+    alias priceQuantityWithMatchingObservable:
+        tradeLot -> priceQuantity
+            then filter
+                item -> observable -> Asset -> Commodity = commodityPayout -> underlier -> Observable -> Asset -> Commodity
+            then only-element
+
+    alias priceQuantityWithMatchingKey:
+        tradeLot -> priceQuantity
+            filter
+                GetQuantityKeys(item)
+                    contains GetQuantityReference(commodityPayout -> priceQuantity)
+            then only-element
+
+    set priceQuantity:
+        if priceQuantityWithMatchingObservable exists
+        then priceQuantityWithMatchingObservable
+        else priceQuantityWithMatchingKey
+
+func CommodityForwardObservablePriceQuantity:
+    inputs:
+        tradeLot TradeLot (1..1)
+        settlementPayout SettlementPayout (1..1)
+    output:
+        priceQuantity PriceQuantity (1..1)
+
+    alias priceQuantityWithMatchingObservable:
+        tradeLot -> priceQuantity
+            then filter
+                item -> observable -> Asset -> Commodity = settlementPayout -> underlier -> Observable -> Asset -> Commodity
+            then only-element
+
+    alias priceQuantityWithMatchingKey:
+        tradeLot -> priceQuantity
+            filter
+                GetQuantityKeys(item)
+                    contains GetQuantityReference(settlementPayout -> priceQuantity)
+            then only-element
+
+    set priceQuantity:
+        if priceQuantityWithMatchingObservable exists
+        then priceQuantityWithMatchingObservable
+        else priceQuantityWithMatchingKey
+
+func ETDNotionalOption:
+    inputs:
+        optionPayout OptionPayout (0..1)
+        tradeLot TradeLot (0..*)
+    output:
+        notional Measure (1..1)
+    alias quantityCurrency:
+        tradeLot only-element -> priceQuantity -> quantity
+            filter unit -> currency exists
+            then extract value
+            then only-element
+    alias quantityFinancial:
+        tradeLot only-element -> priceQuantity -> quantity
+            filter unit -> financialUnit exists
+            then extract value
+            then only-element
+
+    alias strikePrice: optionPayout -> strike -> strikePrice
+
+    alias amount: // todo: consider contractSize
+        // Monetary schedule
+        if tradeLot only-element -> priceQuantity -> quantity -> unit -> currency exists
+        then quantityCurrency
+        // Non-monetary Schedule
+        else if tradeLot only-element -> priceQuantity -> quantity -> unit -> financialUnit exists
+        then quantityFinancial * strikePrice -> value
+    alias amountUnit:
+        // Monetary schedule
+        if tradeLot -> priceQuantity -> quantity -> unit -> currency exists
+        then (tradeLot only-element -> priceQuantity -> quantity
+            then filter unit -> currency exists
+            then only-element
+            then extract unit)
+        // Non-monetary Schedule
+        else if tradeLot only-element -> priceQuantity -> quantity -> unit -> financialUnit exists
+        then strikePrice -> unit
+
+    set notional:
+        Measure {
+            value: amount,
+            unit: amountUnit
+        }
+
+func ETDNotionalFuture:
+    inputs:
+        // product Product (0..1)
+        tradeLot TradeLot (0..*)
+    output:
+        notional Measure (1..1)
+
+    alias quantityCurrency:
+        tradeLot only-element -> priceQuantity -> quantity
+            filter unit -> currency exists
+            then extract value
+            then only-element
+    alias quantityFinancial:
+        tradeLot only-element -> priceQuantity -> quantity
+            filter unit -> financialUnit exists
+            then extract value
+            then only-element
+
+    alias price: tradeLot only-element -> priceQuantity -> price only-element
+
+    alias amount: // todo: consider contractSize
+        // Monetary schedule
+        if tradeLot only-element -> priceQuantity -> quantity -> unit -> currency exists
+        then quantityCurrency
+        // Non-monetary Schedule
+        else if tradeLot only-element -> priceQuantity -> quantity -> unit -> financialUnit exists
+        then quantityFinancial * price -> value
+
+    alias amountUnit:
+        // Monetary schedule
+        if tradeLot only-element -> priceQuantity -> quantity -> unit -> currency exists
+        then (tradeLot only-element -> priceQuantity -> quantity
+            then filter unit -> currency exists
+            then only-element
+            then extract unit)
+        // Non-monetary Schedule
+        else if tradeLot only-element -> priceQuantity -> quantity -> unit -> financialUnit exists
+        then price -> unit
+
+    set notional:
+        Measure {
+            value: amount,
+            unit: amountUnit
+        }

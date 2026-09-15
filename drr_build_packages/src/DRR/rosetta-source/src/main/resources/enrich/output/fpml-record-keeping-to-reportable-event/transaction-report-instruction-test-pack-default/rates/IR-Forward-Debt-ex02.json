@@ -1,0 +1,1209 @@
+{
+  "originatingWorkflowStep" : {
+    "action" : "New",
+    "businessEvent" : {
+      "after" : [ {
+        "meta" : {
+          "globalKey" : "527eb165"
+        },
+        "state" : {
+          "positionState" : "Formed"
+        },
+        "trade" : {
+          "contractDetails" : {
+            "documentation" : [ {
+              "contractualParty" : [ {
+                "externalReference" : "partyB",
+                "globalReference" : "7d02bedc"
+              }, {
+                "externalReference" : "partyA",
+                "globalReference" : "38b68d4d"
+              } ],
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "2be27a99"
+              }
+            } ],
+            "meta" : {
+              "globalKey" : "2be27a99"
+            }
+          },
+          "counterparty" : [ {
+            "partyReference" : {
+              "externalReference" : "partyB",
+              "globalReference" : "7d02bedc"
+            },
+            "role" : "Party1"
+          }, {
+            "partyReference" : {
+              "externalReference" : "partyA",
+              "globalReference" : "38b68d4d"
+            },
+            "role" : "Party2"
+          } ],
+          "meta" : {
+            "globalKey" : "b95d1d82"
+          },
+          "party" : [ {
+            "contactInformation" : {
+              "address" : [ {
+                "country" : {
+                  "value" : "US"
+                }
+              } ]
+            },
+            "meta" : {
+              "externalKey" : "partyA",
+              "globalKey" : "38b68d4d"
+            },
+            "name" : {
+              "value" : "Bank A (reportingParty)"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "DUMMYLEI010000000037"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "5151b003"
+              }
+            } ]
+          }, {
+            "contactInformation" : {
+              "address" : [ {
+                "country" : {
+                  "value" : "BM"
+                }
+              } ]
+            },
+            "meta" : {
+              "externalKey" : "partyB",
+              "globalKey" : "7d02bedc"
+            },
+            "name" : {
+              "value" : "Party B"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "DUMMYLEI020000000085"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "590367e9"
+              }
+            } ]
+          }, {
+            "meta" : {
+              "externalKey" : "ExecutionFacility",
+              "globalKey" : "4fe3710"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/mifir/extension-iso10383"
+                },
+                "value" : "XOFF"
+              },
+              "identifierType" : "MIC",
+              "meta" : {
+                "globalKey" : "4fe3710"
+              }
+            } ]
+          } ],
+          "partyRole" : [ {
+            "ownershipPartyReference" : {
+              "externalReference" : "partyA",
+              "globalReference" : "38b68d4d"
+            },
+            "partyReference" : {
+              "externalReference" : "partyA",
+              "globalReference" : "38b68d4d"
+            },
+            "role" : "Beneficiary"
+          }, {
+            "ownershipPartyReference" : {
+              "externalReference" : "partyA",
+              "globalReference" : "38b68d4d"
+            },
+            "partyReference" : {
+              "externalReference" : "ExecutionFacility",
+              "globalReference" : "4fe3710"
+            },
+            "role" : "ExecutionFacility"
+          }, {
+            "ownershipPartyReference" : {
+              "externalReference" : "partyA",
+              "globalReference" : "38b68d4d"
+            },
+            "partyReference" : {
+              "externalReference" : "partyB",
+              "globalReference" : "7d02bedc"
+            }
+          } ],
+          "product" : {
+            "economicTerms" : {
+              "effectiveDate" : {
+                "adjustableDate" : {
+                  "dateAdjustments" : {
+                    "businessDayConvention" : "NONE",
+                    "meta" : {
+                      "globalKey" : "24a738"
+                    }
+                  },
+                  "meta" : {
+                    "globalKey" : "ed806a47"
+                  },
+                  "unadjustedDate" : "2023-11-15"
+                },
+                "meta" : {
+                  "globalKey" : "ed806a47"
+                }
+              },
+              "nonStandardisedTerms" : false,
+              "payout" : [ {
+                "SettlementPayout" : {
+                  "payerReceiver" : {
+                    "payer" : "Party2",
+                    "receiver" : "Party1"
+                  },
+                  "priceQuantity" : {
+                    "meta" : {
+                      "globalKey" : "0"
+                    },
+                    "quantitySchedule" : {
+                      "address" : {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-1"
+                      }
+                    }
+                  },
+                  "settlementTerms" : {
+                    "meta" : {
+                      "globalKey" : "f3b1d0d7"
+                    },
+                    "settlementType" : "Physical"
+                  },
+                  "underlier" : {
+                    "Observable" : {
+                      "address" : {
+                        "scope" : "DOCUMENT",
+                        "value" : "observable-1"
+                      }
+                    }
+                  }
+                },
+                "meta" : {
+                  "globalKey" : "dce841a8"
+                }
+              } ],
+              "terminationDate" : {
+                "adjustableDate" : {
+                  "dateAdjustments" : {
+                    "businessDayConvention" : "NONE",
+                    "meta" : {
+                      "globalKey" : "24a738"
+                    }
+                  },
+                  "meta" : {
+                    "globalKey" : "ee349a47"
+                  },
+                  "unadjustedDate" : "2029-11-15"
+                },
+                "meta" : {
+                  "globalKey" : "ee349a47"
+                }
+              }
+            },
+            "identifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.dtcc.com/coding-scheme/external/product-id/ISIN"
+                },
+                "value" : "JP1700161P53"
+              },
+              "meta" : {
+                "globalKey" : "1b2f70e1"
+              },
+              "source" : "ISIN"
+            } ],
+            "meta" : {
+              "globalKey" : "fe17cc0c"
+            },
+            "taxonomy" : [ {
+              "primaryAssetClass" : {
+                "value" : "InterestRate"
+              }
+            }, {
+              "source" : "CFI",
+              "value" : {
+                "name" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/product-classification/iso10962"
+                  },
+                  "value" : "JRMXFP"
+                }
+              }
+            }, {
+              "source" : "EMIR",
+              "value" : {
+                "name" : {
+                  "meta" : {
+                    "scheme" : "http://www.dtcc.com/coding-scheme/external/product-classification/emir-contract-type"
+                  },
+                  "value" : "FW"
+                }
+              }
+            }, {
+              "source" : "Other",
+              "value" : {
+                "name" : {
+                  "meta" : {
+                    "scheme" : "http://www.dtcc.com/coding-scheme/external/product-classification/emir-mandatory-clearable-product"
+                  },
+                  "value" : "X"
+                }
+              }
+            }, {
+              "source" : "ISDA",
+              "value" : {
+                "name" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/product-taxonomy"
+                  },
+                  "value" : "InterestRate:Forward:Debt"
+                }
+              }
+            }, {
+              "productQualifier" : "InterestRate_Forward_Debt",
+              "source" : "ISDA"
+            } ]
+          },
+          "tradeDate" : {
+            "meta" : {
+              "globalKey" : "3f3acf"
+            },
+            "value" : "2023-11-15"
+          },
+          "tradeIdentifier" : [ {
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                },
+                "value" : "UTIIRFORWARDDEBT0213"
+              }
+            } ],
+            "identifierType" : "UniqueTransactionIdentifier",
+            "issuer" : {
+              "meta" : {
+                "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+              },
+              "value" : "DUMMYLEI020000000085"
+            },
+            "meta" : {
+              "globalKey" : "d01ba5b6"
+            }
+          }, {
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.dtcc.com/internal-reference-id"
+                },
+                "value" : "UTIIRFORWARDDEBT0116"
+              }
+            } ],
+            "issuerReference" : {
+              "externalReference" : "partyA",
+              "globalReference" : "38b68d4d"
+            },
+            "meta" : {
+              "globalKey" : "58eaadd"
+            }
+          } ],
+          "tradeLot" : [ {
+            "priceQuantity" : [ {
+              "meta" : {
+                "globalKey" : "423f5e20"
+              },
+              "observable" : {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "observable-1"
+                  } ]
+                },
+                "value" : {
+                  "Asset" : {
+                    "Instrument" : {
+                      "Security" : {
+                        "identifier" : [ {
+                          "identifier" : {
+                            "meta" : {
+                              "scheme" : "http://www.bankx.com/instrument-id"
+                            },
+                            "value" : "5369692"
+                          },
+                          "identifierType" : "Other"
+                        }, {
+                          "identifier" : {
+                            "meta" : {
+                              "scheme" : "http://www.fpml.org/coding-scheme/external/instrument-id-ISIN"
+                            },
+                            "value" : "JP1700161P53"
+                          },
+                          "identifierType" : "ISIN"
+                        }, {
+                          "identifier" : {
+                            "value" : "16 JGB 40Y 1.3 MAR63"
+                          },
+                          "identifierType" : "Name"
+                        } ],
+                        "instrumentType" : "Debt"
+                      }
+                    }
+                  }
+                }
+              },
+              "price" : [ {
+                "value" : {
+                  "perUnitOf" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "priceType" : "AssetPrice",
+                  "unit" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "value" : 0.526600701
+                }
+              } ],
+              "quantity" : [ {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "quantity-1"
+                  } ]
+                },
+                "value" : {
+                  "unit" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "value" : 1000000
+                }
+              } ]
+            } ]
+          } ]
+        }
+      } ],
+      "eventDate" : "2023-11-15",
+      "eventQualifier" : "ContractFormation",
+      "instruction" : [ {
+        "before" : {
+          "value" : {
+            "meta" : {
+              "globalKey" : "b95d1d82"
+            },
+            "trade" : {
+              "contractDetails" : {
+                "documentation" : [ {
+                  "contractualParty" : [ {
+                    "externalReference" : "partyB",
+                    "globalReference" : "7d02bedc"
+                  }, {
+                    "externalReference" : "partyA",
+                    "globalReference" : "38b68d4d"
+                  } ],
+                  "legalAgreementIdentification" : {
+                    "agreementName" : {
+                      "agreementType" : "MasterAgreement",
+                      "masterAgreementType" : {
+                        "value" : "ISDAMaster"
+                      }
+                    },
+                    "vintage" : 2002
+                  },
+                  "meta" : {
+                    "globalKey" : "2be27a99"
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "2be27a99"
+                }
+              },
+              "counterparty" : [ {
+                "partyReference" : {
+                  "externalReference" : "partyB",
+                  "globalReference" : "7d02bedc"
+                },
+                "role" : "Party1"
+              }, {
+                "partyReference" : {
+                  "externalReference" : "partyA",
+                  "globalReference" : "38b68d4d"
+                },
+                "role" : "Party2"
+              } ],
+              "meta" : {
+                "globalKey" : "b95d1d82"
+              },
+              "party" : [ {
+                "contactInformation" : {
+                  "address" : [ {
+                    "country" : {
+                      "value" : "US"
+                    }
+                  } ]
+                },
+                "meta" : {
+                  "externalKey" : "partyA",
+                  "globalKey" : "38b68d4d"
+                },
+                "name" : {
+                  "value" : "Bank A (reportingParty)"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "DUMMYLEI010000000037"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "5151b003"
+                  }
+                } ]
+              }, {
+                "contactInformation" : {
+                  "address" : [ {
+                    "country" : {
+                      "value" : "BM"
+                    }
+                  } ]
+                },
+                "meta" : {
+                  "externalKey" : "partyB",
+                  "globalKey" : "7d02bedc"
+                },
+                "name" : {
+                  "value" : "Party B"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "DUMMYLEI020000000085"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "590367e9"
+                  }
+                } ]
+              }, {
+                "meta" : {
+                  "externalKey" : "ExecutionFacility",
+                  "globalKey" : "4fe3710"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/mifir/extension-iso10383"
+                    },
+                    "value" : "XOFF"
+                  },
+                  "identifierType" : "MIC",
+                  "meta" : {
+                    "globalKey" : "4fe3710"
+                  }
+                } ]
+              } ],
+              "partyRole" : [ {
+                "ownershipPartyReference" : {
+                  "externalReference" : "partyA",
+                  "globalReference" : "38b68d4d"
+                },
+                "partyReference" : {
+                  "externalReference" : "partyA",
+                  "globalReference" : "38b68d4d"
+                },
+                "role" : "Beneficiary"
+              }, {
+                "ownershipPartyReference" : {
+                  "externalReference" : "partyA",
+                  "globalReference" : "38b68d4d"
+                },
+                "partyReference" : {
+                  "externalReference" : "ExecutionFacility",
+                  "globalReference" : "4fe3710"
+                },
+                "role" : "ExecutionFacility"
+              }, {
+                "ownershipPartyReference" : {
+                  "externalReference" : "partyA",
+                  "globalReference" : "38b68d4d"
+                },
+                "partyReference" : {
+                  "externalReference" : "partyB",
+                  "globalReference" : "7d02bedc"
+                }
+              } ],
+              "product" : {
+                "economicTerms" : {
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "dateAdjustments" : {
+                        "businessDayConvention" : "NONE",
+                        "meta" : {
+                          "globalKey" : "24a738"
+                        }
+                      },
+                      "meta" : {
+                        "globalKey" : "ed806a47"
+                      },
+                      "unadjustedDate" : "2023-11-15"
+                    },
+                    "meta" : {
+                      "globalKey" : "ed806a47"
+                    }
+                  },
+                  "nonStandardisedTerms" : false,
+                  "payout" : [ {
+                    "SettlementPayout" : {
+                      "payerReceiver" : {
+                        "payer" : "Party2",
+                        "receiver" : "Party1"
+                      },
+                      "priceQuantity" : {
+                        "meta" : {
+                          "globalKey" : "0"
+                        },
+                        "quantitySchedule" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "quantity-1"
+                          }
+                        }
+                      },
+                      "settlementTerms" : {
+                        "meta" : {
+                          "globalKey" : "f3b1d0d7"
+                        },
+                        "settlementType" : "Physical"
+                      },
+                      "underlier" : {
+                        "Observable" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "observable-1"
+                          }
+                        }
+                      }
+                    },
+                    "meta" : {
+                      "globalKey" : "dce841a8"
+                    }
+                  } ],
+                  "terminationDate" : {
+                    "adjustableDate" : {
+                      "dateAdjustments" : {
+                        "businessDayConvention" : "NONE",
+                        "meta" : {
+                          "globalKey" : "24a738"
+                        }
+                      },
+                      "meta" : {
+                        "globalKey" : "ee349a47"
+                      },
+                      "unadjustedDate" : "2029-11-15"
+                    },
+                    "meta" : {
+                      "globalKey" : "ee349a47"
+                    }
+                  }
+                },
+                "identifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.dtcc.com/coding-scheme/external/product-id/ISIN"
+                    },
+                    "value" : "JP1700161P53"
+                  },
+                  "meta" : {
+                    "globalKey" : "1b2f70e1"
+                  },
+                  "source" : "ISIN"
+                } ],
+                "meta" : {
+                  "globalKey" : "fe17cc0c"
+                },
+                "taxonomy" : [ {
+                  "primaryAssetClass" : {
+                    "value" : "InterestRate"
+                  }
+                }, {
+                  "source" : "CFI",
+                  "value" : {
+                    "name" : {
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/product-classification/iso10962"
+                      },
+                      "value" : "JRMXFP"
+                    }
+                  }
+                }, {
+                  "source" : "EMIR",
+                  "value" : {
+                    "name" : {
+                      "meta" : {
+                        "scheme" : "http://www.dtcc.com/coding-scheme/external/product-classification/emir-contract-type"
+                      },
+                      "value" : "FW"
+                    }
+                  }
+                }, {
+                  "source" : "Other",
+                  "value" : {
+                    "name" : {
+                      "meta" : {
+                        "scheme" : "http://www.dtcc.com/coding-scheme/external/product-classification/emir-mandatory-clearable-product"
+                      },
+                      "value" : "X"
+                    }
+                  }
+                }, {
+                  "source" : "ISDA",
+                  "value" : {
+                    "name" : {
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/product-taxonomy"
+                      },
+                      "value" : "InterestRate:Forward:Debt"
+                    }
+                  }
+                }, {
+                  "productQualifier" : "InterestRate_Forward_Debt",
+                  "source" : "ISDA"
+                } ]
+              },
+              "tradeDate" : {
+                "meta" : {
+                  "globalKey" : "3f3acf"
+                },
+                "value" : "2023-11-15"
+              },
+              "tradeIdentifier" : [ {
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                    },
+                    "value" : "UTIIRFORWARDDEBT0213"
+                  }
+                } ],
+                "identifierType" : "UniqueTransactionIdentifier",
+                "issuer" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+                  },
+                  "value" : "DUMMYLEI020000000085"
+                },
+                "meta" : {
+                  "globalKey" : "d01ba5b6"
+                }
+              }, {
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.dtcc.com/internal-reference-id"
+                    },
+                    "value" : "UTIIRFORWARDDEBT0116"
+                  }
+                } ],
+                "issuerReference" : {
+                  "externalReference" : "partyA",
+                  "globalReference" : "38b68d4d"
+                },
+                "meta" : {
+                  "globalKey" : "58eaadd"
+                }
+              } ],
+              "tradeLot" : [ {
+                "priceQuantity" : [ {
+                  "meta" : {
+                    "globalKey" : "423f5e20"
+                  },
+                  "observable" : {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "observable-1"
+                      } ]
+                    },
+                    "value" : {
+                      "Asset" : {
+                        "Instrument" : {
+                          "Security" : {
+                            "identifier" : [ {
+                              "identifier" : {
+                                "meta" : {
+                                  "scheme" : "http://www.bankx.com/instrument-id"
+                                },
+                                "value" : "5369692"
+                              },
+                              "identifierType" : "Other"
+                            }, {
+                              "identifier" : {
+                                "meta" : {
+                                  "scheme" : "http://www.fpml.org/coding-scheme/external/instrument-id-ISIN"
+                                },
+                                "value" : "JP1700161P53"
+                              },
+                              "identifierType" : "ISIN"
+                            }, {
+                              "identifier" : {
+                                "value" : "16 JGB 40Y 1.3 MAR63"
+                              },
+                              "identifierType" : "Name"
+                            } ],
+                            "instrumentType" : "Debt"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "price" : [ {
+                    "value" : {
+                      "perUnitOf" : {
+                        "currency" : {
+                          "value" : "JPY"
+                        }
+                      },
+                      "priceType" : "AssetPrice",
+                      "unit" : {
+                        "currency" : {
+                          "value" : "JPY"
+                        }
+                      },
+                      "value" : 0.526600701
+                    }
+                  } ],
+                  "quantity" : [ {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-1"
+                      } ]
+                    },
+                    "value" : {
+                      "unit" : {
+                        "currency" : {
+                          "value" : "JPY"
+                        }
+                      },
+                      "value" : 1000000
+                    }
+                  } ]
+                } ]
+              } ]
+            }
+          }
+        },
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "contractualParty" : [ {
+                "externalReference" : "partyB",
+                "globalReference" : "7d02bedc"
+              }, {
+                "externalReference" : "partyA",
+                "globalReference" : "38b68d4d"
+              } ],
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "2be27a99"
+              }
+            } ]
+          }
+        }
+      } ],
+      "intent" : "ContractFormation",
+      "meta" : {
+        "globalKey" : "bbdcaa23"
+      }
+    },
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "BANKX0001"
+        }
+      } ],
+      "meta" : {
+        "globalKey" : "3ce1279d"
+      }
+    } ],
+    "messageInformation" : {
+      "messageId" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+        },
+        "value" : "BANKX0001"
+      },
+      "sentBy" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+        },
+        "value" : "DUMMYLEI010000000037"
+      },
+      "sentTo" : [ {
+        "value" : "DTCCEU"
+      } ]
+    },
+    "meta" : {
+      "globalKey" : "34fecd87"
+    },
+    "party" : [ {
+      "contactInformation" : {
+        "address" : [ {
+          "country" : {
+            "value" : "US"
+          }
+        } ]
+      },
+      "meta" : {
+        "externalKey" : "partyA",
+        "globalKey" : "38b68d4d"
+      },
+      "name" : {
+        "value" : "Bank A (reportingParty)"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "DUMMYLEI010000000037"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "5151b003"
+        }
+      } ]
+    }, {
+      "contactInformation" : {
+        "address" : [ {
+          "country" : {
+            "value" : "BM"
+          }
+        } ]
+      },
+      "meta" : {
+        "externalKey" : "partyB",
+        "globalKey" : "7d02bedc"
+      },
+      "name" : {
+        "value" : "Party B"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "DUMMYLEI020000000085"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "590367e9"
+        }
+      } ]
+    }, {
+      "meta" : {
+        "externalKey" : "ExecutionFacility",
+        "globalKey" : "4fe3710"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/mifir/extension-iso10383"
+          },
+          "value" : "XOFF"
+        },
+        "identifierType" : "MIC",
+        "meta" : {
+          "globalKey" : "4fe3710"
+        }
+      } ]
+    } ],
+    "previousWorkflowStep" : {
+      "globalReference" : "b60681fe"
+    },
+    "timestamp" : [ {
+      "dateTime" : "2023-11-15T01:48:51Z",
+      "qualification" : "eventCreationDateTime"
+    }, {
+      "dateTime" : "2023-11-15T01:45:41Z",
+      "qualification" : "executionDateTime"
+    } ]
+  },
+  "reportableInformation" : {
+    "confirmationMethod" : "NotConfirmed",
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "externalReference" : "partyA",
+        "globalReference" : "38b68d4d"
+      },
+      "relatedParty" : [ {
+        "partyReference" : {
+          "externalReference" : "partyA",
+          "globalReference" : "38b68d4d"
+        },
+        "role" : "Beneficiary"
+      }, {
+        "partyReference" : {
+          "externalReference" : "ExecutionFacility",
+          "globalReference" : "4fe3710"
+        },
+        "role" : "ExecutionFacility"
+      }, {
+        "partyReference" : {
+          "externalReference" : "partyB",
+          "globalReference" : "7d02bedc"
+        }
+      } ]
+    }, {
+      "partyReference" : {
+        "externalReference" : "partyB",
+        "globalReference" : "7d02bedc"
+      }
+    } ],
+    "intragroup" : false,
+    "jurisdictionInformation" : [ {
+      "partyInformation" : [ {
+        "esmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INUN" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyA",
+          "globalReference" : "38b68d4d"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "esmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyB",
+          "globalReference" : "7d02bedc"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "fcaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INUN" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyA",
+          "globalReference" : "38b68d4d"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "fcaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyB",
+          "globalReference" : "7d02bedc"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "UKEMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "FCA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "partyReference" : {
+          "externalReference" : "partyA",
+          "globalReference" : "38b68d4d"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            },
+            "value" : "BANKX0001"
+          }
+        }
+      }, {
+        "partyReference" : {
+          "externalReference" : "partyB",
+          "globalReference" : "7d02bedc"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            },
+            "value" : "BANKX0001"
+          }
+        }
+      } ],
+      "regimeName" : {
+        "value" : "JFSA"
+      },
+      "supervisoryBody" : {
+        "value" : "JFSA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyA",
+          "globalReference" : "38b68d4d"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyB",
+          "globalReference" : "7d02bedc"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "CSA"
+      },
+      "supervisoryBody" : {
+        "value" : "CA.AB.ASC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    }, {
+      "partyInformation" : [ {
+        "hkmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INUN" ]
+          },
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyA",
+          "globalReference" : "38b68d4d"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "hkmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "partyB",
+          "globalReference" : "7d02bedc"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "HKMA"
+      },
+      "supervisoryBody" : {
+        "value" : "HKMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    } ],
+    "originalExecutionTimestamp" : "2023-11-15T01:45:41Z"
+  },
+  "reportingSide" : {
+    "reportingCounterparty" : {
+      "externalReference" : "partyB",
+      "globalReference" : "7d02bedc"
+    },
+    "reportingParty" : {
+      "externalReference" : "partyA",
+      "globalReference" : "38b68d4d"
+    }
+  }
+}

@@ -1,0 +1,171 @@
+namespace drr.regulation.common.trade
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.enrichment.common.*
+import drr.enrichment.upi.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iso.*
+
+type CommonTransactionReport extends cde.CriticalDataElement: <"Common Transaction Report represents common attributes">
+    // Leg
+    override leg1 CommonLeg (0..1)
+    override leg2 CommonLeg (0..1)
+    // Execution
+    override expirationDate ISODate (0..1)
+        [ruleReference datetime.ExpirationDate]
+    override settlementLocation ISOCountryCodeEnum (0..1)
+        [ruleReference execution.SettlementLocation]
+    confirmationTimestamp zonedDateTime (0..1)
+        [ruleReference datetime.ConfirmationTimestamp]
+    platformIdentifier Max4Text (0..1)
+    bookingLocation ISOCountryCodeEnum (0..1)
+        [ruleReference execution.BookingLocation]
+    traderLocation ISOCountryCodeEnum (0..1)
+        [ruleReference execution.TraderLocation]
+    deliveryType DeliveryTypeEnum (0..1)
+        [ruleReference contract.DeliveryType]
+    // Party
+    executionAgentCounterparty1 string (0..1)
+        [ruleReference party.ExecutionAgentCounterparty1]
+    executionAgentCounterparty2 LEIIdentifier (0..1)
+        [ruleReference party.ExecutionAgentCounterparty2]
+    natureOfCounterparty1 party.NatureOfCounterpartyEnum (0..1)
+    natureOfCounterparty2 party.NatureOfCounterpartyEnum (0..1)
+    clearingExceptionsAndExemptionsCounterparty1 ClearingExceptionsAndExemptionsEnum (0..*)
+    clearingExceptionsAndExemptionsCounterparty2 ClearingExceptionsAndExemptionsEnum (0..*)
+    corporateSectorOfTheCounterparty1 Max4Text (0..*)
+    corporateSectorOfTheCounterparty2 Max4Text (0..*)
+    counterparty2Name Max150Text (0..1)
+        [ruleReference party.Counterparty2Name]
+    reportSubmittingEntityID LEIIdentifier (1..1)
+        [ruleReference party.ReportSubmittingEntity]
+    entityResponsibleForReporting LEIIdentifier (0..1)
+        [ruleReference party.EntityResponsibleForReporting]
+    countryOfTheCounterparty2 ISOCountryCodeEnum (0..1)
+        [ruleReference party.CountryOfCounterparty2]
+    counterparty2IdentifierSource Counterparty2IdentifierEnum (0..1)
+        [ruleReference party.Counterparty2IdentifierSource]
+    tradingCapacity TradingCapacity7Code (0..1)
+    brokerID LEIIdentifier (0..1)
+        [ruleReference party.BrokerID]
+    // Contract
+    contractType CommonContractType (0..1)
+        [ruleReference contract.ContractType]
+    assetClass CommonAssetClass (0..1)
+        [ruleReference contract.AssetClass]
+    optionType OptionTypeCode (0..1)
+        [ruleReference contract.OptionType]
+    optionStyle OptionStyleEnum (0..1)
+        [ruleReference contract.OptionStyle]
+    embeddedOptionType EmbeddedOptionTypeEnum (0..1)
+        [ruleReference contract.EmbeddedOptionType]
+    masterAgreementType contract.MasterAgreementEnum (0..1)
+        [ruleReference contract.MasterAgreementType]
+    masterAgreementVersion int (0..1)
+        [ruleReference contract.MasterAgreementVersion]
+    secondaryTransactionIdentifier Max72AlphaNumericText (0..1)
+        [ruleReference link.SecondaryTransactionIdentifier]
+    intragroup boolean (0..1)
+        [ruleReference party.Intragroup]
+    nonStandardizedTermIndicator boolean (0..1)
+        [ruleReference contract.NonStandardizedTermIndicator]
+    amendmentIndicator boolean (0..1)
+        [ruleReference event.AmendmentIndicator]
+    // Underlier
+    underlyingIdentification ISINOct2015Identifier (0..1)
+    underlyingIdentificationType underlier.UnderlyingIdentificationTypeEnum (0..1)
+    nameOfTheUnderlyingIndex Max50AlphaNumericTextWithSplChars (0..1)
+    [ruleReference underlier.NameOfTheUnderlyingIndex]
+    maturityDateOfTheUnderlying date (0..1)
+    [ruleReference datetime.MaturityDateOfTheUnderlier]
+    // Link
+    swapLinkID Max35AlphaNumericText (0..1)
+        [ruleReference link.SwapLinkID]
+    packageIndicator boolean (0..1)
+        [ruleReference link.PackageIndicator]
+    customBasketIndicator boolean (0..1)
+    [ruleReference basket.CustomBasketIndicator]
+    priorUTIProprietary UTIProprietaryIDFormat (0..1)
+    // Clearing
+    clearingTimestamp zonedDateTime (0..1)
+        [ruleReference datetime.ClearingTimestamp]
+    clearingAccountOrigin ClearingAccountOriginEnum (0..1)
+        [ruleReference execution.ClearingAccountOrigin]
+    clearingReceiptTimestamp zonedDateTime (0..1)
+        [ruleReference datetime.ClearingReceiptTimestamp]
+    // Identifier
+    uniqueTransactionIdentifier Max52AlphaNumericText (0..1)
+    uniqueTransactionIdentifierProprietary UTIProprietaryIDFormat (0..1)
+    uniqueProductIdentifier string (0..1)
+        [ruleReference upi.UniqueProductIdentifier]
+    originalSwapUTI Max52AlphaNumericText (0..1)
+        [ruleReference link.OriginalSwapUTI]
+    subsequentPositionUTI UTIIdentifierLegacy (0..1)
+        [ruleReference link.SubsequentPositionUTI]
+    originalSwapSDRIdentifier LEIIdentifier (0..1)
+        [ruleReference link.OriginalSwapSDRIdentifier]
+    priorUSI Max42AlphaNumericText (0..1)
+        [ruleReference link.PriorUSI]
+    newSDRIdentifier LEIIdentifier (0..1)
+    technicalRecordId string (0..1)
+    referenceEntity string (0..1)
+    // Transaction
+    seniority SeniorityEnum (0..1)
+        [ruleReference index.Seniority]
+    series Max5Int (0..1)
+        [ruleReference index.Series]
+    indexFactor ShortFraction10DecimalNumber (0..1)
+        [ruleReference index.IndexFactor]
+    seriesVersion Max5Int (0..1)
+        [ruleReference index.Version]
+    baseProduct string (0..1)
+    subProduct string (0..1)
+    furtherSubProduct string (0..1)
+    barrier price.SingleOrUpperAndLowerBarrier (0..1)
+        [ruleReference price.SingleOrUpperAndLowerBarrier]
+    // Collateral
+    initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference collateral.InitialMarginCollateralPortfolioCode]
+    variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference collateral.VariationMarginCollateralPortfolioCode]
+    // NonReportable
+    nonReportable NonReportable (0..1)
+    [label for enrichment "Enrichment Data"]
+        [ruleReference for enrichment EnrichmentData]
+    [label for preUpiData "Upi Pre-Enrichment Data"]
+        [ruleReference for preUpiData UpiPreEnrichmentData]
+    [label for postUpiData "Upi Post-Enrichment Data"]
+        [ruleReference for postUpiData UpiPostEnrichmentData]
+
+type CommonLeg extends cde.Leg:
+    override periodicPayment payment.CommonPeriodicPayment (0..1)
+    notionalQuantity ShortFraction5DecimalNumber (0..1)
+    fixingDate zonedDateTime (0..1)
+    quantityFrequency FrequencyPeriodEnum (0..1)
+    quantityFrequencyMultiplier Max3Number (0..1)
+    payerIdentifier Min20Max72AlphaNumericText (0..1)
+    receiverIdentifier Min20Max72AlphaNumericText (0..1)
+    settlementLocation ISOCountryCodeEnum (0..1)
+    nextFloatingReferenceResetDate ISODate (0..1)
+
+type NonReportable:
+    enrichment EnrichmentData (0..1) <"Populated by pre-enrichment process">
+        [nonReportable]
+    preUpiData AnnaDsbUpiRequestAndType (0..1)
+        [nonReportable]
+    postUpiData upi.AnnaDsbUpiRecord (0..1)
+        [nonReportable]
+    notionalSchedule upi.AnnaDsbNotionalScheduleEnum (0..1)
+        [nonReportable]
+    underlyingAssetType string (0..1)
+        [nonReportable]
+    instrumentType upi.AnnaDsbInstrumentTypeEnum (0..1)
+        [nonReportable]
+    deliveryType upi.AnnaDsbDeliveryTypeEnum (0..1)
+        [nonReportable]

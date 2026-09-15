@@ -1,0 +1,20 @@
+namespace drr.regulation.csa.rewrite.dtcc.valuation
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iosco.uti.*
+
+reporting rule DTCC_USIID from ValuationReportInstruction: <"USI ID">
+    UniqueSwapIdentifierForValuation(item, csaTrade.SupervisoryBodyForCSA)
+
+reporting rule DTCC_USIIDPrefix from ValuationReportInstruction: <"USI ID Prefix">
+    empty
+
+reporting rule DTCC_MessageID from ValuationReportInstruction: <"Message ID">
+    extract
+        if common.link.TechnicalRecordId(reportableInformation, CSA) -> isUnique
+        then common.link.TechnicalRecordId(reportableInformation, CSA) -> id
+        else common.link.TechnicalRecordId(reportableInformation, CSA) -> id + (valuation.datetime.ReportingTimestamp to-string)

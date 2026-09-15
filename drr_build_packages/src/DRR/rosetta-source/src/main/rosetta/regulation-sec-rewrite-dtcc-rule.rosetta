@@ -1,0 +1,150 @@
+namespace drr.regulation.sec.rewrite.dtcc
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.dtcc.trade.* as commondtcc
+import drr.regulation.common.trade.* as common
+import drr.regulation.sec.*
+import drr.regulation.sec.rewrite.*
+import drr.regulation.sec.rewrite.trade.* as secTrade
+
+eligibility rule ReportableProduct from TransactionReportInstruction: <"When eligible for GTR Control fields from DTCC Harmonized">
+    [docReference SEC secTrade.Trade DTCC_Specs
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+//DTCC Definitions
+reporting rule DTCC_ClearingVenueIDType from TransactionReportInstruction: <"Clearing Venue - ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_ClearingVenueIDType
+
+reporting rule DTCC_TradeParty1ClearingBrokerIDType from TransactionReportInstruction: <"Trade Party 1 - Clearing Broker ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_TradeParty1ClearingBrokerIDType
+
+reporting rule DTCC_OriginalSwapSDRIDType from TransactionReportInstruction: <"Original Swap SDR - ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract
+        if common.link.OriginalSwapSDRIdentifier exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_TradeParty1IDType from TransactionReportInstruction: <"Trade Party 1 - ID Type">
+    extract commondtcc.DTCC_TradeParty1IDType
+
+reporting rule DTCC_SubmittingPartyIDType from TransactionReportInstruction: <"Submitting Party - ID Type">
+    extract commondtcc.DTCC_SubmittingPartyIDType
+
+reporting rule DTCC_SubmittedForParty from TransactionReportInstruction: <"Submitted For Party">
+    extract commondtcc.DTCC_SubmittedForParty
+
+reporting rule DTCC_TradeParty1ReportingDestination from TransactionReportInstruction: <"Trade Party 1 - Reporting Destination">
+    extract commondtcc.DTCC_TradeParty1ReportingDestination
+
+reporting rule DTCC_TradeParty2ReportingDestination from TransactionReportInstruction: <"Trade Party 2 - Reporting Destination">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_TradeParty2ReportingDestination
+
+reporting rule DTCC_PrimaryAssetClass from TransactionReportInstruction: <"Primary Asset Class">
+    extract commondtcc.DTCC_PrimaryAssetClass
+
+reporting rule DTCC_SecondaryAssetClass from TransactionReportInstruction: <"Secondary Asset Class">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_SecondaryAssetClass
+
+reporting rule DTCC_Comment1 from TransactionReportInstruction: <"Comment 1">
+    extract commondtcc.DTCC_Comment1
+
+reporting rule DTCC_MessageID from TransactionReportInstruction: <"Message ID">
+    filter secTrade.IsAllowableActionForSEC
+    then extract common.link.MessageID(item, DoddFrankAct)
+
+reporting rule DTCC_MessageTypeTransaction from TransactionReportInstruction: <"Message Type (Trade report)">
+    extract commondtcc.DTCC_MessageTypeTransaction
+
+reporting rule DTCC_MessageTypePPD from TransactionReportInstruction: <"Message Type (PPD report)">
+    extract commondtcc.DTCC_MessageTypePPD
+
+reporting rule DTCC_TradeParty2ExecutionAgentID from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_TradeParty2ExecutionAgentID
+
+reporting rule DTCC_TradeParty2ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_TradeParty2ExecutionAgentIDType
+
+reporting rule DTCC_TradeParty1ExecutionAgentID from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_TradeParty1ExecutionAgentID
+
+reporting rule DTCC_TradeParty1ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_TradeParty1ExecutionAgentIDType
+
+reporting rule DTCC_TradeParty1TransactionID from TransactionReportInstruction: <"Trade Party 1 - Transaction ID">
+    filter secTrade.IsAllowableActionForSEC
+    then extract
+        common.party.GetInternalId(
+                TradeForEvent -> tradeIdentifier,
+                reportingSide,
+                reportableInformation -> jurisdictionInformation
+                    then filter supervisoryBody = SEC
+                    then transactionInformation -> internalTradeIdentifier only-element
+            )
+
+reporting rule DTCC_VersionTransaction from TransactionReportInstruction: <"Version (Trade report)">
+    extract commondtcc.DTCC_VersionTransaction
+
+reporting rule DTCC_VersionPPD from TransactionReportInstruction: <"Version (PPD report)">
+    extract commondtcc.DTCC_VersionPPD
+
+reporting rule DTCC_Leg1FloatingRateIndex from TransactionReportInstruction: <"Leg 1 - Floating Rate Index">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_Leg1FloatingRateIndex
+
+reporting rule DTCC_Leg2FloatingRateIndex from TransactionReportInstruction: <"Leg 2 - Floating Rate Index">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_Leg2FloatingRateIndex
+
+reporting rule DTCC_UnderlyingAssetReport from TransactionReportInstruction: <"Underlying Asset">
+    filter secTrade.IsAllowableActionForSEC
+    then commondtcc.DTCC_UnderlyingAssetReport
+
+reporting rule DTCC_UnderlyingAssetName from TransactionReportInstruction: <"Underlying Asset Name">
+    filter secTrade.IsAllowableActionForSEC
+    then extract common.underlier.GetUnderlyingAssetName(item, DoddFrankAct)
+
+reporting rule DTCC_ExecutionVenueID from TransactionReportInstruction: <"Execution Venue - ID">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_ExecutionVenueID
+
+reporting rule DTCC_ExecutionVenueIDType from TransactionReportInstruction: <"Execution Venue - ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_ExecutionVenueIDType
+
+reporting rule DTCC_ResponsibleDataSubmitterIDType from TransactionReportInstruction: <"Responsible Data Submitter - ID Type">
+    extract commondtcc.DTCC_ResponsibleDataSubmitterIDType
+
+reporting rule DTCC_ResponsibleDataSubmitterID from TransactionReportInstruction: <"Responsible Data Submitter - ID">
+    extract commondtcc.DTCC_ResponsibleDataSubmitterID
+
+reporting rule DTCC_MaturityDateOfTheUnderlying from TransactionReportInstruction: <"Maturity Date of the Underlying">
+    filter secTrade.IsAllowableActionForSEC
+    then commondtcc.DTCC_MaturityDateOfTheUnderlying
+
+reporting rule DTCC_CorporateActionNewTradeParty1LEI from TransactionReportInstruction: <"Corporate Action - New Trade Party 1 LEI">
+    extract commondtcc.DTCC_CorporateActionNewTradeParty1LEI
+
+reporting rule DTCC_OtherPaymentPayerIDType from TransactionReportInstruction: <"Other Payment Payer ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_OtherPaymentPayerIDType
+
+reporting rule DTCC_OtherPaymentReceiverIDType from TransactionReportInstruction: <"Other Payment Receiver ID Type">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_OtherPaymentReceiverIDType
+
+reporting rule DTCC_SEFOrDCMAnonymousExecutionIndicator from TransactionReportInstruction: <"SEF or DCM Anonymous Execution Indicator">
+    filter secTrade.IsAllowableActionForSEC
+    then extract commondtcc.DTCC_SEFOrDCMAnonymousExecutionIndicator(item, SEC)

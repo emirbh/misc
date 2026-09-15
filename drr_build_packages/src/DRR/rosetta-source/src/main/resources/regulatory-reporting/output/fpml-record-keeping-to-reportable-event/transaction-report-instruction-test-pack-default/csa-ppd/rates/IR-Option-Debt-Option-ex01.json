@@ -1,0 +1,69 @@
+{
+  "actionType" : "NEWT",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2IdentifierSource" : "LEID",
+  "counterparty2IdentifierType" : true,
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "DTDApproved2380513903EMIRRiskNewNewInterest2024-04-29T00:00Z",
+    "messageTypePPD" : "RT",
+    "primaryAssetClass" : "InterestRate",
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "IROPTIONDEBTOPTION02",
+    "tradeParty2ExecutionAgentID" : "DUMMYLEI012345678907",
+    "tradeParty2ExecutionAgentIDType" : "LEI",
+    "versionPPD" : "PPD1.0"
+  },
+  "effectiveDate" : "2023-04-19",
+  "eventTimestamp" : "2021-03-13T06:33:27Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2021-03-13T06:32:49Z",
+  "expirationDate" : "2023-04-19",
+  "firstExerciseDate" : "2023-04-19",
+  "leg1" : {
+    "notionalAmount" : 600000000,
+    "notionalCurrency" : "USD"
+  },
+  "nonReportable" : {
+    "deliveryType" : "PHYS",
+    "executionVenueType" : "OffFacility",
+    "instrumentType" : "Option",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "PHYS",
+          "NotionalCurrency" : "USD",
+          "OptionExerciseStyle" : "EURO",
+          "OptionType" : "CALL",
+          "UnderlierID" : "US05367AAA16",
+          "UnderlierIDSource" : "ISIN",
+          "ValuationMethodorTrigger" : "Vanilla"
+        },
+        "Header" : {
+          "AssetClass" : "Rates",
+          "InstrumentType" : "Option",
+          "Level" : "UPI",
+          "UseCase" : "Debt_Option"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "optionPremiumAmount" : 0,
+  "optionPremiumCurrency" : "USD",
+  "packageIndicator" : false,
+  "platformIdentifier" : "XXXX",
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "strikePrice" : {
+    "decimal" : 6
+  },
+  "strikePriceNotation" : "Decimal",
+  "uniqueTransactionIdentifier" : "UTIIROPTIONDEBTO0389"
+}

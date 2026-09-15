@@ -1,0 +1,311 @@
+namespace drr.regulation.csa.rewrite.dtcc.trade
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+import cdm.event.qualification.*
+import cdm.product.qualification.*
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.dtcc.trade.* as commondtcc
+import drr.regulation.common.trade.* as common
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.*
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.uti.* as uti
+
+eligibility rule ReportableProduct from TransactionReportInstruction: <"When eligible for GTR Control fields from DTCC Harmonized">
+    [docReference CSA csaTrade.Trade DTCC_Specs
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+//DTCC Definitions
+reporting rule DTCC_ClearingVenueIDType from TransactionReportInstruction: <"Clearing Venue - ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_ClearingVenueIDType
+
+reporting rule DTCC_TradeParty1ClearingBrokerIDType from TransactionReportInstruction: <"Trade Party 1 - Clearing Broker ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_TradeParty1ClearingBrokerIDType
+
+reporting rule DTCC_TradeParty1IDType from TransactionReportInstruction: <"Trade Party 1 - ID Type">
+    extract
+        if cde.party.Counterparty1 exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_SubmittingPartyIDType from TransactionReportInstruction: <"Submitting Party - ID Type">
+    extract commondtcc.DTCC_SubmittingPartyIDType
+
+reporting rule DTCC_AllocationType from TransactionReportInstruction: <"Allocation Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract
+        if Qualify_Allocation(originatingWorkflowStep -> businessEvent)
+                or originatingWorkflowStep -> businessEvent -> intent = Allocation
+        then AllocationIndicatorEnum -> POST
+        else if originatingWorkflowStep -> nextEvent -> intent = Allocation
+        then AllocationIndicatorEnum -> PREA
+        else AllocationIndicatorEnum -> UNAL
+
+reporting rule DTCC_USIID from TransactionReportInstruction: <"USI ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract uti.GetUniqueSwapIdentifier(item, csaTrade.SupervisoryBodyForCSA)
+
+reporting rule DTCC_USIIDPrefix from TransactionReportInstruction: <"USI ID Prefix">
+    empty
+
+reporting rule DTCC_NewSDRIdentifier from TransactionReportInstruction: <"New SDR Identifier">
+    filter IsActionTypePRTO
+    then extract common.link.NewSDRIdentifier
+
+reporting rule DTCC_SubmittedForParty from TransactionReportInstruction: <"Submitted For Party">
+    extract commondtcc.DTCC_SubmittedForParty
+
+reporting rule DTCC_TradeLegTypes from TransactionReportInstruction: <"Trade Leg Types">
+    extract commondtcc.DTCC_TradeLegTypes
+
+reporting rule DTCC_TradeParty1ReportingDestination from TransactionReportInstruction: <"Trade Party 1 - Reporting Destination">
+    extract commondtcc.DTCC_TradeParty1ReportingDestination
+
+reporting rule DTCC_TradeParty2ReportingDestination from TransactionReportInstruction: <"Trade Party 2 - Reporting Destination">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_TradeParty2ReportingDestination
+
+reporting rule DTCC_PrimaryAssetClass from TransactionReportInstruction: <"Primary Asset Class">
+    extract commondtcc.DTCC_PrimaryAssetClass
+
+reporting rule DTCC_SecondaryAssetClass from TransactionReportInstruction: <"Secondary Asset Class">
+    extract commondtcc.DTCC_SecondaryAssetClass
+
+reporting rule DTCC_Comment1 from TransactionReportInstruction: <"Comment 1">
+    extract commondtcc.DTCC_Comment1
+
+reporting rule DTCC_MessageID from TransactionReportInstruction: <"Message ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract common.link.MessageID(item, CSA)
+
+reporting rule DTCC_MessageTypeTransaction from TransactionReportInstruction: <"Message Type (Transaction)">
+    extract commondtcc.DTCC_MessageTypeTransaction
+
+reporting rule DTCC_MessageTypePPD from TransactionReportInstruction: <"Message Type (PPD)">
+    extract commondtcc.DTCC_MessageTypePPD
+
+reporting rule DTCC_OptionStyle from TransactionReportInstruction: <"Option Style">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_OptionStyle
+
+reporting rule DTCC_OptionType from TransactionReportInstruction: <"Option Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_OptionType
+
+reporting rule DTCC_ProductID from TransactionReportInstruction: <"Product ID">
+    extract commondtcc.DTCC_ProductID
+
+reporting rule DTCC_TradeParty2ExecutionAgentID from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_TradeParty2ExecutionAgentID
+
+reporting rule DTCC_TradeParty2ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 2 - Execution Agent ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_TradeParty2ExecutionAgentIDType
+
+reporting rule DTCC_TradeParty1ExecutionAgentID from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_TradeParty1ExecutionAgentID
+
+reporting rule DTCC_TradeParty1ExecutionAgentIDType from TransactionReportInstruction: <"Trade Party 1 - Execution Agent ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_TradeParty1ExecutionAgentIDType
+
+reporting rule DTCC_TradeParty1TransactionID from TransactionReportInstruction: <"Trade Party 1 - Transaction ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract
+        common.party.GetInternalId(
+                TradeForEvent -> tradeIdentifier,
+                reportingSide,
+                reportableInformation -> jurisdictionInformation
+                    filter csaTrade.SupervisoryBodyForCSA any = supervisoryBody
+                    then transactionInformation -> internalTradeIdentifier only-element
+            )
+
+reporting rule DTCC_VersionTransaction from TransactionReportInstruction: <"Version (Trade report)">
+    extract commondtcc.DTCC_VersionTransaction
+
+reporting rule DTCC_VersionPPD from TransactionReportInstruction: <"Version (PPD report)">
+    extract commondtcc.DTCC_VersionPPD
+
+reporting rule DTCC_Leg1CommodityUnderlyerID from TransactionReportInstruction: <"Leg 1 - Commodity Underlyer ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then filter Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent)) = True
+    then if csaTrade.IsCSALeg1Aligned = True
+        then extract ExtractCommodityClassificationLeg1(ProductForEvent, CSA, 1)
+        else extract ExtractCommodityClassificationLeg2(ProductForEvent, CSA, 1)
+    then extract
+        if ["Agricultural", "Benzene", "Bullion", "Coal", "Composite Commodity Indices", "Diesel Fuel", "Electricity", "Emissions Allowances", "Ethanol and Bio Fuels", "Fuel Oil", "Freight", "Gas Oil", "Gasoline", "Heating Oil", "Jet Fuel", "Kerosene", "Metals", "Methanol", "Naptha", "Natural Gas", "NGL", "Oil", "Paper", "Plastic", "Weather"] any = item // TH Sprint 25-14: FpMl coding scheme specific for CSA (CommodityClassificationScheme) needs to be generated
+        then item
+
+reporting rule DTCC_Leg2CommodityUnderlyerID from TransactionReportInstruction: <"Leg 2 - Commodity Underlyer ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then filter Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent)) = True
+    then if csaTrade.IsCSALeg2Aligned = True
+        then extract ExtractCommodityClassificationLeg2(ProductForEvent, CSA, 1)
+        else extract ExtractCommodityClassificationLeg1(ProductForEvent, CSA, 1)
+    then extract
+        if ["Agricultural", "Benzene", "Bullion", "Coal", "Composite Commodity Indices", "Diesel Fuel", "Electricity", "Emissions Allowances", "Ethanol and Bio Fuels", "Fuel Oil", "Freight", "Gas Oil", "Gasoline", "Heating Oil", "Jet Fuel", "Kerosene", "Metals", "Methanol", "Naptha", "Natural Gas", "NGL", "Oil", "Paper", "Plastic", "Weather"] any = item // TH Sprint 25-14: FpMl coding scheme specific for CSA (CommodityClassificationScheme) needs to be generated
+        then item
+
+reporting rule DTCC_Leg1FloatingRateIndex from TransactionReportInstruction: <"Leg 1 - Floating Rate Index">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract
+        if csaTrade.IsCSALeg1Aligned = True
+        then commondtcc.DTCC_Leg1FloatingRateIndex
+        else commondtcc.DTCC_Leg2FloatingRateIndex
+
+reporting rule DTCC_Leg2FloatingRateIndex from TransactionReportInstruction: <"Leg 2 - Floating Rate Index">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract
+        if csaTrade.IsCSALeg2Aligned = True
+        then commondtcc.DTCC_Leg2FloatingRateIndex
+        else commondtcc.DTCC_Leg1FloatingRateIndex
+
+reporting rule DTCC_UnderlyingAssetReport from TransactionReportInstruction: <"Underlying Asset">
+    filter csaTrade.IsAllowableActionForCSA
+    then commondtcc.DTCC_UnderlyingAssetReport
+
+reporting rule DTCC_UnderlyingAssetName from TransactionReportInstruction: <"Underlying Asset Name">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract common.underlier.GetUnderlyingAssetName(item, CSA)
+
+reporting rule DTCC_SettlementType from TransactionReportInstruction: <"Settlement Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_SettlementType
+
+reporting rule DTCC_ExecutionVenueID from TransactionReportInstruction: <"Execution Venue - ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_ExecutionVenueID
+
+reporting rule DTCC_ExecutionVenueIDType from TransactionReportInstruction: <"Execution Venue - ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_ExecutionVenueIDType
+
+reporting rule DTCC_ProductGrade from TransactionReportInstruction: <"Product Grade">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_ProductGrade
+
+reporting rule DTCC_DeliveryLocation from TransactionReportInstruction: <"Delivery Location">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_DeliveryLocation
+
+reporting rule DTCC_Leg1SettlementPeriod from TransactionReportInstruction: <"Leg 1 - Settlement Period">
+    // TH Sprint 2025-15: This field will remain empty due to insufficient descriptive information.
+    empty
+
+reporting rule DTCC_LoadType from TransactionReportInstruction: <"Load Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract EconomicTermsForProduct(ProductForEvent)
+    then filter Qualify_AssetClass_Commodity
+    then extract
+        if Qualify_Commodity_Swap_FixedFloat or Qualify_Commodity_Swap_Basis
+        then (payout -> CommodityPayout
+            first
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+        else if Qualify_Commodity_Swaption
+        then (EconomicTermsForProduct(
+                payout -> OptionPayout -> underlier -> Product -> NonTransferableProduct only-element
+            ) -> payout -> CommodityPayout
+            first
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+        else if Qualify_Commodity_Option
+        then (payout -> OptionPayout
+            only-element
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+        else if Qualify_Commodity_Forward
+        then (payout -> SettlementPayout
+            only-element
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+        else (payout -> CommodityPayout
+            only-element
+            then extract
+                if delivery -> periods -> profile exists
+                then delivery -> periods -> profile
+                else if schedule -> schedulePeriod -> deliveryPeriod -> profile exists
+                then schedule -> schedulePeriod -> deliveryPeriod -> profile)
+    then extract
+        if loadType = BaseLoad
+        then "Base"
+        else if loadType = PeakLoad
+        then "Peak"
+        else if loadType = OffPeak
+        then "OffPeak"
+        else if loadType = BlockHours
+        then "BlockHours"
+        else if loadType = Shaped
+        then "Shaped"
+        else if loadType = GasDay
+        then "Gas Day"
+        else if loadType = Other
+        then "Custom"
+    then distinct only-element
+
+reporting rule DTCC_TradeParty1BrokerIDType from TransactionReportInstruction: <"Trade Party 1 - Broker ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract
+        ExtractPartyFromRelatedPartyByRole(
+                reportableInformation -> globalPartyInformation -> relatedParty,
+                ArrangingBroker
+            )
+    then extract
+        if PartyLei(partyId) exists
+        then PartyIdentifierTypeEnum -> LEI
+
+reporting rule DTCC_Leg1CommodityInstrumentID from TransactionReportInstruction: <"Leg 1 - Commodity Instrument ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then if csaTrade.IsCSALeg1Aligned = True
+        then commondtcc.DTCC_Leg1CommodityInstrumentID
+        else commondtcc.DTCC_Leg2CommodityInstrumentID
+
+reporting rule DTCC_Leg2CommodityInstrumentID from TransactionReportInstruction: <"Leg 2 - Commodity Instrument ID">
+    filter csaTrade.IsAllowableActionForCSA
+    then if csaTrade.IsCSALeg2Aligned = True
+        then commondtcc.DTCC_Leg2CommodityInstrumentID
+        else commondtcc.DTCC_Leg1CommodityInstrumentID
+
+reporting rule DTCC_ResponsibleDataSubmitterIDType from TransactionReportInstruction: <"Responsible Data Submitter - ID Type">
+    extract commondtcc.DTCC_ResponsibleDataSubmitterIDType
+
+reporting rule DTCC_ResponsibleDataSubmitterID from TransactionReportInstruction: <"Responsible Data Submitter - ID">
+    extract commondtcc.DTCC_ResponsibleDataSubmitterID
+
+reporting rule DTCC_MaturityDateOfTheUnderlying from TransactionReportInstruction: <"Maturity Date of the Underlier">
+    filter csaTrade.IsAllowableActionForCSA
+    then commondtcc.DTCC_MaturityDateOfTheUnderlying
+
+reporting rule DTCC_CorporateActionNewTradeParty1LEI from TransactionReportInstruction: <"Corporate Action - New Trade Party 1 LEI">
+    extract commondtcc.DTCC_CorporateActionNewTradeParty1LEI
+
+reporting rule DTCC_OtherPaymentPayerIDType from TransactionReportInstruction: <"Other Payment Payer ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_OtherPaymentPayerIDType
+
+reporting rule DTCC_OtherPaymentReceiverIDType from TransactionReportInstruction: <"Other Payment Receiver ID Type">
+    filter csaTrade.IsAllowableActionForCSA
+    then extract commondtcc.DTCC_OtherPaymentReceiverIDType

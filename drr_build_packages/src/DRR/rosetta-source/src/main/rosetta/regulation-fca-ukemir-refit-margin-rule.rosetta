@@ -1,0 +1,56 @@
+namespace drr.regulation.fca.ukemir.refit.margin
+version "${project.version}"
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.fca.*
+import drr.regulation.fca.ukemir.*
+
+corpus Dissemination Margin
+
+report FCA UKEMIR Margin in T+1
+    from CollateralReportInstruction
+    when IsCollateralReportable
+    with type FCAUKEMIRMarginReport
+
+// Test Eligibility Rule
+eligibility rule IsCollateralReportable from CollateralReportInstruction: <"When eligible for EMIR">
+    [docReference FCA UKEMIR Margin article "4" paragraph "1"
+        provision "The data on collateral for both cleared and non-cleared derivatives shall include all posted and received collateral in accordance with fields 1 to 29 in Table 3 of the Annex"]
+    extract True
+
+//UK EMIR Definitions
+reporting rule EntityResponsibleForReporting from CollateralReportInstruction: <"Entity responsible for reporting">
+    extract
+        if IsRegulatedMarketOrThirdCountryEquivalentMarket(
+                    reportableInformation,
+                    RegimeNameEnum -> UKEMIR
+                ) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule MICCollateral from CollateralReportInstruction:
+    GetVenueOfExecution(reportableInformation)
+
+reporting rule ExecutionAgentOfCounterparty1 from CollateralReportInstruction: <"Execution agent of the Counterparty 1">
+    [docReference FCA UKEMIR Margin dataElement "3.30" field "Execution agent"
+        provision "LEI identifying the entity that executed the transaction on behalf of the counterparty and binds the counterparty to the terms of the transaction, but is not a broker."]
+    extract reportableCollateral [
+        reportableCollateral -> reportableInformation -> globalPartyInformation
+            filter partyReference = reportableCollateral -> reportingSide -> reportingParty
+            then distinct only-element
+            then extract ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+            then extract PartyLei(partyId)
+    ]
+
+reporting rule ExecutionAgentOfCounterparty2 from CollateralReportInstruction: <"Execution agent of the Counterparty 2">
+    [docReference FCA UKEMIR Margin dataElement "3.30" field "Execution agent"
+        provision "LEI identifying the entity that executed the transaction on behalf of the counterparty and binds the counterparty to the terms of the transaction, but is not a broker."]
+    extract reportableCollateral [
+        reportableCollateral -> reportableInformation -> globalPartyInformation
+            filter
+                partyReference = reportableCollateral -> reportingSide -> reportingCounterparty
+            then distinct only-element
+            then extract ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+            then extract PartyLei(partyId)
+    ]

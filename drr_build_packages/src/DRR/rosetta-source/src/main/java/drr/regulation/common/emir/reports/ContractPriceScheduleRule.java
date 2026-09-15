@@ -1,0 +1,73 @@
+package drr.regulation.common.emir.reports;
+
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.functions.ModelObjectValidator;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.reports.ReportFunction;
+import drr.base.qualification.event.functions.IsAllowableAction;
+import drr.base.trade.functions.Create_ContinuousPriceSchedule;
+import drr.base.trade.price.DefaultingType;
+import drr.base.trade.price.PricePeriod;
+import drr.regulation.common.TransactionReportInstruction;
+import drr.regulation.common.functions.GetExpirationDate;
+import drr.standards.iosco.cde.version3.price.functions.GetReportablePricePeriod;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+
+
+@ImplementedBy(ContractPriceScheduleRule.ContractPriceScheduleRuleDefault.class)
+public abstract class ContractPriceScheduleRule implements ReportFunction<TransactionReportInstruction, List<? extends PricePeriod>> {
+	
+	@Inject protected ModelObjectValidator objectValidator;
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected Create_ContinuousPriceSchedule create_ContinuousPriceSchedule;
+	@Inject protected GetExpirationDate getExpirationDate;
+	@Inject protected GetReportablePricePeriod getReportablePricePeriod;
+	@Inject protected IsAllowableAction isAllowableAction;
+
+	/**
+	* @param input 
+	* @return output 
+	*/
+	@Override
+	public List<? extends PricePeriod> evaluate(TransactionReportInstruction input) {
+		List<PricePeriod.PricePeriodBuilder> outputBuilder = doEvaluate(input);
+		
+		final List<? extends PricePeriod> output;
+		if (outputBuilder == null) {
+			output = null;
+		} else {
+			output = outputBuilder.stream().map(PricePeriod::build).collect(Collectors.toList());
+			objectValidator.validate(PricePeriod.class, output);
+		}
+		
+		return output;
+	}
+
+	protected abstract List<PricePeriod.PricePeriodBuilder> doEvaluate(TransactionReportInstruction input);
+
+	public static class ContractPriceScheduleRuleDefault extends ContractPriceScheduleRule {
+		@Override
+		protected List<PricePeriod.PricePeriodBuilder> doEvaluate(TransactionReportInstruction input) {
+			List<PricePeriod.PricePeriodBuilder> output = new ArrayList<>();
+			return assignOutput(output, input);
+		}
+		
+		protected List<PricePeriod.PricePeriodBuilder> assignOutput(List<PricePeriod.PricePeriodBuilder> output, TransactionReportInstruction input) {
+			final MapperS<TransactionReportInstruction> thenArg = MapperS.of(input)
+				.filterSingleNullSafe(item -> isAllowableAction.evaluate(item.get()));
+			output = toBuilder(thenArg
+				.mapSingleToList(item -> MapperC.<PricePeriod>of(create_ContinuousPriceSchedule.evaluate(getReportablePricePeriod.evaluate(item.get(), DefaultingType.DEFAULT_BASISTO_PERCENTAGE), getExpirationDate.evaluate(item.get())))).getMulti());
+			
+			return Optional.ofNullable(output)
+				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+				.orElse(null);
+		}
+	}
+}

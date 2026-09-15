@@ -1,0 +1,599 @@
+package fpml.consolidated.com;
+
+import com.google.common.collect.ImmutableList;
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.Multi;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import com.rosetta.util.ListEquals;
+import fpml.consolidated.com.meta.MetalMeta;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision A type defining the characteristics of the metal product being traded in a physically settled metal transaction.
+ *
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "confirmation-5.13"
+ *
+ * Provision A type defining the characteristics of the metal product being traded in a physically settled metal transaction.
+ *
+ */
+@RosettaDataType(value="Metal", builder=Metal.MetalBuilderImpl.class, version="2.1.1")
+@RuneDataType(value="Metal", model="fpml", builder=Metal.MetalBuilderImpl.class, version="2.1.1")
+public interface Metal extends RosettaModelObject {
+
+	MetalMeta metaData = new MetalMeta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The types of metal product for a physically settled metal trade.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The types of metal product for a physically settled metal trade.
+	 *
+	 */
+	Material getMaterial();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The physical shape(s) which can be delivered in Seller's option.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The physical shape(s) which can be delivered in Seller's option.
+	 *
+	 */
+	List<? extends CommodityMetalShape> getShape();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The brand(s) of material which can be delivered in Seller's option.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The brand(s) of material which can be delivered in Seller's option.
+	 *
+	 */
+	List<? extends CommodityMetalBrand> getBrand();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The grade(s) of material which can be delivered in seller's option.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The grade(s) of material which can be delivered in seller's option.
+	 *
+	 */
+	List<? extends CommodityMetalGrade> getGrade();
+
+	/*********************** Build Methods  ***********************/
+	Metal build();
+	
+	Metal.MetalBuilder toBuilder();
+	
+	static Metal.MetalBuilder builder() {
+		return new Metal.MetalBuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends Metal> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends Metal> getType() {
+		return Metal.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processRosetta(path.newSubPath("material"), processor, Material.class, getMaterial());
+		processRosetta(path.newSubPath("shape"), processor, CommodityMetalShape.class, getShape());
+		processRosetta(path.newSubPath("brand"), processor, CommodityMetalBrand.class, getBrand());
+		processRosetta(path.newSubPath("grade"), processor, CommodityMetalGrade.class, getGrade());
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface MetalBuilder extends Metal, RosettaModelObjectBuilder {
+		Material.MaterialBuilder getOrCreateMaterial();
+		@Override
+		Material.MaterialBuilder getMaterial();
+		CommodityMetalShape.CommodityMetalShapeBuilder getOrCreateShape(int index);
+		@Override
+		List<? extends CommodityMetalShape.CommodityMetalShapeBuilder> getShape();
+		CommodityMetalBrand.CommodityMetalBrandBuilder getOrCreateBrand(int index);
+		@Override
+		List<? extends CommodityMetalBrand.CommodityMetalBrandBuilder> getBrand();
+		CommodityMetalGrade.CommodityMetalGradeBuilder getOrCreateGrade(int index);
+		@Override
+		List<? extends CommodityMetalGrade.CommodityMetalGradeBuilder> getGrade();
+		Metal.MetalBuilder setMaterial(Material material);
+		Metal.MetalBuilder addShape(CommodityMetalShape shape);
+		Metal.MetalBuilder addShape(CommodityMetalShape shape, int idx);
+		Metal.MetalBuilder addShape(List<? extends CommodityMetalShape> shape);
+		Metal.MetalBuilder setShape(List<? extends CommodityMetalShape> shape);
+		Metal.MetalBuilder addBrand(CommodityMetalBrand brand);
+		Metal.MetalBuilder addBrand(CommodityMetalBrand brand, int idx);
+		Metal.MetalBuilder addBrand(List<? extends CommodityMetalBrand> brand);
+		Metal.MetalBuilder setBrand(List<? extends CommodityMetalBrand> brand);
+		Metal.MetalBuilder addGrade(CommodityMetalGrade grade);
+		Metal.MetalBuilder addGrade(CommodityMetalGrade grade, int idx);
+		Metal.MetalBuilder addGrade(List<? extends CommodityMetalGrade> grade);
+		Metal.MetalBuilder setGrade(List<? extends CommodityMetalGrade> grade);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processRosetta(path.newSubPath("material"), processor, Material.MaterialBuilder.class, getMaterial());
+			processRosetta(path.newSubPath("shape"), processor, CommodityMetalShape.CommodityMetalShapeBuilder.class, getShape());
+			processRosetta(path.newSubPath("brand"), processor, CommodityMetalBrand.CommodityMetalBrandBuilder.class, getBrand());
+			processRosetta(path.newSubPath("grade"), processor, CommodityMetalGrade.CommodityMetalGradeBuilder.class, getGrade());
+		}
+		
+
+		Metal.MetalBuilder prune();
+	}
+
+	/*********************** Immutable Implementation of Metal  ***********************/
+	class MetalImpl implements Metal {
+		private final Material material;
+		private final List<? extends CommodityMetalShape> shape;
+		private final List<? extends CommodityMetalBrand> brand;
+		private final List<? extends CommodityMetalGrade> grade;
+		
+		protected MetalImpl(Metal.MetalBuilder builder) {
+			this.material = ofNullable(builder.getMaterial()).map(f->f.build()).orElse(null);
+			this.shape = ofNullable(builder.getShape()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
+			this.brand = ofNullable(builder.getBrand()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
+			this.grade = ofNullable(builder.getGrade()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
+		}
+		
+		@Override
+		@RosettaAttribute("material")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("material")
+		public Material getMaterial() {
+			return material;
+		}
+		
+		@Override
+		@RosettaAttribute("shape")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("shape")
+		public List<? extends CommodityMetalShape> getShape() {
+			return shape;
+		}
+		
+		@Override
+		@RosettaAttribute("brand")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("brand")
+		public List<? extends CommodityMetalBrand> getBrand() {
+			return brand;
+		}
+		
+		@Override
+		@RosettaAttribute("grade")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("grade")
+		public List<? extends CommodityMetalGrade> getGrade() {
+			return grade;
+		}
+		
+		@Override
+		public Metal build() {
+			return this;
+		}
+		
+		@Override
+		public Metal.MetalBuilder toBuilder() {
+			Metal.MetalBuilder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(Metal.MetalBuilder builder) {
+			ofNullable(getMaterial()).ifPresent(builder::setMaterial);
+			ofNullable(getShape()).ifPresent(builder::setShape);
+			ofNullable(getBrand()).ifPresent(builder::setBrand);
+			ofNullable(getGrade()).ifPresent(builder::setGrade);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			Metal _that = getType().cast(o);
+		
+			if (!Objects.equals(material, _that.getMaterial())) return false;
+			if (!ListEquals.listEquals(shape, _that.getShape())) return false;
+			if (!ListEquals.listEquals(brand, _that.getBrand())) return false;
+			if (!ListEquals.listEquals(grade, _that.getGrade())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (material != null ? material.hashCode() : 0);
+			_result = 31 * _result + (shape != null ? shape.hashCode() : 0);
+			_result = 31 * _result + (brand != null ? brand.hashCode() : 0);
+			_result = 31 * _result + (grade != null ? grade.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "Metal {" +
+				"material=" + this.material + ", " +
+				"shape=" + this.shape + ", " +
+				"brand=" + this.brand + ", " +
+				"grade=" + this.grade +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of Metal  ***********************/
+	class MetalBuilderImpl implements Metal.MetalBuilder {
+	
+		protected Material.MaterialBuilder material;
+		protected List<CommodityMetalShape.CommodityMetalShapeBuilder> shape = new ArrayList<>();
+		protected List<CommodityMetalBrand.CommodityMetalBrandBuilder> brand = new ArrayList<>();
+		protected List<CommodityMetalGrade.CommodityMetalGradeBuilder> grade = new ArrayList<>();
+		
+		@Override
+		@RosettaAttribute("material")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("material")
+		public Material.MaterialBuilder getMaterial() {
+			return material;
+		}
+		
+		@Override
+		public Material.MaterialBuilder getOrCreateMaterial() {
+			Material.MaterialBuilder result;
+			if (material!=null) {
+				result = material;
+			}
+			else {
+				result = material = Material.builder();
+			}
+			
+			return result;
+		}
+		
+		@Override
+		@RosettaAttribute("shape")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("shape")
+		public List<? extends CommodityMetalShape.CommodityMetalShapeBuilder> getShape() {
+			return shape;
+		}
+		
+		@Override
+		public CommodityMetalShape.CommodityMetalShapeBuilder getOrCreateShape(int index) {
+			if (shape==null) {
+				this.shape = new ArrayList<>();
+			}
+			return getIndex(shape, index, () -> {
+						CommodityMetalShape.CommodityMetalShapeBuilder newShape = CommodityMetalShape.builder();
+						return newShape;
+					});
+		}
+		
+		@Override
+		@RosettaAttribute("brand")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("brand")
+		public List<? extends CommodityMetalBrand.CommodityMetalBrandBuilder> getBrand() {
+			return brand;
+		}
+		
+		@Override
+		public CommodityMetalBrand.CommodityMetalBrandBuilder getOrCreateBrand(int index) {
+			if (brand==null) {
+				this.brand = new ArrayList<>();
+			}
+			return getIndex(brand, index, () -> {
+						CommodityMetalBrand.CommodityMetalBrandBuilder newBrand = CommodityMetalBrand.builder();
+						return newBrand;
+					});
+		}
+		
+		@Override
+		@RosettaAttribute("grade")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("grade")
+		public List<? extends CommodityMetalGrade.CommodityMetalGradeBuilder> getGrade() {
+			return grade;
+		}
+		
+		@Override
+		public CommodityMetalGrade.CommodityMetalGradeBuilder getOrCreateGrade(int index) {
+			if (grade==null) {
+				this.grade = new ArrayList<>();
+			}
+			return getIndex(grade, index, () -> {
+						CommodityMetalGrade.CommodityMetalGradeBuilder newGrade = CommodityMetalGrade.builder();
+						return newGrade;
+					});
+		}
+		
+		@RosettaAttribute("material")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("material")
+		@Override
+		public Metal.MetalBuilder setMaterial(Material _material) {
+			this.material = _material == null ? null : _material.toBuilder();
+			return this;
+		}
+		
+		@RosettaAttribute("shape")
+		@Accessor(AccessorType.ADDER)
+		@Multi
+		@RuneAttribute("shape")
+		@Override
+		public Metal.MetalBuilder addShape(CommodityMetalShape _shape) {
+			if (_shape != null) {
+				this.shape.add(_shape.toBuilder());
+			}
+			return this;
+		}
+		
+		@Override
+		public Metal.MetalBuilder addShape(CommodityMetalShape _shape, int idx) {
+			getIndex(this.shape, idx, () -> _shape.toBuilder());
+			return this;
+		}
+		
+		@Override
+		public Metal.MetalBuilder addShape(List<? extends CommodityMetalShape> shapes) {
+			if (shapes != null) {
+				for (final CommodityMetalShape toAdd : shapes) {
+					this.shape.add(toAdd.toBuilder());
+				}
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("shape")
+		@Accessor(AccessorType.SETTER)
+		@Multi
+		@RuneAttribute("shape")
+		@Override
+		public Metal.MetalBuilder setShape(List<? extends CommodityMetalShape> shapes) {
+			if (shapes == null) {
+				this.shape = new ArrayList<>();
+			} else {
+				this.shape = shapes.stream()
+					.map(_a->_a.toBuilder())
+					.collect(Collectors.toCollection(()->new ArrayList<>()));
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("brand")
+		@Accessor(AccessorType.ADDER)
+		@Multi
+		@RuneAttribute("brand")
+		@Override
+		public Metal.MetalBuilder addBrand(CommodityMetalBrand _brand) {
+			if (_brand != null) {
+				this.brand.add(_brand.toBuilder());
+			}
+			return this;
+		}
+		
+		@Override
+		public Metal.MetalBuilder addBrand(CommodityMetalBrand _brand, int idx) {
+			getIndex(this.brand, idx, () -> _brand.toBuilder());
+			return this;
+		}
+		
+		@Override
+		public Metal.MetalBuilder addBrand(List<? extends CommodityMetalBrand> brands) {
+			if (brands != null) {
+				for (final CommodityMetalBrand toAdd : brands) {
+					this.brand.add(toAdd.toBuilder());
+				}
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("brand")
+		@Accessor(AccessorType.SETTER)
+		@Multi
+		@RuneAttribute("brand")
+		@Override
+		public Metal.MetalBuilder setBrand(List<? extends CommodityMetalBrand> brands) {
+			if (brands == null) {
+				this.brand = new ArrayList<>();
+			} else {
+				this.brand = brands.stream()
+					.map(_a->_a.toBuilder())
+					.collect(Collectors.toCollection(()->new ArrayList<>()));
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("grade")
+		@Accessor(AccessorType.ADDER)
+		@Multi
+		@RuneAttribute("grade")
+		@Override
+		public Metal.MetalBuilder addGrade(CommodityMetalGrade _grade) {
+			if (_grade != null) {
+				this.grade.add(_grade.toBuilder());
+			}
+			return this;
+		}
+		
+		@Override
+		public Metal.MetalBuilder addGrade(CommodityMetalGrade _grade, int idx) {
+			getIndex(this.grade, idx, () -> _grade.toBuilder());
+			return this;
+		}
+		
+		@Override
+		public Metal.MetalBuilder addGrade(List<? extends CommodityMetalGrade> grades) {
+			if (grades != null) {
+				for (final CommodityMetalGrade toAdd : grades) {
+					this.grade.add(toAdd.toBuilder());
+				}
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("grade")
+		@Accessor(AccessorType.SETTER)
+		@Multi
+		@RuneAttribute("grade")
+		@Override
+		public Metal.MetalBuilder setGrade(List<? extends CommodityMetalGrade> grades) {
+			if (grades == null) {
+				this.grade = new ArrayList<>();
+			} else {
+				this.grade = grades.stream()
+					.map(_a->_a.toBuilder())
+					.collect(Collectors.toCollection(()->new ArrayList<>()));
+			}
+			return this;
+		}
+		
+		@Override
+		public Metal build() {
+			return new Metal.MetalImpl(this);
+		}
+		
+		@Override
+		public Metal.MetalBuilder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public Metal.MetalBuilder prune() {
+			if (material!=null && !material.prune().hasData()) material = null;
+			shape = shape.stream().filter(b->b!=null).<CommodityMetalShape.CommodityMetalShapeBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
+			brand = brand.stream().filter(b->b!=null).<CommodityMetalBrand.CommodityMetalBrandBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
+			grade = grade.stream().filter(b->b!=null).<CommodityMetalGrade.CommodityMetalGradeBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getMaterial()!=null && getMaterial().hasData()) return true;
+			if (getShape()!=null && getShape().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
+			if (getBrand()!=null && getBrand().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
+			if (getGrade()!=null && getGrade().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public Metal.MetalBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			Metal.MetalBuilder o = (Metal.MetalBuilder) other;
+			
+			merger.mergeRosetta(getMaterial(), o.getMaterial(), this::setMaterial);
+			merger.mergeRosetta(getShape(), o.getShape(), this::getOrCreateShape);
+			merger.mergeRosetta(getBrand(), o.getBrand(), this::getOrCreateBrand);
+			merger.mergeRosetta(getGrade(), o.getGrade(), this::getOrCreateGrade);
+			
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			Metal _that = getType().cast(o);
+		
+			if (!Objects.equals(material, _that.getMaterial())) return false;
+			if (!ListEquals.listEquals(shape, _that.getShape())) return false;
+			if (!ListEquals.listEquals(brand, _that.getBrand())) return false;
+			if (!ListEquals.listEquals(grade, _that.getGrade())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (material != null ? material.hashCode() : 0);
+			_result = 31 * _result + (shape != null ? shape.hashCode() : 0);
+			_result = 31 * _result + (brand != null ? brand.hashCode() : 0);
+			_result = 31 * _result + (grade != null ? grade.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "MetalBuilder {" +
+				"material=" + this.material + ", " +
+				"shape=" + this.shape + ", " +
+				"brand=" + this.brand + ", " +
+				"grade=" + this.grade +
+			'}';
+		}
+	}
+}

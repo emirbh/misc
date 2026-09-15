@@ -1,0 +1,15 @@
+{
+  "id" : "test-pack-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-esma-emir-trade-etd",
+  "pipelineId" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-esma-emir-trade",
+  "name" : "Etd",
+  "samples" : [ {
+    "id" : "mockup-etd",
+    "name" : "mockup etd",
+    "inputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/etd/mockup-etd.json",
+    "outputPath" : "regulatory-reporting/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/esma-emir-trade/etd/mockup-etd.json",
+    "assertions" : {
+      "modelValidationFailures" : 29,
+      "runtimeError" : false
+    }
+  } ]
+}

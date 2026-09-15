@@ -1,0 +1,57 @@
+package drr.regulation.common.trade.quantity.reports;
+
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.expression.CardinalityOperator;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.reports.ReportFunction;
+import drr.base.qualification.product.functions.IsSingleCommodityPayoutProduct;
+import drr.base.trade.functions.ProductForEvent;
+import drr.regulation.common.TransactionReportInstruction;
+import drr.regulation.common.trade.quantity.functions.QuantityFrequency;
+import drr.regulation.common.trade.reports.PayoutLeg1Rule;
+import drr.standards.iso.FrequencyPeriodEnum;
+import javax.inject.Inject;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+@ImplementedBy(QuantityFrequencyPeriodLeg1Rule.QuantityFrequencyPeriodLeg1RuleDefault.class)
+public abstract class QuantityFrequencyPeriodLeg1Rule implements ReportFunction<TransactionReportInstruction, FrequencyPeriodEnum> {
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected IsSingleCommodityPayoutProduct isSingleCommodityPayoutProduct;
+	@Inject protected PayoutLeg1Rule payoutLeg1Rule;
+	@Inject protected ProductForEvent productForEvent;
+	@Inject protected QuantityFrequency quantityFrequency;
+
+	/**
+	* @param input 
+	* @return output 
+	*/
+	@Override
+	public FrequencyPeriodEnum evaluate(TransactionReportInstruction input) {
+		FrequencyPeriodEnum output = doEvaluate(input);
+		
+		return output;
+	}
+
+	protected abstract FrequencyPeriodEnum doEvaluate(TransactionReportInstruction input);
+
+	public static class QuantityFrequencyPeriodLeg1RuleDefault extends QuantityFrequencyPeriodLeg1Rule {
+		@Override
+		protected FrequencyPeriodEnum doEvaluate(TransactionReportInstruction input) {
+			FrequencyPeriodEnum output = null;
+			return assignOutput(output, input);
+		}
+		
+		protected FrequencyPeriodEnum assignOutput(FrequencyPeriodEnum output, TransactionReportInstruction input) {
+			if (areEqual(MapperS.of(isSingleCommodityPayoutProduct.evaluate(productForEvent.evaluate(input))), MapperS.of(false), CardinalityOperator.All).getOrDefault(false)) {
+				output = MapperS.of(quantityFrequency.evaluate(payoutLeg1Rule.evaluate(input))).<FrequencyPeriodEnum>map("getPeriod", _quantityFrequency -> _quantityFrequency.getPeriod()).get();
+			} else {
+				output = null;
+			}
+			
+			return output;
+		}
+	}
+}

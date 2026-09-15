@@ -1,0 +1,42 @@
+package iso20022.auth030.mas.validation.exists;
+
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import iso20022.auth030.mas.CommonTradeDataReport71__4;
+import iso20022.auth030.mas.CounterpartySpecificData36__2;
+import iso20022.auth030.mas.TechnicalAttributes5__1;
+import iso20022.auth030.mas.TradeData43__4;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class TradeData43__4OnlyExistsValidator implements ValidatorWithArg<TradeData43__4, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends TradeData43__4> ValidationResult<TradeData43__4> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("ctrPtySpcfcData", ExistenceChecker.isSet((CounterpartySpecificData36__2) o.getCtrPtySpcfcData()))
+				.put("cmonTradData", ExistenceChecker.isSet((CommonTradeDataReport71__4) o.getCmonTradData()))
+				.put("techAttrbts", ExistenceChecker.isSet((TechnicalAttributes5__1) o.getTechAttrbts()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("TradeData43__4", ValidationResult.ValidationType.ONLY_EXISTS, "TradeData43__4", path, "");
+		}
+		return failure("TradeData43__4", ValidationResult.ValidationType.ONLY_EXISTS, "TradeData43__4", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

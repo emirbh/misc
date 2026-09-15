@@ -1,0 +1,75 @@
+{
+  "actionType" : "NEWT",
+  "callAmount" : 1000000,
+  "callCurrency" : "USD",
+  "cleared" : "N",
+  "counterparty1" : "549300ZK53CNGEEI6A29",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "R0MUWSFPU8MPRO8K5P83",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "D97J9JTCprimaryDTCCEU02024-04-29T00:00Z",
+    "primaryAssetClass" : "ForeignExchange",
+    "submittedForParty" : "549300ZK53CNGEEI6A29",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "FXVANILLAOPTIONEXE01"
+  },
+  "effectiveDate" : "2020-12-03",
+  "eventTimestamp" : "2020-12-03T15:24:36Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2020-12-03T15:22:41Z",
+  "expirationDate" : "2021-06-03",
+  "firstExerciseDate" : "2021-06-03",
+  "leg1" : {
+    "notionalAmount" : 104300000,
+    "notionalCurrency" : "JPY",
+    "settlementCurrency" : "JPY"
+  },
+  "leg2" : {
+    "notionalAmount" : 1000000,
+    "notionalCurrency" : "USD"
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "OptionExerciseStyle" : "EURO",
+          "OptionType" : "CALL",
+          "OtherUnderlierID" : "USD",
+          "OtherUnderlierIDSource" : "CCY",
+          "UnderlierID" : "JPY",
+          "UnderlierIDSource" : "CCY"
+        },
+        "Header" : {
+          "AssetClass" : "Foreign_Exchange",
+          "InstrumentType" : "Option",
+          "Level" : "UPI",
+          "UseCase" : "Vanilla_Option"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "optionPremiumAmount" : 0,
+  "optionPremiumCurrency" : "USD",
+  "packageIndicator" : false,
+  "platformIdentifier" : "XXXX",
+  "postPricedSwapIndicator" : false,
+  "putAmount" : 104300000,
+  "putCurrency" : "JPY",
+  "reportSubmittingEntityID" : "549300ZK53CNGEEI6A29",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "strikePrice" : {
+    "monetary" : 104.3
+  },
+  "strikePriceCurrency" : "USD/JPY",
+  "strikePriceNotation" : "Monetary",
+  "uniqueTransactionIdentifier" : "UTIFXVANILLAOPTI0224"
+}

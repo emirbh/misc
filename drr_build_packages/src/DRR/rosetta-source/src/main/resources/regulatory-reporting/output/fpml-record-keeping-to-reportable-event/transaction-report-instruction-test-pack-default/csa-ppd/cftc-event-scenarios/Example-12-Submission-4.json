@@ -1,0 +1,73 @@
+{
+  "actionType" : "MODI",
+  "amendmentIndicator" : true,
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2IdentifierSource" : "LEID",
+  "counterparty2IdentifierType" : true,
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageTypePPD" : "RT",
+    "primaryAssetClass" : "Credit",
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC" ],
+    "tradeParty1TransactionID" : "1370814201P1P1YU87UJ",
+    "underlyingAsset" : [ {
+      "underlyingAssetID" : "CDX.NA.HY.18",
+      "underlyingAssetIDType" : "Index"
+    }, {
+      "underlyingAssetID" : "USX17N16O151",
+      "underlyingAssetIDType" : "REDID"
+    } ],
+    "underlyingAssetName" : [ "CDX.NA.HY.18" ],
+    "versionPPD" : "PPD1.0"
+  },
+  "effectiveDate" : "2022-02-11",
+  "eventTimestamp" : "2018-04-01T09:00:00Z",
+  "eventType" : "CREV",
+  "executionTimestamp" : "2018-04-01T15:01:30Z",
+  "expirationDate" : "2023-07-20",
+  "leg1" : {
+    "fixedRate" : 0.05,
+    "notionalAmount" : 18000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "MNTH",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 3
+    }
+  },
+  "nonReportable" : {
+    "deliveryType" : "OPTL",
+    "executionVenueType" : "OffFacility",
+    "instrumentType" : "Swap",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "OPTL",
+          "Underlying" : {
+            "UnderlierIDSource" : "CRIDX",
+            "UnderlyingInstrumentIndexTermUnit" : "YEAR"
+          },
+          "UnderlyingIssuerType" : "Corporate"
+        },
+        "Header" : {
+          "AssetClass" : "Credit",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Index"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "underlyingAssetType" : "Index"
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIEXAMPLESUBMIS0262"
+}

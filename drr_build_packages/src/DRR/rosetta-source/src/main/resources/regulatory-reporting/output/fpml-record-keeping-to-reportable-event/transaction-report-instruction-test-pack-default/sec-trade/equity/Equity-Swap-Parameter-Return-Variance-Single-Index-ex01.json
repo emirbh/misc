@@ -1,0 +1,69 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "buyerIdentifier" : "DUMMYLEI010000000037",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI020000000085",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI010000000037",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "DTDApproved2407119003DFCFTCRiskNewNewEquity2024-04-29T00:00Z",
+    "primaryAssetClass" : "Equity",
+    "submittedForParty" : "DUMMYLEI020000000085",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC" ],
+    "tradeParty1TransactionID" : "EQUITYSWAPPARAMETE01",
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "underlyingAsset" : [ {
+      "underlyingAssetID" : ".SPX",
+      "underlyingAssetIDType" : "RIC"
+    }, {
+      "underlyingAssetID" : "IE0031442068",
+      "underlyingAssetIDType" : "ISIN"
+    } ]
+  },
+  "effectiveDate" : "2022-02-07",
+  "eventIdentifier" : "DTDApproved2407119003DFCFTCRiskNewNewEquity",
+  "eventTimestamp" : "2022-02-07T10:42:17Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2022-02-07T10:36:37Z",
+  "jurisdiction" : "CFTC",
+  "leg1" : {
+    "notionalAmount" : 1000,
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "DUMMYLEI020000000085",
+    "receiverIdentifier" : "DUMMYLEI010000000037",
+    "settlementCurrency" : "USD"
+  },
+  "leg2" : {
+    "settlementCurrency" : "USD"
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "USD"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI020000000085",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "sellerIdentifier" : "DUMMYLEI020000000085",
+  "uniqueTransactionIdentifier" : "UTIEQUITYSWAPPAR0241"
+}

@@ -1,0 +1,49 @@
+package fpml.consolidated.loan.validation.exists;
+
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.loan.PartyProfile;
+import fpml.consolidated.loan.PartyProfileChoice;
+import fpml.consolidated.loan.PartyProfileDocumentation;
+import fpml.consolidated.loan.PartyProfileIdentifier;
+import fpml.consolidated.shared.PartyReference;
+import fpml.consolidated.shared.RelatedParty;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class PartyProfileOnlyExistsValidator implements ValidatorWithArg<PartyProfile, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends PartyProfile> ValidationResult<PartyProfile> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("partyProfileIdentifier", ExistenceChecker.isSet((List<? extends PartyProfileIdentifier>) o.getPartyProfileIdentifier()))
+				.put("effectiveDate", ExistenceChecker.isSet((ZonedDateTime) o.getEffectiveDate()))
+				.put("partyReference", ExistenceChecker.isSet((PartyReference) o.getPartyReference()))
+				.put("relatedParty", ExistenceChecker.isSet((List<? extends RelatedParty>) o.getRelatedParty()))
+				.put("documentation", ExistenceChecker.isSet((PartyProfileDocumentation) o.getDocumentation()))
+				.put("partyProfileChoice", ExistenceChecker.isSet((List<? extends PartyProfileChoice>) o.getPartyProfileChoice()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("PartyProfile", ValidationResult.ValidationType.ONLY_EXISTS, "PartyProfile", path, "");
+		}
+		return failure("PartyProfile", ValidationResult.ValidationType.ONLY_EXISTS, "PartyProfile", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

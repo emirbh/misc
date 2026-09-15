@@ -1,0 +1,67 @@
+{
+  "actionType" : "NEWT",
+  "assetClass" : "EQUI",
+  "basketConstituents" : [ {
+    "identifier" : "BHP.AX",
+    "source" : "RIC"
+  } ],
+  "beneficiary1" : "DUMMYLEI010000000037",
+  "beneficiary1IdentifierTypeIndicator" : true,
+  "cleared" : "N",
+  "collateralPortfolioIndicator" : false,
+  "contractType" : "SWAP",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2IdentifierType" : true,
+  "effectiveDate" : "2022-02-14",
+  "entityResponsibleForReporting" : "DUMMYLEI010000000037",
+  "eventIdentifier" : "PrimeSwpConfirmed1P657190100DFCFTCRiskNewNe",
+  "eventTimestamp" : "2022-02-10T09:14:38Z",
+  "eventType" : "ALOC",
+  "executionTimestamp" : "2022-02-10T09:14:32Z",
+  "leg1" : {
+    "direction2" : "TAKE",
+    "notionalAmount" : 90000,
+    "notionalCurrency" : "USD",
+    "settlementCurrency" : "USD",
+    "totalNotionalQuantity" : 9999999999999999999999999
+  },
+  "leg2" : {
+    "direction2" : "MAKE",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRateIndicator" : "SOFR",
+      "floatingRateReferencePeriod" : "DAIL",
+      "floatingRateReferencePeriodMultiplier" : 1
+    },
+    "settlementCurrency" : "USD"
+  },
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "USD",
+          "UnderlierID" : "USD-SOFR-COMPOUND"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "price" : {
+    "monetary" : 3000
+  },
+  "priceCurrency" : "USD",
+  "priceNotation" : "Monetary",
+  "priceUnitOfMeasure" : "SHAS",
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "secondaryTransactionIdentifier" : "EQUITYPORTFOLIOSWA01",
+  "underlyingIdentificationType" : "B",
+  "uniqueTransactionIdentifier" : "UTIEQUITYPORTFOL0388"
+}

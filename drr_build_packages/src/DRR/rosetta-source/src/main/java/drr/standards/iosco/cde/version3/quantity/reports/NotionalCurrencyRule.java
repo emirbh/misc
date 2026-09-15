@@ -1,0 +1,43 @@
+package drr.standards.iosco.cde.version3.quantity.reports;
+
+import cdm.base.staticdata.asset.common.ISOCurrencyCodeEnum;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.reports.ReportFunction;
+import drr.base.trade.PayoutLegWithAuxiliary;
+import javax.inject.Inject;
+
+
+@ImplementedBy(NotionalCurrencyRule.NotionalCurrencyRuleDefault.class)
+public abstract class NotionalCurrencyRule implements ReportFunction<PayoutLegWithAuxiliary, ISOCurrencyCodeEnum> {
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected drr.standards.iosco.cde.version2.quantity.reports.NotionalCurrencyRule notionalCurrencyRule;
+
+	/**
+	* @param input 
+	* @return output 
+	*/
+	@Override
+	public ISOCurrencyCodeEnum evaluate(PayoutLegWithAuxiliary input) {
+		ISOCurrencyCodeEnum output = doEvaluate(input);
+		
+		return output;
+	}
+
+	protected abstract ISOCurrencyCodeEnum doEvaluate(PayoutLegWithAuxiliary input);
+
+	public static class NotionalCurrencyRuleDefault extends NotionalCurrencyRule {
+		@Override
+		protected ISOCurrencyCodeEnum doEvaluate(PayoutLegWithAuxiliary input) {
+			ISOCurrencyCodeEnum output = null;
+			return assignOutput(output, input);
+		}
+		
+		protected ISOCurrencyCodeEnum assignOutput(ISOCurrencyCodeEnum output, PayoutLegWithAuxiliary input) {
+			output = notionalCurrencyRule.evaluate(input);
+			
+			return output;
+		}
+	}
+}

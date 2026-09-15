@@ -1,0 +1,77 @@
+{
+  "actionType" : "CORR",
+  "allocationIndicator" : "UNAL",
+  "cleared" : "N",
+  "counterparty1" : "213800WWTABZ1GOJHH37",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "213800IV9PCAC364HN60",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "001229414555123459991234569BR7771234567892024-04-29T00:00Z",
+    "primaryAssetClass" : "Commodity",
+    "submittedForParty" : "213800WWTABZ1GOJHH37",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ]
+  },
+  "effectiveDate" : "2014-01-01",
+  "eventIdentifier" : "001229414555123459991234569BR777123456789",
+  "eventTimestamp" : "2020-11-16T00:00:00Z",
+  "executionTimestamp" : "2022-03-17T14:44:58Z",
+  "expirationDate" : "2014-12-31",
+  "finalContractualSettlementDate" : "2014-12-31",
+  "leg1" : {
+    "notionalAmount" : 1074560,
+    "notionalCurrency" : "CAD",
+    "payerIdentifier" : "213800IV9PCAC364HN60",
+    "receiverIdentifier" : "213800WWTABZ1GOJHH37",
+    "totalNotionalQuantity" : 292000
+  },
+  "leg2" : {
+    "notionalAmount" : 1074560,
+    "notionalCurrency" : "CAD",
+    "payerIdentifier" : "213800WWTABZ1GOJHH37",
+    "receiverIdentifier" : "213800IV9PCAC364HN60",
+    "settlementCurrency" : "CAD",
+    "spread" : {
+      "monetary" : 10
+    },
+    "spreadCurrency" : "CAD",
+    "spreadNotation" : "Monetary",
+    "totalNotionalQuantity" : 292000
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "ReturnorPayoutTrigger" : "Total Return",
+          "UnderlierID" : "NATURAL GAS-AECO C/NIT (US$/MMBTU)-CANADIAN GAS REPORTER",
+          "UnderlierIDSource" : "COMM"
+        },
+        "Header" : {
+          "AssetClass" : "Commodities",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Swap"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "price" : {
+    "monetary" : 3.68
+  },
+  "priceCurrency" : "CAD",
+  "priceNotation" : "Monetary",
+  "reportSubmittingEntityID" : "213800WWTABZ1GOJHH37",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTICOMMODITYSWAP0263"
+}

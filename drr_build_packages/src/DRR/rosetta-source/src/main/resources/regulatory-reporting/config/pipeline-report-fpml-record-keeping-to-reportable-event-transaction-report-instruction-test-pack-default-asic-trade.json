@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-asic-trade",
+  "name" : "ASIC / Trade",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.asic.rewrite.trade.reports.ASICTradeReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.asic.rewrite.trade.ASICTransactionReport"
+  },
+  "upstreamPipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default"
+}

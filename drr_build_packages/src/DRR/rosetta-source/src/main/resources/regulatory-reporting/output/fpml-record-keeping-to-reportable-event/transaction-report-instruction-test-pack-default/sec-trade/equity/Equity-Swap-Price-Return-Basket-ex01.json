@@ -1,0 +1,68 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "cleared" : "N",
+  "counterparty1" : "213800WWTABZ1GOJHH37",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "213800IV9PCAC364HN60",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "058607556555123459991234569BR7771234567892024-04-29T00:00Z",
+    "primaryAssetClass" : "Equity",
+    "submittedForParty" : "213800WWTABZ1GOJHH37",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "underlyingAsset" : [ {
+      "underlyingAssetIDType" : "Basket"
+    } ]
+  },
+  "effectiveDate" : "2021-12-06",
+  "eventTimestamp" : "2021-12-06T17:09:12Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2021-12-06T17:09:12Z",
+  "jurisdiction" : "CFTC",
+  "leg1" : {
+    "notionalAmount" : 100000000,
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "213800IV9PCAC364HN60",
+    "receiverIdentifier" : "213800WWTABZ1GOJHH37",
+    "settlementCurrency" : "USD"
+  },
+  "leg2" : {
+    "notionalAmount" : 100000000,
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "213800WWTABZ1GOJHH37",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004"
+    },
+    "receiverIdentifier" : "213800IV9PCAC364HN60",
+    "settlementCurrency" : "USD"
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "USD"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "213800WWTABZ1GOJHH37",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIEQUITYSWAPPRI0251"
+}

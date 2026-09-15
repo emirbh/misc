@@ -1,0 +1,255 @@
+namespace drr.regulation.fca.ukemir.refit.trade
+version "${project.version}"
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.emir.contract.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.fca.*
+import drr.regulation.fca.ukemir.*
+import drr.regulation.fca.ukemir.refit.*
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+report FCA UKEMIR Trade in T+1
+  	from TransactionReportInstruction
+  	when ReportableProduct
+  	with type FCAUKEMIRTransactionReport
+
+// Test Eligibility Rule
+eligibility rule ReportableProduct from TransactionReportInstruction: <"When eligible for JFSA">
+    [docReference FCA UKEMIR Trade article "9" paragraph "1"
+        provision "Counterparties and CCPs shall ensure that the details of any derivative contract they have concluded and of any modification or termination of the contract are reported to a trade repository registered in accordance with Article 55 or recognised in accordance with Article 77. The details shall be reported no later than the working day following the conclusion, modification or termination of the contract."]
+    extract True
+
+// UK EMIR Definitions
+reporting rule NatureOfCounterparty1 from TransactionReportInstruction: <"Nature of the Counterparty 1">
+    filter IsAllowableAction
+    then extract
+        ExtractNatureOfCounterparty(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty,
+                        UKEMIR,
+                        FCA
+                    ) -> fcaPartyInformation -> natureOfParty
+            )
+
+reporting rule CorporateSectorOfTheCounterparty1 from TransactionReportInstruction: <"Corporate sector of the counterparty 1">
+    filter IsAllowableAction
+    then common.party.ExtractPartySector(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty,
+                        UKEMIR,
+                        FCA
+                    ) -> fcaPartyInformation -> natureOfParty,
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty,
+                        UKEMIR,
+                        FCA
+                    ) -> fcaPartyInformation -> corporateSector
+            )
+
+reporting rule ClearingThresholdOfCounterparty1 from TransactionReportInstruction: <"Clearing Threshold of Counterparty 1">
+    [docReference FCA UKEMIR Trade table "1" dataElement "7" field "Clearing Threshold of Counterparty 1"
+        provision "Information whether counterparty 1 is above the clearing threshold referred to in Article 4a or 10 of Regulation (EU) No 648/2012 at the date when the transaction was concluded."]
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingParty,
+                UKEMIR,
+                FCA
+            )
+    then filter
+        ([NatureOfPartyEnum -> Financial, NatureOfPartyEnum -> NonFinancial] any = fcaPartyInformation -> natureOfParty)
+    then extract fcaPartyInformation -> exceedsClearingThreshold
+
+// CDE logic is returning same LEI as Cpty 1
+reporting rule NatureOfTheCounterparty2 from TransactionReportInstruction: <"Nature of the Counterparty 2">
+    filter IsAllowableAction
+    then extract
+        ExtractNatureOfCounterparty(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty,
+                        UKEMIR,
+                        FCA
+                    ) -> fcaPartyInformation -> natureOfParty
+            )
+
+reporting rule CorporateSectorOfTheCounterparty2 from TransactionReportInstruction: <"Corporate sector of the counterparty 2">
+    filter IsAllowableAction
+    then common.party.ExtractPartySector(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty,
+                        UKEMIR,
+                        FCA
+                    ) -> fcaPartyInformation -> natureOfParty,
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty,
+                        UKEMIR,
+                        FCA
+                    ) -> fcaPartyInformation -> corporateSector
+            )
+
+reporting rule ClearingThresholdOfCounterparty2 from TransactionReportInstruction: <"Clearing Threshold of Counterparty 2">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingCounterparty,
+                UKEMIR,
+                FCA
+            ) -> fcaPartyInformation
+    then filter
+        ([NatureOfPartyEnum -> Financial, NatureOfPartyEnum -> NonFinancial] any = natureOfParty)
+    then extract exceedsClearingThreshold
+
+reporting rule ReportingObligationOfTheCounterparty2 from TransactionReportInstruction: <"Reporting obligation of the counterparty 2">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingCounterparty,
+                UKEMIR,
+                FCA
+            ) -> fcaPartyInformation
+    then filter
+        ([NatureOfPartyEnum -> Financial, NatureOfPartyEnum -> NonFinancial] any = natureOfParty)
+    then extract
+        (natureOfParty = NatureOfPartyEnum -> Financial
+            or (natureOfParty = NatureOfPartyEnum -> NonFinancial
+                and exceedsClearingThreshold = True))
+
+reporting rule DirectlyLinkedToCommercialActivityOrTreasuryFinancing from TransactionReportInstruction: <"Directly linked to commercial activity or treasury financing">
+    filter IsAllowableAction
+    then extract
+        common.party.ExtractRegimeInformation(
+                item,
+                item -> reportingSide -> reportingParty,
+                UKEMIR,
+                FCA
+            )
+    then filter fcaPartyInformation -> natureOfParty = NatureOfPartyEnum -> NonFinancial
+    then extract fcaPartyInformation -> directlyLinkedActivity
+
+reporting rule ExecutionAgentReportingParty from TransactionReportInstruction: <"Execution Agent for the Reporting Counterparty">
+    filter IsAllowableAction or IsActionTypeEROR or IsActionTypeVALU or IsActionTypeTERM
+    then extract
+        if common.party.ExecutionAgentCounterparty1 = "NOAP"
+        then empty
+        else common.party.ExecutionAgentCounterparty1
+
+reporting rule ExecutionAgentReportingCounterparty from TransactionReportInstruction: <"Execution Agent for the Other Counterparty">
+    filter IsAllowableAction or IsActionTypeEROR or IsActionTypeVALU or IsActionTypeTERM
+    then extract
+        if common.party.ExecutionAgentCounterparty2 = "NOAP"
+        then empty
+        else common.party.ExecutionAgentCounterparty2
+
+reporting rule UTIFCAValue from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC"> //do ESMA mean Trade or Transaction?
+    uti.GetUniqueTransactionIdentifier(item -> reportableInformation, FCA, empty, item)
+
+reporting rule UTI from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC"> //do ESMA mean Trade or Transaction?
+    UTIFCAValue then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UTIProprietary from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC"> //do ESMA mean Trade or Transaction?
+    UTIFCAValue then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule ReportTrackingNumber from TransactionReportInstruction: <"Report Tracking Number">
+    filter IsAllowableAction
+    then extract
+        if GetOrFetchMicData(
+                    reportableInformation -> enrichment -> micData,
+                    GetVenueOfExecution(reportableInformation)
+                ) -> countryCode = "GB"
+        then emir.ReportTrackingNumber
+
+reporting rule IndicatorOfTheUnderlyingIndex from TransactionReportInstruction: <"Indicator of the underlying index">
+    filter IsAllowableAction
+    then extract emir.IndicatorOfTheUnderlyingIndex
+    // FCA doesn't include as allowed values: "CORA", "HKIO", "TORF", "SIBO", "SSOR", "SORA"
+    then extract
+        if [IndexEnum -> CORA, IndexEnum -> HKIO, IndexEnum -> TORF, IndexEnum -> SIBO, IndexEnum -> SSOR, IndexEnum -> SORA] any = item
+        then empty
+        else item
+
+reporting rule Confirmed from TransactionReportInstruction: <"Confirmed">
+    filter IsAllowableAction
+    then extract
+        if IsCleared(originatingWorkflowStep) = False
+                and IsRegulatedMarketOrThirdCountryEquivalentMarket(
+                        reportableInformation,
+                        UKEMIR
+                    ) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then cde.execution.Confirmed
+
+reporting rule ClearingObligation from TransactionReportInstruction: <"Clearing Obligation">
+    filter IsAllowableAction
+    then extract EMIRClearingObligation(item, UKEMIR, FCA)
+
+reporting rule FloatingRateIndicatorLeg1 from TransactionReportInstruction:
+    extract emir.FloatingRateIndicatorLeg1
+    // FCA doesn't include as allowed values: "CORA", "HKIO", "TORF", "SIBO", "SSOR", "SORA"
+    then filter
+        ([IndexEnum -> CORA, IndexEnum -> HKIO, IndexEnum -> TORF, IndexEnum -> SIBO, IndexEnum -> SSOR, IndexEnum -> SORA]) all <> item
+
+reporting rule FloatingRateIndicatorLeg2 from TransactionReportInstruction:
+    extract emir.FloatingRateIndicatorLeg2
+    // FCA doesn't include as allowed values: "CORA", "HKIO", "TORF", "SIBO", "SSOR", "SORA"
+    then filter
+        ([IndexEnum -> CORA, IndexEnum -> HKIO, IndexEnum -> TORF, IndexEnum -> SIBO, IndexEnum -> SSOR, IndexEnum -> SORA]) all <> item
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index Factor">
+    filter IsAllowableAction
+    then extract ProductForEvent
+    then extract
+        if EconomicTermsForProduct(
+                (underlier.UnderlierForProduct) -> Product -> NonTransferableProduct
+            ) -> payout -> CreditDefaultPayout exists
+        then EconomicTermsForProduct(
+                    (underlier.UnderlierForProduct) -> Product -> NonTransferableProduct
+                ) -> payout -> CreditDefaultPayout
+        else if EconomicTermsForProduct -> payout -> CreditDefaultPayout exists
+        then EconomicTermsForProduct -> payout -> CreditDefaultPayout
+    then extract generalTerms -> indexReferenceInformation -> indexFactor
+    then FormatToBaseOneRate
+
+reporting rule VenueOfExecution from TransactionReportInstruction: <"Venue of Execution">
+    filter IsAllowableAction
+    then extract ExecutionVenue(item, UKEMIR)
+
+reporting rule ISIN from TransactionReportInstruction: <"ISIN">
+    filter IsAllowableAction
+    then extract ExecutionISIN(item, UKEMIR)
+
+reporting rule UPI from TransactionReportInstruction: <"UPI">
+    filter IsAllowableAction and ISIN is absent
+    then extract upi.UniqueProductIdentifier
+
+reporting rule Intragroup from TransactionReportInstruction: <"Intragroup">
+    extract
+        if IsRegulatedMarketOrThirdCountryEquivalentMarket(
+                    reportableInformation,
+                    RegimeNameEnum -> UKEMIR
+                ) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then common.party.Intragroup
+
+reporting rule EntityResponsibleForReporting from TransactionReportInstruction: <"Entity responsible for reporting">
+    extract
+        if IsRegulatedMarketOrThirdCountryEquivalentMarket(
+                    reportableInformation,
+                    RegimeNameEnum -> UKEMIR
+                ) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then common.party.EntityResponsibleForReporting

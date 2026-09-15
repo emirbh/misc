@@ -1,0 +1,63 @@
+package drr.regulation.hkma.rewrite.trade.reports;
+
+import cdm.product.asset.InterestRatePayout;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.expression.CardinalityOperator;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.reports.ReportFunction;
+import drr.base.qualification.product.functions.IsFRA;
+import drr.base.trade.functions.ProductForEvent;
+import drr.regulation.common.TransactionReportInstruction;
+import drr.regulation.common.trade.payment.functions.FloatingInterestRatePayoutFromPayout;
+import drr.regulation.common.trade.reports.PayoutLeg2Rule;
+import drr.regulation.common.trade.underlier.reports.FloatingRateReferencePeriodMultiplierRule;
+import drr.regulation.hkma.rewrite.trade.functions.IsAllowableActionForHKMA;
+import java.math.BigDecimal;
+import javax.inject.Inject;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+@ImplementedBy(FloatingRateReferencePeriodMultiplierLeg2Rule.FloatingRateReferencePeriodMultiplierLeg2RuleDefault.class)
+public abstract class FloatingRateReferencePeriodMultiplierLeg2Rule implements ReportFunction<TransactionReportInstruction, BigDecimal> {
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected FloatingInterestRatePayoutFromPayout floatingInterestRatePayoutFromPayout;
+	@Inject protected FloatingRateReferencePeriodMultiplierRule floatingRateReferencePeriodMultiplierRule;
+	@Inject protected IsAllowableActionForHKMA isAllowableActionForHKMA;
+	@Inject protected IsFRA isFRA;
+	@Inject protected PayoutLeg2Rule payoutLeg2Rule;
+	@Inject protected ProductForEvent productForEvent;
+
+	/**
+	* @param input 
+	* @return output 
+	*/
+	@Override
+	public BigDecimal evaluate(TransactionReportInstruction input) {
+		BigDecimal output = doEvaluate(input);
+		
+		return output;
+	}
+
+	protected abstract BigDecimal doEvaluate(TransactionReportInstruction input);
+
+	public static class FloatingRateReferencePeriodMultiplierLeg2RuleDefault extends FloatingRateReferencePeriodMultiplierLeg2Rule {
+		@Override
+		protected BigDecimal doEvaluate(TransactionReportInstruction input) {
+			BigDecimal output = null;
+			return assignOutput(output, input);
+		}
+		
+		protected BigDecimal assignOutput(BigDecimal output, TransactionReportInstruction input) {
+			final MapperS<TransactionReportInstruction> thenArg0 = MapperS.of(input)
+				.filterSingleNullSafe(item -> isAllowableActionForHKMA.evaluate(item.get()));
+			final MapperS<TransactionReportInstruction> thenArg1 = thenArg0
+				.filterSingleNullSafe(item -> areEqual(MapperS.of(isFRA.evaluate(productForEvent.evaluate(item.get()))), MapperS.of(false), CardinalityOperator.All).get());
+			final MapperS<InterestRatePayout> thenArg2 = MapperS.of(floatingInterestRatePayoutFromPayout.evaluate(payoutLeg2Rule.evaluate(thenArg1.get())));
+			output = MapperS.of(floatingRateReferencePeriodMultiplierRule.evaluate(thenArg2.get())).get();
+			
+			return output;
+		}
+	}
+}

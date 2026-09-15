@@ -1,0 +1,1132 @@
+namespace drr.regulation.hkma.rewrite.trade
+version "${project.version}"
+
+import cdm.base.math.*
+import cdm.base.staticdata.party.*
+import cdm.event.common.*
+import cdm.product.qualification.*
+
+import drr.base.*
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.enrichment.common.*
+import drr.regulation.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.hkma.*
+import drr.standards.*
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+report HKMA Trade in T+1
+  	from TransactionReportInstruction
+  	when ReportableProduct
+  	with type HKMATransactionReport
+
+eligibility rule ReportableProduct from TransactionReportInstruction:
+    [docReference HKMA Trade
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective Date">
+    filter IsAllowableActionForHKMA
+    then common.datetime.EffectiveDate
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"Expiration Date">
+    filter IsAllowableActionForHKMA
+    then common.datetime.ExpirationDate
+
+reporting rule EarlyTerminationDate from TransactionReportInstruction: <"Early termination date">
+    filter (IsActionTypeCORR or IsActionTypeTERM or IsActionTypeREVI)
+    then cde.datetime.EarlyTerminationDate
+
+reporting rule ExecutionTimestamp from TransactionReportInstruction: <"Execution Timestamp">
+    filter IsAllowableActionForHKMA or IsActionTypeTERM
+    then cde.datetime.ExecutionTimestamp
+
+// TH Comment Sprint 13/2025: In HKMA, parties may be identified by LEI, Natural Person, BIC, or other identifiers. The following modelling enables extraction and formatting of all supported types.
+reporting rule Counterparty2 from TransactionReportInstruction: <"Counterparty 2">
+    extract
+        if common.party.Counterparty2 exists
+        then common.party.Counterparty2
+        else (Extract_ReportingCounterparty
+            then Filter_HKMAPriorityPartyIdentifiers
+            then identifier)
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule Counterparty2IdentifierFormat from TransactionReportInstruction: <"Nature of the Counterparty 2">
+    extract reportInstruction [
+        extract reportingSide -> reportingCounterparty
+        then extract
+            if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                    only-element
+            then PartyIdentifierFormat2Enum -> NaturalPerson
+            else if partyId -> identifierType any = LEI
+            then Lei
+            else if partyId -> identifierType any = BIC
+            then SWIFTBIC
+            else Other
+    ]
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule Counterparty2SchemeName from TransactionReportInstruction: <"Counterparty 2 Scheme Name">
+    if Counterparty2IdentifierFormat = Other
+    then reportingSide -> reportingCounterparty
+        then Filter_HKMAPriorityPartyIdentifiers
+        then Extract_HKMASchemeName
+
+reporting rule BuyerIdentifier from TransactionReportInstruction: <"Buyer Identifier">
+    filter IsAllowableActionForHKMA
+    then extract
+        if PayerIdentifierLeg1 is absent
+                and PayerIdentifierLeg2 is absent
+                and ReceiverIdentifierLeg1 is absent
+                and ReceiverIdentifierLeg2 is absent
+        then cde.party.Direction1BuyerIdentifier
+
+reporting rule SellerIdentifier from TransactionReportInstruction: <"Seller Identifier">
+    filter IsAllowableActionForHKMA
+    then extract
+        if PayerIdentifierLeg1 is absent
+                and PayerIdentifierLeg2 is absent
+                and ReceiverIdentifierLeg1 is absent
+                and ReceiverIdentifierLeg2 is absent
+        then cde.party.Direction1SellerIdentifier
+
+reporting rule PayerIdentifierLeg1 from TransactionReportInstruction: <"Payer Identifier-Leg 1">
+    extract
+        PartyLeiAndPersonByRoles(
+                cde.party.PayerParty(common.PayoutLeg1, CounterpartiesForEvent),
+                reportingSide -> reportingParty
+            )
+
+reporting rule PayerIdentifierLeg2 from TransactionReportInstruction: <"Payer Identifier-Leg 2">
+    extract
+        PartyLeiAndPersonByRoles(
+                cde.party.PayerParty(common.PayoutLeg2, CounterpartiesForEvent),
+                reportingSide -> reportingParty
+            )
+
+reporting rule ReceiverIdentifierLeg1 from TransactionReportInstruction: <"Receiver Identifier-Leg 1">
+    extract
+        PartyLeiAndPersonByRoles(
+                cde.party.ReceiverParty(common.PayoutLeg1, CounterpartiesForEvent),
+                reportingSide -> reportingParty
+            )
+
+reporting rule ReceiverIdentifierLeg2 from TransactionReportInstruction: <"Receiver Identifier-Leg 2">
+    extract
+        PartyLeiAndPersonByRoles(
+                cde.party.ReceiverParty(common.PayoutLeg2, CounterpartiesForEvent),
+                reportingSide -> reportingParty
+            )
+
+reporting rule Direction1 from TransactionReportInstruction: <"Direction 1">
+    filter IsAllowableActionForHKMA
+    then cde.party.Direction1
+
+reporting rule Cleared from TransactionReportInstruction: <"Cleared">
+    filter IsAllowableActionForHKMA
+    then cde.execution.Cleared
+
+// TH Comment Sprint 13/2025: In HKMA, parties may be identified by LEI, Natural Person, BIC, or other identifiers. The following modelling enables extraction and formatting of all supported types.
+reporting rule CentralCounterparty from TransactionReportInstruction: <"Central Counterparty">
+    filter IsAllowableActionForHKMA
+    then if cde.execution.CentralCounterparty exists
+        then cde.execution.CentralCounterparty
+        else (Extract_CentralCounterparty
+            then Filter_HKMAPriorityPartyIdentifiers
+            then identifier)
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule CentralCounterpartyIdentifierFormat from TransactionReportInstruction: <"Central Counterparty Identifier Format">
+    extract reportInstruction [
+        extract Extract_CentralCounterparty
+        then extract
+            if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                    only-element
+            then PartyIdentifierFormat2Enum -> NaturalPerson
+            else if partyId -> identifierType any = LEI
+            then Lei
+            else if partyId -> identifierType any = BIC
+            then SWIFTBIC
+            else Other
+    ]
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule CentralCounterpartySchemeName from TransactionReportInstruction: <"Central Counterparty Scheme Name">
+    if CentralCounterpartyIdentifierFormat = Other
+    then Extract_CentralCounterparty
+        then Filter_HKMAPriorityPartyIdentifiers
+        then Extract_HKMASchemeName
+
+// TH Comment Sprint 13/2025: In HKMA, parties may be identified by LEI, Natural Person, BIC, or other identifiers. The following modelling enables extraction and formatting of all supported types.
+reporting rule ClearingMember from TransactionReportInstruction: <"Clearing member">
+    filter IsAllowableActionForHKMA
+    then if cde.execution.ClearingMember exists
+        then cde.execution.ClearingMember
+        else (Extract_ClearingMember
+            then Filter_HKMAPriorityPartyIdentifiers
+            then identifier)
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule ClearingMemberIdentifierFormat from TransactionReportInstruction: <"Clearing Member Identifier Format">
+    extract reportInstruction [
+        extract Extract_ClearingMember
+        then extract
+            if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                    only-element
+            then PartyIdentifierFormat2Enum -> NaturalPerson
+            else if partyId -> identifierType any = LEI
+            then Lei
+            else if partyId -> identifierType any = BIC
+            then SWIFTBIC
+            else Other
+    ]
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule ClearingMemberSchemeName from TransactionReportInstruction: <"Clearing Member Scheme Name">
+    if ClearingMemberIdentifierFormat = Other
+    then Extract_ClearingMember
+        then Filter_HKMAPriorityPartyIdentifiers
+        then Extract_HKMASchemeName
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform Identifier">
+    filter IsAllowableActionForHKMA
+    then common.execution.PlatformIdentifier(item, HKMA, HKMA)
+
+reporting rule Confirmed from TransactionReportInstruction: <"Confirmed">
+    filter IsAllowableActionForHKMA
+    then filter (IsCleared(originatingWorkflowStep) = False)
+    then extract cde.execution.Confirmed
+
+reporting rule FinalContractualSettlementDate from TransactionReportInstruction: <"Final Contractual Settlement Date">
+    filter IsAllowableActionForHKMA
+    then extract
+        if Qualify_InterestRate_Fra(TradeForEvent -> product -> economicTerms)
+        then InterestRateLeg2(ProductForTrade(TradeForEvent)) -> paymentDate -> unadjustedDate
+        else cde.execution.FinalContractualSettlementDate
+
+reporting rule SettlementLocation from TransactionReportInstruction: <"Settlement Location Leg 1">
+    filter IsAllowableActionForHKMA
+    then extract common.execution.SettlementLocation
+
+reporting rule Price from TransactionReportInstruction: <"Price">
+    filter IsAllowableActionForHKMA
+    then extract price.PriceFormatFromNotation(cde.price.PriceValue, PriceNotation)
+
+reporting rule PriceCurrency from TransactionReportInstruction: <"Price Currency">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.PriceCurrency
+
+reporting rule PriceNotation from TransactionReportInstruction: <"Price notation Enum">
+    filter IsAllowableActionForHKMA
+    then price.DefaultPercentageToDecimal(cde.price.PriceNotation, False)
+
+reporting rule PriceUnitOfMeasure from TransactionReportInstruction: <"Price Unit Of Measure">
+    filter IsAllowableActionForHKMA
+    then if cde.price.PriceUnitOfMeasure exists
+        then cde.price.PriceUnitOfMeasure
+        else if Qualify_AssetClass_InterestRate(EconomicTermsForProduct(ProductForEvent))
+                and cde.price.PriceValue exists
+        then "ACCY"
+
+reporting rule ContractPriceSchedule from TransactionReportInstruction: <"Contract Price Schedule">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.GetReportablePricePeriod(item, DefaultPercentagetoDecimal)
+
+reporting rule StrikePrice from TransactionReportInstruction: <"Strike Price">
+    filter IsAllowableActionForHKMA
+    then extract
+        price.PriceFormatFromNotation(cde.price.StrikePriceValue, StrikePriceNotation)
+
+reporting rule StrikePriceCurrencyCurrencyPair from TransactionReportInstruction: <"Strike price currency/currency pair">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.StrikePriceCurrency
+
+reporting rule StrikePriceNotation from TransactionReportInstruction: <"Strike price notation">
+    filter IsAllowableActionForHKMA
+    then price.DefaultPercentageToDecimal(
+                cde.price.StrikePriceNotationEnum,
+                cde.price.StrikePriceNotationEnum = Monetary
+                    and (IsVarianceSwap(ProductForEvent) or IsVolatilitySwap(ProductForEvent))
+            )
+
+reporting rule StrikePriceSchedule from TransactionReportInstruction: <"Strike Price Schedule">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.GetReportableStrikePricePeriod(item, DefaultPercentagetoDecimal)
+
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option premium amount">
+    filter IsAllowableActionForHKMA
+    then filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then extract trade.price.OptionPremiumAmount
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction: <"Option premium currency">
+    filter IsAllowableActionForHKMA
+    then filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then cde.price.OptionPremiumCurrency
+
+reporting rule OptionPremiumPaymentDate from TransactionReportInstruction: <"Option premium payment date">
+    filter IsAllowableActionForHKMA
+    then filter common.contract.ContractType = OPTN or common.contract.ContractType = SWPT
+    then extract cde.price.OptionPremiumPaymentDate
+
+reporting rule FirstExerciseDate from TransactionReportInstruction: <"First Exercise date">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.FirstExerciseDate
+
+reporting rule ExchangeRate from TransactionReportInstruction: <"Exchange rate">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.ExchangeRate
+
+reporting rule ExchangeRateBasis from TransactionReportInstruction: <"Exchange rate basis">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.ExchangeRateBasis
+
+reporting rule CallAmount from TransactionReportInstruction: <"Call amount">
+    filter IsAllowableActionForHKMA
+    then extract cde.quantity.CallAmount
+
+reporting rule PutAmount from TransactionReportInstruction: <"Put amount">
+    filter IsAllowableActionForHKMA
+    then extract cde.quantity.PutAmount
+
+reporting rule CallCurrency from TransactionReportInstruction: <"Call currency">
+    filter IsAllowableActionForHKMA
+    then extract cde.quantity.CallCurrency
+
+reporting rule PutCurrency from TransactionReportInstruction: <"Put currency">
+    filter IsAllowableActionForHKMA
+    then extract cde.quantity.PutCurrency
+
+reporting rule CdsIndexAttachmentPoint from TransactionReportInstruction: <"CDS index attachment point">
+    filter IsAllowableActionForHKMA
+    then extract cde.index.CDSIndexAttachmentPoint
+
+reporting rule CdsIndexDetachmentPoint from TransactionReportInstruction: <"CDS index detachment point">
+    filter IsAllowableActionForHKMA
+    then extract cde.index.CDSIndexDetachmentPoint
+
+// Repeatable Field modelling
+reporting rule OtherPayment from TransactionReportInstruction: <"Other Payment">
+    filter IsAllowableActionForHKMA or IsActionTypeTERM
+    then extract transactionReportInstruction [
+        TradeStateForEvent
+            then extract transferHistory
+            then filter cde.payment.IsOtherPayment
+            then extract
+                payment.OtherPayment {
+                    paymentType: cde.payment.OtherPaymentType to-enum PaymentType4Code,
+                    amount: cde.payment.OtherPaymentAmount
+                            then extract
+                                RoundToPrecision(
+                                        item,
+                                        5,
+                                        RoundingDirectionEnum -> Nearest,
+                                        False
+                                    )
+                            then FormatToShortFraction5DecimalNumber,
+                    currency: cde.payment.OtherPaymentCurrency,
+                    date: cde.payment.OtherPaymentDate,
+                    payer: OtherPaymentPayer,
+                    payerFormat: OtherPaymentPayerFormat,
+                    receiver: OtherPaymentReceiver,
+                    receiverFormat: OtherPaymentReceiverFormat,
+                    payerSchemeName: OtherPaymentPayerSchemeName,
+                    receiverSchemeName: OtherPaymentReceiverSchemeName
+                }
+    ]
+
+// TH Comment Sprint 13/2025: In HKMA, parties may be identified by LEI, Natural Person, BIC, or other identifiers. The following modelling enables extraction and formatting of all supported types.
+reporting rule OtherPaymentPayer from TransferState: <"Other Payment Payer">
+    filter cde.payment.IsOtherPayment
+    then extract transfer -> payerReceiver -> payerPartyReference
+    then Filter_HKMAPriorityPartyIdentifiers
+    then Extract_HKMAPartyIdentifier
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule OtherPaymentPayerFormat from TransferState: <"Other Payment Payer Format">
+    filter cde.payment.IsOtherPayment
+    then extract transfer -> payerReceiver -> payerPartyReference
+    then extract
+        if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                only-element
+        then PartyIdentifierFormatEnum -> NaturalPerson
+        else if partyId -> identifierType any = LEI
+        then Lei
+        else if partyId -> identifierType any = BIC
+        then SWIFTBIC
+        else Other
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule OtherPaymentPayerSchemeName from TransferState: <"Other Payment Payer Scheme Name">
+    filter cde.payment.IsOtherPayment
+    then if OtherPaymentPayerFormat = Other
+        then extract transfer -> payerReceiver -> payerPartyReference
+    then Filter_HKMAPriorityPartyIdentifiers
+    then Extract_HKMASchemeName to-string
+
+// TH Comment Sprint 13/2025: In HKMA, parties may be identified by LEI, Natural Person, BIC, or other identifiers. The following modelling enables extraction and formatting of all supported types.
+reporting rule OtherPaymentReceiver from TransferState: <"Other Payment Receiver">
+    filter cde.payment.IsOtherPayment
+    then extract transfer -> payerReceiver -> receiverPartyReference
+    then Filter_HKMAPriorityPartyIdentifiers
+    then Extract_HKMAPartyIdentifier
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule OtherPaymentReceiverFormat from TransferState: <"Other Payment Receiver Format">
+    filter cde.payment.IsOtherPayment
+    then extract transfer -> payerReceiver -> receiverPartyReference
+    then extract
+        if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                only-element
+        then PartyIdentifierFormatEnum -> NaturalPerson
+        else if partyId -> identifierType any = LEI
+        then Lei
+        else if partyId -> identifierType any = BIC
+        then SWIFTBIC
+        else Other
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule OtherPaymentReceiverSchemeName from TransferState: <"Other Payment Receiver Scheme Name">
+    filter cde.payment.IsOtherPayment
+    then if OtherPaymentReceiverFormat = Other
+        then extract transfer -> payerReceiver -> receiverPartyReference
+    then Filter_HKMAPriorityPartyIdentifiers
+    then Extract_HKMASchemeName to-string
+
+reporting rule PackageIdentifier from TransactionReportInstruction: <"Package identifier">
+    filter IsAllowableActionForHKMA
+    then extract cde.link.PackageIdentifier
+
+reporting rule PackageTransactionPrice from TransactionReportInstruction: <"Package transaction price">
+    filter IsAllowableActionForHKMA
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionPriceValue,
+                PackageTransactionPriceNotation
+            )
+
+reporting rule PackageTransactionPriceCurrency from TransactionReportInstruction: <"Package transaction price currency">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.PackageTransactionPriceCurrency
+
+reporting rule PackageTransactionPriceNotation from TransactionReportInstruction: <"Package transaction price notation">
+    filter IsAllowableActionForHKMA
+    then price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionPriceNotationEnum,
+                False
+            )
+
+reporting rule PackageTransactionSpread from TransactionReportInstruction: <"Package transaction spread">
+    filter IsAllowableActionForHKMA
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionSpreadValue,
+                PackageTransactionSpreadNotation
+            )
+
+reporting rule PackageTransactionSpreadCurrency from TransactionReportInstruction: <"Package transaction spread currency">
+    filter IsAllowableActionForHKMA
+    then extract cde.price.PackageTransactionSpreadCurrency
+
+reporting rule PackageTransactionSpreadNotation from TransactionReportInstruction: <"Package transaction spread notation">
+    filter IsAllowableActionForHKMA
+    then price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionSpreadNotationEnum,
+                False
+            )
+
+reporting rule PriorUTI from TransactionReportInstruction: <"Prior UTI (for one-to-one and one-to-many relations between transactions)">
+    filter IsAllowableActionForHKMA
+    then common.link.GetPriorTransactionIdentifier(item, HKMA)
+    then filter IsMax52UpperCaseAlphanumericText = True
+    then filter IsValidLeiFromGlobalUti = True
+
+reporting rule PriorUTIProprietary from TransactionReportInstruction: <"Prior UTI (for one-to-one and one-to-many relations between transactions) (Proprietary)">
+    // Prior UTI Proprietary
+    if common.link.GetPriorTransactionIdentifier(item, HKMA) exists
+    then (common.link.GetPriorTransactionIdentifier(item, HKMA)
+        then filter
+            IsMax52UpperCaseAlphanumericText = False or IsValidLeiFromGlobalUti = False)
+    // Prior USI
+    else common.link.PriorUSI
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule PriorUTIProprietarySchemeName from TransactionReportInstruction: <"Prior UTI Proprietary Scheme Name">
+    if PriorUTIProprietary exists
+    then ( // Prior UTI Proprietary
+        if common.link.GetPriorTransactionIdentifier(item, HKMA) exists
+                and (IsMax52UpperCaseAlphanumericText(
+                            common.link.GetPriorTransactionIdentifier(item, HKMA)
+                        ) = False
+                    or IsValidLeiFromGlobalUti(
+                            common.link.GetPriorTransactionIdentifier(item, HKMA)
+                        ) = False)
+        then UTIProprietarySchemeNameEnum -> UTI_TID
+        // Prior USI
+        else UTIProprietarySchemeNameEnum -> UTI_USI)
+
+reporting rule CustomBasketCode from TransactionReportInstruction: <"Custom basket code">
+    filter IsAllowableActionForHKMA
+    then extract cde.basket.CustomBasketCode
+
+reporting rule BasketConstituents from TransactionReportInstruction: <"Basket constituents">
+    filter IsAllowableActionForHKMA
+    then extract cde.basket.BasketConstituents
+
+reporting rule UnderlierIdOther from TransactionReportInstructionBase: <"Underlier ID (OTHER)">
+    filter IsAllowableActionForHKMA
+    // TH: Sprint 2025-18. This condition on the UPI data appears in the Supplementary Reporting Instructions For Reporting Over-The-Counter (OTC) Derivative Transactions under the Hong Kong OTC Derivative Regulatory Regime to take effect from 29 September 2025 (version 2.0).
+    then if ((reportableInformation -> enrichment -> upiData -> upiRecord exists
+                    and reportableInformation -> enrichment -> upiData -> upiRecord -> Attributes -> UnderlierID any = "Other")
+                or reportableInformation -> enrichment -> upiData -> upiRecord is absent)
+        then if ((UpiPreEnrichmentData -> request -> Attributes -> UnderlierID exists
+                        and UpiPreEnrichmentData -> request -> Attributes -> UnderlierID = "Other")
+                    or UpiPreEnrichmentData -> request -> Attributes -> UnderlierID is absent)
+            then extract cde.underlier.UnderlierProductIdentifierOther
+    then ExtractProductIdentifierBySource
+    then identifier
+
+reporting rule UnderlierIdOtherSource from TransactionReportInstructionBase: <"Underlier ID (OTHER) source">
+    filter IsAllowableActionForHKMA
+    // TH: Sprint 2025-18. This condition on the UPI data appears in the Supplementary Reporting Instructions For Reporting Over-The-Counter (OTC) Derivative Transactions under the Hong Kong OTC Derivative Regulatory Regime to take effect from 29 September 2025 (version 2.0).
+    then if ((reportableInformation -> enrichment -> upiData -> upiRecord exists
+                    and reportableInformation -> enrichment -> upiData -> upiRecord -> Attributes -> UnderlierID any = "Other")
+                or reportableInformation -> enrichment -> upiData -> upiRecord is absent)
+        then if ((UpiPreEnrichmentData -> request -> Attributes -> UnderlierID exists
+                        and UpiPreEnrichmentData -> request -> Attributes -> UnderlierID = "Other")
+                    or UpiPreEnrichmentData -> request -> Attributes -> UnderlierID is absent)
+            then extract cde.underlier.UnderlierProductIdentifierOther
+    then ExtractProductIdentifierBySource
+    then identifierType
+
+reporting rule UnderlyingAssetTradingPlatformIdentifier from TransactionReportInstruction: <"Underlying asset trading platform identifier">
+    filter IsAllowableActionForHKMA
+    then extract
+        if cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg1 exists
+        then cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg1
+        else if cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg1 is absent
+                and cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg2 exists
+        then cde.underlier.UnderlyingAssetTradingPlatformIdentifierLeg2
+        else Extract_UnderlyingAssetTradingPlatformIdentifier(reportableInformation)
+
+reporting rule UnderlyingAssetPriceSource from TransactionReportInstruction: <"Underlying asset price source">
+    filter IsAllowableActionForHKMA
+    then extract
+        if cde.underlier.UnderlyingAssetPriceSourceLeg1 exists
+        then cde.underlier.UnderlyingAssetPriceSourceLeg1
+        else cde.underlier.UnderlyingAssetPriceSourceLeg2
+
+reporting rule CryptoAssetUnderlyingIndicator from TransactionReportInstruction: <"Crypto asset underlying indicator">
+    filter IsAllowableActionForHKMA
+    then extract cde.underlier.CryptoAssetUnderlyingIndicator
+
+reporting rule EventType from TransactionReportInstruction: <"Event type">
+    if cde.event.EventType <> INCP then extract cde.event.EventType
+
+reporting rule EventTimestamp from TransactionReportInstruction: <"Event timestamp">
+    filter IsAllowableActionForHKMA or IsActionTypeTERM
+    then extract cde.datetime.EventTimestamp
+
+reporting rule EventIdentifier from TransactionReportInstruction: <"Event identifier">
+    filter IsAllowableActionForHKMA or IsActionTypeTERM or IsActionTypeEROR
+    then extract cde.event.EventIdentifier
+
+reporting rule UniqueTransactionIdentifier from TransactionReportInstruction: <"Unique Transaction Identifier (UTI)">
+    uti.GetUniqueTransactionIdentifier(item -> reportableInformation, HKMA, empty, item)
+        then filter IsMax52UpperCaseAlphanumericText = True
+        then filter IsValidLeiFromGlobalUti = True
+
+reporting rule UniqueTransactionIdentifierProprietary from TransactionReportInstruction: <"Unique Transaction Identifier (UTI)">
+    // UTI Proprietary
+    if uti.GetUniqueTransactionIdentifier(item -> reportableInformation, HKMA, empty, item)
+        exists
+    then (uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            HKMA,
+            empty,
+            item
+        )
+        then filter
+            IsMax52UpperCaseAlphanumericText = False or IsValidLeiFromGlobalUti = False)
+    // USI
+    else uti.GetUniqueSwapIdentifier(item, HKMA)
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule UniqueTransactionIdentifierProprietarySchemeName from TransactionReportInstruction: <"Unique Transaction Identifier Proprietary Scheme Name">
+    if UniqueTransactionIdentifierProprietary exists
+    then ( // UTI Proprietary
+        if uti.GetUniqueTransactionIdentifier(
+                    item -> reportableInformation,
+                    HKMA,
+                    empty,
+                    item
+                )
+                exists
+                and (IsMax52UpperCaseAlphanumericText(
+                            uti.GetUniqueTransactionIdentifier(
+                                    item -> reportableInformation,
+                                    HKMA,
+                                    empty,
+                                    item
+                                )
+                        ) = False
+                    or IsValidLeiFromGlobalUti(
+                            uti.GetUniqueTransactionIdentifier(
+                                    item -> reportableInformation,
+                                    HKMA,
+                                    empty,
+                                    item
+                                )
+                        ) = False)
+        then UTIProprietarySchemeNameEnum -> UTI_TID
+        // USI
+        else UTIProprietarySchemeNameEnum -> UTI_USI)
+
+reporting rule UniqueProductIdentifier from TransactionReportInstruction: <"Unique Product Identifier (UPI)">
+    filter IsAllowableActionForHKMA
+    then extract upi.UniqueProductIdentifier
+
+reporting rule UniqueProductIdentifierProprietary from TransactionReportInstruction: <"Unique Product Identifier (UPI)">
+    filter IsAllowableActionForHKMA
+    then if UniqueProductIdentifier is absent and Extract_BondConnect exists
+        then "ForeignExchange:Spot"
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index factor">
+    filter IsAllowableActionForHKMA
+    then extract common.index.IndexFactor
+
+reporting rule EmbeddedOptionType from TransactionReportInstruction: <"Embedded option type">
+    filter IsAllowableActionForHKMA
+    then extract common.contract.EmbeddedOptionType
+
+reporting rule InitialMarginCollateralPortfolioCode from TransactionReportInstruction: <"Initial margin collateral portfolio code">
+    filter IsAllowableActionForHKMA
+    then extract common.collateral.InitialMarginCollateralPortfolioCode
+
+reporting rule VariationMarginCollateralPortfolioCode from TransactionReportInstruction: <"Variation margin collateral portfolio code">
+    filter IsAllowableActionForHKMA
+    then extract common.collateral.VariationMarginCollateralPortfolioCode
+
+reporting rule SubmitterIdentifier from TransactionReportInstruction: <"Submitter Identifier">
+    extract common.party.ReportSubmittingEntity
+
+reporting rule CountryOfTheCounterparty2 from TransactionReportInstruction: <"Country of the counterparty 2">
+    filter IsAllowableActionForHKMA
+    then extract common.party.CountryOfCounterparty2
+
+// TH Comment Sprint 13/2025: In HKMA, parties may be identified by LEI, Natural Person, BIC, or other identifiers. The following modelling enables extraction and formatting of all supported types.
+reporting rule BrokerId from TransactionReportInstruction: <"Broker ID">
+    filter IsAllowableActionForHKMA
+    then extract
+        if common.party.BrokerID exists
+        then common.party.BrokerID
+        else (Extract_BrokerId
+            then Filter_HKMAPriorityPartyIdentifiers
+            then identifier)
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule BrokerIdentifierFormat from TransactionReportInstruction: <"Broker Identifier Format">
+    extract reportInstruction [
+        extract Extract_BrokerId
+        then extract
+            if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                    only-element
+            then PartyIdentifierFormat2Enum -> NaturalPerson
+            else if partyId -> identifierType any = LEI
+            then Lei
+            else if partyId -> identifierType any = BIC
+            then SWIFTBIC
+            else Other
+    ]
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule BrokerSchemeName from TransactionReportInstruction: <"Broker Scheme Name">
+    if BrokerIdentifierFormat = Other then Extract_BrokerId
+        then Filter_HKMAPriorityPartyIdentifiers
+        then Extract_HKMASchemeName
+
+reporting rule ContractType from TransactionReportInstruction: <"Contract type">
+    filter IsAllowableActionForHKMA
+    then extract common.contract.ContractType
+
+reporting rule AssetClass from TransactionReportInstruction: <"Asset class">
+    filter
+        IsAllowableActionForHKMA or IsActionTypeEROR or IsActionTypePRTO or IsActionTypeTERM
+    then common.contract.AssetClass
+
+reporting rule UnderlyingIdentificationType from TransactionReportInstruction: <"Underlying identification Type">
+    filter IsAllowableActionForHKMA
+    then (if GetUnderlyingIdentificationType exists
+        then GetUnderlyingIdentificationType
+        else if UnderlierIdOther exists
+        then trade.underlier.UnderlyingIdentificationTypeEnum -> O)
+
+reporting rule UnderlyingIdentification from TransactionReportInstruction: <"Underlying identification">
+    filter IsAllowableActionForHKMA
+    then extract common.underlier.UnderlyingIdentification
+
+reporting rule NameOfTheUnderlyingIndex from TransactionReportInstruction: <"Name of the underlying index">
+    filter IsAllowableActionForHKMA
+    then extract common.underlier.NameOfTheUnderlyingIndex
+
+reporting rule ClearingTimestamp from TransactionReportInstruction: <"Clearing timestamp">
+    filter IsAllowableActionForHKMA
+    then extract common.datetime.ClearingTimestamp
+
+reporting rule DeliveryType from TransactionReportInstruction: <"Delivery type">
+    filter IsAllowableActionForHKMA
+    then common.contract.DeliveryType
+
+// TH Comment Sprint 14/2025: EMIR is used as the taxonomySource due to "the classification in Table 4 of the Annex of the Commission Implementing Regulations (EU) laying down implementing technical standards for the application of Regulations (EU) No 648/2012 and 2022/1860 of the European Parliament and of the Council with regard to the standards, formats, frequency and methods and arrangements for reporting for EMIR Refit". Regulation 648/2012 is the reference used in the EMIR specifications, and Regulation 2022/1860 is the reference used by HKMA the values are identical in both versions.
+reporting rule BaseProduct from TransactionReportInstruction: <"Base product">
+    filter IsAllowableActionForHKMA
+    then extract
+        ExtractCommodityClassification(EconomicTermsForProduct(ProductForEvent), EMIR, 1)
+
+// TH Comment Sprint 14/2025: EMIR is used as the taxonomySource due to "the classification in Table 4 of the Annex of the Commission Implementing Regulations (EU) laying down implementing technical standards for the application of Regulations (EU) No 648/2012 and 2022/1860 of the European Parliament and of the Council with regard to the standards, formats, frequency and methods and arrangements for reporting for EMIR Refit". Regulation 648/2012 is the reference used in the EMIR specifications, and Regulation 2022/1860 is the reference used by HKMA the values are identical in both versions.
+reporting rule SubProduct from TransactionReportInstruction: <"Sub-product">
+    filter IsAllowableActionForHKMA
+    then extract
+        ExtractCommodityClassification(EconomicTermsForProduct(ProductForEvent), EMIR, 2)
+
+// TH Comment Sprint 14/2025: EMIR is used as the taxonomySource due to "the classification in Table 4 of the Annex of the Commission Implementing Regulations (EU) laying down implementing technical standards for the application of Regulations (EU) No 648/2012 and 2022/1860 of the European Parliament and of the Council with regard to the standards, formats, frequency and methods and arrangements for reporting for EMIR Refit". Regulation 648/2012 is the reference used in the EMIR specifications, and Regulation 2022/1860 is the reference used by HKMA the values are identical in both versions.
+reporting rule FurtherSubProduct from TransactionReportInstruction: <"Further sub-product">
+    filter IsAllowableActionForHKMA
+    then extract
+        ExtractCommodityClassification(EconomicTermsForProduct(ProductForEvent), EMIR, 3)
+
+reporting rule OptionStyle from TransactionReportInstruction: <"Option style">
+    filter IsAllowableActionForHKMA
+    then extract common.contract.OptionStyle
+
+reporting rule MaturityDateOfTheUnderlyingDerivative from TransactionReportInstruction: <"Maturity date of the underlying derivative">
+    filter IsAllowableActionForHKMA
+    then extract common.datetime.MaturityDateOfTheUnderlier
+
+reporting rule Seniority from TransactionReportInstruction: <"Seniority">
+    filter IsAllowableActionForHKMA
+    then extract common.index.Seniority
+
+reporting rule ReferenceEntity from TransactionReportInstruction: <"Reference entity">
+    filter IsAllowableActionForHKMA
+    then extract ExtractReferenceEntity -> identifier
+
+reporting rule Series from TransactionReportInstruction: <"Series">
+    filter IsAllowableActionForHKMA
+    then extract common.index.Series
+
+reporting rule SeriesVersion from TransactionReportInstruction: <"Series Version">
+    filter IsAllowableActionForHKMA
+    then extract common.index.Version
+
+reporting rule TradingCapacity from TransactionReportInstruction: <"Trading capacity">
+    filter IsAllowableActionForHKMA
+    then extract common.execution.Extract_TradingCapacity(item, HKMA)
+
+reporting rule SwapLinkID from TransactionReportInstruction: <"Swap Link ID">
+    filter IsAllowableActionForHKMA
+    then extract common.link.SwapLinkID
+
+reporting rule TraderLocation from TransactionReportInstruction: <"Trader location">
+    filter IsAllowableActionForHKMA
+    then extract common.execution.TraderLocation
+
+reporting rule BookingLocation from TransactionReportInstruction: <"Booking location">
+    filter IsAllowableActionForHKMA
+    then extract common.execution.BookingLocation
+
+reporting rule Intragroup from TransactionReportInstruction: <"Intragroup">
+    filter IsAllowableActionForHKMA
+    then extract common.party.Intragroup
+
+reporting rule NatureOfTheCounterparty1 from TransactionReportInstruction: <"Nature of the counterparty 1">
+    filter IsAllowableActionForHKMA
+    then ExtractNatureOfCounterparty(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty,
+                        HKMA,
+                        HKMA
+                    ) -> hkmaPartyInformation -> natureOfParty
+            )
+
+reporting rule NatureOfTheCounterparty2 from TransactionReportInstruction: <"Nature of the counterparty 2">
+    filter IsAllowableActionForHKMA
+    then ExtractNatureOfCounterparty(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty,
+                        HKMA,
+                        HKMA
+                    ) -> hkmaPartyInformation -> natureOfParty
+            )
+
+reporting rule NonStandardizedTermIndicator from TransactionReportInstruction: <"Non-standardized term indicator">
+    filter IsAllowableActionForHKMA
+    then extract common.contract.NonStandardizedTermIndicator
+
+reporting rule SecondaryTransactionIdentifier from TransactionReportInstruction: <"Secondary transaction identifier">
+    filter IsAllowableActionForHKMA
+    then extract common.link.SecondaryTransactionIdentifier
+
+reporting rule barrier from TransactionReportInstruction: <"barrier">
+    filter IsAllowableActionForHKMA
+    then common.price.SingleOrUpperAndLowerBarrier
+
+reporting rule ProductDescription from TransactionReportInstruction: <"Product description">
+    filter IsAllowableActionForHKMA
+    then if Extract_BondConnect exists then "BONDCONNECT"
+
+reporting rule Beneficiary from TransactionReportInstruction: <"Beneficiary">
+    filter IsAllowableActionForHKMA
+    then Extract_BondConnect to-string
+
+reporting rule TechnicalRecordIdentification from TransactionReportInstruction: <"Technical record identification">
+    extract ReportableEvent [
+        if common.link.TechnicalRecordId(reportableInformation, HKMA) -> isUnique
+        then common.link.TechnicalRecordId(reportableInformation, HKMA) -> id
+        else (common.link.TechnicalRecordId(reportableInformation, HKMA) -> id
+            then extract
+                item + "_" + (cde.datetime.ReportingTimestamp(ReportableEvent) to-string))
+    ]
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule SectorOfTheCounterparty1 from TransactionReportInstruction: <"Sector of the Counterparty 1">
+    filter IsAllowableActionForHKMA
+    then common.party.ExtractPartySector(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty,
+                        HKMA,
+                        HKMA
+                    ) -> hkmaPartyInformation -> natureOfParty,
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingParty,
+                        HKMA,
+                        HKMA
+                    ) -> hkmaPartyInformation -> corporateSector
+            )
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule SectorOfTheCounterparty2 from TransactionReportInstruction: <"Sector of the Counterparty 2">
+    filter IsAllowableAction
+    then common.party.ExtractPartySector(
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty,
+                        HKMA,
+                        HKMA
+                    ) -> hkmaPartyInformation -> natureOfParty,
+                common.party.ExtractRegimeInformation(
+                        item,
+                        item -> reportingSide -> reportingCounterparty,
+                        HKMA,
+                        HKMA
+                    ) -> hkmaPartyInformation -> corporateSector
+            )
+
+// TH Comment Sprint 14/2025: The following rule is HKMA-specific and used specifically for projection purposes. It is non-reportable.
+reporting rule ReferenceEntityFormat from TransactionReportInstruction: <"Reference Entity Format">
+    extract ExtractReferenceEntity -> identifierType
+    then if = LEI
+        then ReferenceEntityFormatEnum -> LEI
+        else if item = CountryCode
+        then ReferenceEntityFormatEnum -> Country
+
+// CDE Leg fields
+reporting rule FixedRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRateLeg1 from TransactionReportInstruction: <"Fixed Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.price.FixedRate
+
+reporting rule FixedRateLeg2 from TransactionReportInstruction: <"Fixed Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.price.FixedRate
+
+reporting rule NotionalAmountLeg1 from TransactionReportInstruction: <"Notional of Leg 1">
+    filter IsAllowableAction
+    then cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg1,
+                9999999999999999999999999
+            )
+
+reporting rule NotionalAmountLeg2 from TransactionReportInstruction: <"Notional Amount of Leg 2">
+    filter IsAllowableAction
+    then cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg2,
+                9999999999999999999999999
+            )
+
+reporting rule NotionalCurrencyLeg1 from TransactionReportInstruction: <"Notional Currency - Leg 1">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.Notional(common.PayoutForQuantityLeg1)
+    then quantity.CurrencyFromNotional
+
+reporting rule NotionalCurrencyLeg2 from TransactionReportInstruction: <"Notional Currency - Leg 2">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.Notional(common.PayoutForQuantityLeg2)
+    then quantity.CurrencyFromNotional
+
+reporting rule TotalNotionalQuantityLeg1 from TransactionReportInstruction: <"Total Notional Quantity - Leg 1">
+    filter IsAllowableActionForHKMA
+    then if IsEquity(ProductForEvent) or IsCommodity(ProductForEvent)
+        then cde.quantity.TotalNotionalQuantity(
+                    common.PayoutLeg1,
+                    9999999999999999999999999
+                )
+
+reporting rule TotalNotionalQuantityLeg2 from TransactionReportInstruction: <"Total Notional Quantity - Leg 2">
+    filter IsAllowableActionForHKMA
+    then if IsCommoditySwap(ProductForEvent)
+                or (IsEquity(ProductForEvent) and InterestRateLeg2(ProductForEvent) -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists)
+        then cde.quantity.TotalNotionalQuantity(
+                    common.PayoutLeg2,
+                    9999999999999999999999999
+                )
+
+reporting rule NotionalAmountScheduleLeg1 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 1">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.NotionalAmountSchedule(common.PayoutLeg1)
+
+reporting rule NotionalAmountScheduleLeg2 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 2">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.NotionalAmountSchedule(common.PayoutLeg2)
+
+reporting rule NotionalQuantityScheduleLeg1 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 1">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.NotionalQuantitySchedule(common.PayoutLeg1)
+
+reporting rule NotionalQuantityScheduleLeg2 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 2">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.NotionalQuantitySchedule(common.PayoutLeg2)
+
+reporting rule SettlementCurrencyLeg1 from TransactionReportInstruction: <"Settlement Currency - Leg 1">
+    filter IsAllowableActionForHKMA
+    then cde.execution.SettlementCurrency(common.PayoutLeg1)
+
+reporting rule SettlementCurrencyLeg2 from TransactionReportInstruction: <"Settlement Currency - Leg 2">
+    filter IsAllowableActionForHKMA
+    then cde.execution.SettlementCurrency(common.PayoutLeg2)
+
+reporting rule SpreadLeg1 from TransactionReportInstruction: <"Spread - Leg 1">
+    filter IsAllowableActionForHKMA
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg1),
+                SpreadNotationLeg1
+            )
+
+reporting rule SpreadLeg2 from TransactionReportInstruction: <"Spread - Leg 2">
+    filter IsAllowableActionForHKMA
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg2),
+                SpreadNotationLeg2
+            )
+
+reporting rule SpreadNotationLeg1 from TransactionReportInstruction: <"Spread notation - Leg 1">
+    extract
+        price.DefaultPercentageToDecimal(
+                cde.price.SpreadNotationEnum(common.PayoutLeg1),
+                False
+            )
+
+reporting rule SpreadNotationLeg2 from TransactionReportInstruction: <"Spread notation - Leg 2">
+    extract
+        price.DefaultPercentageToDecimal(
+                cde.price.SpreadNotationEnum(common.PayoutLeg2),
+                False
+            )
+
+reporting rule SpreadCurrencyLeg1 from TransactionReportInstruction: <"Spread Currency - Leg 1">
+    filter IsAllowableActionForHKMA
+    then cde.price.SpreadCurrency(common.PayoutLeg1)
+
+reporting rule SpreadCurrencyLeg2 from TransactionReportInstruction: <"Spread Currency - Leg 2">
+    filter IsAllowableActionForHKMA
+    then cde.price.SpreadCurrency(common.PayoutLeg2)
+
+reporting rule QuantityUnitOfMeasureLeg1 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 1">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg1)
+
+reporting rule QuantityUnitOfMeasureLeg2 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 2">
+    filter IsAllowableActionForHKMA
+    then cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg2)
+
+reporting rule Direction2Leg1 from TransactionReportInstruction: <"Direction2 - Leg 1">
+    filter IsAllowableActionForHKMA
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    common.PayoutLeg1,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+reporting rule Direction2Leg2 from TransactionReportInstruction: <"Direction2 - Leg 2">
+    filter IsAllowableActionForHKMA
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    common.PayoutLeg2,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+// Common Leg fields
+reporting rule FixingDateLeg1 from TransactionReportInstruction: <"Fixing Date - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.datetime.FixingDate(common.PayoutLeg1)
+
+reporting rule FixingDateLeg2 from TransactionReportInstruction: <"Fixing Date - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.datetime.FixingDate(common.PayoutLeg2)
+
+reporting rule FloatingRateIndicatorLeg1 from TransactionReportInstruction: <"Floating Rate Indicator - Leg 1">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateIndicator
+
+reporting rule FloatingRateIndicatorLeg2 from TransactionReportInstruction: <"Floating Rate Indicator - Leg 2">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateIndicator
+
+reporting rule FloatingRateIdentifierLeg1 from TransactionReportInstruction:
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateIdentifier
+
+reporting rule FloatingRateIdentifierLeg2 from TransactionReportInstruction:
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateIdentifier
+
+reporting rule FloatingRateReferencePeriodLeg1 from TransactionReportInstruction: <"Floating Rate Reference Period - Leg 1">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateReferencePeriod
+
+reporting rule FloatingRateReferencePeriodLeg2 from TransactionReportInstruction: <"Floating Rate Reference Period - Leg 2">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriod
+
+reporting rule FloatingRateReferencePeriodMultiplierLeg1 from TransactionReportInstruction: <"Floating Rate Reference Period Multiplier - Leg 1">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateReferencePeriodMultiplier
+
+reporting rule FloatingRateReferencePeriodMultiplierLeg2 from TransactionReportInstruction: <"Floating Rate Reference Period Multiplier - Leg 2">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriodMultiplier
+
+reporting rule NameOfTheFloatingRateLeg1 from TransactionReportInstruction: <"Name Of The Floating Rate - Leg 1">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule NameOfTheFloatingRateLeg2 from TransactionReportInstruction: <"Name Of The Floating Rate - Leg 2">
+    filter IsAllowableActionForHKMA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule NotionalQuantityLeg1 from TransactionReportInstruction: <"Notional Quantity - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.quantity.NotionalQuantityLeg1
+
+reporting rule NotionalQuantityLeg2 from TransactionReportInstruction: <"Notional Quantity - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.quantity.NotionalQuantityLeg2
+
+reporting rule QuantityFrequencyPeriodLeg1 from TransactionReportInstruction: <"Notional Quantity Frequency Period - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.quantity.QuantityFrequencyPeriodLeg1
+
+reporting rule QuantityFrequencyPeriodLeg2 from TransactionReportInstruction: <"Notional Quantity Frequency Period - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.quantity.QuantityFrequencyPeriodLeg2
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 1">
+    filter IsAllowableActionForHKMA
+    then common.quantity.QuantityFrequencyPeriodMultiplierLeg1
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 2">
+    filter IsAllowableActionForHKMA
+    then common.quantity.QuantityFrequencyPeriodMultiplierLeg2

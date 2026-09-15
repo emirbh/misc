@@ -1,0 +1,60 @@
+namespace drr.standards.iosco.cde.version3.collateral
+version "${project.version}"
+
+import cdm.base.*
+
+import drr.base.*
+import drr.base.margin.*
+import drr.base.trade.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version2.* as cdeV2
+import drr.standards.iosco.cde.version3.* as cdeV3
+
+reporting rule CollateralPortfolioIndicator from TransactionReportInstructionBase: <"Collateral Portfolio Indicator">
+    [docReference CPMI_IOSCO cdeV3.CDE table "2" field "29"
+        provision "Indicator of whether the collateralisation was performed on a portfolio basis. By on a portfolio basis, it is meant a set of transactions that are margined together (either on a net or a gross basis) contrary to the scenario where the margin is calculated and posted for each individual transaction separately."]
+    cdeV2.collateral.CollateralPortfolioIndicator
+
+reporting rule CollateralPortfolioCode from TransactionReportInstructionBase: <"Collateral Portfolio Code">
+    [docReference CPMI_IOSCO cdeV3.CDE table "2" field "30"
+        provision "If collateral is reported on a portfolio basis, unique code assigned by counterparty 1 to the portfolio. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement or if no collateral is posted or received."]
+    cdeV2.collateral.CollateralPortfolioCode
+
+reporting rule ExcessCollateralPostedByTheReportingCounterparty from CollateralReportInstructionBase: <"Excess collateral posted by the reporting counterparty">
+    [docReference CPMI_IOSCO cdeV3.CDE section "2" field "43"
+        provision "Monetary value of any additional collateral posted by the reporting counterparty separate and independent from initial and variation margin. This refers to the total current value of the excess collateral before application of the haircut (if applicable), rather than to its daily change.
+          Any initial or variation margin amount posted that exceeds the required initial margin or required variation margin, is reported as part of the initial margin posted or variation margin posted respectively rather than included as excess collateral posted.
+          For centrally cleared transactions, excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+    [docReference ISDA EMEADataAndReporting date "20230206"
+        provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or ESMA."]
+    cdeV2.collateral.ExcessCollateralPostedByTheReportingCounterparty
+
+reporting rule CurrencyOfExcessCollateralPosted from CollateralReportInstructionBase: <"Currency of excess collateral posted">
+    [docReference CPMI_IOSCO cdeV3.CDE section "2" field "44"
+        provision "Currency in which the excess collateral posted is denominated.
+          If the excess collateral posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted excess collateral."]
+    [docReference ISDA EMEADataAndReporting date "20230206"
+        provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or ESMA."]
+    cdeV2.collateral.CurrencyOfExcessCollateralPosted
+
+reporting rule ExcessCollateralCollectedByTheReportingCounterparty from CollateralReportInstructionBase: <"Excess collateral collected by the reporting counterparty">
+    [docReference CPMI_IOSCO cdeV3.CDE section "2" field "45"
+        provision "Monetary value of any additional collateral collected by the reporting counterparty separate and independent from initial and variation margin. This data element refers to the total current value of the excess collateral before application of the haircut (if applicable), rather than to its daily change.
+          Any initial or variation margin amount collected that exceeds the required initial margin or required variation margin, is reported as part of the initial margin collected or variation margin collected respectively, rather than included as excess collateral collected.
+          For centrally cleared transactions excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+    [docReference ISDA EMEADataAndReporting date "20230206"
+        provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or ESMA."]
+    cdeV2.collateral.ExcessCollateralCollectedByTheReportingCounterparty
+
+reporting rule CurrencyOfExcessCollateralCollected from CollateralReportInstructionBase: <"Currency of excess collateral posted">
+    [docReference CPMI_IOSCO cdeV3.CDE section "2" field "46"
+        provision "Currency in which the excess collateral collected is denominated.
+          If the excess collateral is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected excess collateral"]
+    [docReference ISDA EMEADataAndReporting date "20230206"
+        provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or ESMA."]
+    cdeV2.collateral.CurrencyOfExcessCollateralCollected
+
+reporting rule CollateralisationCategory from CollateralReportInstructionBase: <"Collateralisation category">
+    [docReference CPMI_IOSCO cdeV3.CDE section "2" dataElement "47" field "Collateralisation category"
+        provision "Indicator of whether a collateral agreement (or collateral agreements) between the counterparties exists (uncollateralised/partially collateralised/one-way collateralised/fully collateralised). This data element is provided for each transaction or each portfolio, depending on whether the collateralisation is performed at the transaction or portfolio level, and is applicable to both cleared and uncleared transactions."]
+    cdeV2.collateral.CollateralisationCategory

@@ -1,0 +1,64 @@
+package iso20022.auth108.fca.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import iso20022.auth108.fca.TradeCounterpartyRelationship1Choice__1;
+import iso20022.auth108.fca.validation.TradeCounterpartyRelationship1Choice__1TypeFormatValidator;
+import iso20022.auth108.fca.validation.TradeCounterpartyRelationship1Choice__1Validator;
+import iso20022.auth108.fca.validation.exists.TradeCounterpartyRelationship1Choice__1OnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version ${project.version}
+ */
+@RosettaMeta(model=TradeCounterpartyRelationship1Choice__1.class)
+public class TradeCounterpartyRelationship1Choice__1Meta implements RosettaMetaData<TradeCounterpartyRelationship1Choice__1> {
+
+	@Override
+	public List<Validator<? super TradeCounterpartyRelationship1Choice__1>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+		);
+	}
+	
+	@Override
+	public List<Function<? super TradeCounterpartyRelationship1Choice__1, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super TradeCounterpartyRelationship1Choice__1> validator(ValidatorFactory factory) {
+		return factory.<TradeCounterpartyRelationship1Choice__1>create(TradeCounterpartyRelationship1Choice__1Validator.class);
+	}
+
+	@Override
+	public Validator<? super TradeCounterpartyRelationship1Choice__1> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<TradeCounterpartyRelationship1Choice__1>create(TradeCounterpartyRelationship1Choice__1TypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super TradeCounterpartyRelationship1Choice__1> validator() {
+		return new TradeCounterpartyRelationship1Choice__1Validator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super TradeCounterpartyRelationship1Choice__1> typeFormatValidator() {
+		return new TradeCounterpartyRelationship1Choice__1TypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super TradeCounterpartyRelationship1Choice__1, Set<String>> onlyExistsValidator() {
+		return new TradeCounterpartyRelationship1Choice__1OnlyExistsValidator();
+	}
+}

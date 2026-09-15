@@ -1,0 +1,66 @@
+namespace drr.regulation.hkma.rewrite.margin
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.*
+import drr.regulation.common.*
+import drr.regulation.hkma.*
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Margin
+
+corpus Dissemination DTCC_Harmonized
+
+report HKMA Margin in T+1
+  	from CollateralReportInstruction
+  	when ReportableProduct
+  	with type HKMAMarginReport
+
+eligibility rule ReportableProduct from CollateralReportInstruction: <"When eligible for HKMA">
+    [docReference HKMA Margin
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+reporting rule Counterparty2Name from CollateralReportInstruction: <"Counterparty 2 name">
+    extract reportingSide -> reportingCounterparty
+    then filter partyId -> identifierType all <> LEI and partyId -> identifier all <> "ANON"
+    then extract name
+
+reporting rule PortfolioContainingNonReportableComponentIndicator from CollateralReportInstruction: <"Portfolio containing nonreportable component indicator">
+    extract item -> reportableInformation -> jurisdictionInformation
+    then filter supervisoryBody = HKMA
+    then only-element
+    then extract
+        partyInformation -> hkmaPartyInformation -> nonReportedTradePortfolio distinct
+    then extract if item exists then item else False
+    then only-element
+
+reporting rule EntityResponsibleForReporting from CollateralReportInstruction: <"Entity responsible for reporting">
+    extract ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule NumberRecords from CollateralReportInstruction: <"Number records">
+    empty
+
+reporting rule TechnicalRecordId from CollateralReportInstruction: <"Technical record identification">
+    extract
+        if trade.link.TechnicalRecordId(reportableInformation, HKMA) -> isUnique
+        then trade.link.TechnicalRecordId(reportableInformation, HKMA) -> id
+        else trade.link.TechnicalRecordId(reportableInformation, HKMA) -> id + "_" + (margin.datetime.ReportingTimestamp to-string)
+
+reporting rule Counterparty2IdentifierFormat from CollateralReportInstruction: <"Counterparty 2 Identifier Format">
+    extract reportInstruction [
+        extract reportingSide -> reportingCounterparty
+        then extract
+            if personRole -> role any = [NaturalPersonRoleEnum -> Buyer, NaturalPersonRoleEnum -> Seller]
+                    only-element
+            then PartyIdentifierFormat2Enum -> NaturalPerson
+            else if partyId -> identifierType any = LEI
+            then PartyIdentifierFormat2Enum -> Lei
+            else if partyId -> identifierType any = BIC
+            then PartyIdentifierFormat2Enum -> SWIFTBIC
+            else PartyIdentifierFormat2Enum -> Other
+    ]

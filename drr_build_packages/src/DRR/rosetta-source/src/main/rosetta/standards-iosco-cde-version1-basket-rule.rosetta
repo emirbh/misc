@@ -1,0 +1,32 @@
+namespace drr.standards.iosco.cde.version1.basket
+version "${project.version}"
+
+import drr.base.*
+import drr.base.trade.*
+import drr.base.trade.basket.*
+import drr.standards.iosco.*
+import drr.standards.iosco.cde.version1.* as cdeV1
+
+reporting rule CustomBasketCode from TransactionReportInstructionBase: <"Custom Basket Code">
+    [docReference CPMI_IOSCO cdeV1.CDE section "2" field "97"
+        provision "If the OTC derivative transaction is based on a custom basket, unique code assigned by the structurer of the custom basket to link its constituents. This data element is not applicable if no custom basket is involved or no unique code has been assigned to it."]
+    extract
+        if reportableInformation -> customBasket -> customBasketCode exists
+        then reportableInformation -> customBasket -> customBasketCode
+        else (ProductForEvent
+            then economicTerms -> payout
+            then extract
+                (switch
+                    SettlementPayout then
+                        basket.UnderlierBasketIdentifier(underlier),
+                    OptionPayout then
+                        basket.UnderlierBasketIdentifier(underlier),
+                    PerformancePayout then
+                        basket.UnderlierBasketIdentifier(underlier),
+                    CreditDefaultPayout then basket.CreditBasketIdentifier,
+                    default empty)
+            then only-element)
+
+reporting rule BasketConstituents from TransactionReportInstructionBase: <"Basket constituents">
+    extract TradeForEvent
+    then extract basket.GetBasketConstituents

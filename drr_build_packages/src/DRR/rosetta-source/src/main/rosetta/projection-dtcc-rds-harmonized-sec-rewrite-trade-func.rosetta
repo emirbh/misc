@@ -1,0 +1,399 @@
+namespace drr.projection.dtcc.rds.harmonized.sec.rewrite.trade
+version "${project.version}"
+
+import drr.base.trade.*
+import drr.base.util.string.*
+import drr.regulation.sec.rewrite.trade.*
+
+import iso20022.dtcc.rds.harmonized.*
+
+func Project_SECTradeReportToDtccRdsHarmonized:
+    [projection XML]
+    inputs:
+        drrReport SECTransactionReportTrade (1..1)
+    output:
+        harmonizedReport Document (1..1)
+
+    set harmonizedReport -> submission -> header: Create_SubmissionHeader(drrReport)
+
+    set harmonizedReport -> submission -> core:
+        Create_SubmissionCore_Trade(drrReport, Create_SubmissionCore(drrReport))
+
+    set harmonizedReport -> submission -> harmonizedData:
+        Create_SubmissionHarmonizedData_Trade(
+                drrReport,
+                Create_SubmissionHarmonizedData(drrReport)
+            )
+
+    set harmonizedReport -> submission -> harmonizedRepeatableData:
+        Create_SubmissionHarmonizedRepeatableData_Trade(
+                drrReport,
+                Create_SubmissionHarmonizedRepeatableData(drrReport)
+            )
+
+    set harmonizedReport -> submission -> schedules: Create_SubmissionSchedules(drrReport)
+
+func Project_SecPpdReportToDtccRdsHarmonized:
+    [projection XML]
+    inputs:
+        drrReport SECTransactionReportPPD (1..1)
+    output:
+        harmonizedReport Document (1..1)
+
+    set harmonizedReport -> submission -> header: Create_SubmissionHeader(drrReport)
+
+    set harmonizedReport -> submission -> core: Create_SubmissionCore(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedData:
+        Create_SubmissionHarmonizedData(drrReport)
+
+    set harmonizedReport -> submission -> harmonizedRepeatableData:
+        Create_SubmissionHarmonizedRepeatableData(drrReport)
+
+    set harmonizedReport -> submission -> schedules: Create_SubmissionSchedules(drrReport)
+
+func Create_SubmissionHeader:
+    inputs:
+        drrReport SECTransactionReport (1..1)
+    output:
+        header Header (1..1)
+
+    set header:
+        Header {
+            sender: drrReport -> reportSubmittingEntityID,
+            documentTrackingId: drrReport -> dtccAdditionalFields -> messageID,
+            documentCreationTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            ...
+        }
+
+func Create_SubmissionCore_Trade:
+    inputs:
+        drrReport SECTransactionReportTrade (1..1)
+        commonCore Core (1..1)
+    output:
+        core Core (1..1)
+
+    set core: commonCore
+
+    add core -> tradeParty2ReportingDestination:
+        drrReport -> dtccAdditionalFields -> tradeParty2ReportingDestination
+            extract to-string
+
+func Create_SubmissionCore:
+    inputs:
+        drrReport SECTransactionReport (1..1)
+    output:
+        core Core (1..1)
+
+    set core:
+        Core {
+            latestExecutionDatetime: drrReport -> eventTimestamp,
+            messageId: drrReport -> dtccAdditionalFields -> messageID,
+            messageType: [drrReport -> dtccAdditionalFields -> messageTypeTransaction, drrReport -> dtccAdditionalFields -> messageTypePPD]
+                    only-element,
+            primaryAssetClass: drrReport -> dtccAdditionalFields -> primaryAssetClass to-string,
+            submittedForParty: drrReport -> dtccAdditionalFields -> submittedForParty,
+            submittingPartyId: drrReport -> reportSubmittingEntityID,
+            submittingPartyIdType: drrReport -> dtccAdditionalFields -> submittingPartyIDType to-string,
+            tradeParty1Id: drrReport -> counterparty1,
+            tradeParty1IdType: drrReport -> dtccAdditionalFields -> tradeParty1IDType to-string,
+            tradeParty1ReportingDestination: drrReport -> dtccAdditionalFields -> tradeParty1ReportingDestination
+                    extract to-string,
+            tradeParty1TransactionId: drrReport -> dtccAdditionalFields -> tradeParty1TransactionID,
+            tradeParty2Id: drrReport -> counterparty2,
+            tradeParty2IdType: drrReport -> counterparty2IdentifierSource to-string,
+            usiId: drrReport -> uniqueSwapIdentifier,
+            usiIdPrefix: empty, // TH Sprint 2025-23: Aligned with CFTC and CSA guidance, the USI ID Prefix is not considered, as it comes from an outdated format; only the USI ID should be populated.
+            utiId: drrReport -> uniqueTransactionIdentifier,
+            utiIdPrefix: empty, // TH Sprint 2025-23: Aligned with CFTC and CSA guidance, the UTI ID Prefix is not considered, as it comes from an outdated format; only the UTI ID should be populated.
+            tradeParty1ExecutionAgentId: drrReport -> dtccAdditionalFields -> tradeParty1ExecutionAgentID,
+            tradeParty1ExecutionAgentIdType: drrReport -> dtccAdditionalFields -> tradeParty1ExecutionAgentIDType to-string,
+            tradeParty2ExecutionAgentId: drrReport -> dtccAdditionalFields -> tradeParty2ExecutionAgentID,
+            tradeParty2ExecutionAgentIdType: drrReport -> dtccAdditionalFields -> tradeParty2ExecutionAgentIDType to-string,
+            reportingTimestamp: drrReport -> reportingTimestamp default cdm.base.datetime.Now(
+                    ),
+            upi: drrReport -> uniqueProductIdentifier,
+            corporateActionNewTradeParty1Lei: drrReport -> dtccAdditionalFields -> corporateActionNewTradeParty1Lei,
+            ...
+        }
+
+func Create_SubmissionHarmonizedData_Trade:
+    inputs:
+        drrReport SECTransactionReportTrade (1..1)
+        commonHarmonized HarmonizedData (1..1)
+    output:
+        harmonized HarmonizedData (1..1)
+
+    set harmonized: commonHarmonized
+
+    set harmonized -> clearingVenueId: drrReport -> centralCounterparty
+    set harmonized -> clearingVenueIdType:
+        drrReport -> dtccAdditionalFields -> clearingVenueIDType to-string
+    set harmonized -> origin: drrReport -> clearingAccountOrigin to-string
+    set harmonized -> tradeParty1ClearingBrokerId: drrReport -> clearingMember
+    set harmonized -> tradeParty1ClearingBrokerIdType:
+        drrReport -> dtccAdditionalFields -> tradeParty1ClearingBrokerIDType to-string
+    set harmonized -> clearingSwapUtiId: drrReport -> clearingSwapUTIs only-element
+    set harmonized -> originalSwapUsi: drrReport -> originalSwapUSI
+    set harmonized -> originalSwapUti: drrReport -> originalSwapUTI
+    set harmonized -> originalSwapSdrId: drrReport -> originalSwapSDRIdentifier
+    set harmonized -> originalSwapSdrIdType:
+        drrReport -> dtccAdditionalFields -> originalSwapSDRIDType to-string
+    set harmonized -> clearingReceiptDatetime: drrReport -> clearingReceiptTimestamp
+    set harmonized -> buyerPayer1: drrReport -> buyerIdentifier
+    set harmonized -> sellerPayer2: drrReport -> sellerIdentifier
+    set harmonized -> payment1Payer: drrReport -> leg1 -> payerIdentifier
+    set harmonized -> payment2Payer: drrReport -> leg2 -> payerIdentifier
+    set harmonized -> payment1Receiver: drrReport -> leg1 -> receiverIdentifier
+    set harmonized -> cdeReceiverIdentifierLeg2: drrReport -> leg2 -> receiverIdentifier
+    set harmonized -> eventIdentifier: drrReport -> eventIdentifier
+    set harmonized -> cdePackageIdentifier: drrReport -> packageIdentifier
+    set harmonized -> fixingDateLeg1: drrReport -> leg1 -> fixingDate -> date
+    set harmonized -> fixingDateLeg2: drrReport -> leg2 -> fixingDate -> date
+    set harmonized -> premiumPaymentDateUnadjusted: drrReport -> optionPremiumPaymentDate
+    set harmonized -> attachmentPoint: drrReport -> cdSIndexAttachmentPoint
+    set harmonized -> exhaustionPoint: drrReport -> cdSIndexDetachmentPoint
+    set harmonized -> cdeFinalContractualSettlementDate:
+        drrReport -> finalContractualSettlementDate
+    set harmonized -> allocationType: drrReport -> allocationIndicator to-string
+    set harmonized -> priorUsiId: drrReport -> priorUSI
+    set harmonized -> priorUsiIdPrefix: empty // TH Sprint 2025-23: Aligned with CFTC and CSA guidance, the Prior USI ID Prefix is not considered, as it comes from an outdated format; only the Prior USI ID should be populated.
+    set harmonized -> priorUtiId: drrReport -> priorUTI
+    set harmonized -> priorUtiIdPrefix: empty // TH Sprint 2025-23: Aligned with CFTC and CSA guidance, the Prior UTI ID Prefix is not considered, as it comes from an outdated format; only the Prior UTI ID should be populated.
+    set harmonized -> swapReportingJurisdiction: drrReport -> jurisdiction to-string
+    set harmonized -> newSdrIdentifier: drrReport -> newSDRIdentifier
+    set harmonized -> secondaryAssetClass:
+        drrReport -> dtccAdditionalFields -> secondaryAssetClass to-string
+    set harmonized -> executionVenueId:
+        drrReport -> dtccAdditionalFields -> executionVenueID
+    set harmonized -> executionVenueIdType:
+        drrReport -> dtccAdditionalFields -> executionVenueIDType to-string
+
+func Create_SubmissionHarmonizedData:
+    inputs:
+        drrReport SECTransactionReport (1..1)
+    output:
+        harmonized HarmonizedData (1..1)
+
+    set harmonized:
+        HarmonizedData {
+            clearingStatus: drrReport -> cleared to-string,
+            clearingExceptionType: drrReport -> clearingExceptionsAndExemptionsCounterparty1
+                    then extract item to-string
+                    then join (";"),
+            customBasketIndicator: drrReport -> customBasketIndicator,
+            noaActionType: drrReport -> actionType to-string,
+            eventType: drrReport -> eventType to-string,
+            amendmentIndicator: drrReport -> amendmentIndicator,
+            notionalAmount1: drrReport -> leg1 -> notionalAmount,
+            notionalAmount2: drrReport -> leg2 -> notionalAmount,
+            notionalCurrency1: drrReport -> leg1 -> notionalCurrency to-string,
+            notionalCurrency2: drrReport -> leg2 -> notionalCurrency to-string,
+            cdeQuantityUnitOfMeasureLeg1: drrReport -> leg1 -> quantityUnitOfMeasure,
+            cdeQuantityUnitOfMeasureLeg2: drrReport -> leg2 -> quantityUnitOfMeasure,
+            leg1TotalNotionalQuantity: drrReport -> leg1 -> totalNotionalQuantity,
+            leg2TotalNotionalQuantity: drrReport -> leg2 -> totalNotionalQuantity,
+            packageIndicator: drrReport -> packageIndicator,
+            cdePackageTransactionPrice: [drrReport -> packageTransactionPrice -> monetary, drrReport -> packageTransactionPrice -> decimal, drrReport -> packageTransactionPrice -> percentage, drrReport -> packageTransactionPrice -> basis]
+                    only-element,
+            cdePackageTransactionPriceCurrency: drrReport -> packageTransactionPriceCurrency to-string,
+            cdePackageTransactionPriceNotation: drrReport -> packageTransactionPriceNotation
+                    then price.NotationStringFromEnum,
+            cdePackageTransactionSpread: [drrReport -> packageTransactionSpread -> monetary, drrReport -> packageTransactionSpread -> decimal, drrReport -> packageTransactionSpread -> percentage, drrReport -> packageTransactionSpread -> basis]
+                    only-element,
+            cdePackageTransactionSpreadCurrency: drrReport -> packageTransactionSpreadCurrency to-string,
+            cdePackageTransactionSpreadNotation: drrReport -> packageTransactionSpreadNotation
+                    then price.NotationStringFromEnum,
+            cdeFixedRateDayCountConventionLeg1: drrReport -> leg1 -> periodicPayment -> fixedRateDayCountConvention to-string,
+            cdeFixedRateDayCountConventionLeg2: drrReport -> leg2 -> periodicPayment -> fixedRateDayCountConvention to-string,
+            cdeFloatingRateDayCountConventionLeg1: drrReport -> leg1 -> periodicPayment -> floatingRateDayCountConvention to-string,
+            cdeFloatingRateDayCountConventionLeg2: drrReport -> leg2 -> periodicPayment -> floatingRateDayCountConvention to-string,
+            resetFrequencyPeriod1: drrReport -> leg1 -> periodicPayment -> floatingRateResetFrequencyPeriod
+                    // TH Sprint 2025-23: ADHO is an allowable value, but it does not have a conversion to 1 character. This leads to a possible validation error. The conversion of ADHO to 1 character needs to be investigated.
+                    then if item = DAIL
+                        then "D"
+                        else if item = WEEK
+                        then "W"
+                        else if item = MNTH
+                        then "M"
+                        else if item = YEAR
+                        then "Y"
+                        else if item = EXPI
+                        then "T"
+                        else item to-string,
+            leg2ResetFrequencyPeriod: drrReport -> leg2 -> periodicPayment -> floatingRateResetFrequencyPeriod
+                    // TH Sprint 2025-23: ADHO is an allowable value, but it does not have a conversion to 1 character. This leads to a possible validation error. The conversion of ADHO to 1 character needs to be investigated.
+                    then if item = DAIL
+                        then "D"
+                        else if item = WEEK
+                        then "W"
+                        else if item = MNTH
+                        then "M"
+                        else if item = YEAR
+                        then "Y"
+                        else if item = EXPI
+                        then "T"
+                        else item to-string,
+            resetFrequencyPeriodMultiplier1: drrReport -> leg1 -> periodicPayment -> floatingRateResetFrequencyMultiplier,
+            leg2ResetFrequencyPeriodMultiplier: drrReport -> leg2 -> periodicPayment -> floatingRateResetFrequencyMultiplier,
+            cdeFixedRatePaymentFrequencyPeriodLeg1: drrReport -> leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriod to-string,
+            cdeFixedRatePaymentFrequencyPeriodLeg2: drrReport -> leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriod to-string,
+            cdeFloatingRatePaymentFrequencyPeriodLeg1: drrReport -> leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriod to-string,
+            cdeFloatingRatePaymentFrequencyPeriodLeg2: drrReport -> leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriod to-string,
+            cdeFixedRatePaymentFrequencyPeriodMultiplierLeg1: drrReport -> leg1 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier,
+            cdeFixedRatePaymentFrequencyPeriodMultiplierLeg2: drrReport -> leg2 -> periodicPayment -> fixedRatePaymentFrequencyPeriodMultiplier,
+            cdeFloatingRatePaymentFrequencyPeriodMultiplierLeg1: drrReport -> leg1 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier,
+            cdeFloatingRatePaymentFrequencyPeriodMultiplierLeg2: drrReport -> leg2 -> periodicPayment -> floatingRatePaymentFrequencyPeriodMultiplier,
+            leg1FixedRateInitial: drrReport -> leg1 -> fixedRate,
+            leg2FixedRateInitial: drrReport -> leg2 -> fixedRate,
+            postPricedSwapIndicator: drrReport -> postPricedSwapIndicator,
+            price1Price: [drrReport -> price -> monetary, drrReport -> price -> decimal]
+                    only-element,
+            cdePriceCurrency: drrReport -> priceCurrency to-string,
+            cdePriceNotation: drrReport -> priceNotation then price.NotationStringFromEnum,
+            price1Units: drrReport -> priceUnitOfMeasure,
+            leg1SpreadAmount: [drrReport -> leg1 -> spread -> monetary, drrReport -> leg1 -> spread -> decimal, drrReport -> leg1 -> spread -> percentage, drrReport -> leg1 -> spread -> basis]
+                    only-element,
+            leg2SpreadAmount: [drrReport -> leg2 -> spread -> monetary, drrReport -> leg2 -> spread -> decimal, drrReport -> leg2 -> spread -> percentage, drrReport -> leg2 -> spread -> basis]
+                    only-element,
+            leg1SpreadCurrency: drrReport -> leg1 -> spreadCurrency to-string,
+            leg2SpreadCurrency: drrReport -> leg2 -> spreadCurrency to-string,
+            cdeSpreadNotationLeg1: drrReport -> leg1 -> spreadNotation
+                    then price.NotationStringFromEnum,
+            cdeSpreadNotationLeg2: drrReport -> leg2 -> spreadNotation
+                    then price.NotationStringFromEnum,
+            strikePrice: if drrReport -> strikePriceNotation = Monetary
+                    then drrReport -> strikePrice -> monetary
+                else if drrReport -> strikePriceNotation = Decimal
+                then drrReport -> strikePrice -> decimal
+                else if drrReport -> strikePriceNotation = Basis
+                then drrReport -> strikePrice -> basis
+                else if drrReport -> strikePriceNotation = Percentage
+                then drrReport -> strikePrice -> percentage,
+            strikePriceCurrency: if drrReport -> strikePriceNotation = Monetary
+                    then SubString(drrReport -> strikePriceCurrency, 1, 3),
+            cdeStrikePriceNotation: drrReport -> strikePriceNotation
+                    then price.NotationStringFromEnum,
+            premiumAmount: drrReport -> optionPremiumAmount,
+            premiumCurrency: drrReport -> optionPremiumCurrency to-string,
+            cdeFirstExerciseDate: drrReport -> firstExerciseDate,
+            indexFactor: drrReport -> indexFactor,
+            embeddedOptionOnSwap: drrReport -> embeddedOptionType to-string,
+            settlementCurrency1: drrReport -> leg1 -> settlementCurrency to-string,
+            leg2SettlementCurrency: drrReport -> leg2 -> settlementCurrency to-string,
+            cdeSettlementLocationLeg1: drrReport -> settlementLocation to-string,
+            nonStandardTradeIndicator: drrReport -> nonStandardizedTermIndicator,
+            cdeEffectiveDate: drrReport -> effectiveDate,
+            cdeExpirationDate: drrReport -> expirationDate,
+            originalExecutionTimestamp: drrReport -> executionTimestamp,
+            cdePlatformIdentifier: if drrReport -> platformIdentifier exists
+                    then drrReport -> platformIdentifier
+                else if (drrReport -> cleared = N or drrReport -> cleared = I)
+                then "BILT",
+            comment1: drrReport -> dtccAdditionalFields -> comment1,
+            version: [drrReport -> dtccAdditionalFields -> versionTransaction, drrReport -> dtccAdditionalFields -> versionPPD]
+                    only-element,
+            leg1FloatingRateIndex: drrReport -> dtccAdditionalFields -> leg1FloatingRateIndex,
+            leg2FloatingRateIndex: drrReport -> dtccAdditionalFields -> leg2FloatingRateIndex,
+            responsibleDataSubmitterIdType: drrReport -> dtccAdditionalFields -> responsibleDataSubmitterIDType to-string,
+            responsibleDataSubmitterId: drrReport -> dtccAdditionalFields -> responsibleDataSubmitterID,
+            maturityDateOfTheUnderlying: drrReport -> dtccAdditionalFields -> maturityDateOfTheUnderlying,
+            sefOrDcmAnonymousExecutionIndicator: drrReport -> dtccAdditionalFields -> sefOrDcmAnonymousExecutionIndicator,
+            ...
+        }
+
+func RequiresUpFrontFeeProjection:
+    inputs:
+        drrReport SECTransactionReport (0..1)
+    output:
+        result boolean (1..1)
+
+    set result:
+        drrReport -> otherPayment -> paymentType is absent
+            and drrReport -> dtccAdditionalFields -> primaryAssetClass = Credit
+            and drrReport -> leg1 -> fixedRate is absent
+            and drrReport -> leg1 -> spread is absent
+
+func Create_SubmissionHarmonizedRepeatableData_Trade:
+    inputs:
+        drrReport SECTransactionReportTrade (1..1)
+        commonHarmonized HarmonizedRepeatableData (1..1)
+    output:
+        harmonized HarmonizedRepeatableData (1..1)
+
+    alias needsUpfrontFee: RequiresUpFrontFeeProjection(drrReport)
+
+    set harmonized: commonHarmonized
+
+    add harmonized -> clearingSwapUsiId: drrReport -> clearingSwapUSIs
+    add harmonized -> cdeOtherPaymentDate: drrReport -> otherPayment -> date
+    add harmonized -> cdeOtherPaymentPayer: drrReport -> otherPayment -> payer
+    add harmonized -> cdeOtherPaymentReceiver: drrReport -> otherPayment -> receiver
+    add harmonized -> otherPaymentPayerIdType:
+        drrReport -> dtccAdditionalFields -> otherPaymentPayerIDType
+    add harmonized -> otherPaymentReceiverIdType:
+        drrReport -> dtccAdditionalFields -> otherPaymentReceiverIDType
+    // Add Upfront payment if no other payment or else we get rejected on Credit
+    add harmonized -> cdeOtherPaymentPayer:
+        if needsUpfrontFee then drrReport -> buyerIdentifier
+    add harmonized -> cdeOtherPaymentReceiver:
+        if needsUpfrontFee then drrReport -> sellerIdentifier
+    add harmonized -> cdeOtherPaymentDate:
+        if needsUpfrontFee then drrReport -> effectiveDate
+    add harmonized -> otherPaymentPayerIdType:
+        if needsUpfrontFee then "LEI"
+    add harmonized -> otherPaymentReceiverIdType:
+        if needsUpfrontFee then "LEI"
+
+func Create_SubmissionHarmonizedRepeatableData:
+    inputs:
+        drrReport SECTransactionReport (1..1)
+    output:
+        harmonized HarmonizedRepeatableData (1..1)
+
+    alias needsUpfrontFee: RequiresUpFrontFeeProjection(drrReport)
+
+    set harmonized:
+        HarmonizedRepeatableData {
+            clearingExceptionTypeParty2: drrReport -> clearingExceptionsAndExemptionsCounterparty2
+                    extract to-string,
+            cdeOtherPaymentType: drrReport -> otherPayment -> paymentType extract to-string,
+            cdeOtherPaymentAmount: drrReport -> otherPayment -> amount,
+            cdeOtherPaymentCurrency: drrReport -> otherPayment -> currency extract to-string,
+            underlyingAssetId: drrReport -> dtccAdditionalFields -> underlyingAsset -> underlyingAssetID,
+            underlyingAssetIdType: drrReport -> dtccAdditionalFields -> underlyingAsset -> underlyingAssetIDType,
+            underlyingAssetName: drrReport -> dtccAdditionalFields -> underlyingAssetName,
+            ...
+        }
+    // Add Upfront payment if no other payment or else we get rejected on Credit
+    add harmonized -> cdeOtherPaymentType:
+        if needsUpfrontFee then "UFRO"
+    add harmonized -> cdeOtherPaymentAmount: if needsUpfrontFee then 0
+    add harmonized -> cdeOtherPaymentCurrency:
+        if needsUpfrontFee
+        then drrReport -> leg1 -> notionalCurrency to-string
+
+func Create_SubmissionSchedules:
+    inputs:
+        drrReport SECTransactionReport (1..1)
+    output:
+        schedules Schedules (0..1)
+
+    add schedules -> cdeNotionalSchedule1:
+        drrReport -> leg1 -> notionalAmountSchedule
+            then extract
+                CdeSchedule1 {
+                    cdeEffectiveDateOfTheNotionalAmountLeg1: effectiveDate,
+                    cdeNotionalAmountInEffectOnAssociatedEffectiveDateLeg1: value,
+                    cdeEndDateOfTheNotionalAmountLeg1: empty
+                }
+
+    add schedules -> cdeNotionalSchedule2:
+        drrReport -> leg2 -> notionalAmountSchedule
+            then extract
+                CdeSchedule2 {
+                    cdeEffectiveDateOfTheNotionalAmountLeg2: effectiveDate,
+                    cdeNotionalAmountInEffectOnAssociatedEffectiveDateLeg2: value,
+                    cdeEndDateOfTheNotionalAmountLeg2: empty
+                }

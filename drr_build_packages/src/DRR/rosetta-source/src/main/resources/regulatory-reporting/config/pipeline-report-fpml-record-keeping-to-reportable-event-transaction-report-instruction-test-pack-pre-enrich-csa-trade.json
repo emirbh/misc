@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich-csa-trade",
+  "name" : "CSA / Trade",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.csa.rewrite.trade.reports.CSATradeReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.csa.rewrite.trade.CSATransactionReportTrade"
+  },
+  "upstreamPipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich"
+}

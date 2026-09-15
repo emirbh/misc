@@ -1,0 +1,1108 @@
+{
+  "originatingWorkflowStep" : {
+    "proposedEvent" : {
+      "intent" : "ContractFormation",
+      "eventDate" : "2022-01-18",
+      "instruction" : [ {
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "contractualParty" : [ {
+                "globalReference" : "590367e9",
+                "externalReference" : "PartyA"
+              }, {
+                "globalReference" : "5151b003",
+                "externalReference" : "PartyB"
+              } ],
+              "meta" : {
+                "globalKey" : "8241870c"
+              }
+            } ]
+          }
+        },
+        "before" : {
+          "value" : {
+            "trade" : {
+              "product" : {
+                "identifier" : [ {
+                  "identifier" : {
+                    "value" : "Equity:Swap:PriceReturnBasicPerformance:Basket",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/product-taxonomy"
+                    }
+                  },
+                  "source" : "Other",
+                  "meta" : {
+                    "globalKey" : "ead9b8f9"
+                  }
+                } ],
+                "taxonomy" : [ {
+                  "primaryAssetClass" : {
+                    "value" : "Equity"
+                  }
+                } ],
+                "economicTerms" : {
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "unadjustedDate" : "2022-01-20",
+                      "meta" : {
+                        "globalKey" : "3f3054"
+                      }
+                    },
+                    "meta" : {
+                      "globalKey" : "3f3054"
+                    }
+                  },
+                  "payout" : [ {
+                    "PerformancePayout" : {
+                      "payerReceiver" : {
+                        "payer" : "Party1",
+                        "receiver" : "Party2"
+                      },
+                      "priceQuantity" : {
+                        "quantitySchedule" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "quantity-1"
+                          }
+                        },
+                        "meta" : {
+                          "globalKey" : "0"
+                        }
+                      },
+                      "settlementTerms" : {
+                        "settlementCurrency" : {
+                          "value" : "USD"
+                        },
+                        "meta" : {
+                          "globalKey" : "14966"
+                        }
+                      },
+                      "valuationDates" : {
+                        "interimValuationDate" : {
+                          "valuationDates" : {
+                            "periodicDates" : {
+                              "periodFrequency" : {
+                                "periodMultiplier" : 1,
+                                "period" : "M",
+                                "meta" : {
+                                  "globalKey" : "6c"
+                                }
+                              }
+                            },
+                            "meta" : {
+                              "globalKey" : "6c"
+                            }
+                          },
+                          "meta" : {
+                            "globalKey" : "6c"
+                          }
+                        },
+                        "finalValuationDate" : {
+                          "valuationDate" : {
+                            "adjustableDate" : {
+                              "unadjustedDate" : "2022-03-22",
+                              "meta" : {
+                                "globalKey" : "3f30d6"
+                              }
+                            },
+                            "meta" : {
+                              "globalKey" : "3f30d6"
+                            }
+                          },
+                          "meta" : {
+                            "globalKey" : "3f30d6"
+                          }
+                        }
+                      },
+                      "underlier" : {
+                        "Observable" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "observable-1"
+                          }
+                        }
+                      },
+                      "returnTerms" : {
+                        "priceReturnTerms" : {
+                          "returnType" : "Price"
+                        }
+                      }
+                    },
+                    "meta" : {
+                      "globalKey" : "ce1238a4"
+                    }
+                  } ],
+                  "nonStandardisedTerms" : false
+                },
+                "meta" : {
+                  "globalKey" : "46d04b31"
+                }
+              },
+              "tradeLot" : [ {
+                "priceQuantity" : [ {
+                  "quantity" : [ {
+                    "value" : {
+                      "value" : 293686332.00
+                    },
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-2"
+                      } ]
+                    }
+                  }, {
+                    "value" : {
+                      "value" : 293686332.00,
+                      "unit" : {
+                        "currency" : {
+                          "value" : "USD"
+                        }
+                      }
+                    },
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-1"
+                      } ]
+                    }
+                  } ],
+                  "observable" : {
+                    "value" : {
+                      "Basket" : {
+                        "basketConstituent" : [ {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "AAPL.O",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.1651591019,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-2"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "ACN.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0118720724,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-1"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "CRTO.O",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0343240187,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-11"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "DISH.O",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0126796963,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-10"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "LLY.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0439751252,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-13"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "LOW.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0550799548,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-12"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "MAR.O",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0133257955,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-15"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "MDT.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.1030931998,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-14"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "PYPL.O",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0541108060,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-17"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "RDSb.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.1971410111,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-16"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "RDY.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0090857697,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-4"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "SNY.O",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0739379745,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-3"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "TNL.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0128412211,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-6"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "TSLA.O",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0196252625,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-5"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "UL.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0191003069,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-8"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "WNS.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.0129219835,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-7"
+                            } ]
+                          }
+                        }, {
+                          "value" : {
+                            "Asset" : {
+                              "Instrument" : {
+                                "Security" : {
+                                  "identifier" : [ {
+                                    "identifier" : {
+                                      "value" : "YPF.N",
+                                      "meta" : {
+                                        "scheme" : "http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC"
+                                      }
+                                    },
+                                    "identifierType" : "RIC"
+                                  } ],
+                                  "instrumentType" : "Equity"
+                                }
+                              }
+                            },
+                            "quantity" : [ {
+                              "value" : {
+                                "value" : 0.1617267000,
+                                "unit" : {
+                                  "financialUnit" : "Weight"
+                                }
+                              }
+                            } ]
+                          },
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "basketConstituent-9"
+                            } ]
+                          }
+                        } ]
+                      }
+                    },
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "observable-1"
+                      } ]
+                    }
+                  },
+                  "meta" : {
+                    "globalKey" : "27dbc9e0"
+                  }
+                } ]
+              } ],
+              "counterparty" : [ {
+                "role" : "Party1",
+                "partyReference" : {
+                  "globalReference" : "590367e9",
+                  "externalReference" : "PartyA"
+                }
+              }, {
+                "role" : "Party2",
+                "partyReference" : {
+                  "globalReference" : "5151b003",
+                  "externalReference" : "PartyB"
+                }
+              } ],
+              "tradeIdentifier" : [ {
+                "issuer" : {
+                  "value" : "DUMMYLEI020000000085",
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+                  }
+                },
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "value" : "UTIEQUITYSWAPPRI0154",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                    }
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "65ec4eba"
+                },
+                "identifierType" : "UniqueTransactionIdentifier"
+              } ],
+              "tradeDate" : {
+                "value" : "2021-12-20",
+                "meta" : {
+                  "globalKey" : "3f2b14"
+                }
+              },
+              "party" : [ {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "DUMMYLEI020000000085",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    }
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "590367e9"
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "590367e9",
+                  "externalKey" : "PartyA"
+                }
+              }, {
+                "partyId" : [ {
+                  "identifier" : {
+                    "value" : "DUMMYLEI010000000037",
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    }
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "5151b003"
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "5151b003",
+                  "externalKey" : "PartyB"
+                }
+              } ],
+              "meta" : {
+                "globalKey" : "ef822515"
+              }
+            },
+            "meta" : {
+              "globalKey" : "ef822515"
+            }
+          }
+        }
+      } ]
+    },
+    "messageInformation" : {
+      "messageId" : {
+        "value" : "256440d3213a42708b79bf1c3ae96e91",
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+        }
+      },
+      "sentBy" : {
+        "value" : "DUMMYLEI020000000085"
+      },
+      "sentTo" : [ {
+        "value" : "DTCCGTR"
+      } ]
+    },
+    "timestamp" : [ {
+      "dateTime" : "2022-01-21T15:38:30.1717981Z",
+      "qualification" : "eventCreationDateTime"
+    }, {
+      "dateTime" : "2022-01-18T21:01:48Z",
+      "qualification" : "executionDateTime"
+    }, {
+      "dateTime" : "2022-01-13T11:25:59Z",
+      "qualification" : "confirmationDateTime"
+    } ],
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "256440d3213a42708b79bf1c3ae96e91"
+        }
+      } ],
+      "meta" : {
+        "globalKey" : "ea3d81db"
+      }
+    } ],
+    "action" : "New",
+    "meta" : {
+      "globalKey" : "76ae0b37"
+    }
+  },
+  "reportableInformation" : {
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "globalReference" : "590367e9",
+        "externalReference" : "PartyA"
+      }
+    }, {
+      "partyReference" : {
+        "globalReference" : "5151b003",
+        "externalReference" : "PartyB"
+      }
+    } ],
+    "confirmationMethod" : "NonElectronic",
+    "originalExecutionTimestamp" : "2022-01-18T21:01:48Z",
+    "intragroup" : false,
+    "jurisdictionInformation" : [ {
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "590367e9",
+          "externalReference" : "PartyA"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "esmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "UCIT" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "5151b003",
+          "externalReference" : "PartyB"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "esmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "AIFD" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "UKEMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "FCA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "590367e9",
+          "externalReference" : "PartyA"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "fcaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "UCIT" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "5151b003",
+          "externalReference" : "PartyB"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "fcaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "AIFD" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "JFSA"
+      },
+      "supervisoryBody" : {
+        "value" : "JFSA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "590367e9",
+          "externalReference" : "PartyA"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "value" : "256440d3213a42708b79bf1c3ae96e91",
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            }
+          }
+        }
+      }, {
+        "partyReference" : {
+          "globalReference" : "5151b003",
+          "externalReference" : "PartyB"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "value" : "256440d3213a42708b79bf1c3ae96e91",
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            }
+          }
+        }
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "CSA"
+      },
+      "supervisoryBody" : {
+        "value" : "CA.AB.ASC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "590367e9",
+          "externalReference" : "PartyA"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "5151b003",
+          "externalReference" : "PartyB"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "HKMA"
+      },
+      "supervisoryBody" : {
+        "value" : "HKMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "590367e9",
+          "externalReference" : "PartyA"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "hkmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "UCIT" ]
+          }
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "5151b003",
+          "externalReference" : "PartyB"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "hkmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "AIFD" ]
+          }
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "SEC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "590367e9",
+          "externalReference" : "PartyA"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      } ]
+    } ]
+  }
+}

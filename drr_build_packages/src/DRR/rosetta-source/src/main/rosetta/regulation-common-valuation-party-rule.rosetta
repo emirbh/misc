@@ -1,0 +1,44 @@
+namespace drr.regulation.common.valuation.party
+version "${project.version}"
+
+import cdm.base.staticdata.party.*
+
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version1.* as cde
+
+reporting rule Counterparty1 from ValuationReportInstruction: <"Counterparty 1 (reporting counterparty)">
+    extract cde.party.Counterparty1FromReportingSide(reportingSide)
+
+reporting rule Counterparty2 from ValuationReportInstruction: <"Counterparty 2">
+    extract cde.party.Counterparty2FromReportingSide(reportingSide)
+
+reporting rule Counterparty2IdentifierType from ValuationReportInstruction: <"Counterparty 2 Identifier Type">
+    extract reportingSide -> reportingCounterparty
+    then extract
+        if personRole -> role any = Buyer
+                or personRole -> role any = Seller
+                or partyId -> identifierType all <> LEI
+        then False
+        else if PartyLei(partyId) exists
+        then True
+
+reporting rule Counterparty2IdentifierSource from ValuationReportInstruction: <"Counterparty 2 Identifier Source">
+    extract reportingSide -> reportingCounterparty
+    then extract
+        if person exists
+                and [PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID]
+                    any = person -> personId -> identifierType first
+        then (person -> personId -> identifierType
+            then filter
+                ([PersonIdentifierTypeEnum -> NPID, PersonIdentifierTypeEnum -> PLID]) any = item
+            then first
+            then extract item to-string)
+        else if partyId -> identifierType any = LEI
+        then "LEID"
+
+reporting rule ReportSubmittingEntityID from ValuationReportInstruction: <"Report Submitting Entity ID">
+    extract ExtractReportSubmittingPartyIdentifier(reportingSide)
+
+reporting rule EntityResponsibleForReporting from ValuationReportInstruction: <"Entity responsible for reporting">
+    extract ExtractPartyResponsibleForReportingIdentifier(reportingSide)

@@ -1,0 +1,69 @@
+{
+  "actionType" : "NEWT",
+  "cleared" : "I",
+  "counterparty1" : "5493001RKR55V4X61F71",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2FinancialEntityIndicator" : false,
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "SEF1232024-04-29T00:00Z",
+    "primaryAssetClass" : "Credit",
+    "submittedForParty" : "5493001RKR55V4X61F71",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "underlyingAsset" : [ {
+      "underlyingAssetID" : "Dow_Jones_CDX_NA_IG.2",
+      "underlyingAssetIDType" : "Index"
+    } ]
+  },
+  "effectiveDate" : "2004-03-23",
+  "eventTimestamp" : "2005-01-24T16:42:16Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2005-01-24T16:20:47Z",
+  "expirationDate" : "2009-03-20",
+  "indexFactor" : 1.0,
+  "leg1" : {
+    "fixedRate" : 0.006,
+    "notionalAmount" : 25000000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "YEAR",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 1
+    }
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "OPTL",
+          "Underlying" : {
+            "UnderlierIDSource" : "CRIDX",
+            "UnderlyingCreditIndexSeries" : 2,
+            "UnderlyingInstrumentIndexTermUnit" : "YEAR"
+          },
+          "UnderlyingIssuerType" : "Corporate"
+        },
+        "Header" : {
+          "AssetClass" : "Credit",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Index"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "otherPayment" : [ {
+    "amount" : 16000,
+    "currency" : "USD",
+    "paymentType" : "UFRO"
+  } ],
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "5493001RKR55V4X61F71",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIMOCKUPDATAMAS0113"
+}

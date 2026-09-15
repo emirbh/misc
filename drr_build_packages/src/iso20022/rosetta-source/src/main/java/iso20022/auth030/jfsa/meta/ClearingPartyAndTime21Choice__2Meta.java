@@ -1,0 +1,64 @@
+package iso20022.auth030.jfsa.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import iso20022.auth030.jfsa.ClearingPartyAndTime21Choice__2;
+import iso20022.auth030.jfsa.validation.ClearingPartyAndTime21Choice__2TypeFormatValidator;
+import iso20022.auth030.jfsa.validation.ClearingPartyAndTime21Choice__2Validator;
+import iso20022.auth030.jfsa.validation.exists.ClearingPartyAndTime21Choice__2OnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version ${project.version}
+ */
+@RosettaMeta(model=ClearingPartyAndTime21Choice__2.class)
+public class ClearingPartyAndTime21Choice__2Meta implements RosettaMetaData<ClearingPartyAndTime21Choice__2> {
+
+	@Override
+	public List<Validator<? super ClearingPartyAndTime21Choice__2>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+		);
+	}
+	
+	@Override
+	public List<Function<? super ClearingPartyAndTime21Choice__2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super ClearingPartyAndTime21Choice__2> validator(ValidatorFactory factory) {
+		return factory.<ClearingPartyAndTime21Choice__2>create(ClearingPartyAndTime21Choice__2Validator.class);
+	}
+
+	@Override
+	public Validator<? super ClearingPartyAndTime21Choice__2> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<ClearingPartyAndTime21Choice__2>create(ClearingPartyAndTime21Choice__2TypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super ClearingPartyAndTime21Choice__2> validator() {
+		return new ClearingPartyAndTime21Choice__2Validator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super ClearingPartyAndTime21Choice__2> typeFormatValidator() {
+		return new ClearingPartyAndTime21Choice__2TypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super ClearingPartyAndTime21Choice__2, Set<String>> onlyExistsValidator() {
+		return new ClearingPartyAndTime21Choice__2OnlyExistsValidator();
+	}
+}

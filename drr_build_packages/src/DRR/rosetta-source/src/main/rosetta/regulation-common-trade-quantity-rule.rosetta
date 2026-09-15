@@ -1,0 +1,59 @@
+namespace drr.regulation.common.trade.quantity
+version "${project.version}"
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iso.*
+
+// Notional Quantity
+reporting rule NotionalQuantityLeg1 from TransactionReportInstruction: <"Notional quantity of the contract for leg 1">
+    if IsSingleCommodityPayoutProduct(ProductForEvent) = False
+            and (IsEquity(ProductForEvent) or IsCommodity(ProductForEvent))
+    then extract NotionalQuantity(common.PayoutLeg1)
+
+reporting rule NotionalQuantityLeg2 from TransactionReportInstruction: <"Notional quantity of the contract for leg 2">
+    if IsEquity(ProductForEvent) or IsCommodity(ProductForEvent)
+    then NotionalQuantity(common.PayoutLeg2)
+
+reporting rule NotionalQuantity from PayoutLegWithAuxiliary: <"Notional Quantity">
+    EquityNotionalQuantity default (CommodityQuantityWithFrequency
+        then value default datedValue -> value first
+        )
+        then FormatToShortFraction5DecimalNumber
+
+reporting rule EquityNotionalQuantity from PayoutLegWithAuxiliary: <"Equity Notional Quantity">
+    extract
+        if optionPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then optionPayout -> priceQuantity -> quantitySchedule
+        else if settlementPayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then settlementPayout -> priceQuantity -> quantitySchedule
+        else if performancePayout -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists
+        then performancePayout -> priceQuantity -> quantitySchedule
+        else if tradeLot -> priceQuantity -> quantity -> unit -> financialUnit exists
+        then (tradeLot -> priceQuantity -> quantity
+            then filter unit -> financialUnit exists
+            then only-element)
+    then extract
+        if multiplier exists
+        then value * multiplier -> value
+        else value
+
+reporting rule QuantityFrequencyPeriodLeg1 from TransactionReportInstruction: <"Quantity Frequency Leg 1">
+    if IsSingleCommodityPayoutProduct(ProductForEvent) = False
+    then common.quantity.QuantityFrequency(common.PayoutLeg1) -> period
+
+reporting rule QuantityFrequencyPeriodLeg2 from TransactionReportInstruction: <"Quantity Frequency Leg 2">
+    common.quantity.QuantityFrequency(common.PayoutLeg2) -> period
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 1">
+    if IsSingleCommodityPayoutProduct(ProductForEvent) = False
+    then common.quantity.QuantityFrequency(common.PayoutLeg1) -> periodMultiplier
+
+reporting rule QuantityFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Notional Quantity Frequency Period Multiplier - Leg 2">
+    common.quantity.QuantityFrequency(common.PayoutLeg2) -> periodMultiplier
+
+//---------------- Notional Quantity Schedule --------------------
+reporting rule NotionalSchedule from TransactionReportInstruction: <"Notional Schedule (non-reportable)">
+    extract IsNotionalScheduleCustom

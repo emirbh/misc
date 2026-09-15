@@ -1,0 +1,1001 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2014 rel. 2 sp1 (x64) (http://www.altova.com) by ﻿DTCC (DTCC) -->
+<sd:schema xmlns="http://www.dtcc.com/DTCC/rds-1" xmlns:sd="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.dtcc.com/DTCC/rds-1" elementFormDefault="qualified">
+	<sd:element name="document" type="document"/>
+	<sd:complexType name="DataResponse">
+		<sd:sequence>
+			<sd:element name="header" type="header"/>
+			<sd:element name="submissionValidationStatus" type="genericAttribute" maxOccurs="unbounded"/>
+			<sd:element name="core" type="core"/>
+			<sd:element name="error" type="error" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="originalSubmission" type="submissionWrapper" minOccurs="0"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="DataSubmission">
+		<sd:sequence>
+			<sd:element name="header" type="header" minOccurs="1"/>
+			<sd:element name="core" type="core"/>
+			<sd:element name="harmonizedData" type="harmonizedData"/>
+			<sd:element name="harmonizedRepeatableData" type="harmonizedRepeatableData" minOccurs="0"/>
+			<sd:element name="schedules" type="schedules" minOccurs="0"/>
+			<sd:element name="genericAttribute" type="genericAttribute" minOccurs="0" maxOccurs="unbounded"/>
+		</sd:sequence>
+	</sd:complexType>
+	<!-- start inline types - inline types are not supported by Rune DSL, refactored to non-inline types until supported added -->
+	<sd:complexType name="harmonizedData">
+		<sd:all>
+			<sd:element name="leg2CommodityInstrumentId" type="freeformatText150" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2CommodityUnderlyerId" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2CommodityUnderlyerDetails" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2CommodityUnitOfMeasure" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2CommodityCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2CommodityExchangeId" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityRateSource" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityRateSourcePage" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2SpecifiedPrice" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="commencementDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="exerciseExpirationDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="expirationDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2NotionalQuantityFrequency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2NotionalQuantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2TotalNotionalQuantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2SpreadAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2SpreadCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="scheduledTerminationDateAdjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1PartyPayer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2PartyPayer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityInstrumentId" type="freeformatText150" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityUnderlyerId" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityUnitOfMeasure" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityExchangeId" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2CommodityRateSource" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1EffectiveDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2EffectiveDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="coProductType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="totalQuantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="totalQuantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fixedPrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fixedPriceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1NotionalQuantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1NotionalQuantityFrequency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1NotionalQuantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1TotalNotionalQuantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1SpecifiedPrice" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1SpreadCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1SpreadAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2NotionalQuantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2PartyReceiver" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1PartyReceiver" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="coalSource" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2Quantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="commodityBase" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="commodityDetails" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="interconnectionPoint" type="freeformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="loadType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fixedPriceUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="exercisePaymentDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1PaymentDatesUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2PaymentDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="settlementDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="deliveryLocation" type="freeformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2QuantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1CommodityUnderlyerDetails" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2CommodityRateSourcePage" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="valueDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="gtrQuantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="attachmentPoint" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="exhaustionPoint" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="mthToDefault" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="nthToDefault" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="seniority" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="series" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="crversion" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tranche" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="indexFactor" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="referenceObligation" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="referenceObligationIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingFixedRatePayerBuyer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingFloatRatePayerSeller" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetExchangeId" type="freeformatText6450" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetNumberOfUnits" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionalEarlyTerminationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionalEarlyTerminationElectingPartyValue" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionalEarlyTerminationIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetFloatingAmountPayer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetFloatingAmountReceiver" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="floatingRateOption" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetFloatingLegSpread" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2DesignatedMaturityPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2DesignatedMaturityPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetEquityAmountPayer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetEquityAmountReceiver" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingAssetInitialPriceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1ValuationDates" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1TypeOfReturn" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="observationStartDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="varianceAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="volatilityStrikePrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="varianceStrikePrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="varianceCapFactor" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="referenceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="specialDividendsIndicator" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="materialNoncashDividendIndicator" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="numberOfSharesUnits" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="dividendAmountPayer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="dividendAmountReceiver" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fixedAmountPayer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fixedAmountReceiver" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="knockInEvent" type="freeformatText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="knockOutEvent" type="freeformatText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="knockInPrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="knockOutPrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="barrierType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="earliestExecutionTime" type="sd:time" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="exchangeRate" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="exchangeRateBasisCurrency1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="exchangeRateBasisCurrency2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="executionPeriodStartDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payoutStyle" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="rateQuoteBasis1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="settlementFixingDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="swapLinkId" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="triggerCondition" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="triggerCondition2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="triggerRate" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="triggerRate2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="rateQuoteBasis2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="forwardExchangeRate" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="barrierType2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionBuyer" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionCommencementDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionExerciseStyleType" type="freeformatText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionExpirationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionInitialFeeCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionInitialFeePayer" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionPremiumAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cancelationOptionSeller" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="capRateInitial" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="couponType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="finalPrincipalExchangeIndicatorAtTermination" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="floorRateInitial" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fraDiscountingType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="inflationIndexInitialLevel" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="inflationIndexMainPublication" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="inflationInterpolationMethod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="inflationLagDayType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="inflationLagPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="inflationRateSourceName" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="initialPrincipalExchangeIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="intermediatePrincipalExchangeIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FloatingRateIndex" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FloatingRateInitialSpread" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FloatingRateMultiplierInitialValue" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FloatingRateTenorPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FloatingRateTenorPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1KnownAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1KnownAmountCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1ReferenceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2FloatingRateIndex" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2FloatingRateInitialSpread" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2FloatingRateMultiplierInitialValue" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2FloatingRateTenorPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2FloatingRateTenorPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2KnownAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2KnownAmountCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2ReferenceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="mandatoryEarlyTerminationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="mandatoryEarlyTerminationDateTenorPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="mandatoryEarlyTerminationDateTenorPeriodMultiplier" type="freeformatNumeric3" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="notionalUnits" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionalEarlyTerminationCommencementDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionalEarlyTerminationExerciseStyle" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionalEarlyTerminationExpirationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="premiumReceiver" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingCouponRate" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingMaturityDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlyingProductId" type="idText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="inflationLagPeriodMultiplier" type="freeformatNumeric3" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FixedRateNotation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2FixedRateNotation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="swaptionStraddleIndicator" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="singlePartyEarlyTerminationBuyer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1EffectiveDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="action" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingStatus" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="effectiveDate1" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="executionVenueType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="nonStandardTradeIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="notionalAmount1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="notionalCurrency1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price1Price" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price1Type" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price1Units" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="scheduledTerminationDate1" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CollateralizationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1EventId" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CollateralizationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2EventId" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="embeddedOptionOnSwap" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="expirationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="notionalAmount2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="notionalCurrency2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="premiumAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="premiumCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="version" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="comment1" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionStyle" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="settlementCurrency1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="commencementDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="dayCountFraction1" type="freeformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2DayCountFraction" type="freeformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2EffectiveDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2ResetFrequencyPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2ResetFrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2SettlementCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2ScheduledTerminationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="numberOfOptions" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionEntitlement" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="originalExecutionTimestamp" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1Date" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1FrequencyPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1FrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2Date" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2FrequencyPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2FrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="resetFrequencyPeriod1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="resetFrequencyPeriodMultiplier1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="settlementDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="strikePrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="strikePriceUnits" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="asOfDateTime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingVenueId" type="idText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingVenueIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="compressedTradeIndicator" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="confirmationMethod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="confirmationPlatformId" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="confirmationPlatformTradeId" type="freeformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="executionVenueId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="executionVenueIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="postTradeEffectiveDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="priorUsiId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="priorUsiIdPrefix" type="fixedformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="priorUtiId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="priorUtiIdPrefix" type="fixedformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1BranchLocation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ClearingBrokerId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ClearingBrokerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1DeskLocation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1Domicile" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1IndustrialSectorType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2BranchLocation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2DeskLocation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2Domicile" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2IndustrialSectorType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="sellerPayer2" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="buyerPayer1" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1HkCounterpartyOrigin" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2SettlementDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FixedRateInitial" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2FixedRateInitial" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1Amount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1Currency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1Payer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1Receiver" type="referenceText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2Payer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="postTradeTransactionDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="secondaryAssetClass" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="settlementType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1Name" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2Name" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="ccpValuationAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="ccpValuationCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="ccpValuationDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="ccpValuationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ValuationAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ValuationCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ValuationDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ValuationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ValuationAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ValuationCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ValuationDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ValuationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="executionType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="strikePriceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2Amount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2HkCounterpartyOrigin" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CountryOfTheOtherCounterparty" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CountryOfTheOtherCounterparty" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1BrokerId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2BrokerId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1BeneficiaryIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1BeneficiaryId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2BeneficiaryIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2BeneficiaryId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CounterpartySide" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CounterpartySide" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CollateralPortfolioCode" type="freeformatText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CollateralPortfolioCode" type="freeformatText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="contractType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="euUnderlyingAssetIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="productClassification" type="freeformatText6" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="complexTradeComponentId" type="freeformatText35" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="priceMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="quantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="masterAgreementType" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="masterAgreementVersion" type="fixedformatText4" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="confirmationDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="maturityDateOfTheUnderlying" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="level" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="productClassificationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="productIdentificationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="productIdentification" type="fixedformatText48" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="euUnderlyingAssetId" type="freeformatText6499" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="reportTrackingNumber" type="freeformatText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1BrokerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2BrokerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ClearingBrokerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ClearingBrokerId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ClearingThreshold" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ClearingThreshold" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CorporateSectorType" type="freeformatText255" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CorporateSectorType" type="freeformatText255" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1DirectlyLinkedToCommercialActivityOrTreasuryFinancingIndicator" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2DirectlyLinkedToCommercialActivityOrTreasuryFinancingIndicator" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="intragroupIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1TradingCapacity1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2TradingCapacity1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="currencyOfPrice" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CollateralPortfolio" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CollateralPortfolio" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="executionVenueMicCode" type="idText10" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2Currency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="expirationDateTimeBusinessCenter" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="expirationTime" type="sd:time" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="expirationTimeType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1TraderLocation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2TraderLocation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3ResetFrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3ResetFrequencyPeriod" type="frequencyText1" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment4ResetFrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment4ResetFrequencyPeriod" type="frequencyText1" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment5ResetFrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment5ResetFrequencyPeriod" type="frequencyText1" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1Type" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment1Reference" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2Type" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment2Reference" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3Payer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3Reference" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3FrequencyPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3FrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3Date" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment4Reference" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment4Payer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment4FrequencyPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment4FrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment4Date" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment5Reference" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment5Payer" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment5FrequencyPeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment5FrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment5Date" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="payment3Type" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="premiumPayer" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="premiumPaymentDateUnadjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1NatureOfTheReportingCounterparty" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2NatureOfTheReportingCounterparty" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="reservedParticipantUse1" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="reservedParticipantUse2" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="reservedParticipantUse3" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="reservedParticipantUse4" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="reservedParticipantUse5" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1TerminationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="allocationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="calculationBasis" type="freeformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingExceptionPartyId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingExceptionPartyIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingExceptionType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingMemberClientAccountId" type="freeformatText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingReceiptDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingSwapSdrLeiId" type="idText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="clearingSwapUtiId" type="freeformatText3999" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="collateralReportingDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="collateralValuationDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="comment2" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="commodityStrikePriceUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="executionAgentMaskingIndicator" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="feeInCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="feeOutCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="floatingRatePaymentFrequencyLeg1Multiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="floatingRatePaymentFrequencyLeg1TimePeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="floatingRatePaymentFrequencyLeg2Multiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="floatingRatePaymentFrequencyLeg2TimePeriod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="frequencyOfPayment" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="interaffiliate" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="largeTradeIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1EffectiveDateAdjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1FinalValuationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg1SettlementPeriod" type="descriptorText500" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2EffectiveDateAdjusted" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2PaymentTermsFrequencyPeriod" type="frequencyText2" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2PaymentTermsPaymentFrequencyPeriodMultiplier" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2SettlementType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2UnderlyingAssetId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2UnderlyingAssetIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2UnderlyingAssetName" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="maturityDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionalEarlyTerminationDate" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityExchangeId" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityInstrumentId" type="freeformatText150" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityRateSource" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityRateSourcePage" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityUnderlyerDetails" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityUnderlyerId" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionCommodityUnitOfMeasure" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionSpecifiedPrice" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionSpreadAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionSpreadCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="optionSpreadSchedule" type="fixedformatText48" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="origin" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="originalSwapSdrId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="originalSwapSdrIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="paymentFrequencyPeriodLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="paymentFrequencyPeriodLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="paymentFrequencyPeriodMultiplierLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="paymentFrequencyPeriodMultiplierLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="premiumPayerPrefix" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price1Currency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price2Price" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price2Type" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price2Units" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price3Price" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price3Type" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price3Units" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price4Price" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price4Type" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="price4Units" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="pricingContext" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="priorUsiType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="priorUtiType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="recoveryPrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="sendToDataCenterCode" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="strikePriceType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="subAssetClassForOtherCommodity" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CftcFinancialEntityStatus" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CollateralAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1CollateralCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1MandatoryDelegatedReporting" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1Role" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CftcFinancialEntityStatus" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CollateralAmount" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2CollateralCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2MandatoryDelegatedReporting" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2Role" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="upfrontPayment" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="verificationMethod" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="responsibleDataSubmitterId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="responsibleDataSubmitterIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<!-- start additions for NOA Rewrite -->
+			<sd:element name="originalSwapUsi" type="idText42" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="originalSwapUti" type="idText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeReceiverIdentifierLeg2" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="counterparty1FederalEntityIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="counterparty2FederalEntityIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="customBasketIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="noaActionType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="eventType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="amendmentIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="eventIdentifier" type="idText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeCallAmountLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeCallAmountLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeCallCurrencyLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeCallCurrencyLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePutAmountLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePutAmountLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePutCurrencyLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePutCurrencyLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="leg2QuantityFrequency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="quantityFrequencyMultiplierLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="quantityFrequencyMultiplierLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeQuantityUnitOfMeasureLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeQuantityUnitOfMeasureLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="packageIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePackageIdentifier" type="freeformatText100" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePackageTransactionPrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePackageTransactionPriceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePackageTransactionPriceNotation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePackageTransactionSpread" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePackageTransactionSpreadCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePackageTransactionSpreadNotation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFixedRateDayCountConventionLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFixedRateDayCountConventionLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFloatingRateDayCountConventionLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFloatingRateDayCountConventionLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fixingDateLeg1" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="fixingDateLeg2" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFixedRatePaymentFrequencyPeriodLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFixedRatePaymentFrequencyPeriodLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFloatingRatePaymentFrequencyPeriodLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFloatingRatePaymentFrequencyPeriodLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFixedRatePaymentFrequencyPeriodMultiplierLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFixedRatePaymentFrequencyPeriodMultiplierLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFloatingRatePaymentFrequencyPeriodMultiplierLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFloatingRatePaymentFrequencyPeriodMultiplierLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="postPricedSwapIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePriceCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePriceNotation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeSpreadNotationLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeSpreadNotationLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeStrikePriceCurrency2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeStrikePriceNotation" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFirstExerciseDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeFinalContractualSettlementDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeSettlementLocationLeg1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeSettlementLocationLeg2" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeEffectiveDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeExpirationDate" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePlatformIdentifier" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="primeBrokerageTransactionIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="swapReportingJurisdiction" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="newSdrIdentifier" type="idText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="nextFloatingReferenceResetDateLeg1" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="lastFloatingReferenceValueLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="lastFloatingReferenceResetDateLeg1" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="nextFloatingReferenceResetDateLeg2" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="lastFloatingReferenceValueLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="lastFloatingReferenceResetDateLeg2" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeDelta" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="initialMarginCollateralPortfolioCode" type="idText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="variationMarginCollateralPortfolioCode" type="idText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="largeNotionalOffFacilitySwapElectionIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="sefOrDcmAnonymousExecutionIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="blockTradeElectionIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="sefOrDcmIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="mandatoryClearingIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="sdMspIndicatorCounterparty1" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="sdMspIndicatorCounterparty2" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="physicalCommodityContractIndicator" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="changeInNotionalAmount1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="changeInNotionalAmount2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="changeInLeg1NotionalQuantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="changeInLeg2NotionalQuantity" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeCryptoAssetUnderlyingIndicatorLeg1" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeCryptoAssetUnderlyingIndicatorLeg2" type="sd:boolean" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeCustomBasketCode" type="idText72" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlierIdOtherLeg1" type="freeformatText350" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlierIdOtherLeg2" type="freeformatText350" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlierIdOtherSourceLeg1" type="idText350" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="underlierIdOtherSourceLeg2" type="idText350" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeUnderlyingAssetTradingPlatformIdLeg1" type="fixedformatText4" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeUnderlyingAssetTradingPlatformIdLeg2" type="fixedformatText4" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeUnderlyingAssetPriceSourceLeg1" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeUnderlyingAssetPriceSourceLeg2" type="freeformatText50" minOccurs="0" maxOccurs="1"/>
+			<!-- end additions for NOA Rewrite -->
+		</sd:all>
+	</sd:complexType>
+	<sd:complexType name="harmonizedRepeatableData">
+		<sd:sequence>
+			<sd:element name="tradeParty1ReportingDestination" type="freeformatText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty2ReportingDestination" type="freeformatText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty1ThirdPartyViewerId" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty2ThirdPartyViewerId" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty1ThirdPartyViewerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty2ThirdPartyViewerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1QuantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1QuantityFrequency" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1Quantity" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="deliveryPoint" type="freeformatText40" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="loadDeliveryIntervals" type="sd:time" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="deliveryEndDateAndTime" type="sd:dateTime" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="duration" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="deliveryCapacity" type="freeformatText50" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="priceTimeIntervalQuantities" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="deliveryStartDateAndTime" type="sd:dateTime" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="quantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="electricityPhysicalLegDeliveryStepQuantity" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="electricityPhysicalLegDeliveryStepQuantityFrequency" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="electricityPhysicalLegDeliveryStepQuantityUnit" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="productGrade" type="freeformatText50" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="basketWeightPercentage" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="referenceObligationType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetPlaceOfIncorporation" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetPlaceOfIssuance" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="referenceEntityId" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="referenceEntityIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetFixedRate" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetNotionalCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="periodStartDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="periodEndDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="periodFixedStrike" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="periodFixedAmount" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetNotionalAmount" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="dividendPaymentDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="fixedAmountPaymentDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1PaymentDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2PaymentDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetInitialPrice" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cancelationOptionExerciseDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cancelationOptionRelevantUnderlyingDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="capRateStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="capRateStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="exerciseDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="floorRateStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="floorRateStepValue" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1FixedRateStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1FixedRateStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1FloatingRateMultiplierStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1FloatingRateMultiplierStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1FloatingRateSpreadStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1FloatingRateSpreadStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1NotionalStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg1NotionalStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2FixedRateStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2FixedRateStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2FloatingRateMultiplierStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2FloatingRateMultiplierStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2FloatingRateSpreadStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2FloatingRateSpreadStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2NotionalStepDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="leg2NotionalStepValues" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="optionalEarlyTerminationDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="optionalEarlyTerminationExerciseDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="optionalEarlyTerminationUnderlyingDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="relevantUnderlyingDatesUnadjustedDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="optionalEarlyTerminationExerciseAdjustedDates" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetId" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="underlyingAssetName" type="freeformatText100" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="mandatoryClearingJurisdiction" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="clearingSwapUsiId" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="clearingSwapUsiIdPrefix" type="fixedformatText40" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty1LocalCounterpartyJurisdiction" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty2LocalCounterpartyJurisdiction" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<!-- start additions for NOA rewrite -->
+			<sd:element name="clearingExceptionTypeParty2" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeOtherPaymentPayer" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeOtherPaymentReceiver" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeOtherPaymentType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeOtherPaymentAmount" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeOtherPaymentCurrency" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeOtherPaymentDate" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="otherPaymentPayerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="otherPaymentReceiverIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeEffectiveDateOfNotionalQuantityOfLeg1" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeEffectiveDateOfNotionalQuantityOfLeg2" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeEndDateOfNotionalQuantityOfLeg1" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeEndDateOfNotionalQuantityOfLeg2" type="sd:date" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeNotionalQuantityInEffectOnAssociatedEffectiveDateOfLeg1" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeNotionalQuantityInEffectOnAssociatedEffectiveDateOfLeg2" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeBasketConstituentsIdentifier" type="freeformatText210" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeBasketConstituentsIdentifierSource" type="idText350" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeBasketConstituentsNumberOfUnits" type="sd:decimal" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeBasketConstituentsUnitOfMeasure" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<!-- end additions for NOA rewrite -->
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="schedules">
+		<sd:sequence>
+			<sd:element name="cdeNotionalSchedule1" type="cdeSchedule1" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeNotionalSchedule2" type="cdeSchedule2" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdePriceSchedule" type="cdePriceSchedule" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="cdeStrikePriceSchedule" type="cdeStrikePriceSchedule" minOccurs="0" maxOccurs="unbounded"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="header">
+		<sd:sequence>
+			<sd:element name="rdsSchemaVersion" type="freeForm255" minOccurs="0"/>
+			<sd:element name="sender" type="freeForm255" minOccurs="0"/>
+			<sd:element name="receiver" type="freeForm255" minOccurs="0"/>
+			<sd:element name="documentTrackingId" type="freeForm255" minOccurs="1"/>
+			<sd:element name="documentCreationTimestamp" type="sd:dateTime" minOccurs="0"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="core">
+		<sd:sequence>
+			<sd:element name="tradeLegTypes" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="latestExecutionDatetime" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="messageId" type="freeformatText255" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="messageType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="primaryAssetClass" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="productId" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="productIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="submittedForParty" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="submittingPartyId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="submittingPartyIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1Id" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1IdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ReportingDestination" type="freeformatText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty1TransactionId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2Id" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2IdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ReportingDestination" type="freeformatText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty2TransactionId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="transactionType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="usiId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="usiIdPrefix" type="fixedformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="utiId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="utiIdPrefix" type="fixedformatText40" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="lifecycleEventType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ExecutionAgentId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ExecutionAgentIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ExecutionAgentId" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2ExecutionAgentIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1ThirdPartyViewerId" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty2ThirdPartyViewerId" type="idText200" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty1ThirdPartyViewerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="tradeParty2ThirdPartyViewerIdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="unbounded"/>
+			<sd:element name="reportingTimestamp" type="sd:dateTime" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="aiParty1Id" type="idText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="aiParty1IdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="aiParty2Id" type="idText20" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="aiParty2IdType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty1RegulatoryActionType1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="tradeParty2RegulatoryActionType1" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="noaActionType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="noaEventType" type="enumeratedCodeList" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="initialMarginCollateralPortfolioCode" type="idText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="variationMarginCollateralPortfolioCode" type="idText52" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="corporateActionNewTradeParty1Lei" type="idText200" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="upi" type="idText20" minOccurs="0" maxOccurs="1"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="error">
+		<sd:sequence>
+			<sd:element name="errorCode" type="sd:normalizedString"/>
+			<sd:element name="errorReason" type="sd:normalizedString"/>
+			<sd:element name="errorJurisdiction" type="sd:normalizedString"/>
+			<sd:element name="errorFor" type="sd:normalizedString"/>
+		</sd:sequence>
+	</sd:complexType>
+	<!-- end inline types -->
+	<sd:complexType name="document">
+		<sd:choice>
+			<sd:element name="submission" type="DataSubmission"/>
+			<sd:element name="response" type="DataResponse"/>
+		</sd:choice>
+	</sd:complexType>
+	<sd:complexType name="genericAttribute">
+		<sd:simpleContent>
+			<sd:extension base="scheme">
+				<sd:attribute name="attributeScheme" type="sd:anyURI" default="http://www.dtcc.com/DTCC/rds-coding-scheme/genericAttribute"/>
+			</sd:extension>
+		</sd:simpleContent>
+	</sd:complexType>
+	<sd:complexType name="submissionWrapper">
+		<sd:sequence>
+			<sd:any processContents="skip"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="cdeSchedule1">
+		<sd:sequence>
+			<sd:element name="cdeEffectiveDateOfTheNotionalAmountLeg1" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeEndDateOfTheNotionalAmountLeg1" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeNotionalAmountInEffectOnAssociatedEffectiveDateLeg1" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="cdeSchedule2">
+		<sd:sequence>
+			<sd:element name="cdeEffectiveDateOfTheNotionalAmountLeg2" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeEndDateOfTheNotionalAmountLeg2" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeNotionalAmountInEffectOnAssociatedEffectiveDateLeg2" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="cdePriceSchedule">
+		<sd:sequence>
+			<sd:element name="cdeUnadjustedEffectiveDateOfPrice" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeUnadjustedEndDateOfPrice" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdePrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+
+		</sd:sequence>
+	</sd:complexType>
+	<sd:complexType name="cdeStrikePriceSchedule">
+		<sd:sequence>
+			<sd:element name="cdeUnadjustedEffectiveDateOfStrikePrice" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeUnadjustedEndDateOfStrikePrice" type="sd:date" minOccurs="0" maxOccurs="1"/>
+			<sd:element name="cdeStrikePrice" type="sd:decimal" minOccurs="0" maxOccurs="1"/>
+		</sd:sequence>
+	</sd:complexType>
+	<sd:simpleType name="freeForm255">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="255"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="fixedformatText500">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="500"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="descriptorText500">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="500"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="enumeratedCodeList">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="500"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="fixedformatText48">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="48"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="fixedformatText4">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="4"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText35">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="35"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText52">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="52"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText6">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="6"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="fixedformatText40">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="40"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatNumeric3">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="3"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText100">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="100"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText150">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="150"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText20">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="20"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText255">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="255"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText40">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="40"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText50">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="50"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText72">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="72"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText210">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="210"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText350">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="350"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText6450">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="6450"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText6499">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="6499"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="frequencyText1">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="1"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText10">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="10"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText20">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="20"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText200">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="200"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText50">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="50"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText52">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="52"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText42">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="42"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText72">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="72"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="referenceText200">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="200"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText200">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="200"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="fixedformatText72">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="72"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="freeformatText3999">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="3999"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText40">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="40"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="frequencyText2">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="2"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="idText35">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="35"/>
+		</sd:restriction>
+	</sd:simpleType>
+		<sd:simpleType name="idText210">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="210"/>
+		</sd:restriction>
+	</sd:simpleType>
+		<sd:simpleType name="idText350">
+		<sd:restriction base="sd:normalizedString">
+			<sd:maxLength value="350"/>
+		</sd:restriction>
+	</sd:simpleType>
+	<sd:simpleType name="scheme">
+		<sd:restriction base="sd:normalizedString"/>
+	</sd:simpleType>
+</sd:schema>

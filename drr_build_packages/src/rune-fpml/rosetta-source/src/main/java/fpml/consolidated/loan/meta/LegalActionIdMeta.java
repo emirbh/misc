@@ -1,0 +1,64 @@
+package fpml.consolidated.loan.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.loan.LegalActionId;
+import fpml.consolidated.loan.validation.LegalActionIdTypeFormatValidator;
+import fpml.consolidated.loan.validation.LegalActionIdValidator;
+import fpml.consolidated.loan.validation.exists.LegalActionIdOnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version 2.1.1
+ */
+@RosettaMeta(model=LegalActionId.class)
+public class LegalActionIdMeta implements RosettaMetaData<LegalActionId> {
+
+	@Override
+	public List<Validator<? super LegalActionId>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+		);
+	}
+	
+	@Override
+	public List<Function<? super LegalActionId, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super LegalActionId> validator(ValidatorFactory factory) {
+		return factory.<LegalActionId>create(LegalActionIdValidator.class);
+	}
+
+	@Override
+	public Validator<? super LegalActionId> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<LegalActionId>create(LegalActionIdTypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super LegalActionId> validator() {
+		return new LegalActionIdValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super LegalActionId> typeFormatValidator() {
+		return new LegalActionIdTypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super LegalActionId, Set<String>> onlyExistsValidator() {
+		return new LegalActionIdOnlyExistsValidator();
+	}
+}

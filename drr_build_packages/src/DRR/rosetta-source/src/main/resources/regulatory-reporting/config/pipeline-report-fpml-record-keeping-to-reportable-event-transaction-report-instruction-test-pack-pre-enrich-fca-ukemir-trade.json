@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich-fca-ukemir-trade",
+  "name" : "FCA / UKEMIR Trade",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.fca.ukemir.refit.trade.reports.FCAUKEMIRTradeReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.fca.ukemir.refit.trade.FCAUKEMIRTransactionReport"
+  },
+  "upstreamPipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich"
+}

@@ -1,0 +1,59 @@
+namespace drr.regulation.common.trade.index
+version "${project.version}"
+
+import cdm.product.qualification.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+reporting rule Seniority from TransactionReportInstruction: <"Seniority">
+    extract GetSeniority
+
+reporting rule Series from TransactionReportInstruction: <"Series">
+    ProductForEvent
+        then extract
+            if EconomicTermsForProduct(
+                    underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+                ) -> payout -> CreditDefaultPayout exists
+            then EconomicTermsForProduct(
+                        underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+                    ) -> payout -> CreditDefaultPayout
+            else if EconomicTermsForProduct -> payout -> CreditDefaultPayout exists
+            then EconomicTermsForProduct -> payout -> CreditDefaultPayout
+        then extract generalTerms -> indexReferenceInformation -> indexSeries
+        then FormatToMax5Number
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index factor">
+    extract TradeForEvent
+    then extract
+        if IsCreditDefaultSwapIndex
+        then product -> economicTerms -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> indexFactor
+        else if IsCreditTotalReturnSwap(ProductForTrade)
+                or Qualify_Credit_Option_NonStandard(
+                        EconomicTermsForProduct(ProductForTrade)
+                    )
+        then FormatToBaseOne18Rate(1)
+        else if EconomicTermsForProduct(
+                underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+            ) -> payout -> CreditDefaultPayout exists
+        then FormatToBaseOneRate(
+                    EconomicTermsForProduct(
+                            underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+                        ) -> payout -> CreditDefaultPayout -> generalTerms -> indexReferenceInformation -> indexFactor
+                )
+
+reporting rule Version from TransactionReportInstruction: <"Version">
+    extract ProductForEvent
+    then extract
+        if EconomicTermsForProduct(
+                underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+            ) -> payout -> CreditDefaultPayout exists
+        then EconomicTermsForProduct(
+                    underlier.UnderlierForProduct -> Product -> NonTransferableProduct
+                ) -> payout -> CreditDefaultPayout
+        else if EconomicTermsForProduct -> payout -> CreditDefaultPayout exists
+        then EconomicTermsForProduct -> payout -> CreditDefaultPayout
+    then extract generalTerms -> indexReferenceInformation -> indexAnnexVersion
+    then FormatToMax5Number

@@ -1,0 +1,240 @@
+namespace drr.regulation.cftc.rewrite.dtcc.trade
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.regulation.cftc.*
+import drr.regulation.cftc.rewrite.trade.* as cftcTrade
+import drr.regulation.common.*
+import drr.regulation.common.dtcc.trade.* as commondtcc
+import drr.standards.iso.*
+
+type DTCCAdditionalFields extends commondtcc.CommonDTCCAdditionalFields:
+    [rootType]
+    override clearingVenueIDType PartyIdentifierTypeEnum (0..1)
+        [label "Clearing Venue - ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Clearing Venue - ID Type"
+            provision "GTR Control Field."]
+        [ruleReference empty]
+    override comment1 string (0..1)
+        [label "Comment1"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Comment 1"
+            provision "For CSV submissions if populated with an * the entire line is treated as comment."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Comment 1"
+            provision "Empty because CSV submission is still not supported by current DRR model. This rule will be revisited once Harmonized CSV projection is included."]
+    override corporateActionNewTradeParty1Lei LEIIdentifier (0..1)
+        [label "Corporate Action - New Trade Party 1 LEI"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Corporate Action - New Trade Party 1 LEI"
+            provision "In the case of a Corporate Action/Merger, populate this field with the LEI of the reporting party that will replace Trade Party 1/Reporting counterparty. The value in this field will replace [Trade Party 1 - ID] on the trade after the submission is processed."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Corporate Action - New Trade Party 1 LEI"
+            provision "This field is intended to update the party affected by a corporate action in a trade. It has been agreed to defer support for this field at this time."]
+    override deliveryLocation string (0..1)
+        [label "Delivery Location"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Delivery Location"
+            provision "The delivery location."]
+    override leg1CommodityInstrumentID string (0..1)
+        [label "Leg 1 - Commodity Instrument ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Leg 1 - Commodity Instrument ID"
+            provision "UPI RDL: A lower-level description of the characteristics of an asset or contract underlying a derivative; Required for CFTC PPD time delay calculation."]
+    override leg2CommodityInstrumentID string (0..1)
+        [label "Leg 2 - Commodity Instrument ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Leg 2 - Commodity Instrument ID"
+            provision "UPI RDL: A lower-level description of the characteristics of an asset or contract underlying a derivative; Required for CFTC PPD time delay calculation."]
+    override maturityDateOfTheUnderlying date (0..1)
+        [label "Maturity Date of the Underlier"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Maturity Date of the Underlier"
+            provision "The date on which the underlying transaction settles if the option is exercised.In the case of swaptions, maturity date of the underlying swap."]
+    override optionStyle OptionStyleEnum (0..1)
+        [label "Option Style"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Option Style"
+            provision "Need field to determine exercise dates."]
+    override optionType string (0..1)
+        [label "Option Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Option Type"
+            provision "The type of option reported."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250603" field "Option Type"
+            provision "'NonStandard' value is not reported because exotic/non-standard products are currently out of scope in CDM."]
+    override otherPaymentPayerIDType string (0..18)
+        [label "Other Payment Payer ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Other Payment Payer ID Type"
+            provision "Identifier type of the payer of Other payment amount."]
+        [ruleReference empty]
+    override otherPaymentReceiverIDType string (0..18)
+        [label "Other Payment Receiver ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Other Payment Receiver ID Type"
+            provision "Identifier type of the receiver of Other payment amount."]
+        [ruleReference empty]
+    override primaryAssetClass AssetClassEnum (1..1)
+        [label "Primary Asset Class"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Primary Asset Class"
+            provision "UPI RDL: Indicates whether the asset, benchmark or another derivatives contract underlying a derivatives contract is, or references, an equity, rate, credit, commodity or foreign exchange asset."]
+    override secondaryAssetClass AssetClassEnum (0..1)
+        [label "Secondary Asset Class"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Secondary Asset Class"
+            provision "Needed field to indicate edge cases."]
+        [ruleReference empty]
+    override productGrade commondtcc.ProductGradeReport (0..*)
+        [label "Product Grade"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Product Grade"
+            provision "Grade of product being delivered (e.g., grade of oil)."]
+        [ruleReference empty]
+    override productID string (0..1)
+        [label"Product ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Product ID"
+            provision "Needed for GTR processing to derive validation based on ISDA taxonomy; A lower-level description of the characteristics of an asset or contract underlying a derivative."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250604" field "Product ID"
+            provision "A member raised that Product ID was previously considered mandatory, despite being reportable only for Commodities. Consequently, the field is now treated as optional, except for Commodities where it remains mandatory, which is the basis for this Validation Rule."]
+    override responsibleDataSubmitterIDType PartyIdentifierTypeEnum (0..1)
+        [label "Responsible Data Submitter - ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Responsible Data Submitter - ID Type"
+            provision "This field contains the ID Type associated with the Ultimate Data Submitter ID."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Responsible Data Submitter - ID Type"
+            provision "Firms indicated they would not use Responsible Data Submitter - ID field. This field will be revisited after go-live; consequently, Responsible Data Submitter - ID Type will also remain empty until that time."]
+    override responsibleDataSubmitterID string (0..1)
+        [label "Responsible Data Submitter - ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Responsible Data Submitter - ID"
+            provision "This field should only populated by Third Party Submitters who have been permissioned to act on behalf of SEFs, and not by any other submitters. This field must be populated with the LEI of the SEF."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Responsible Data Submitter - ID"
+            provision "Firms indicated they would not use this field. This field will be revisited after go-live; consequently, it will remain empty until that time."]
+    override settlementType string (0..1)
+        [label "Settlement Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Settlement Type"
+            provision "UPI RDL: Indicates whether a derivatives contract will deliver a physical asset or a cash equivalent at settlement."]
+    override submittingPartyIDType PartyIdentifierTypeEnum (1..1)
+        [label "Submitting Party - ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Submitting Party - ID Type"
+            provision "GTR required Control Field."]
+    override submittedForParty LEIIdentifier (1..1)
+        [label "Submitted For Party"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Submitted For Party"
+            provision "Need field for GTR Processing."]
+        [docReference ISDA PeerReviewGroup date "20250507"
+            provision "Agreed to default the output to the LEI of the reporting party."]
+    override tradeLegTypes string (0..1)
+        [label "Trade Leg Types"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Leg Types"
+            provision "Field is needed to define the Commodity product. "]
+    override tradeParty1ClearingBrokerIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Clearing Broker ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 1 - Clearing Broker ID Type"
+            provision "GTR Control Field."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Trade Party 1 - Clearing Broker ID Type"
+            provision "Firms indicated they would only report LEI format. No expectation to have PLID format in Canadian reporting. No expectaion to have NPID format in Canadian reporting unless there is an update from ISDA CSA Data and Reporting Canadian WG."]
+            [ruleReference empty]
+    override tradeParty1ExecutionAgentID string (0..1)
+        [label "Trade Party 1 - Execution Agent ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 1 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 1 - Execution Agent ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 1 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty1ReportingDestination SupervisoryBodyEnum (1..*)
+        [label "Trade Party 1 - Reporting Destination"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 1 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+    override tradeParty2ReportingDestination SupervisoryBodyEnum (0..*)
+        [label "Trade Party 2 - Reporting Destination"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 2 - Reporting Destination"
+            provision "Needed to report Jurisdiction."]
+        [ruleReference empty]
+    override tradeParty1TransactionID string (0..1)
+        [label "Trade Party 1 - Transaction ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 1 - Transaction ID"
+            provision "Internal trade identifier for Counterparty 1 to map to their internal system."]
+        [ruleReference DTCC_TradeParty1TransactionID]
+    override tradeParty2ExecutionAgentID string (0..1)
+        [label "Trade Party 2 - Execution Agent ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 2 - Execution Agent ID"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override tradeParty2ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [label "Trade Party 2 - Execution Agent ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 2 - Execution Agent ID Type"
+            provision "To allow submitter to name an execution agent to view the report data. "]
+    override sefOrDcmAnonymousExecutionIndicator boolean (0..1)
+        [label "SEF or DCM Anonymous Execution Indicator"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "SEF or DCM Anonymous Execution Indicator"
+            provision "Indicator of whether the swap was executed anonymously on a SEF or DCM. When set to true, counterparty details will be masked on reporting."]
+	    [ruleReference DTCC_SEFOrDCMAnonymousExecutionIndicator]
+    tradeParty1IDType string (1..1)
+        [label "Trade Party 1 - ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 1 - ID Type"
+            provision "GTR required Control Field."]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Trade Party 1 - ID Type"
+            provision "NPID is only accepted when [CDE - Platform Identifier] is not 'XXXX', 'XOFF', or 'BILT' and [Clearing Status] = I."]
+	    [ruleReference DTCC_TradeParty1IDType]
+    messageID string (0..1)
+        [label "Message ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Message ID"
+            provision "Purpose of this field is to allow firms to submit a unique ID that will allow them to tie in specific submissions/modifications. For example if 5 modifications are submitted on a specific PET, this will allow the firm to ensure they receive responses for all 5 modifications."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250604" field "Message ID"
+            provision "Each Message ID must be unique, irrespective of the report type. This unique identification is achieved by concatenating with the Reporting Timestamp field."]
+	    [ruleReference DTCC_MessageID]
+    leg1CommodityUnderlyerID string (0..1)
+        [label "Leg 1 - Commodity Underlyer ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Leg 1 - Commodity Underlyer ID"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+	    [ruleReference DTCC_Leg1CommodityUnderlyerID]
+    leg2CommodityUnderlyerID string (0..1)
+        [label "Leg 2 - Commodity Underlyer ID"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Leg 2 - Commodity Underlyer ID"
+            provision "UPI RDL: An identifier that can be used to determine the asset(s), index (indices) or benchmark underlying a contract."]
+	    [ruleReference DTCC_Leg2CommodityUnderlyerID]
+    changeInNotionalAmount1 number (0..1)
+        [label "Change in Notional Amount 1"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Change in Notional Amount 1"
+            provision "For each leg of the transaction, where applicable: Change in Notional Amount 1 (See Inbound field Notional Amount 1). This field will be used for calculating the Large notional off-facility swap election indicator if it is left blank."]
+        [ruleReference DTCC_ChangeInNotionalAmount1]
+    changeInNotionalAmount2 number (0..1)
+        [label "Change in Notional Amount 2"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Change in Notional Amount 2"
+            provision "For each leg of the transaction, where applicable: Change in Notional Amount 2 (See Inbound field Notional Amount 2). This field will be used for calculating the Large notional off-facility swap election indicator if it is left blank."]
+        [ruleReference DTCC_ChangeInNotionalAmount2]
+    largeNotionalOffFacilitySwapElectionIndicator boolean (0..1)
+        [label "Large Notional Off-facility Swap Election Indicator"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Large Notional Off-facility Swap Election Indicator"
+            provision "Indicator of whether an election has been made to report the swap transaction as a Large Notional Off-facility Swap by the reporting counterparty or as calculated by either the swap data repository acting on behalf of the reporting counterparty or by using a third party."]
+        [ruleReference DTCC_LargeNotionalOffFacilitySwapElectionIndicator]
+    mandatoryClearingIndicator boolean (1..1)
+        [label "Mandatory Clearing Indicator"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Mandatory Clearing Indicator"
+            provision "An indicator of whether the transaction is subject to mandatory clearing."]
+        [ruleReference DTCC_MandatoryClearingIndicator]
+    messageType string (0..1)
+        [label "Message Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Message Type"
+            provision "Need to indicate what message is being submitted to GTR."]
+        [ruleReference DTCC_MessageTypePPD]
+    originalSwapSDRIDType PartyIdentifierTypeEnum (0..1)
+        [label "Original Swap SDR - ID Type"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Original Swap SDR - ID Type"
+            provision "GTR Control Field."]
+    physicalCommodityContractIndicator boolean (0..1)
+        [label "Physical Commodity Contract Indicator"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Physical Commodity Contract Indicator"
+            provision "An indication of whether or not the trade being submitted:
+            (1) references one of the contracts described in Appendix B to part 43; or 
+            (2) is economically related to one of the contracts described in Appendix B to part 43."]
+	    [ruleReference DTCC_PhysicalCommodityContractIndicator]
+    sdMspIndicatorCounterparty1 boolean (1..1)
+        [label "SD MSP Indicator - Counterparty 1"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "SD MSP Indicator - Counterparty 1"
+            provision "Indicator of whether counterparty 1 is SD or MSP."]
+	    [ruleReference DTCC_SDMSPIndicatorCounterparty1]
+    sdMspIndicatorCounterparty2 boolean (1..1)
+        [label "SD MSP Indicator - Counterparty 2"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "SD MSP Indicator - Counterparty 2"
+            provision "Indicator of whether counterparty 2 is SD or MSP."]
+	    [ruleReference DTCC_SDMSPIndicatorCounterparty2]
+    sefOrDcmIndicator boolean (1..1)
+        [label "SEF or DCM Indicator"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "SEF or DCM Indicator"
+            provision "An indication of whether the swap was executed on or pursuant to the rules of a swap execution facility or designated contract market."]
+	    [ruleReference DTCC_SEFOrDCMIndicator]
+    version string (0..1)
+        [label "Version"]
+        [docReference CFTC cftcTrade.Trade DTCC_Specs field "Version"
+            provision "Memo field. Used to identify the asset class and template type of submission."]

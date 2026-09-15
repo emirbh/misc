@@ -1,0 +1,45 @@
+namespace drr.standards.iosco.cde.version3.quantity
+version "${project.version}"
+
+import cdm.base.math.*
+
+import drr.base.trade.*
+import drr.standards.iosco.cde.version2.* as cdeV2
+import drr.standards.iso.*
+
+func NotionalAmount:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount: cdeV2.quantity.NotionalAmount(payout, defaultValue)
+
+func NotionalAmountFormat:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        notionalAmount number (0..1)
+    set notionalAmount:
+        if payout -> commodityPayout exists
+        then FormatToShortFraction5DecimalNumber(NotionalAmount(payout, defaultValue))
+        else FormatToNonNegativeShortFraction5DecimalNumber(
+                NotionalAmount(payout, defaultValue)
+            )
+
+func Notional:
+    inputs:
+        payoutLeg PayoutLegWithAuxiliary (0..1)
+    output:
+        measure Measure (0..1)
+    set measure: cdeV2.quantity.Notional(payoutLeg)
+
+func TotalNotionalQuantity:
+    inputs:
+        payout PayoutLegWithAuxiliary (0..1)
+        defaultValue number (1..1)
+    output:
+        totalTotalNotionalQuantity number (0..1)
+    set totalTotalNotionalQuantity:
+        cdeV2.quantity.TotalNotionalQuantity(payout, defaultValue)

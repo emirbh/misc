@@ -1,0 +1,75 @@
+{
+  "actionType" : "NEWT",
+  "buyerIdentifier" : "DUMMYLEI010000000037",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI020000000085",
+  "counterparty2" : "DUMMYLEI010000000037",
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "allocationType" : "UNAL",
+    "messageID" : "DTDApproved2407119003DFCFTCRiskNewNewEquity2024-04-29T00:00Z",
+    "messageTypeTransaction" : "Trade State",
+    "primaryAssetClass" : "Equity",
+    "submittedForParty" : "DUMMYLEI020000000085",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "underlyingAsset" : [ {
+      "underlyingAssetID" : ".FTSE",
+      "underlyingAssetIDType" : "RIC"
+    }, {
+      "underlyingAssetID" : "IE00B60SWT88",
+      "underlyingAssetIDType" : "ISIN"
+    } ],
+    "versionTransaction" : "CORE1.0"
+  },
+  "effectiveDate" : "2022-02-07",
+  "eventIdentifier" : "DTDApproved2407119003DFCFTCRiskNewNewEquity",
+  "eventTimestamp" : "2022-02-07T10:42:17Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2022-02-07T10:36:37Z",
+  "jurisdictionOfCounterparty1" : [ "NON-CA" ],
+  "jurisdictionOfCounterparty2" : [ "NON-CA" ],
+  "leg1" : {
+    "notionalAmount" : 1000,
+    "notionalCurrency" : "GBP",
+    "payerIdentifier" : "DUMMYLEI020000000085",
+    "receiverIdentifier" : "DUMMYLEI010000000037",
+    "totalNotionalQuantity" : 99999999999999999999.99999
+  },
+  "level" : "TCTN",
+  "masterAgreementType" : "ISDA",
+  "masterAgreementVersion" : 2002,
+  "nonReportable" : {
+    "deliveryType" : "CASH",
+    "executionVenueType" : "OffFacility",
+    "instrumentType" : "Swap",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH"
+        },
+        "Header" : {
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "returnorPayoutTrigger" : "Contract_for_Difference_CFD_",
+    "underlyingAssetType" : "Index"
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "priceUnitOfMeasure" : "OTHR",
+  "reportSubmittingEntityID" : "DUMMYLEI020000000085",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "sellerIdentifier" : "DUMMYLEI020000000085",
+  "strikePrice" : {
+    "decimal" : 299
+  },
+  "strikePriceNotation" : "Decimal",
+  "uniqueTransactionIdentifier" : "UTIMOCKUPVOLATIL0263"
+}

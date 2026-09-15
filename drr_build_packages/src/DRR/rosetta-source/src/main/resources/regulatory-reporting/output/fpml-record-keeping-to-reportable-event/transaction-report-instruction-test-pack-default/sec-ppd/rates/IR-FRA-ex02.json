@@ -1,0 +1,70 @@
+{
+  "actionType" : "NEWT",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI020000000085",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI010000000037",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "DTDApproved2380788303EMIRRiskNewNewInterest2024-04-29T00:00Z",
+    "primaryAssetClass" : "InterestRate",
+    "submittedForParty" : "DUMMYLEI020000000085",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "tradeParty1TransactionID" : "IRFRAEXXMLXXXXXXXX02"
+  },
+  "effectiveDate" : "2021-06-01",
+  "eventTimestamp" : "2021-03-17T11:46:31Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2021-03-17T06:54:51Z",
+  "expirationDate" : "2021-09-01",
+  "leg1" : {
+    "fixedRate" : 0.07,
+    "notionalAmount" : 44000000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "MNTH",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 3
+    }
+  },
+  "leg2" : {
+    "floatingRateIndex" : "USD-LIBOR-BBA",
+    "notionalAmount" : 44000000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004"
+    }
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "PHYS",
+          "NotionalCurrency" : "USD",
+          "ReferenceRateTermUnit" : "MNTH",
+          "ReferenceRateTermValue" : 3,
+          "UnderlierID" : "USD-LIBOR-BBA",
+          "UnderlierIDSource" : "FPML"
+        },
+        "Header" : {
+          "AssetClass" : "Rates",
+          "InstrumentType" : "Forward",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "platformIdentifier" : "XXXX",
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI020000000085",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIIRFRAEXXMLXXX0360"
+}

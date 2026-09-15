@@ -1,0 +1,71 @@
+package drr.regulation.esma.emir.refit.trade.validation.datarule;
+
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.annotations.RosettaDataRule;
+import com.rosetta.model.lib.expression.CardinalityOperator;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import drr.regulation.esma.emir.refit.trade.ESMAEMIRTransactionReport;
+import drr.standards.iso.ActionTypeEnum;
+import drr.standards.iso.EventTypeEnum;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+/**
+ * @version 7.7.0
+ */
+@RosettaDataRule("ESMAEMIRTransactionReportEMIR_VR_2152_04")
+@ImplementedBy(ESMAEMIRTransactionReportEMIR_VR_2152_04.Default.class)
+public interface ESMAEMIRTransactionReportEMIR_VR_2152_04 extends Validator<ESMAEMIRTransactionReport> {
+	
+	String NAME = "ESMAEMIRTransactionReportEMIR_VR_2152_04";
+	String DEFINITION = "if [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> TERM] any = actionType then if actionType = ActionTypeEnum -> TERM then [EventTypeEnum -> NOVA, EventTypeEnum -> COMP, EventTypeEnum -> ETRM, EventTypeEnum -> CLRG, EventTypeEnum -> EXER, EventTypeEnum -> ALOC, EventTypeEnum -> CREV, EventTypeEnum -> CORP, EventTypeEnum -> INCP] any = eventType";
+	
+	class Default implements ESMAEMIRTransactionReportEMIR_VR_2152_04 {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, ESMAEMIRTransactionReport eSMAEMIRTransactionReport) {
+			ComparisonResult result = executeDataRule(eSMAEMIRTransactionReport);
+			if (result.getOrDefault(true)) {
+				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "ESMAEMIRTransactionReport", path, DEFINITION));
+			}
+			
+			String failureMessage = result.getError();
+			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+				failureMessage = "Condition has failed.";
+			}
+			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "ESMAEMIRTransactionReport", path, DEFINITION, failureMessage));
+		}
+		
+		private ComparisonResult executeDataRule(ESMAEMIRTransactionReport eSMAEMIRTransactionReport) {
+			try {
+				if (areEqual(MapperC.<ActionTypeEnum>of(MapperS.of(ActionTypeEnum.NEWT), MapperS.of(ActionTypeEnum.MODI), MapperS.of(ActionTypeEnum.TERM)), MapperS.of(eSMAEMIRTransactionReport).<ActionTypeEnum>map("getActionType", _eSMAEMIRTransactionReport -> _eSMAEMIRTransactionReport.getActionType()), CardinalityOperator.Any).getOrDefault(false)) {
+					if (areEqual(MapperS.of(eSMAEMIRTransactionReport).<ActionTypeEnum>map("getActionType", _eSMAEMIRTransactionReport -> _eSMAEMIRTransactionReport.getActionType()), MapperS.of(ActionTypeEnum.TERM), CardinalityOperator.All).getOrDefault(false)) {
+						return areEqual(MapperC.<EventTypeEnum>of(MapperS.of(EventTypeEnum.NOVA), MapperS.of(EventTypeEnum.COMP), MapperS.of(EventTypeEnum.ETRM), MapperS.of(EventTypeEnum.CLRG), MapperS.of(EventTypeEnum.EXER), MapperS.of(EventTypeEnum.ALOC), MapperS.of(EventTypeEnum.CREV), MapperS.of(EventTypeEnum.CORP), MapperS.of(EventTypeEnum.INCP)), MapperS.of(eSMAEMIRTransactionReport).<EventTypeEnum>map("getEventType", _eSMAEMIRTransactionReport -> _eSMAEMIRTransactionReport.getEventType()), CardinalityOperator.Any);
+					}
+					return ComparisonResult.ofEmpty();
+				}
+				return ComparisonResult.ofEmpty();
+			}
+			catch (Exception ex) {
+				return ComparisonResult.failure(ex.getMessage());
+			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	class NoOp implements ESMAEMIRTransactionReportEMIR_VR_2152_04 {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, ESMAEMIRTransactionReport eSMAEMIRTransactionReport) {
+			return Collections.emptyList();
+		}
+	}
+}

@@ -1,0 +1,308 @@
+namespace drr.projection.iso20022.fca.ukemir.refit.margin
+version "${project.version}"
+
+import drr.regulation.fca.ukemir.refit.margin.*
+import drr.standards.iso.* as iso
+
+import iso20022.auth108.fca.*
+
+func Project_FcaUkEmirMarginReportToIso20022:
+    [projection XML]
+    inputs:
+        marginReport FCAUKEMIRMarginReport (1..1)
+    output:
+        iso20022Report Document (1..1)
+
+    set iso20022Report -> derivsTradMrgnDataRpt -> tradData -> rpt:
+        TradeReport31Choice__1 {
+            mrgnUpd: if marginReport -> actionType = MARU
+                    then Create_MarginUpdateData(marginReport),
+            crrctn: if marginReport -> actionType = CORR
+                    then Create_MarginCorrectionData(marginReport)
+        }
+
+func Create_MarginUpdateData:
+    inputs:
+        marginReport FCAUKEMIRMarginReport (1..1)
+    output:
+        details MarginReportData7__1 (1..1)
+
+    set details:
+        MarginReportData7__1 {
+            rptgTmStmp: marginReport -> reportingTimestamp,
+            txId:
+                UniqueTransactionIdentifier2Choice__1 {
+                    unqTxIdr: if iso.IsMax52UpperCaseAlphanumericText(marginReport -> uti)
+                            then marginReport -> uti,
+                    prtry: if iso.IsMax52UpperCaseAlphanumericText(marginReport -> uti) = False
+                            then GenericIdentification175__2 {
+                                id: marginReport -> uti
+            }},
+            ctrPtyId: Create_CounterpartySpecificData(marginReport),
+            coll:
+                MarginCollateralReport4__1 {
+                    collstnCtgy: marginReport -> collateralisationCategory to-enum CollateralisationType3Code__1,
+                    collPrtflCd:
+                        CollateralPortfolioCode5Choice__1 {
+                            prtfl:
+                                PortfolioCode3Choice {
+                                    cd: if marginReport -> collateralPortfolioIndicator = True
+                                            then marginReport -> collateralPortfolioCode,
+                                    noPrtfl: if marginReport -> collateralPortfolioIndicator = False
+                                            then NotApplicable1Code -> NOAP
+                    }},
+                    tmStmp: marginReport -> collateralTimestamp
+                },
+            pstdMrgnOrColl: Create_PostedMarginReport(marginReport),
+            rcvdMrgnOrColl: Create_ReceivedMarginReport(marginReport),
+            evtDt: marginReport -> eventDate
+        }
+
+func Create_MarginCorrectionData:
+    inputs:
+        marginReport FCAUKEMIRMarginReport (1..1)
+    output:
+        details MarginReportData7__2 (1..1)
+
+    set details:
+        MarginReportData7__2 {
+            rptgTmStmp: marginReport -> reportingTimestamp,
+            txId:
+                UniqueTransactionIdentifier2Choice__2 {
+                    unqTxIdr: if iso.IsMax52UpperCaseAlphanumericText(marginReport -> uti)
+                            then marginReport -> uti,
+                    prtry: if iso.IsMax52UpperCaseAlphanumericText(marginReport -> uti) = False
+                            then GenericIdentification175__1 {
+                                id: marginReport -> uti
+            }},
+            ctrPtyId: Create_CounterpartySpecificData_2(marginReport),
+            coll:
+                MarginCollateralReport4__1 {
+                    collstnCtgy: marginReport -> collateralisationCategory to-enum CollateralisationType3Code__1,
+                    collPrtflCd:
+                        CollateralPortfolioCode5Choice__1 {
+                            prtfl:
+                                PortfolioCode3Choice {
+                                    cd: if marginReport -> collateralPortfolioCode exists
+                                            then marginReport -> collateralPortfolioCode,
+                                    noPrtfl: if marginReport -> collateralPortfolioCode is absent
+                                            then NotApplicable1Code -> NOAP
+                    }},
+                    tmStmp: marginReport -> collateralTimestamp
+                },
+            pstdMrgnOrColl: Create_PostedMarginReport(marginReport),
+            rcvdMrgnOrColl: Create_ReceivedMarginReport(marginReport),
+            evtDt: marginReport -> eventDate
+        }
+
+func Create_CounterpartySpecificData:
+    inputs:
+        marginReport FCAUKEMIRMarginReport (1..1)
+    output:
+        ctrPtySpcfcData TradeCounterpartyReport20__1 (1..1)
+
+    set ctrPtySpcfcData:
+        TradeCounterpartyReport20__1 {
+            rptgCtrPty:
+                Counterparty45__1 {
+                    id:
+                        PartyIdentification248Choice__1 {
+                            lgl:
+                                LegalPersonIdentification1__1 {
+                                    id:
+                                        OrganisationIdentification15Choice__1 {
+                                            lei: marginReport -> counterparty1
+            }}}},
+            submitgAgt:
+                OrganisationIdentification15Choice__1 {
+                    lei: marginReport -> reportSubmittingEntityID
+                },
+            othrCtrPty:
+                Counterparty46__1 {
+                    idTp:
+                        PartyIdentification248Choice__2 {
+                            lgl: if marginReport -> counterparty2IdentifierType = True
+                                    then LegalPersonIdentification1__1 {
+                                        id:
+                                            OrganisationIdentification15Choice__1 {
+                                                lei: marginReport -> counterparty2
+                            }},
+                            ntrl: if marginReport -> counterparty2IdentifierType = False
+                                    then NaturalPersonIdentification3__1 {
+                                        id:
+                                            NaturalPersonIdentification2__1 {
+                                                id:
+                                                    GenericIdentification175__1 {
+                                                        id: marginReport -> counterparty2
+            }}}}},
+            nttyRspnsblForRpt:
+                OrganisationIdentification15Choice__1 {
+                    lei: marginReport -> entityResponsibleForReporting
+                },
+            exctnAgt: if marginReport -> executionAgentOfCounterparty1 exists
+                        or marginReport -> executionAgentOfCounterparty2 exists
+                    then [
+                        if marginReport -> executionAgentOfCounterparty1 exists
+                        then OrganisationIdentification15Choice__1 {
+                                lei: marginReport -> executionAgentOfCounterparty1
+                            },
+                        if marginReport -> executionAgentOfCounterparty2 exists
+                        then OrganisationIdentification15Choice__1 {
+                                lei: marginReport -> executionAgentOfCounterparty2
+                            }
+                    ],
+            // Relationship Record (required only when exactly one EA is present)
+            rltshRcrd: if ((marginReport -> executionAgentOfCounterparty1 exists
+                            and marginReport -> executionAgentOfCounterparty2 is absent)
+                        or (marginReport -> executionAgentOfCounterparty1 is absent
+                            and marginReport -> executionAgentOfCounterparty2 exists))
+                    then TradeCounterpartyRelationshipRecord1__1 {
+                        startRltshPty: if marginReport -> executionAgentOfCounterparty1 exists
+                                then TradeCounterpartyType1Code__1 -> REPC
+                            else TradeCounterpartyType1Code__1 -> OTHC,
+                        endRltshPty: TradeCounterpartyType1Code__2 -> EXEA,
+                        rltshTp:
+                            TradeCounterpartyRelationship1Choice__1 {
+                                prtry: "ZZZZ"
+        }}}
+
+func Create_CounterpartySpecificData_2:
+    inputs:
+        marginReport FCAUKEMIRMarginReport (1..1)
+    output:
+        ctrPtySpcfcData TradeCounterpartyReport20__2 (1..1)
+
+    set ctrPtySpcfcData:
+        TradeCounterpartyReport20__2 {
+            // Reporting Counterparty
+            rptgCtrPty:
+                Counterparty45__1 {
+                    id:
+                        PartyIdentification248Choice__1 {
+                            lgl:
+                                LegalPersonIdentification1__1 {
+                                    id:
+                                        OrganisationIdentification15Choice__1 {
+                                            lei: marginReport -> counterparty1
+            }}}},
+            submitgAgt:
+                OrganisationIdentification15Choice__1 {
+                    lei: marginReport -> reportSubmittingEntityID
+                },
+            // Other Counterparty
+            othrCtrPty:
+                Counterparty46__2 {
+                    idTp:
+                        PartyIdentification248Choice__2 {
+                            lgl: if marginReport -> counterparty2IdentifierType = True
+                                    then LegalPersonIdentification1__1 {
+                                        id:
+                                            OrganisationIdentification15Choice__1 {
+                                                lei: marginReport -> counterparty2
+                            }},
+                            ntrl: if marginReport -> counterparty2IdentifierType = False
+                                    then NaturalPersonIdentification3__1 {
+                                        id:
+                                            NaturalPersonIdentification2__1 {
+                                                id:
+                                                    GenericIdentification175__1 {
+                                                        id: marginReport -> counterparty2
+            }}}}},
+            nttyRspnsblForRpt:
+                OrganisationIdentification15Choice__1 {
+                    lei: marginReport -> entityResponsibleForReporting
+                },
+            exctnAgt: if marginReport -> executionAgentOfCounterparty1 exists
+                        or marginReport -> executionAgentOfCounterparty2 exists
+                    then [
+                        if marginReport -> executionAgentOfCounterparty1 exists
+                        then OrganisationIdentification15Choice__1 {
+                                lei: marginReport -> executionAgentOfCounterparty1
+                            },
+                        if marginReport -> executionAgentOfCounterparty2 exists
+                        then OrganisationIdentification15Choice__1 {
+                                lei: marginReport -> executionAgentOfCounterparty2
+                            }
+                    ],
+            // Relationship Record (only when 1 ExecutionAgent exists)
+            rltshRcrd: if ((marginReport -> executionAgentOfCounterparty1 exists
+                            and marginReport -> executionAgentOfCounterparty2 is absent)
+                        or (marginReport -> executionAgentOfCounterparty1 is absent
+                            and marginReport -> executionAgentOfCounterparty2 exists))
+                    then TradeCounterpartyRelationshipRecord1__1 {
+                        startRltshPty: if marginReport -> executionAgentOfCounterparty1 exists
+                                then TradeCounterpartyType1Code__1 -> REPC
+                            else TradeCounterpartyType1Code__1 -> OTHC,
+                        endRltshPty: TradeCounterpartyType1Code__2 -> EXEA,
+                        rltshTp:
+                            TradeCounterpartyRelationship1Choice__1 {
+                                prtry: "ZZZZ"
+        }}}
+
+func Create_PostedMarginReport:
+    inputs:
+        marginReport FCAUKEMIRMarginReport (1..1)
+    output:
+        postMarginData PostedMarginOrCollateral6__1 (1..1)
+
+    set postMarginData:
+        PostedMarginOrCollateral6__1 {
+            initlMrgnPstdPreHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> initialMarginPostedByTheCounterparty1PreHaircut,
+                    ccy: marginReport -> initialMarginPostedByCounterparty1Currency to-string
+                },
+            initlMrgnPstdPstHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> initialMarginPostedByTheCounterparty1PostHaircut,
+                    ccy: marginReport -> initialMarginPostedByCounterparty1Currency to-string
+                },
+            vartnMrgnPstdPreHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> variationMarginPostedByTheCounterparty1PreHaircut,
+                    ccy: marginReport -> variationMarginPostedByCounterparty1Currency to-string
+                },
+            vartnMrgnPstdPstHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> variationMarginPostedByTheCounterparty1PostHaircut,
+                    ccy: marginReport -> variationMarginPostedByCounterparty1Currency to-string
+                },
+            xcssCollPstd:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> excessCollateralPostedByTheCounterparty1,
+                    ccy: marginReport -> currencyOfTheExcessCollateralPosted to-string
+        }}
+
+func Create_ReceivedMarginReport:
+    inputs:
+        marginReport FCAUKEMIRMarginReport (1..1)
+    output:
+        rcvdMarginData ReceivedMarginOrCollateral6__1 (1..1)
+
+    set rcvdMarginData:
+        ReceivedMarginOrCollateral6__1 {
+            initlMrgnRcvdPreHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> initialMarginCollectedByCounterparty1PreHaircut,
+                    ccy: marginReport -> initialMarginCollectedByCounterparty1Currency to-string
+                },
+            initlMrgnRcvdPstHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> initialMarginCollectedByCounterparty1PostHaircut,
+                    ccy: marginReport -> initialMarginCollectedByCounterparty1Currency to-string
+                },
+            vartnMrgnRcvdPreHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> variationMarginCollectedByTheCounterparty1PreHaircut,
+                    ccy: marginReport -> variationMarginCollectedByCounterparty1Currency to-string
+                },
+            vartnMrgnRcvdPstHrcut:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> variationMarginCollectedByTheCounterparty1PostHaircut,
+                    ccy: marginReport -> variationMarginCollectedByCounterparty1Currency to-string
+                },
+            xcssCollRcvd:
+                ActiveOrHistoricCurrencyAnd5DecimalAmount {
+                    value: marginReport -> excessCollateralCollectedByTheCounterparty1,
+                    ccy: marginReport -> currencyOfTheExcessCollateralCollected to-string
+        }}

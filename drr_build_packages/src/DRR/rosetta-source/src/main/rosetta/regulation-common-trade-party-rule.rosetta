@@ -1,0 +1,121 @@
+namespace drr.regulation.common.trade.party
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.qualification.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.party.*
+import drr.standards.iosco.cde.version3.* as cde
+
+reporting rule Counterparty2 from TransactionReportInstruction: <"Counterparty 2">
+    extract
+        if cde.party.Counterparty2IdentifierTypeIndicator = True
+        then cde.party.Counterparty2
+        else reportingSide -> reportingCounterparty -> partyId -> identifier first
+
+reporting rule Counterparty2Name from TransactionReportInstruction: <"Counterpart 2 Name">
+    extract reportingSide -> reportingCounterparty
+    then filter partyId -> identifierType all <> LEI and partyId -> identifier all <> "ANON"
+    then extract name
+
+reporting rule ExecutionAgentCounterparty1 from TransactionReportInstruction: <"Execution of Counterpart1">
+    extract reportableEvent [
+        reportableEvent -> reportableInformation -> globalPartyInformation
+            then extract
+                if (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingParty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent) exists)
+                then (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingParty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+                then extract PartyLei(partyId))
+                else if (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingCounterparty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent) exists)
+                then "NOAP"
+            then first
+    ]
+
+reporting rule ExecutionAgentCounterparty2 from TransactionReportInstruction: <"Execution Agent of Counterparty 2">
+    extract reportableEvent [
+        reportableEvent -> reportableInformation -> globalPartyInformation
+            filter partyReference = reportableEvent -> reportingSide -> reportingCounterparty
+            then distinct only-element
+            then extract ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+            then extract PartyLei(partyId)
+    ]
+
+reporting rule ReportSubmittingEntity from TransactionReportInstruction: <"Report submitting entity">
+    extract ExtractReportSubmittingPartyIdentifier(reportingSide)
+
+reporting rule CountryOfCounterparty2 from TransactionReportInstruction: <"Country of Counterparty 2">
+    extract reportInstruction [
+        extract reportableInformation -> jurisdictionInformation -> partyInformation
+        then filter
+            partyReference = reportInstruction -> reportingSide -> reportingCounterparty
+        then only-element
+        then extract
+            NaturalPersonBuyerOrSeller(partyReference) -> contactInformation -> address -> country only-element
+        then extract to-enum ISOCountryCodeEnum
+    ]
+
+reporting rule BrokerID from TransactionReportInstruction: <"Broker ID">
+    extract
+        ExtractPartyFromRelatedPartyByRole(
+                reportableInformation -> globalPartyInformation -> relatedParty,
+                ArrangingBroker
+            )
+    then extract PartyLei(partyId)
+
+reporting rule PTRRID from TransactionReportInstruction: <"PTRR ID">
+    extract reportableEvent [
+        reportableEvent -> originatingWorkflowStep -> eventIdentifier
+            then extract eventIdentifier [
+                eventIdentifier
+                    // Event filtering
+                    then filter
+                        if IsCompressed(reportableEvent -> originatingWorkflowStep)
+                                or IsPortfolioRebalancing(
+                                        reportableEvent -> originatingWorkflowStep
+                                    )
+                        // Issuer = PTRRServiceProvider
+                        then (if reportableEvent -> originatingWorkflowStep -> businessEvent -> instruction -> primitiveInstruction -> execution exists
+                            then issuerReference exists
+                                    and issuerReference = FilterPartyRole(
+                                            reportableEvent -> originatingWorkflowStep -> businessEvent -> instruction -> primitiveInstruction -> execution -> partyRoles,
+                                            PTRRServiceProvider
+                                        ) -> partyReference
+                                        distinct
+                                        only-element
+                            else issuerReference exists
+                                and issuerReference = FilterRelatedPartyByRole(
+                                        reportableEvent -> reportableInformation -> globalPartyInformation -> relatedParty,
+                                        PTRRServiceProvider
+                                    ) -> partyReference
+                                    distinct
+                                    only-element)
+                    then extract eventIdentifier -> assignedIdentifier -> identifier
+            ]
+            then flatten
+    ]
+    then only-element
+
+reporting rule Counterparty2IdentifierSource from TransactionReportInstruction: <"Counterparty 2 Identifier Source">
+    extract reportingSide -> reportingCounterparty
+    then extract
+        if person exists and person -> personId -> identifierType any = NPID
+        then Counterparty2IdentifierEnum -> NPID
+        else if partyId -> identifierType any = LEI and person is absent
+        then Counterparty2IdentifierEnum -> LEID
+
+reporting rule Intragroup from TransactionReportInstruction: <"Intragroup">
+    reportableInformation -> intragroup
+
+reporting rule EntityResponsibleForReporting from TransactionReportInstruction: <"Entity responsible for reporting">
+    ExtractPartyResponsibleForReportingIdentifier(reportingSide)

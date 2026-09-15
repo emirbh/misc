@@ -1,0 +1,72 @@
+package iso20022.auth030.asic.validation.exists;
+
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.records.Date;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import iso20022.auth030.asic.CollateralPortfolioCode6Choice__1;
+import iso20022.auth030.asic.CreditDerivative4__1;
+import iso20022.auth030.asic.CurrencyExchange22__1;
+import iso20022.auth030.asic.DerivativeEvent6__3;
+import iso20022.auth030.asic.InterestRateLegs14__1;
+import iso20022.auth030.asic.NotionalAmountLegs5__1;
+import iso20022.auth030.asic.NotionalQuantityLegs5__1;
+import iso20022.auth030.asic.OptionOrSwaption11__1;
+import iso20022.auth030.asic.OtherPayment5__1;
+import iso20022.auth030.asic.Package4__1;
+import iso20022.auth030.asic.PriceData2__1;
+import iso20022.auth030.asic.TradeClearing11__1;
+import iso20022.auth030.asic.TradeTransaction50__3;
+import iso20022.auth030.asic.UniqueTransactionIdentifier2Choice__1;
+import iso20022.auth030.asic.UniqueTransactionIdentifier3Choice__1;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class TradeTransaction50__3OnlyExistsValidator implements ValidatorWithArg<TradeTransaction50__3, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends TradeTransaction50__3> ValidationResult<TradeTransaction50__3> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("txId", ExistenceChecker.isSet((UniqueTransactionIdentifier2Choice__1) o.getTxId()))
+				.put("scndryTxId", ExistenceChecker.isSet((String) o.getScndryTxId()))
+				.put("prrTxId", ExistenceChecker.isSet((UniqueTransactionIdentifier3Choice__1) o.getPrrTxId()))
+				.put("collPrtflCd", ExistenceChecker.isSet((CollateralPortfolioCode6Choice__1) o.getCollPrtflCd()))
+				.put("pltfmIdr", ExistenceChecker.isSet((String) o.getPltfmIdr()))
+				.put("txPric", ExistenceChecker.isSet((PriceData2__1) o.getTxPric()))
+				.put("ntnlAmt", ExistenceChecker.isSet((NotionalAmountLegs5__1) o.getNtnlAmt()))
+				.put("ntnlQty", ExistenceChecker.isSet((NotionalQuantityLegs5__1) o.getNtnlQty()))
+				.put("exctnTmStmp", ExistenceChecker.isSet((ZonedDateTime) o.getExctnTmStmp()))
+				.put("fctvDt", ExistenceChecker.isSet((Date) o.getFctvDt()))
+				.put("xprtnDt", ExistenceChecker.isSet((Date) o.getXprtnDt()))
+				.put("derivEvt", ExistenceChecker.isSet((DerivativeEvent6__3) o.getDerivEvt()))
+				.put("tradClr", ExistenceChecker.isSet((TradeClearing11__1) o.getTradClr()))
+				.put("intrstRate", ExistenceChecker.isSet((InterestRateLegs14__1) o.getIntrstRate()))
+				.put("ccy", ExistenceChecker.isSet((CurrencyExchange22__1) o.getCcy()))
+				.put("optn", ExistenceChecker.isSet((OptionOrSwaption11__1) o.getOptn()))
+				.put("cdt", ExistenceChecker.isSet((CreditDerivative4__1) o.getCdt()))
+				.put("othrPmt", ExistenceChecker.isSet((List<? extends OtherPayment5__1>) o.getOthrPmt()))
+				.put("packg", ExistenceChecker.isSet((Package4__1) o.getPackg()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("TradeTransaction50__3", ValidationResult.ValidationType.ONLY_EXISTS, "TradeTransaction50__3", path, "");
+		}
+		return failure("TradeTransaction50__3", ValidationResult.ValidationType.ONLY_EXISTS, "TradeTransaction50__3", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

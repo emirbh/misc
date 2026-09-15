@@ -1,0 +1,142 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "blockTradeElectionIndicator" : false,
+  "cleared" : "I",
+  "counterparty1" : "5493001RKR55V4X61F71",
+  "counterparty1FederalEntityIndicator" : false,
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "549300O5MFEP1XJ40B46",
+  "counterparty2FederalEntityIndicator" : false,
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "changeInNotionalAmount1" : 0,
+    "changeInNotionalAmount2" : 0,
+    "mandatoryClearingIndicator" : false,
+    "messageID" : "PARTYA0012024-04-29T00:00Z",
+    "messageType" : "Trade State",
+    "otherPaymentPayerIDType" : [ "LEI" ],
+    "otherPaymentReceiverIDType" : [ "LEI" ],
+    "physicalCommodityContractIndicator" : false,
+    "primaryAssetClass" : "InterestRate",
+    "sefOrDcmIndicator" : false,
+    "submittedForParty" : "5493001RKR55V4X61F71",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CFTC", "SEC" ],
+    "version" : "CORE1.0"
+  },
+  "effectiveDate" : "2004-12-16",
+  "embeddedOptionType" : "OTHR",
+  "eventIdentifier" : "PARTYA001",
+  "eventTimestamp" : "2004-12-12T16:42:16Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2002-12-12T16:20:47Z",
+  "expirationDate" : "2007-12-16",
+  "finalContractualSettlementDate" : "2007-12-16",
+  "jurisdiction" : "MIXX",
+  "leg1" : {
+    "fixedRate" : 0.0273,
+    "notionalAmount" : 0,
+    "notionalAmountSchedule" : [ {
+      "effectiveDate" : "2005-12-16",
+      "value" : 0
+    }, {
+      "effectiveDate" : "2006-12-16",
+      "value" : 23000000
+    }, {
+      "effectiveDate" : "2007-12-16",
+      "value" : 22000000
+    } ],
+    "notionalCurrency" : "KRW",
+    "payerIdentifier" : "5493001RKR55V4X61F71",
+    "payerIdentifierFormat" : "Lei",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "MNTH",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 6
+    },
+    "receiverIdentifier" : "549300O5MFEP1XJ40B46",
+    "receiverIdentifierFormat" : "Lei",
+    "settlementCurrency" : "USD"
+  },
+  "leg2" : {
+    "notionalAmount" : 0,
+    "notionalAmountSchedule" : [ {
+      "effectiveDate" : "2005-12-16",
+      "value" : 0
+    }, {
+      "effectiveDate" : "2006-12-16",
+      "value" : 23000000
+    }, {
+      "effectiveDate" : "2007-12-16",
+      "value" : 22000000
+    } ],
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "549300O5MFEP1XJ40B46",
+    "payerIdentifierFormat" : "Lei",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRatePaymentFrequencyPeriod" : "MNTH",
+      "floatingRatePaymentFrequencyPeriodMultiplier" : 6,
+      "floatingRateResetFrequencyMultiplier" : 3,
+      "floatingRateResetFrequencyPeriod" : "MNTH"
+    },
+    "receiverIdentifier" : "5493001RKR55V4X61F71",
+    "receiverIdentifierFormat" : "Lei",
+    "spread" : {
+      "basis" : 1
+    },
+    "spreadNotation" : "Basis"
+  },
+  "nonReportable" : {
+    "buyerIdentifierFormat" : "Lei",
+    "counterparty1Format" : "Lei",
+    "counterparty2Format" : "Lei",
+    "deliveryType" : "CASH",
+    "instrumentType" : "Swap",
+    "notionalSchedule" : "Custom",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "NotionalCurrency" : "KRW",
+          "NotionalSchedule" : "Custom",
+          "OtherNotionalCurrency" : "USD",
+          "ReferenceRateTermUnit" : "MNTH",
+          "ReferenceRateTermValue" : 3,
+          "UnderlierID" : "USD-LIBOR-BBA",
+          "UnderlierIDSource" : "FPML"
+        },
+        "Header" : {
+          "AssetClass" : "Rates",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Cross_Currency_Fixed_Float"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "sellerIdentifierFormat" : "Lei"
+  },
+  "otherPayment" : [ {
+    "amount" : 15000,
+    "currency" : "USD",
+    "date" : "2004-12-16",
+    "payer" : "549300O5MFEP1XJ40B46",
+    "payerFormat" : "Lei",
+    "paymentType" : "UFRO",
+    "receiver" : "5493001RKR55V4X61F71",
+    "receiverFormat" : "Lei"
+  } ],
+  "packageIndicator" : false,
+  "platformIdentifier" : "XNAS",
+  "postPricedSwapIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "reportSubmittingEntityID" : "5493001RKR55V4X61F71",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "traderLocation" : "US",
+  "uniqueTransactionIdentifier" : "UTIMOCKUPIRSNEWT0106"
+}

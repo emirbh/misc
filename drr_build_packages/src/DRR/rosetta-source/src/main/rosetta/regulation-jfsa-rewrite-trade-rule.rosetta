@@ -1,0 +1,772 @@
+namespace drr.regulation.jfsa.rewrite.trade
+version "${project.version}"
+
+import cdm.base.staticdata.identifier.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.event.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.regulation.jfsa.*
+import drr.regulation.jfsa.rewrite.*
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iosco.upi.* as upi
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Trade
+
+report JFSA Trade in T+1
+  	from TransactionReportInstruction
+  	when ReportableProduct
+  	with type JFSATransactionReport
+
+// eligibility rules
+eligibility rule ReportableProduct from TransactionReportInstruction:
+    [docReference JFSA Trade
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+//reporting rules
+reporting rule EffectiveDate from TransactionReportInstruction: <"Effective Date">
+    filter IsAllowableActionForJFSA
+    then cde.datetime.EffectiveDate
+
+reporting rule ExpirationDate from TransactionReportInstruction: <"Expiration date">
+    filter IsAllowableActionForJFSA
+    then extract ProductForEvent
+    then extract cde.datetime.ExpirationDate
+
+reporting rule EarlyTerminationDate from TransactionReportInstruction: <"Early termination date">
+    filter IsActionTypeCORR or IsActionTypeREVI or IsActionTypeTERM
+    then extract cde.datetime.EarlyTerminationDate
+
+reporting rule ExecutionTimestamp from TransactionReportInstruction: <"Execution timestamp">
+    filter IsAllowableActionForJFSA
+    then cde.datetime.ExecutionTimestamp
+
+reporting rule Direction1 from TransactionReportInstruction: <"Direction 1 (Buyer/Seller)">
+    filter IsAllowableActionForJFSA
+    then extract cde.party.Direction1
+
+reporting rule NewSDRIdentifier from TransactionReportInstruction: <"New SDR Identifier">
+    filter IsAllowableActionForJFSA or IsActionTypeVALU
+    then extract common.link.NewSDRIdentifier
+
+reporting rule OriginalSwapSDRIdentifier from TransactionReportInstruction: <"Original Swap SDR Identifier">
+    filter IsAllowableActionForJFSA
+    then extract
+        if IsCleared(originatingWorkflowStep) = True and cde.event.EventType = CLRG
+        then ExtractPartyFromRelatedPartyByRole(
+                    reportableInformation -> globalPartyInformation -> relatedParty,
+                    PriorTradeRepository
+                )
+        else if IntendedToClear(originatingWorkflowStep) = True and IsActionTypeTERM = True
+        then ExtractPartyFromRelatedPartyByRole(
+                    reportableInformation -> globalPartyInformation -> relatedParty,
+                    TradeRepository
+                )
+    then extract PartyLei(partyId)
+
+reporting rule Cleared from TransactionReportInstruction: <"Cleared">
+    filter IsAllowableActionForJFSA
+    then cde.execution.Cleared
+
+reporting rule CentralCounterparty from TransactionReportInstruction: <"Central counterparty">
+    filter IsAllowableActionForJFSA
+    then cde.execution.CentralCounterparty
+
+reporting rule ClearingMember from TransactionReportInstruction: <"Clearing member">
+    filter IsAllowableActionForJFSA
+    then cde.execution.ClearingMember
+
+reporting rule PlatformIdentifier from TransactionReportInstruction: <"Platform Identifier">
+    filter IsAllowableActionForJFSA
+    then cde.execution.PlatformIdentifier
+
+reporting rule Confirmed from TransactionReportInstruction: <"Confirmed">
+    filter IsAllowableActionForJFSA
+    then common.execution.Confirmed
+
+reporting rule ConfirmationTimestampDTCC from TransactionReportInstruction: <"Confirmation Timestamp (DTCC)">
+    filter IsAllowableActionForJFSA
+    then extract common.datetime.ConfirmationTimestamp
+
+reporting rule FinalContractualSettlementDate from TransactionReportInstruction: <"Final contractual settlement date">
+    filter IsAllowableActionForJFSA
+    then extract cde.execution.FinalContractualSettlementDate
+
+reporting rule ClearingAccountOrigin from TransactionReportInstruction: <"Clearing Account Origin">
+    filter IsAllowableActionForJFSA
+    then extract common.execution.ClearingAccountOrigin
+
+reporting rule OriginalSwapUTI from TransactionReportInstruction: <"Original Swap UTI">
+    filter IsAllowableActionForJFSA
+    then extract common.link.OriginalSwapUTI
+    then filter IsMax52UpperCaseAlphanumericText = True
+    then last
+
+reporting rule OriginalSwapUTIProprietary from TransactionReportInstruction: <"Original Swap UTI">
+    filter IsAllowableActionForJFSA
+    then extract
+        if IsCleared(originatingWorkflowStep) = True
+                and IsActionTypeNEWT = True
+                and cde.event.EventType = CLRG
+        then BeforeTradeForEvent
+    then extract tradeIdentifier
+    then filter identifierType = TradeIdentifierTypeEnum -> UniqueTransactionIdentifier
+    then only-element
+    then extract assignedIdentifier -> identifier
+    then filter IsMax52UpperCaseAlphanumericText = False
+    then last
+
+reporting rule ClearingReceiptTimestamp from TransactionReportInstruction: <"Clearing receipt timestamp">
+    filter IsAllowableActionForJFSA or IsActionTypeTERM
+    then extract common.datetime.ClearingReceiptTimestamp
+
+reporting rule Uti from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC">
+    uti.GetUniqueTransactionIdentifier(item -> reportableInformation, JFSA, empty, item)
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UtiProprietary from TransactionReportInstruction: <"Unique Transaction Identifier as managed by LEIROC">
+    uti.GetUniqueTransactionIdentifier(item -> reportableInformation, JFSA, empty, item)
+        then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule PriorUti from TransactionReportInstruction: <"Prior UTI">
+    filter IsAllowableActionForJFSA
+    then common.link.GetPriorTransactionIdentifier(item, JFSA)
+    then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule PriorUtiProprietary from TransactionReportInstruction: <"Prior UTI">
+    filter IsAllowableActionForJFSA
+    then common.link.GetPriorTransactionIdentifier(item, JFSA)
+    then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule OtherPayment from TransactionReportInstruction: <"Other payment">
+    filter IsAllowableActionForJFSA
+    then extract cde.payment.OtherPayment
+
+reporting rule ValuationAmount from TransactionReportInstruction: <"Valuation amount">
+    filter IsActionTypeVALU
+    then cde.valuation.ValuationAmount
+
+reporting rule ValuationCurrency from TransactionReportInstruction: <"Valuation currency">
+    filter IsActionTypeVALU
+    then cde.valuation.ValuationCurrency
+
+reporting rule ValuationTimestamp from TransactionReportInstruction: <"Valuation Timestamp">
+    filter IsActionTypeVALU
+    then cde.datetime.ValuationTimestamp
+
+reporting rule ValuationMethod from TransactionReportInstruction: <"Valuation method">
+    filter IsActionTypeVALU
+    then extract cde.valuation.ValuationMethod(valuation.GetValuation)
+
+reporting rule Delta from TransactionReportInstruction: <"Delta">
+    filter IsActionTypeVALU
+    then extract cde.quantity.Delta
+
+reporting rule CollateralPortfolioIndicator from TransactionReportInstruction: <"Collateral Portfolio Indicator">
+    filter IsAllowableActionForJFSA
+    then extract cde.collateral.CollateralPortfolioIndicator
+
+reporting rule InitialMarginCollateralPortfolioCode from TransactionReportInstruction: <"Initial margin collateral portfolio code">
+    filter IsAllowableActionForJFSA
+    then extract common.collateral.InitialMarginCollateralPortfolioCode
+
+reporting rule VariationMarginCollateralPortfolioCode from TransactionReportInstruction: <"Variation margin collateral portfolio code">
+    filter IsAllowableActionForJFSA
+    then extract common.collateral.VariationMarginCollateralPortfolioCode
+
+// ----------------------------------------------------------------------------------------------------------------
+reporting rule Price from TransactionReportInstruction: <"Price.">
+    filter IsAllowableActionForJFSA
+    then extract price.PriceFormatFromNotation(cde.price.PriceValue, PriceNotation)
+
+//------------------------------------------------------------------------------------
+reporting rule PriceCurrency from TransactionReportInstruction: <"Price Currency">
+    filter IsAllowableActionForJFSA
+    then extract cde.price.PriceCurrency
+
+reporting rule PriceNotation from TransactionReportInstruction: <"Price notation">
+    filter IsAllowableActionForJFSA
+    then price.DefaultPercentageToDecimal(cde.price.PriceNotation, False)
+
+reporting rule PriceUnitOfMeasure from TransactionReportInstruction: <"Price unit of measure">
+    filter IsAllowableActionForJFSA
+    then cde.price.PriceUnitOfMeasure
+
+reporting rule PriceSchedule from TransactionReportInstruction: <"Price Schedule">
+    filter IsAllowableActionForJFSA
+    then extract cde.price.GetReportablePricePeriod(item, DefaultPercentagetoDecimal)
+
+reporting rule StrikePrice from TransactionReportInstruction: <"Strike Price">
+    filter IsAllowableActionForJFSA
+    then extract
+        price.PriceFormatFromNotation(cde.price.StrikePriceValue, StrikePriceNotation)
+        as "75 Strike Price"
+
+reporting rule StrikePriceCurrencyCurrencyPair from TransactionReportInstruction: <"Strike price currency">
+    filter IsAllowableActionForJFSA
+    then cde.price.StrikePriceCurrency
+
+reporting rule StrikePriceNotation from TransactionReportInstruction: <"Strike price notation">
+    filter IsAllowableActionForJFSA
+    then price.DefaultPercentageToDecimal(cde.price.StrikePriceNotationEnum, False)
+
+reporting rule StrikePriceSchedule from TransactionReportInstruction: <"Strike Price Schedule">
+    filter IsAllowableActionForJFSA
+    then extract cde.price.GetReportableStrikePricePeriod(item, DefaultPercentagetoDecimal)
+
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option premium amount">
+    filter IsAllowableActionForJFSA
+    then common.price.OptionPremiumAmount
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction: <"Option premium currency">
+    filter IsAllowableActionForJFSA
+    then cde.price.OptionPremiumCurrency
+
+reporting rule OptionPremiumPaymentDate from TransactionReportInstruction: <"Option premium payment date">
+    filter IsAllowableActionForJFSA
+    then cde.price.OptionPremiumPaymentDate
+
+reporting rule FirstExerciseDate from TransactionReportInstruction: <"First exercise date">
+    filter IsAllowableActionForJFSA
+    then cde.price.FirstExerciseDate
+
+reporting rule ExchangeRate from TransactionReportInstruction: <"Exchange rate">
+    filter IsAllowableActionForJFSA
+    then cde.price.ExchangeRate
+
+reporting rule ExchangeRateBasis from TransactionReportInstruction: <"Exchange rate basis">
+    filter IsAllowableActionForJFSA
+    then cde.price.ExchangeRateBasis
+
+reporting rule CallAmount from TransactionReportInstruction: <"Call amount">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.CallAmount
+
+reporting rule PutAmount from TransactionReportInstruction: <"Put amount">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.PutAmount
+
+reporting rule CallCurrency from TransactionReportInstruction: <"Call currency">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.CallCurrency
+
+reporting rule PutCurrency from TransactionReportInstruction: <"Put currency">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.PutCurrency
+
+reporting rule EventIdentifier from TransactionReportInstruction: <"Event identifier">
+    filter IsAllowableActionForJFSA
+    then if (cde.event.EventType = EventTypeEnum -> COMP
+                    and (IsActionTypeNEWT = True or IsActionTypeMODI = True or IsActionTypeTERM = True))
+                or (cde.event.EventType = EventTypeEnum -> CREV
+                    and (IsActionTypeMODI = True or IsActionTypeTERM = True))
+        then extract cde.event.EventIdentifier
+
+reporting rule EventTimestamp from TransactionReportInstruction: <"Event Timestamp">
+    filter IsAllowableActionForJFSA
+    then extract cde.datetime.EventTimestamp
+
+reporting rule IndexFactor from TransactionReportInstruction: <"Index factor">
+    filter IsAllowableActionForJFSA
+    then extract common.index.IndexFactor
+
+reporting rule EmbeddedOptionType from TransactionReportInstruction: <"Embedded option type">
+    filter IsAllowableActionForJFSA
+    then extract common.contract.EmbeddedOptionType
+
+reporting rule UPI from TransactionReportInstruction: <"UPI">
+    filter IsAllowableActionForJFSA
+    then extract upi.UniqueProductIdentifier
+
+reporting rule DeliveryType from TransactionReportInstruction:
+    filter IsAllowableActionForJFSA
+    then extract common.contract.DeliveryType
+
+reporting rule AssetClass from TransactionReportInstruction: <"Asset Class">
+    filter IsAllowableActionForJFSA
+    then extract common.contract.AssetClass
+
+reporting rule UnderlyingIdentificationType from TransactionReportInstruction: <"Underlying identification type">
+    filter IsAllowableActionForJFSA
+    then if GetUnderlyingIdentificationType exists
+        then GetUnderlyingIdentificationType
+
+reporting rule UnderlyingIdentification from TransactionReportInstruction: <"Underlying identification">
+    filter IsAllowableActionForJFSA
+    then if (AssetClass = INTR
+                    and (GetUnderlyingIdentificationType = I
+                        or (GetUnderlyingIdentificationType = X
+                            and common.underlier.NameOfTheUnderlyingIndex is absent
+                            and GetUnderlyingIndexIndicator is absent)))
+                or ([CommonAssetClass -> CRDT, CommonAssetClass -> EQUI] any = AssetClass
+                    and (GetUnderlyingIdentificationType = I
+                        or (GetUnderlyingIdentificationType = X
+                            and common.underlier.NameOfTheUnderlyingIndex is absent)))
+                or AssetClass = COMM
+        then extract common.underlier.UnderlyingIdentification
+
+reporting rule UnderlyingIndexIndicator from TransactionReportInstruction: <"Indicator of the underlying index">
+    filter IsAllowableActionForJFSA
+    then if (AssetClass = INTR
+                    and GetUnderlyingIdentificationType = X
+                    and common.underlier.NameOfTheUnderlyingIndex is absent
+                    and common.underlier.UnderlyingIdentification is absent)
+                or AssetClass = COMM
+        then GetUnderlyingIndexIndicator
+
+reporting rule NameOfTheUnderlyingIndex from TransactionReportInstruction: <"Name of the underlying index">
+    filter IsAllowableActionForJFSA
+    then if (AssetClass = INTR
+                    and GetUnderlyingIdentificationType = X
+                    and GetUnderlyingIndexIndicator is absent
+                    and common.underlier.UnderlyingIdentification is absent)
+                or ([CommonAssetClass -> CRDT, CommonAssetClass -> EQUI] any = AssetClass
+                    and GetUnderlyingIdentificationType = X
+                    and common.underlier.UnderlyingIdentification is absent)
+                or AssetClass = COMM
+        then extract common.underlier.NameOfTheUnderlyingIndex
+
+reporting rule ReferenceEntity from TransactionReportInstruction: <"Reference entity">
+    filter IsAllowableActionForJFSA
+    then extract
+        if UnderlyingIdentificationType is absent // DTCC_JFSA_BR_0114_01
+        then ExtractReferenceEntity -> identifier
+
+reporting rule IndicatorOfTheFloatingRateOfLeg1 from TransactionReportInstruction: <"Indicator of the floating rate-Leg 1">
+    filter IsAllowableActionForJFSA
+    then extract ProductForEvent
+    then extract ProductOrUnderlierProduct
+    then extract InterestRateLeg1
+    then extract RateOption
+    then extract item -> FloatingRateIndex -> floatingRateIndex to-string
+    then extract GetIndexIndicatorFromFloatingRate
+
+reporting rule IndicatorOfTheFloatingRateOfLeg2 from TransactionReportInstruction: <"Indicator of the floating rate-Leg 2">
+    filter IsAllowableActionForJFSA
+    then extract ProductForEvent
+    then filter IsFRA = False
+    then extract ProductOrUnderlierProduct
+    then extract InterestRateLeg2
+    then extract RateOption
+    then extract item -> FloatingRateIndex -> floatingRateIndex to-string
+    then extract GetIndexIndicatorFromFloatingRate
+
+reporting rule DerivativeBasedOnCryptoAssets from TransactionReportInstruction: <"Derivative based on crypto-assets">
+    filter IsAllowableActionForJFSA
+    then extract cde.underlier.CryptoAssetUnderlyingIndicator
+
+reporting rule MaturityDateOfTheUnderlying from TransactionReportInstruction: <"Maturity date of the underlying">
+    filter IsAllowableActionForJFSA
+    then common.datetime.MaturityDateOfTheUnderlier
+
+reporting rule Seniority from TransactionReportInstruction: <"Seniority">
+    filter IsAllowableActionForJFSA
+    then extract common.index.Seniority
+
+reporting rule Series from TransactionReportInstruction: <"Series">
+    filter IsAllowableActionForJFSA
+    then extract common.index.Series
+
+reporting rule Version from TransactionReportInstruction: <"Version">
+    filter IsAllowableActionForJFSA
+    then extract common.index.Version
+
+reporting rule CDSIndexAttachmentPoint from TransactionReportInstruction: <"CDS index attachment point">
+    filter IsAllowableActionForJFSA
+    then cde.index.CDSIndexAttachmentPoint
+
+reporting rule CDSIndexDetachmentPoint from TransactionReportInstruction: <"CDS index detachment point">
+    filter IsAllowableActionForJFSA
+    then cde.index.CDSIndexDetachmentPoint
+
+reporting rule CustomBasketCode from TransactionReportInstruction: <"Custom basket code">
+    filter IsAllowableActionForJFSA
+    then extract cde.basket.CustomBasketCode
+
+reporting rule BasketConstituents from TransactionReportInstruction:
+    filter IsAllowableActionForJFSA
+    then extract cde.basket.BasketConstituents
+    then extract
+        basket.BasketConstituentsReport {
+            identifier: identifier,
+            source: source,
+            ...
+        }
+
+reporting rule ContractType from TransactionReportInstruction: <"Contract Type">
+    filter IsAllowableActionForJFSA
+    then extract common.contract.ContractType
+
+reporting rule OptionStyle from TransactionReportInstruction: <"Option style">
+    filter IsAllowableActionForJFSA
+    then extract common.contract.OptionStyle
+
+reporting rule OptionType from TransactionReportInstruction: <"Option type">
+    filter IsAllowableActionForJFSA
+    then extract common.contract.OptionType
+
+reporting rule PackageIdentifier from TransactionReportInstruction: <"Package identifier">
+    filter IsAllowableActionForJFSA
+    then extract cde.link.PackageIdentifier
+
+reporting rule PackageTransactionPrice from TransactionReportInstruction: <"Package Transaction Price">
+    filter IsAllowableActionForJFSA
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionPriceValue,
+                PackageTransactionPriceNotation
+            )
+
+reporting rule PackageTransactionPriceCurrency from TransactionReportInstruction: <"Package transaction price currency">
+    filter IsAllowableActionForJFSA
+    then extract cde.price.PackageTransactionPriceCurrency
+
+reporting rule PackageTransactionPriceNotation from TransactionReportInstruction: <"Package transaction price notation">
+    filter IsAllowableActionForJFSA
+    then price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionPriceNotationEnum,
+                False
+            )
+
+reporting rule PackageTransactionSpread from TransactionReportInstruction: <"Package transaction spread">
+    filter IsAllowableActionForJFSA
+    then extract
+        price.PriceFormatFromNotation(
+                cde.price.PackageTransactionSpreadValue,
+                PackageTransactionSpreadNotation
+            )
+
+reporting rule PackageTransactionSpreadCurrency from TransactionReportInstruction: <"Package transaction spread currency">
+    filter IsAllowableActionForJFSA
+    then extract cde.price.PackageTransactionSpreadCurrency
+
+reporting rule PackageTransactionSpreadNotation from TransactionReportInstruction: <"Package transaction spread notation">
+    filter IsAllowableActionForJFSA
+    then price.DefaultPercentageToDecimal(
+                cde.price.PackageTransactionSpreadNotationEnum,
+                False
+            )
+
+reporting rule TechnicalRecordId from TransactionReportInstruction: <"Technical Record Id (ISO)">
+    extract ReportableEvent [
+        if common.link.TechnicalRecordId(reportableInformation, JFSA) -> isUnique
+        then common.link.TechnicalRecordId(reportableInformation, JFSA) -> id
+        else (common.link.TechnicalRecordId(reportableInformation, JFSA) -> id
+            then extract
+                item + "_" + (cde.datetime.ReportingTimestamp(ReportableEvent) to-string))
+    ]
+
+reporting rule SingleOrUpperAndLowerBarrier from TransactionReportInstruction: <"Single or Upper barrier and Lower barrier">
+    filter IsAllowableActionForJFSA
+    then extract common.price.SingleOrUpperAndLowerBarrier
+
+func IsAllowableActionForJFSA:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        isAllowableAction boolean (1..1)
+
+    set isAllowableAction:
+        IsActionTypeNEWT(reportableEvent)
+            or IsActionTypeMODI(reportableEvent)
+            or IsActionTypeCORR(reportableEvent)
+            or IsActionTypeREVI(reportableEvent)
+            or IsActionTypeTERM(reportableEvent)
+            or IsActionTypePRTO(reportableEvent)
+            or IsActionTypeEROR(reportableEvent)
+
+// CDE Leg fields
+reporting rule FixedRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Fixed Rate - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg1 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.DayCountConvention
+
+reporting rule FloatingRateDayCountConventionLeg2 from TransactionReportInstruction: <"Day Count Convention for Floating Rate - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.DayCountConvention
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Fixed Rate - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg1 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FloatingRatePaymentFrequencyPeriodLeg2 from TransactionReportInstruction: <"Payment Frequency Period for Floating Rate - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriod
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Fixed Rate - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FloatingRatePaymentFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Payment Frequency Period Multiplier for Floating Rate - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.payment.PaymentFrequencyPeriodMultiplier
+
+reporting rule FixedRateLeg1 from TransactionReportInstruction: <"Fixed Rate - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then cde.price.FixedRate
+
+reporting rule FixedRateLeg2 from TransactionReportInstruction: <"Fixed Rate - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FixedInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then cde.price.FixedRate
+
+reporting rule NotionalAmountLeg1 from TransactionReportInstruction: <"Notional Amount - Leg 1">
+    [docReference DTCC Trade
+        provision "DTCC ASIC/MAS & JFSA WG – January 29, 2026. Jira #JFSAP1-11612. For CO, FX, CR and EQ asset classes, the logic deriving Notional amount leg 1 and leg 2 from the schedule effective date has been removed. The Notional amount value of the first period of the Notional amount schedule is used as the Notional amount. The existing schedule-based logic remains unchanged for the IR asset class."]
+    filter IsAllowableActionForJFSA
+    then if (Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+                    or Qualify_AssetClass_Credit(EconomicTermsForProduct(ProductForEvent))
+                    or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+                    or Qualify_AssetClass_ForeignExchange(
+                            EconomicTermsForProduct(ProductForEvent)
+                        ))
+                and cde.quantity.NotionalAmountSchedule(common.PayoutLeg1) exists
+        then (cde.quantity.NotionalAmountSchedule(common.PayoutLeg1)
+            min [ effectiveDate ]
+            then value)
+        else cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg1,
+                9999999999999999999999999
+            )
+
+reporting rule NotionalAmountLeg2 from TransactionReportInstruction: <"Notional Amount - Leg 2">
+    [docReference DTCC Trade
+        provision "DTCC ASIC/MAS & JFSA WG – January 29, 2026. Jira #JFSAP1-11612. For CO, FX, CR and EQ asset classes, the logic deriving Notional amount leg 1 and leg 2 from the schedule effective date has been removed. The Notional amount value of the first period of the Notional amount schedule is used as the Notional amount. The existing schedule-based logic remains unchanged for the IR asset class."]
+    filter IsAllowableActionForJFSA
+    then if (Qualify_AssetClass_Commodity(EconomicTermsForProduct(ProductForEvent))
+                    or Qualify_AssetClass_Credit(EconomicTermsForProduct(ProductForEvent))
+                    or Qualify_AssetClass_Equity(EconomicTermsForProduct(ProductForEvent))
+                    or Qualify_AssetClass_ForeignExchange(
+                            EconomicTermsForProduct(ProductForEvent)
+                        ))
+                and cde.quantity.NotionalAmountSchedule(common.PayoutLeg2) exists
+        then (cde.quantity.NotionalAmountSchedule(common.PayoutLeg2)
+            min [ effectiveDate ]
+            then value)
+        else cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg2,
+                9999999999999999999999999
+            )
+
+reporting rule NotionalCurrencyLeg1 from TransactionReportInstruction: <"Notional Currency - Leg 1">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.Notional(common.PayoutForQuantityLeg1)
+    then quantity.CurrencyFromNotional
+
+reporting rule NotionalCurrencyLeg2 from TransactionReportInstruction: <"Notional Currency - Leg 2">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.Notional(common.PayoutForQuantityLeg2)
+    then quantity.CurrencyFromNotional
+
+reporting rule TotalNotionalQuantityLeg1 from TransactionReportInstruction: <"Total Notional Quantity - Leg 1">
+    filter IsAllowableActionForJFSA
+    then if IsEquity(ProductForEvent) or IsCommodity(ProductForEvent)
+        then cde.quantity.TotalNotionalQuantity(
+                    common.PayoutLeg1,
+                    9999999999999999999999999
+                )
+
+reporting rule TotalNotionalQuantityLeg2 from TransactionReportInstruction: <"Total Notional Quantity - Leg 2">
+    filter IsAllowableActionForJFSA
+    then if IsCommoditySwap(ProductForEvent)
+                or (IsEquity(ProductForEvent) and InterestRateLeg2(ProductForEvent) -> priceQuantity -> quantitySchedule -> unit -> financialUnit exists)
+        then cde.quantity.TotalNotionalQuantity(
+                    common.PayoutLeg2,
+                    9999999999999999999999999
+                )
+
+reporting rule NotionalAmountScheduleLeg1 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 1">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.NotionalAmountSchedule(common.PayoutLeg1)
+
+reporting rule NotionalAmountScheduleLeg2 from TransactionReportInstruction: <"Notional Amount Schedule - Leg 2">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.NotionalAmountSchedule(common.PayoutLeg2)
+
+reporting rule NotionalQuantityScheduleLeg1 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 1">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.NotionalQuantitySchedule(common.PayoutLeg1)
+
+reporting rule NotionalQuantityScheduleLeg2 from TransactionReportInstruction: <"Notional Quantity Schedule - Leg 2">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.NotionalQuantitySchedule(common.PayoutLeg2)
+
+reporting rule SettlementCurrencyLeg1 from TransactionReportInstruction: <"Settlement Currency - Leg 1">
+    filter IsAllowableActionForJFSA
+    then cde.execution.SettlementCurrency(common.PayoutLeg1)
+
+reporting rule SettlementCurrencyLeg2 from TransactionReportInstruction: <"Settlement Currency - Leg 2">
+    filter IsAllowableActionForJFSA
+    then cde.execution.SettlementCurrency(common.PayoutLeg2)
+
+reporting rule SpreadLeg1 from TransactionReportInstruction: <"Spread - Leg 1">
+    filter IsAllowableActionForJFSA
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg1),
+                SpreadNotationLeg1
+            )
+
+reporting rule SpreadLeg2 from TransactionReportInstruction: <"Spread - Leg 2">
+    filter IsAllowableActionForJFSA
+    then price.PriceFormatFromNotation(
+                cde.price.SpreadValue(common.PayoutLeg2),
+                SpreadNotationLeg2
+            )
+
+reporting rule SpreadNotationLeg1 from TransactionReportInstruction: <"Spread notation-Leg 1">
+    price.DefaultPercentageToDecimal(cde.price.SpreadNotationEnum(common.PayoutLeg1), False)
+
+reporting rule SpreadNotationLeg2 from TransactionReportInstruction: <"Spread notation-Leg 2">
+    price.DefaultPercentageToDecimal(cde.price.SpreadNotationEnum(common.PayoutLeg2), False)
+
+reporting rule SpreadCurrencyLeg1 from TransactionReportInstruction: <"Spread Currency - Leg 1">
+    filter IsAllowableActionForJFSA
+    then cde.price.SpreadCurrency(common.PayoutLeg1)
+
+reporting rule SpreadCurrencyLeg2 from TransactionReportInstruction: <"Spread Currency - Leg 2">
+    filter IsAllowableActionForJFSA
+    then cde.price.SpreadCurrency(common.PayoutLeg2)
+
+reporting rule QuantityUnitOfMeasureLeg1 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 1">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg1)
+
+reporting rule QuantityUnitOfMeasureLeg2 from TransactionReportInstruction: <"Quantity Unit Of Measure - Leg 2">
+    filter IsAllowableActionForJFSA
+    then cde.quantity.QuantityUnitOfMeasure(common.PayoutLeg2)
+
+reporting rule Direction2Leg1 from TransactionReportInstruction: <"Direction2 - Leg 1">
+    filter IsAllowableActionForJFSA
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    common.PayoutLeg1,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+reporting rule Direction2Leg2 from TransactionReportInstruction: <"Direction2 - Leg 2">
+    filter IsAllowableActionForJFSA
+    then if cde.party.Direction1 is absent
+        then cde.party.Direction2(
+                    common.PayoutLeg2,
+                    CounterpartyRoleFromLEI(CounterpartiesForEvent, cde.party.Counterparty1)
+                )
+
+// Common Leg fields
+reporting rule FixingDateLeg1 from TransactionReportInstruction: <"Fixing Date - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.datetime.FixingDate(common.PayoutLeg1)
+
+reporting rule FixingDateLeg2 from TransactionReportInstruction: <"Fixing Date - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.datetime.FixingDate(common.PayoutLeg2)
+
+reporting rule FloatingRateIndicatorLeg1 from TransactionReportInstruction: <"Floating Rate Indicator - Leg 1">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateIndicator
+
+reporting rule FloatingRateIndicatorLeg2 from TransactionReportInstruction: <"Floating Rate Indicator - Leg 2">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateIndicator
+
+reporting rule FloatingRateReferencePeriodLeg1 from TransactionReportInstruction: <"Floating Rate Reference Period - Leg 1">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateReferencePeriod
+
+reporting rule FloatingRateReferencePeriodLeg2 from TransactionReportInstruction: <"Floating Rate Reference Period - Leg 2">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriod
+
+reporting rule FloatingRateReferencePeriodMultiplierLeg1 from TransactionReportInstruction: <"Floating Rate Reference Period Multiplier - Leg 1">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.FloatingRateReferencePeriodMultiplier
+
+reporting rule FloatingRateReferencePeriodMultiplierLeg2 from TransactionReportInstruction: <"Floating Rate Reference Period Multiplier - Leg 2">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.FloatingRateReferencePeriodMultiplier
+
+reporting rule NameOfTheFloatingRateLeg1 from TransactionReportInstruction: <"Name Of The Floating Rate Leg - Leg 1">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule NameOfTheFloatingRateLeg2 from TransactionReportInstruction: <"Name Of The Floating Rate Leg - Leg 2">
+    filter IsAllowableActionForJFSA
+    then filter IsFRA(ProductForEvent) = False
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then common.underlier.NameOfTheFloatingRate
+
+reporting rule FloatingRateResetFrequencyPeriodLeg1 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then extract common.payment.FloatingRateResetFrequencyPeriod
+
+reporting rule FloatingRateResetFrequencyPeriodLeg2 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then extract common.payment.FloatingRateResetFrequencyPeriod
+
+reporting rule FloatingRateResetFrequencyPeriodMultiplierLeg1 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period Multiplier - Leg 1">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg1)
+    then extract common.payment.FloatingRateResetFrequencyPeriodMultiplier
+
+reporting rule FloatingRateResetFrequencyPeriodMultiplierLeg2 from TransactionReportInstruction: <"Floating Rate Reset Frequency Period Multiplier - Leg 2">
+    filter IsAllowableActionForJFSA
+    then common.payment.FloatingInterestRatePayoutFromPayout(common.PayoutLeg2)
+    then extract common.payment.FloatingRateResetFrequencyPeriodMultiplier

@@ -1,0 +1,28 @@
+{
+  "id" : "test-pack-translate-fpml-record-keeping-to-reportable-event-pre-enrich",
+  "pipelineId" : "pipeline-translate-fpml-record-keeping-to-reportable-event",
+  "name" : "Pre enrich",
+  "samples" : [ {
+    "id" : "mockup-pre-enrich",
+    "name" : "mockup pre enrich",
+    "inputPath" : "ingest/input/pre-enrich/mockup-pre-enrich.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/pre-enrich/mockup-pre-enrich.json",
+    "assertions" : {
+      "inputPathCount" : 275,
+      "outputPathCount" : 299,
+      "modelValidationFailures" : 117,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-pre-enrich-ssbs",
+    "name" : "mockup pre enrich ssbs",
+    "inputPath" : "ingest/input/pre-enrich/mockup-pre-enrich-ssbs.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/pre-enrich/mockup-pre-enrich-ssbs.json",
+    "assertions" : {
+      "inputPathCount" : 293,
+      "outputPathCount" : 313,
+      "modelValidationFailures" : 124,
+      "runtimeError" : false
+    }
+  } ]
+}

@@ -1,0 +1,231 @@
+{
+  "id" : "test-pack-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-fx",
+  "pipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default",
+  "name" : "Fx",
+  "samples" : [ {
+    "id" : "fx-forward-ex01",
+    "name" : "FX Forward ex01",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex01.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-Forward-ex01.json",
+    "assertions" : {
+      "modelValidationFailures" : 40,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex02",
+    "name" : "FX Forward ex02",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex02.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-Forward-ex02.json",
+    "assertions" : {
+      "modelValidationFailures" : 36,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex03",
+    "name" : "FX Forward ex03",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex03.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-Forward-ex03.json",
+    "assertions" : {
+      "modelValidationFailures" : 36,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex04-party1-pays-eur",
+    "name" : "FX Forward ex04 Party1 pays EUR",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex04-Party1-pays-EUR.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-Forward-ex04-Party1-pays-EUR.json",
+    "assertions" : {
+      "modelValidationFailures" : 102,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex05-party1-pays-usd",
+    "name" : "FX Forward ex05 Party1 pays USD",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex05-Party1-pays-USD.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-Forward-ex05-Party1-pays-USD.json",
+    "assertions" : {
+      "modelValidationFailures" : 40,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-forward-ex06",
+    "name" : "FX Forward ex06",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-Forward-ex06.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-Forward-ex06.json",
+    "assertions" : {
+      "modelValidationFailures" : 203,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex01",
+    "name" : "FX NDF ex01",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex01.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex01.json",
+    "assertions" : {
+      "modelValidationFailures" : 44,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex02",
+    "name" : "FX NDF ex02",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex02.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex02.json",
+    "assertions" : {
+      "modelValidationFailures" : 38,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex03-bilateral",
+    "name" : "FX NDF ex03 Bilateral",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex03-Bilateral.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex03-Bilateral.json",
+    "assertions" : {
+      "modelValidationFailures" : 56,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex04",
+    "name" : "FX NDF ex04",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex04.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex04.json",
+    "assertions" : {
+      "modelValidationFailures" : 192,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex05-cleared",
+    "name" : "FX NDF ex05 Cleared",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex05-Cleared.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex05-Cleared.json",
+    "assertions" : {
+      "modelValidationFailures" : 49,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex06",
+    "name" : "FX NDF ex06",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex06.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex06.json",
+    "assertions" : {
+      "modelValidationFailures" : 63,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex07-beta",
+    "name" : "FX NDF ex07 Beta",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex07-Beta.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex07-Beta.json",
+    "assertions" : {
+      "modelValidationFailures" : 27,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex08-gamma",
+    "name" : "FX NDF ex08 Gamma",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex08-Gamma.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex08-Gamma.json",
+    "assertions" : {
+      "modelValidationFailures" : 27,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndf-ex09-confirmation",
+    "name" : "FX NDF ex09 Confirmation",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDF-ex09-Confirmation.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDF-ex09-Confirmation.json",
+    "assertions" : {
+      "modelValidationFailures" : 80,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndo-ex01-european",
+    "name" : "FX NDO ex01 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDO-ex01-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDO-ex01-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 28,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-ndo-ex02-european",
+    "name" : "FX NDO ex02 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-NDO-ex02-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-NDO-ex02-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 37,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex01-european",
+    "name" : "FX VanillaOption ex01 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex01-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex01-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 24,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex02-european",
+    "name" : "FX VanillaOption ex02 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex02-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex02-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 28,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex03-european",
+    "name" : "FX VanillaOption ex03 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex03-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex03-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 47,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex04-european",
+    "name" : "FX VanillaOption ex04 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex04-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex04-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 35,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex05-american",
+    "name" : "FX VanillaOption ex05 American",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex05-American.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex05-American.json",
+    "assertions" : {
+      "modelValidationFailures" : 106,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex06-european",
+    "name" : "FX VanillaOption ex06 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex06-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex06-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 67,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex07-european",
+    "name" : "FX VanillaOption ex07 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex07-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex07-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 187,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "fx-vanillaoption-ex08-european",
+    "name" : "FX VanillaOption ex08 European",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/fx/FX-VanillaOption-ex08-European.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/fx/FX-VanillaOption-ex08-European.json",
+    "assertions" : {
+      "modelValidationFailures" : 67,
+      "runtimeError" : false
+    }
+  } ]
+}

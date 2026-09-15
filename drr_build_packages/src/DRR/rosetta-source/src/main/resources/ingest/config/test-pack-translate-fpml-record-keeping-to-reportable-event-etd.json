@@ -1,0 +1,17 @@
+{
+  "id" : "test-pack-translate-fpml-record-keeping-to-reportable-event-etd",
+  "pipelineId" : "pipeline-translate-fpml-record-keeping-to-reportable-event",
+  "name" : "Etd",
+  "samples" : [ {
+    "id" : "mockup-etd",
+    "name" : "mockup etd",
+    "inputPath" : "ingest/input/etd/mockup-etd.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/etd/mockup-etd.json",
+    "assertions" : {
+      "inputPathCount" : 62,
+      "outputPathCount" : 75,
+      "modelValidationFailures" : 13,
+      "runtimeError" : false
+    }
+  } ]
+}

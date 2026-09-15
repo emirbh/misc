@@ -1,0 +1,173 @@
+namespace drr.standards.iosco.cde.version1.execution
+version "${project.version}"
+
+import cdm.product.asset.*
+import cdm.product.common.schedule.*
+import cdm.product.common.settlement.*
+import cdm.product.template.*
+
+import drr.base.trade.*
+import drr.base.util.datetime.*
+
+func FixedPriceSettlementDate:
+    inputs:
+        fixedPricePayout FixedPricePayout (0..1)
+    output:
+        fixedPriceDate date (0..*)
+    add fixedPriceDate: SettlementDateFromSchedule(fixedPricePayout -> schedule)
+    add fixedPriceDate: SettlementDateFromPaymentDate(fixedPricePayout -> paymentDates)
+
+func OptionSettlementDate:
+    inputs:
+        optionPayout OptionPayout (0..1)
+    output:
+        optionDate date (0..*)
+    add optionDate: SettlementDateFromSchedule(optionPayout -> schedule)
+    add optionDate: SettlementDateFromSettlementTerms(optionPayout -> settlementTerms)
+    add optionDate: SettlementDateFromExerciseTerms(optionPayout -> exerciseTerms)
+
+func InterestRateSettlementDate:
+    inputs:
+        interestRatePayout InterestRatePayout (0..1)
+    output:
+        interestRateDate date (0..*)
+    add interestRateDate: SettlementDateFromPaymentDate(interestRatePayout -> paymentDates)
+    add interestRateDate:
+        SettlementDateFromCalculationPeriodDates(
+                interestRatePayout -> calculationPeriodDates
+            )
+
+func CommoditySettlementDate:
+    inputs:
+        commodityPayout CommodityPayout (0..1)
+    output:
+        commodityDate date (0..*)
+    add commodityDate: SettlementDateFromPaymentDate(commodityPayout -> paymentDates)
+    add commodityDate:
+        SettlementDateFromCalculationPeriodDates(commodityPayout -> calculationPeriodDates)
+    add commodityDate: SettlementDateFromSchedule(commodityPayout -> schedule)
+
+func PerformanceSettlementDate:
+    inputs:
+        performancePayout PerformancePayout (0..1)
+    output:
+        performanceDate date (0..*)
+    add performanceDate: SettlementDateFromPaymentDate(performancePayout -> paymentDates)
+    add performanceDate:
+        SettlementDateFromObservationTerms(performancePayout -> observationTerms)
+
+func ForwardSettlementDate:
+    inputs:
+        forwardPayout SettlementPayout (0..1)
+    output:
+        forwardDate date (0..*)
+    add forwardDate: SettlementDateFromSettlementTerms(forwardPayout -> settlementTerms)
+
+func SettlementDateFromSchedule:
+    inputs:
+        schedule CalculationSchedule (0..1)
+    output:
+        date date (0..*)
+
+    add date: schedule -> schedulePeriod extract paymentDate
+    add date: schedule -> schedulePeriod extract fixingPeriod -> endDate
+
+func SettlementDateFromPaymentDate:
+    inputs:
+        paymentDates PaymentDates (0..1)
+    output:
+        date date (0..*)
+    add date: paymentDates -> lastRegularPaymentDate
+    add date: paymentDates -> firstPaymentDate
+    add date:
+        paymentDates -> paymentDateSchedule -> finalPaymentDate -> adjustableDate
+            extract AdjustableDateResolution
+
+func SettlementDateFromSettlementTerms:
+    inputs:
+        settlementTerms SettlementTerms (0..1)
+    output:
+        date date (0..*)
+    add date: settlementTerms -> settlementDate -> valueDate
+
+func SettlementDateFromExerciseTerms:
+    inputs:
+        exerciseTerms ExerciseTerms (1..1)
+    output:
+        date date (0..*)
+    add date:
+        if (exerciseTerms -> style = European or exerciseTerms -> style = American)
+        then exerciseTerms -> expirationDate -> adjustableDate
+            extract AdjustableDateResolution
+    add date:
+        if exerciseTerms -> style = Bermuda
+        then exerciseTerms -> exerciseDates -> adjustableDates
+            extract AdjustableDatesResolution
+
+func SettlementDateFromCalculationPeriodDates:
+    inputs:
+        calculationPeriodDates CalculationPeriodDates (0..1)
+    output:
+        date date (0..*)
+    add date:
+        calculationPeriodDates -> terminationDate -> adjustableDate
+            extract AdjustableDateResolution
+
+func SettlementDateFromObservationTerms:
+    inputs:
+        observationTerms ObservationTerms (0..1)
+    output:
+        date date (0..*)
+    add date:
+        observationTerms -> observationDates -> periodicSchedule -> endDate -> adjustableDate
+            extract AdjustableDateResolution
+
+func ExtractFinalContractualSettlementDate:
+    inputs:
+        product NonTransferableProduct (0..1)
+    output:
+        date date (0..*)
+
+    alias fixedPricePayout: EconomicTermsForProduct(product) -> payout -> FixedPricePayout
+    alias commodityPayout: EconomicTermsForProduct(product) -> payout -> CommodityPayout
+    alias optionPayout: EconomicTermsForProduct(product) -> payout -> OptionPayout
+    alias interestRatePayout:
+        EconomicTermsForProduct(product) -> payout -> InterestRatePayout
+    alias performancePayout: EconomicTermsForProduct(product) -> payout -> PerformancePayout
+    alias forwardPayout: EconomicTermsForProduct(product) -> payout -> SettlementPayout
+
+    add date:
+        fixedPricePayout
+            extract FixedPriceSettlementDate
+            then flatten
+    add date:
+        optionPayout
+            extract OptionSettlementDate
+            then flatten
+    add date:
+        commodityPayout
+            extract CommoditySettlementDate
+            then flatten
+    add date:
+        interestRatePayout
+            extract InterestRateSettlementDate
+            then flatten
+    add date:
+        performancePayout
+            extract PerformanceSettlementDate
+            then flatten
+    add date:
+        forwardPayout
+            extract ForwardSettlementDate
+            then flatten
+
+    add date:
+        AdjustableDateResolution(
+                EconomicTermsForProduct(product) -> terminationDate -> adjustableDate
+            )
+
+    add date:
+        MaxAdjustableDate(
+                performancePayout -> valuationDates -> finalValuationDate -> valuationDate -> adjustableDate only-element,
+                interestRatePayout -> calculationPeriodDates -> terminationDate -> adjustableDate only-element
+            )

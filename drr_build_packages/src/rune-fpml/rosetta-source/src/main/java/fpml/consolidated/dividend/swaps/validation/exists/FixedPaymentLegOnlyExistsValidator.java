@@ -1,0 +1,51 @@
+package fpml.consolidated.dividend.swaps.validation.exists;
+
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.dividend.swaps.FixedPaymentAmount;
+import fpml.consolidated.dividend.swaps.FixedPaymentLeg;
+import fpml.consolidated.shared.AccountReference;
+import fpml.consolidated.shared.AdjustableOrRelativeDate;
+import fpml.consolidated.shared.LegIdentifier;
+import fpml.consolidated.shared.PartyReference;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class FixedPaymentLegOnlyExistsValidator implements ValidatorWithArg<FixedPaymentLeg, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends FixedPaymentLeg> ValidationResult<FixedPaymentLeg> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("id", ExistenceChecker.isSet((String) o.getId()))
+				.put("legIdentifier", ExistenceChecker.isSet((List<? extends LegIdentifier>) o.getLegIdentifier()))
+				.put("payerPartyReference", ExistenceChecker.isSet((PartyReference) o.getPayerPartyReference()))
+				.put("payerAccountReference", ExistenceChecker.isSet((AccountReference) o.getPayerAccountReference()))
+				.put("receiverPartyReference", ExistenceChecker.isSet((PartyReference) o.getReceiverPartyReference()))
+				.put("receiverAccountReference", ExistenceChecker.isSet((AccountReference) o.getReceiverAccountReference()))
+				.put("effectiveDate", ExistenceChecker.isSet((AdjustableOrRelativeDate) o.getEffectiveDate()))
+				.put("terminationDate", ExistenceChecker.isSet((AdjustableOrRelativeDate) o.getTerminationDate()))
+				.put("fixedPayment", ExistenceChecker.isSet((List<? extends FixedPaymentAmount>) o.getFixedPayment()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("FixedPaymentLeg", ValidationResult.ValidationType.ONLY_EXISTS, "FixedPaymentLeg", path, "");
+		}
+		return failure("FixedPaymentLeg", ValidationResult.ValidationType.ONLY_EXISTS, "FixedPaymentLeg", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

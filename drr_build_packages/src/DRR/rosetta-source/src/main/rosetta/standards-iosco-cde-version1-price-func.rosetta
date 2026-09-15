@@ -1,0 +1,190 @@
+namespace drr.standards.iosco.cde.version1.price
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.observable.asset.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.*
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.trade.price.*
+
+func ReportablePricePeriod: <"Extracts the period for a price schedule">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+        defaultingType price.DefaultingType (0..1)
+    output:
+        reportablePeriod price.PricePeriod (1..*)
+
+    alias customizedSchedule:
+        if Qualify_Commodity_Swap_FixedFloat(
+                    EconomicTermsForProduct(ProductForEvent(reportableEvent))
+                )
+                or Qualify_Commodity_Swap_Basis(
+                        EconomicTermsForProduct(ProductForEvent(reportableEvent))
+                    )
+        then EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> CommodityPayout -> schedule first
+        else if Qualify_Commodity_Option(
+                    EconomicTermsForProduct(ProductForEvent(reportableEvent))
+                )
+                or Qualify_Commodity_Swaption(
+                        EconomicTermsForProduct(ProductForEvent(reportableEvent))
+                    )
+        then EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> OptionPayout only-element -> schedule
+        else if Qualify_Commodity_Forward(
+                    EconomicTermsForProduct(ProductForEvent(reportableEvent))
+                )
+        then EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> SettlementPayout only-element -> schedule
+
+    alias priceSchedule:
+        if TradeForEvent(reportableEvent) exists
+        then (price.SingleTradeLot(TradeForEvent(reportableEvent)) -> priceQuantity -> price
+            filter datedValue exists)
+        else if PositionForEvent(reportableEvent) exists
+        then ((PositionForEvent(reportableEvent) -> positionBase -> tradeLot only-element) -> priceQuantity -> price
+            filter datedValue exists)
+
+    add reportablePeriod:
+        priceSchedule
+            then extract
+                price.ReportablePricePeriod(item, customizedSchedule, defaultingType)
+            then flatten
+
+func ReportableStrikePricePeriod: <"Extracts the period for a strike price schedule">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+        defaultingType price.DefaultingType (0..1)
+    output:
+        reportablePeriod price.PricePeriod (1..*)
+
+    alias customizedSchedule:
+        if product.IsCommodityOption(ProductForTrade(TradeForEvent(reportableEvent)))
+                or Qualify_Commodity_Swaption(
+                        EconomicTermsForProduct(
+                                ProductForTrade(TradeForEvent(reportableEvent))
+                            )
+                    )
+        then EconomicTermsForProduct(ProductForTrade(TradeForEvent(reportableEvent))) -> payout -> OptionPayout -> schedule only-element
+
+    alias strikePriceSchedule: StrikePrice(reportableEvent)
+    add reportablePeriod:
+        price.ReportablePricePeriod(strikePriceSchedule, customizedSchedule, empty)
+
+func Price: <"Price">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        price PriceSchedule (0..1)
+
+    alias tradableProduct: TradableProductForEvent(reportableEvent)
+    alias economicTerms: EconomicTermsForProduct(tradableProduct -> product)
+
+    set price:
+        if // Equity Swaps
+            product.IsEquitySwap(tradableProduct)
+                or IsEquityOther(tradableProduct -> product)
+                or Qualify_Commodity_Option_NonStandard(economicTerms)
+                or Qualify_Credit_Option_NonStandard(economicTerms)
+        then (if economicTerms -> payout -> PerformancePayout only-element -> initialValuationPrice exists
+            then economicTerms -> payout -> PerformancePayout only-element -> initialValuationPrice
+            else (tradableProduct -> tradeLot -> priceQuantity -> price
+                filter
+                    item -> priceType = PriceTypeEnum -> AssetPrice
+                        or item -> priceType = PriceTypeEnum -> CashPrice))
+        else if // Equity Forwards
+            Qualify_BaseProduct_EquityForward(economicTerms)
+                or (economicTerms -> payout -> SettlementPayout exists
+                    and economicTerms -> payout -> SettlementPayout only-element -> underlier -> Observable -> Basket -> basketConstituent only-element -> Asset -> Instrument -> Security -> instrumentType = InstrumentTypeEnum -> Equity)
+        then (economicTerms -> payout -> SettlementPayout only-element -> priceQuantity -> priceSchedule default (tradableProduct -> tradeLot -> priceQuantity -> price
+                filter
+                    item -> priceType = PriceTypeEnum -> AssetPrice
+                        or item -> priceType = PriceTypeEnum -> CashPrice))
+        else if product.IsTotalReturnSwapDebtUnderlier(tradableProduct -> product) // Bond Swaps
+                or Qualify_InterestRate_Forward_Debt(economicTerms) // Bond Forwards
+        then tradableProduct -> tradeLot -> priceQuantity -> price
+            filter
+                item -> priceType = PriceTypeEnum -> AssetPrice
+                    or item -> priceType = PriceTypeEnum -> CashPrice
+        // Futures ETD
+        else if (economicTerms -> payout -> SettlementPayout only exists
+                and product.IsProductETD(tradableProduct -> product))
+        then tradableProduct -> tradeLot -> priceQuantity -> price
+            filter
+                item -> priceType = PriceTypeEnum -> AssetPrice
+                    or item -> priceType = PriceTypeEnum -> CashPrice
+                    or item -> priceType = PriceTypeEnum -> ExchangeRate
+        // Commodity Swaps
+        else if product.IsCommoditySwapFixedFloat(tradableProduct -> product)
+        then EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> FixedPricePayout only-element -> fixedPrice -> price
+        // Commodity Forwards
+        else if product.IsCommodityForward(tradableProduct -> product)
+        then (if EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> FixedPricePayout
+                only-element
+                exists
+            then EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> FixedPricePayout only-element -> fixedPrice -> price
+            else if EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> SettlementPayout
+                only-element
+                exists
+            then EconomicTermsForProduct(ProductForEvent(reportableEvent)) -> payout -> SettlementPayout only-element -> priceQuantity -> priceSchedule)
+        else if IsFixedFloatZeroCouponSwapKnownAmount(ProductForEvent(reportableEvent))
+        then PriceOfZeroCouponSwaps(reportableEvent)
+            then only-element
+
+func StrikePrice: <"Strike Price">
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        prices PriceSchedule (0..1)
+    alias tradableProduct: TradableProductForEvent(reportableEvent)
+    alias product: ProductForEvent(reportableEvent)
+    set prices:
+        if product.IsIRSwaption(product)
+        then EconomicTermsForProduct(
+                    underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+                ) -> payout -> InterestRatePayout -> rateSpecification -> FixedRateSpecification -> rateSchedule -> price
+        else if Qualify_Commodity_Swaption(EconomicTermsForProduct(product)) = True
+        then EconomicTermsForProduct(
+                    underlier.UnderlierForProduct(product) -> Product -> NonTransferableProduct
+                ) -> payout -> FixedPricePayout -> fixedPrice -> price
+        else if product.IsOption(product)
+                and EconomicTermsForProduct(product) -> payout -> OptionPayout -> strike -> strikePrice exists
+        then EconomicTermsForProduct(product) -> payout -> OptionPayout -> strike -> strikePrice
+        else if product.IsOption(product)
+                and EconomicTermsForProduct(product) -> payout -> OptionPayout -> strike -> strikeReference exists
+        then EconomicTermsForProduct(product) -> payout -> OptionPayout -> strike -> strikeReference -> rateSchedule -> price
+        else if product.IsCap(product)
+        then EconomicTermsForProduct(product) -> payout -> InterestRatePayout -> rateSpecification -> FloatingRateSpecification -> capRateSchedule -> price
+        else if product.IsFloor(product)
+        then EconomicTermsForProduct(product) -> payout -> InterestRatePayout -> rateSpecification -> FloatingRateSpecification -> floorRateSchedule -> price
+        else if product.IsVarianceSwap(product)
+        then EconomicTermsForProduct(product) -> payout -> PerformancePayout -> returnTerms -> varianceReturnTerms -> varianceStrikePrice
+        else if product.IsVolatilitySwap(product)
+        then EconomicTermsForProduct(product) -> payout -> PerformancePayout -> returnTerms -> volatilityReturnTerms -> volatilityStrikePrice
+        else if product.IsEquitySwap(tradableProduct)
+        then tradableProduct -> tradeLot -> priceQuantity -> price
+            filter
+                item -> priceType = PriceTypeEnum -> Variance
+                    or item -> priceType = PriceTypeEnum -> Volatility
+            then only-element
+
+func PriceOfZeroCouponSwaps:
+    inputs:
+        reportableEvent ReportableEventBase (1..1)
+    output:
+        knownAmountPrice PriceSchedule (1..1)
+
+    set knownAmountPrice:
+        TradableProductForEvent(reportableEvent)
+            extract tradeLot -> priceQuantity
+            then filter observable is absent
+            then extract quantity
+            then flatten
+            then only-element
+            then extract
+                PriceSchedule {
+                    priceType: CashPrice,
+                    unit: unit,
+                    value: value,
+                    ...
+                }

@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-sec-ppd",
+  "name" : "SEC / PPD",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.sec.rewrite.trade.reports.SECPPDReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.sec.rewrite.trade.SECTransactionReportPPD"
+  },
+  "upstreamPipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default"
+}

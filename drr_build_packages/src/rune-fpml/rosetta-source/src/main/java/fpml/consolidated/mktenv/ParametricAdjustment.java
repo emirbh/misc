@@ -1,0 +1,433 @@
+package fpml.consolidated.mktenv;
+
+import com.google.common.collect.ImmutableList;
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.Multi;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import com.rosetta.util.ListEquals;
+import fpml.consolidated.asset.PriceQuoteUnits;
+import fpml.consolidated.mktenv.meta.ParametricAdjustmentMeta;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision An adjustment used to accommodate a parameter of the input trade, e.g. the strike.
+ *
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "confirmation-5.13"
+ *
+ * Provision An adjustment used to accommodate a parameter of the input trade, e.g. the strike.
+ *
+ */
+@RosettaDataType(value="ParametricAdjustment", builder=ParametricAdjustment.ParametricAdjustmentBuilderImpl.class, version="2.1.1")
+@RuneDataType(value="ParametricAdjustment", model="fpml", builder=ParametricAdjustment.ParametricAdjustmentBuilderImpl.class, version="2.1.1")
+public interface ParametricAdjustment extends RosettaModelObject {
+
+	ParametricAdjustmentMeta metaData = new ParametricAdjustmentMeta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The name of the adjustment parameter (e.g. "Volatility Skew").
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The name of the adjustment parameter (e.g. "Volatility Skew").
+	 *
+	 */
+	String getName();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The units of the input parameter, e.g. Yield.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The units of the input parameter, e.g. Yield.
+	 *
+	 */
+	PriceQuoteUnits getInputUnits();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The values of the adjustment parameter.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The values of the adjustment parameter.
+	 *
+	 */
+	List<? extends ParametricAdjustmentPoint> getDatapoint();
+
+	/*********************** Build Methods  ***********************/
+	ParametricAdjustment build();
+	
+	ParametricAdjustment.ParametricAdjustmentBuilder toBuilder();
+	
+	static ParametricAdjustment.ParametricAdjustmentBuilder builder() {
+		return new ParametricAdjustment.ParametricAdjustmentBuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends ParametricAdjustment> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends ParametricAdjustment> getType() {
+		return ParametricAdjustment.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("name"), String.class, getName(), this);
+		processRosetta(path.newSubPath("inputUnits"), processor, PriceQuoteUnits.class, getInputUnits());
+		processRosetta(path.newSubPath("datapoint"), processor, ParametricAdjustmentPoint.class, getDatapoint());
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface ParametricAdjustmentBuilder extends ParametricAdjustment, RosettaModelObjectBuilder {
+		PriceQuoteUnits.PriceQuoteUnitsBuilder getOrCreateInputUnits();
+		@Override
+		PriceQuoteUnits.PriceQuoteUnitsBuilder getInputUnits();
+		ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder getOrCreateDatapoint(int index);
+		@Override
+		List<? extends ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder> getDatapoint();
+		ParametricAdjustment.ParametricAdjustmentBuilder setName(String name);
+		ParametricAdjustment.ParametricAdjustmentBuilder setInputUnits(PriceQuoteUnits inputUnits);
+		ParametricAdjustment.ParametricAdjustmentBuilder addDatapoint(ParametricAdjustmentPoint datapoint);
+		ParametricAdjustment.ParametricAdjustmentBuilder addDatapoint(ParametricAdjustmentPoint datapoint, int idx);
+		ParametricAdjustment.ParametricAdjustmentBuilder addDatapoint(List<? extends ParametricAdjustmentPoint> datapoint);
+		ParametricAdjustment.ParametricAdjustmentBuilder setDatapoint(List<? extends ParametricAdjustmentPoint> datapoint);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("name"), String.class, getName(), this);
+			processRosetta(path.newSubPath("inputUnits"), processor, PriceQuoteUnits.PriceQuoteUnitsBuilder.class, getInputUnits());
+			processRosetta(path.newSubPath("datapoint"), processor, ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder.class, getDatapoint());
+		}
+		
+
+		ParametricAdjustment.ParametricAdjustmentBuilder prune();
+	}
+
+	/*********************** Immutable Implementation of ParametricAdjustment  ***********************/
+	class ParametricAdjustmentImpl implements ParametricAdjustment {
+		private final String name;
+		private final PriceQuoteUnits inputUnits;
+		private final List<? extends ParametricAdjustmentPoint> datapoint;
+		
+		protected ParametricAdjustmentImpl(ParametricAdjustment.ParametricAdjustmentBuilder builder) {
+			this.name = builder.getName();
+			this.inputUnits = ofNullable(builder.getInputUnits()).map(f->f.build()).orElse(null);
+			this.datapoint = ofNullable(builder.getDatapoint()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
+		}
+		
+		@Override
+		@RosettaAttribute("name")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("name")
+		public String getName() {
+			return name;
+		}
+		
+		@Override
+		@RosettaAttribute("inputUnits")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("inputUnits")
+		public PriceQuoteUnits getInputUnits() {
+			return inputUnits;
+		}
+		
+		@Override
+		@RosettaAttribute("datapoint")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("datapoint")
+		public List<? extends ParametricAdjustmentPoint> getDatapoint() {
+			return datapoint;
+		}
+		
+		@Override
+		public ParametricAdjustment build() {
+			return this;
+		}
+		
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder toBuilder() {
+			ParametricAdjustment.ParametricAdjustmentBuilder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(ParametricAdjustment.ParametricAdjustmentBuilder builder) {
+			ofNullable(getName()).ifPresent(builder::setName);
+			ofNullable(getInputUnits()).ifPresent(builder::setInputUnits);
+			ofNullable(getDatapoint()).ifPresent(builder::setDatapoint);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			ParametricAdjustment _that = getType().cast(o);
+		
+			if (!Objects.equals(name, _that.getName())) return false;
+			if (!Objects.equals(inputUnits, _that.getInputUnits())) return false;
+			if (!ListEquals.listEquals(datapoint, _that.getDatapoint())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (name != null ? name.hashCode() : 0);
+			_result = 31 * _result + (inputUnits != null ? inputUnits.hashCode() : 0);
+			_result = 31 * _result + (datapoint != null ? datapoint.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "ParametricAdjustment {" +
+				"name=" + this.name + ", " +
+				"inputUnits=" + this.inputUnits + ", " +
+				"datapoint=" + this.datapoint +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of ParametricAdjustment  ***********************/
+	class ParametricAdjustmentBuilderImpl implements ParametricAdjustment.ParametricAdjustmentBuilder {
+	
+		protected String name;
+		protected PriceQuoteUnits.PriceQuoteUnitsBuilder inputUnits;
+		protected List<ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder> datapoint = new ArrayList<>();
+		
+		@Override
+		@RosettaAttribute("name")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("name")
+		public String getName() {
+			return name;
+		}
+		
+		@Override
+		@RosettaAttribute("inputUnits")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("inputUnits")
+		public PriceQuoteUnits.PriceQuoteUnitsBuilder getInputUnits() {
+			return inputUnits;
+		}
+		
+		@Override
+		public PriceQuoteUnits.PriceQuoteUnitsBuilder getOrCreateInputUnits() {
+			PriceQuoteUnits.PriceQuoteUnitsBuilder result;
+			if (inputUnits!=null) {
+				result = inputUnits;
+			}
+			else {
+				result = inputUnits = PriceQuoteUnits.builder();
+			}
+			
+			return result;
+		}
+		
+		@Override
+		@RosettaAttribute("datapoint")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("datapoint")
+		public List<? extends ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder> getDatapoint() {
+			return datapoint;
+		}
+		
+		@Override
+		public ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder getOrCreateDatapoint(int index) {
+			if (datapoint==null) {
+				this.datapoint = new ArrayList<>();
+			}
+			return getIndex(datapoint, index, () -> {
+						ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder newDatapoint = ParametricAdjustmentPoint.builder();
+						return newDatapoint;
+					});
+		}
+		
+		@RosettaAttribute("name")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("name")
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder setName(String _name) {
+			this.name = _name == null ? null : _name;
+			return this;
+		}
+		
+		@RosettaAttribute("inputUnits")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("inputUnits")
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder setInputUnits(PriceQuoteUnits _inputUnits) {
+			this.inputUnits = _inputUnits == null ? null : _inputUnits.toBuilder();
+			return this;
+		}
+		
+		@RosettaAttribute("datapoint")
+		@Accessor(AccessorType.ADDER)
+		@Multi
+		@RuneAttribute("datapoint")
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder addDatapoint(ParametricAdjustmentPoint _datapoint) {
+			if (_datapoint != null) {
+				this.datapoint.add(_datapoint.toBuilder());
+			}
+			return this;
+		}
+		
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder addDatapoint(ParametricAdjustmentPoint _datapoint, int idx) {
+			getIndex(this.datapoint, idx, () -> _datapoint.toBuilder());
+			return this;
+		}
+		
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder addDatapoint(List<? extends ParametricAdjustmentPoint> datapoints) {
+			if (datapoints != null) {
+				for (final ParametricAdjustmentPoint toAdd : datapoints) {
+					this.datapoint.add(toAdd.toBuilder());
+				}
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("datapoint")
+		@Accessor(AccessorType.SETTER)
+		@Multi
+		@RuneAttribute("datapoint")
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder setDatapoint(List<? extends ParametricAdjustmentPoint> datapoints) {
+			if (datapoints == null) {
+				this.datapoint = new ArrayList<>();
+			} else {
+				this.datapoint = datapoints.stream()
+					.map(_a->_a.toBuilder())
+					.collect(Collectors.toCollection(()->new ArrayList<>()));
+			}
+			return this;
+		}
+		
+		@Override
+		public ParametricAdjustment build() {
+			return new ParametricAdjustment.ParametricAdjustmentImpl(this);
+		}
+		
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder prune() {
+			if (inputUnits!=null && !inputUnits.prune().hasData()) inputUnits = null;
+			datapoint = datapoint.stream().filter(b->b!=null).<ParametricAdjustmentPoint.ParametricAdjustmentPointBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getName()!=null) return true;
+			if (getInputUnits()!=null && getInputUnits().hasData()) return true;
+			if (getDatapoint()!=null && getDatapoint().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public ParametricAdjustment.ParametricAdjustmentBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			ParametricAdjustment.ParametricAdjustmentBuilder o = (ParametricAdjustment.ParametricAdjustmentBuilder) other;
+			
+			merger.mergeRosetta(getInputUnits(), o.getInputUnits(), this::setInputUnits);
+			merger.mergeRosetta(getDatapoint(), o.getDatapoint(), this::getOrCreateDatapoint);
+			
+			merger.mergeBasic(getName(), o.getName(), this::setName);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			ParametricAdjustment _that = getType().cast(o);
+		
+			if (!Objects.equals(name, _that.getName())) return false;
+			if (!Objects.equals(inputUnits, _that.getInputUnits())) return false;
+			if (!ListEquals.listEquals(datapoint, _that.getDatapoint())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (name != null ? name.hashCode() : 0);
+			_result = 31 * _result + (inputUnits != null ? inputUnits.hashCode() : 0);
+			_result = 31 * _result + (datapoint != null ? datapoint.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "ParametricAdjustmentBuilder {" +
+				"name=" + this.name + ", " +
+				"inputUnits=" + this.inputUnits + ", " +
+				"datapoint=" + this.datapoint +
+			'}';
+		}
+	}
+}

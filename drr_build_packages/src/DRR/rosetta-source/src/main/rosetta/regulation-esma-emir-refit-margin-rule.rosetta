@@ -1,0 +1,37 @@
+namespace drr.regulation.esma.emir.refit.margin
+version "${project.version}"
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.esma.*
+import drr.regulation.esma.emir.*
+import drr.regulation.esma.emir.refit.*
+
+corpus Dissemination Margin
+
+report ESMA EMIR Margin in T+1
+    from CollateralReportInstruction
+    when IsCollateralReportable
+    with type ESMAEMIRMarginReport
+
+eligibility rule IsCollateralReportable from CollateralReportInstruction: <"When eligible for EMIR">
+    [docReference ESMA EMIR article "4" paragraph "1"
+        provision "The data on collateral for both cleared and non-cleared derivatives shall include all posted and received collateral in accordance with fields 1 to 29 in Table 3 of the Annex"]
+    filter HasCollateral
+
+eligibility rule HasCollateral from CollateralReportInstruction: <"When eligible for EMIR">
+    [docReference ESMA EMIR article "4" paragraph "2"
+        provision "Where a counterparty 1 collateralises on a portfolio basis, the counterparty 1 or the entity responsible for reporting shall report to a trade repository collateral posted and received on a portfolio basis in accordance with fields 1 to 29 in Table 3 of the Annex and specify a code identifying the portfolio in accordance with field 9 in Table 3 of the Annex."]
+    extract collateralDetails -> collateral exists
+
+//EMIR Definitions
+reporting rule EntityResponsibleForReporting from CollateralReportInstruction: <"Entity responsible for reporting">
+    extract
+        if IsRegulatedMarketOrThirdCountryEquivalentMarket(
+                    reportableInformation,
+                    RegimeNameEnum -> EMIR
+                ) = False // Not executed in a regulated market or 3rd country equivalent Market
+        then ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule MICCollateral from CollateralReportInstruction:
+    GetVenueOfExecution(reportableInformation)

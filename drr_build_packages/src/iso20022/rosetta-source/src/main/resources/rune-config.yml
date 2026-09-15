@@ -1,0 +1,111 @@
+model:
+  name: ISO-20022
+dependencies:
+generators:
+  namespaces:
+    - iso20022.*
+    - com.rosetta.model
+  doNotPrune:
+    - type: iso20022.auth030.hkma.tr.ClearingPartyAndTime21Choice__1
+      attribute: dtls
+    - type: iso20022.auth030.hkma.tr.ClearingPartyAndTime22Choice__1
+      attribute: dtls
+    - type: iso20022.auth030.hkma.dtcc.ClearingPartyAndTime22Choice__1
+      attribute: dtls
+namespaceConfig:
+  - id: auth030-asic
+    namespace: iso20022.auth030.asic
+    readOnly: true
+    schemaConfig:
+      schema: auth030AsicRosetta
+      configPath: xml-config/auth030-asic-rosetta-xml-config.json
+  - id: auth030-esma
+    namespace: iso20022.auth030.esma
+    readOnly: true
+    schemaConfig:
+      schema: auth030EsmaRosetta
+      configPath: xml-config/auth030-esma-rosetta-xml-config.json
+  - id: auth030-fca
+    namespace: iso20022.auth030.fca
+    readOnly: true
+    schemaConfig:
+      schema: auth030FcaRosetta
+      configPath: xml-config/auth030-fca-rosetta-xml-config.json
+  - id: auth030-hkma-dtcc
+    namespace: iso20022.auth030.hkma.dtcc
+    readOnly: true
+    schemaConfig:
+      schema: auth030HkmaDtccRosetta
+      configPath: xml-config/auth030-hkma-dtcc-rosetta-xml-config.json
+  - id: auth030-hkma-tr
+    namespace: iso20022.auth030.hkma.tr
+    readOnly: true
+    schemaConfig:
+      schema: auth030HkmaTrRosetta
+      configPath: xml-config/auth030-hkma-tr-rosetta-xml-config.json
+  - id: auth030-jfsa
+    namespace: iso20022.auth030.jfsa
+    readOnly: true
+    schemaConfig:
+      schema: auth030JfsaRosetta
+      configPath: xml-config/auth030-jfsa-rosetta-xml-config.json
+  - id: auth030-mas
+    namespace: iso20022.auth030.mas
+    readOnly: true
+    schemaConfig:
+      schema: auth030MasRosetta
+      configPath: xml-config/auth030-mas-rosetta-xml-config.json
+  - id: auth108-asic
+    namespace: iso20022.auth108.asic
+    readOnly: true
+    schemaConfig:
+      schema: auth108AsicRosetta
+      configPath: xml-config/auth108-asic-rosetta-xml-config.json
+  - id: auth108-esma
+    namespace: iso20022.auth108.esma
+    readOnly: true
+    schemaConfig:
+      schema: auth108EsmaRosetta
+      configPath: xml-config/auth108-esma-rosetta-xml-config.json
+  - id: auth108-fca
+    namespace: iso20022.auth108.fca
+    readOnly: true
+    schemaConfig:
+      schema: auth108FcaRosetta
+      configPath: xml-config/auth108-fca-rosetta-xml-config.json
+  - id: auth108-hkma-dtcc
+    namespace: iso20022.auth108.hkma.dtcc
+    readOnly: true
+    schemaConfig:
+      schema: auth108HkmaDtccRosetta
+      configPath: xml-config/auth108-hkma-dtcc-rosetta-xml-config.json
+  - id: auth108-hkma-tr
+    namespace: iso20022.auth108.hkma.tr
+    readOnly: true
+    schemaConfig:
+      schema: auth108HkmaTrRosetta
+      configPath: xml-config/auth108-hkma-tr-rosetta-xml-config.json
+  - id: auth108-iso
+    namespace: iso20022.auth108.iso
+    readOnly: true
+    schemaConfig:
+      schema: auth108IsoRosetta
+      configPath: xml-config/auth108-iso-rosetta-xml-config.json
+  - id: auth108-jfsa
+    namespace: iso20022.auth108.jfsa
+    readOnly: true
+    schemaConfig:
+      schema: auth108JfsaRosetta
+      configPath: xml-config/auth108-jfsa-rosetta-xml-config.json
+  - id: auth108-mas
+    namespace: iso20022.auth108.mas
+    readOnly: true
+    schemaConfig:
+      schema: auth108MasRosetta
+      configPath: xml-config/auth108-mas-rosetta-xml-config.json
+  - id: dtcc-rds
+    namespace: iso20022.dtcc.rds.harmonized
+    readOnly: true
+    schemaConfig:
+      schema: dtccRdsRosetta
+      configPath: xml-config/dtcc-rds-rosetta-xml-config.json

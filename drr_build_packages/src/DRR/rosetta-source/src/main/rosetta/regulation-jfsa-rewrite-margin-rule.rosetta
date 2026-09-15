@@ -1,0 +1,38 @@
+namespace drr.regulation.jfsa.rewrite.margin
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.regulation.jfsa.*
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Margin
+
+report JFSA Margin in T+1
+    from CollateralReportInstruction
+    when ReportableProduct
+    with type JFSAMarginReport
+
+eligibility rule ReportableProduct from CollateralReportInstruction:
+    [docReference JFSA Margin
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+//JFSA Definitions
+reporting rule EntityResponsibleForReporting from CollateralReportInstruction: <"Entity responsible for reporting">
+    extract ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule UniqueTransactionIdentifier from CollateralReportInstruction: <"Unique transaction identifier">
+    uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            JFSA,
+            item -> collateralDetails -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule TechnicalRecordId from CollateralReportInstruction: <"Technical Record Id (ISO)">
+    extract
+        if trade.link.TechnicalRecordId(reportableInformation, JFSA) -> isUnique
+        then trade.link.TechnicalRecordId(reportableInformation, JFSA) -> id
+        else trade.link.TechnicalRecordId(reportableInformation, JFSA) -> id + "_" + (margin.datetime.ReportingTimestamp to-string)

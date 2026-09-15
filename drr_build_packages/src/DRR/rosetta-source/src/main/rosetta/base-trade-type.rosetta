@@ -1,0 +1,96 @@
+namespace drr.base.trade
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+import cdm.event.common.*
+import cdm.event.workflow.*
+import cdm.observable.asset.*
+import cdm.product.asset.*
+import cdm.product.common.settlement.*
+import cdm.product.template.*
+
+import drr.base.qualification.*
+import drr.enrichment.common.*
+
+type ReportableEventBase:
+    originatingWorkflowStep WorkflowStep (1..1) <"The workflowstep that originated the reportable event.">
+    reportableTrade TradeState (0..1) <"The reportable trade decomposed from the originating workflow step when required.">
+    reportablePosition CounterpartyPositionState (0..1) <"The reportable position decomposed from the originating workflow step when required.">
+    reportableInformation ReportableInformationBase (0..1) <"Additional information required for a reportable transaction, including the reporting regime.">
+
+type TransactionReportInstructionBase extends ReportableEventBase: <"Specifies a reportable event with with a single reporting side.">
+    [rootType]
+    reportingSide ReportingSide (1..1)
+
+type ReportingSide: <"Specifies the reporting roles for a ReportableEvent or ReportableCollateral.">
+    [rootType]
+    reportingParty Party (1..1) <"The counterparty to the transaction (buyer or seller of the contract) from whose perspective the transaction is being reported.">
+        [metadata reference]
+    reportingCounterparty Party (1..1) <"The counterparty to the transaction (buyer or seller of the contract) on the non-reporting side.">
+        [metadata reference]
+    partyResponsibleForReporting Party (0..1) <"The party responsibility for submitting the transaction report to the authority.">
+        [metadata reference]
+    reportSubmittingParty Party (0..1) <"The party submitting the transaction report to the authority.">
+        [metadata reference]
+
+type ReportableInformationBase: <"Specifies jurisdiction-agnostic attributes that provide relevant instruments, fields and flags for reporting.">
+    // TH Sprint 2026-09: This block contains jurisdiction-agnostic features of the parties
+    globalPartyInformation PartyInformation (1..*) <"Identifies the jurisdiction-agnostic, party-specific data necessary for reporting.">
+    // TH Sprint 2026-01: This block contains DRR-specific attributes that are not part of the report itself and are not explicitly reported. Instead, these attributes are used implicitly to ensure the proper functioning of the DRR model and to complete correctly the report.
+    reportableAction event.ReportableActionEnum (0..1) <"Specifies the regulatory lifecycle event action for the ReportableEvent.">
+    enrichment EnrichmentData (0..1)
+    // TH Sprint 2026-01: The following block is formed by fields that are candidates for potential migration to the CDM.
+    confirmationMethod ConfirmationMethodEnum (0..1) <"Specifies the method for confirmation of the transacion.">
+    originalExecutionTimestamp zonedDateTime (0..1) <"Date and time a transaction was originally executed, resulting in the generation of a new UTI. This data element remains unchanged throughout the life of the UTI.">
+    finalContractualSettlementDate date (0..1) <"Date as per the contract, by which all transfer of cash or assets should take place and the counterparties should no longer have any outstanding obligations to each other under that contract.">
+    cryptoBased boolean (0..1) <"Indicator whether the derivative is based on crypto-assets.">
+    customBasket basket.CustomBasket (0..1) <"Information pertaining to Custom Basket.">
+    // TH Sprint 2026-01: This final block contains the remaining non-regime-scoped flags and values utilized for reporting that provide trade context data.
+    intragroup boolean (0..1) <"Specifies whether the contract was entered into as an intragroup transaction, defined in Article 3 of Regulation (EU) No 648/2012.">
+    affiliated boolean (0..1) <"Indicates whether the transaction is between two affiliated entities. It is referred to as Inter-affiliate under the Canadian CSA reporting regime.">
+    underlyingAssetLastAvailableSpotPrice PriceSchedule (0..1) <"Last Available Spot Price of the underlying asset. This price is only needed for a regulatory purpose, that being the reporting of the notional amount for commodity basis products">
+    underlyingAssetPriceSource ReportablePriceSource (0..*) <"Underlying Asset Price Source is only needed for a regulatory purpose, that being the source of the price used to determine the value or level of the asset or benchmark.">
+    subsequentPositionUTI PositionIdentifier (0..1) <"The UTI of the position in which a derivative transaction is included.">
+    counterpartyPositionPriorUTI PositionIdentifier (0..1) <"The prior position UTI (e.g. in case of a corporate action of type StockIdentifierChange).">
+
+type PartyInformation: <"Specifies party specific information required for reporting of the transaction.">
+    partyReference Party (1..1) <"Specifies the party that is associated with the enriched information.">
+        [metadata reference]
+    relatedPerson NaturalPersonRole (0..*) <"The role(s) that natural person(s) may have in relation to the transaction.">
+    relatedParty RelatedParty (0..*) <"Specifies one or more parties that perform a role within the transaction. The related party performs the role with respect to the party identified by the 'partyReference'.">
+
+type ReportablePriceSource: <"Provides the extraction of the Underlying Asset Price Source and correlate it with the identification of the trade products.">
+    assetIdentifier AssetIdentifier (0..*) <"Comprises an identifier and a source. The associated metadata key denotes the ability to associate a hash value to the ProductIdentifier instantiations for the purpose of model cross-referencing, in support of functionality such as the event effect and the lineage.">
+    // [metadata address "pointsTo"=Observable->productIdentifier]    
+    // [metadata address removed as backward-incompatible change introduced in CDM 6 cannot attach a location in multiple places]
+    otherId string (0..1) <"Enables the identification of trade products with a specific Underlier ID (Other) that do not contain a productIdentifier and are, therefore, represented by a string (e.g., indexName).">
+    underlyingAssetPriceSource string (0..1) <"For an underlying asset or benchmark not traded on a platform, the source of the price used to determine the value or level of the asset or benchmark.">
+
+    condition Choice:
+        required choice assetIdentifier, otherId
+
+type PayoutLeg:
+    creditDefaultPayout CreditDefaultPayout (0..1)
+    optionPayout OptionPayout (0..1)
+    settlementPayout SettlementPayout (0..1)
+    performancePayout PerformancePayout (0..1)
+    interestRatePayout InterestRatePayout (0..1)
+    cashflow Cashflow (0..1)
+    fixedPricePayout FixedPricePayout (0..1)
+    commodityPayout CommodityPayout (0..1)
+
+    condition:
+        one-of
+
+type PayoutLegWithAuxiliary extends PayoutLeg:
+    auxiliaryLeg PayoutLeg (0..1)
+    lastAvailableSpotPrice PriceSchedule (0..1)
+    tradeLot TradeLot (0..1)
+    isProductETD boolean (0..1)
+    zeroNotionalAmountDefaulting boolean (0..1)
+    settlementTerms SettlementTerms (0..1)
+
+    condition FixedOrCommodityPayout:
+        auxiliaryLeg -> fixedPricePayout only exists
+            or auxiliaryLeg -> commodityPayout only exists

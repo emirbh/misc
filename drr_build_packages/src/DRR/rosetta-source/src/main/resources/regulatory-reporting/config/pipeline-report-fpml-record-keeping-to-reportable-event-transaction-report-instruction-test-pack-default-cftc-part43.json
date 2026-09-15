@@ -1,0 +1,11 @@
+{
+  "id" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-cftc-part43",
+  "name" : "CFTC / Part43",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.cftc.rewrite.trade.reports.CFTCPart43ReportFunction",
+    "inputType" : "drr.regulation.common.TransactionReportInstruction",
+    "outputType" : "drr.regulation.cftc.rewrite.trade.CFTCPart43TransactionReport"
+  },
+  "upstreamPipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default"
+}

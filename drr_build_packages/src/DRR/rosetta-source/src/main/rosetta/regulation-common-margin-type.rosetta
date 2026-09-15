@@ -1,0 +1,75 @@
+namespace drr.regulation.common.margin
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+corpus Dissemination Valuation
+
+type CriticalDataElement: <"Critical Data Elements for the Margin report">
+    reportingTimestamp zonedDateTime (1..1)
+        [ruleReference datetime.ReportingTimestamp]
+    counterparty1 LEIIdentifier (1..1)
+        [ruleReference party.Counterparty1]
+    counterparty2IdentifierType boolean (0..1)
+        [ruleReference party.Counterparty2IdentifierType]
+    counterparty2 Min20Max72AlphaNumericText (0..1)
+        [ruleReference party.Counterparty2]
+    collateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference collateral.CollateralPortfolioCode]
+    collateralPortfolioIndicator boolean (0..1)
+        [ruleReference collateral.CollateralPortfolioIndicator]
+    uti CollateralUTIString (0..1)
+        [ruleReference collateral.UTI]
+    collateralisationCategory CollateralisationType3Code (0..1)
+        [ruleReference collateral.CollateralisationCategory]
+    initialMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.InitialMarginPostedByTheCounterparty1PreHaircut]
+    initialMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.InitialMarginPostedByTheCounterparty1PostHaircut]
+    initialMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [ruleReference collateral.InitialMarginPostedByCounterparty1Currency]
+    variationMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.VariationMarginPostedByTheCounterparty1PreHaircut]
+    variationMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.VariationMarginPostedByTheCounterparty1PostHaircut]
+    variationMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [ruleReference collateral.VariationMarginPostedByCounterparty1Currency]
+    initialMarginCollectedByCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.InitialMarginCollectedByCounterparty1PreHaircut]
+    initialMarginCollectedByCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.InitialMarginCollectedByCounterparty1PostHaircut]
+    initialMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [ruleReference collateral.InitialMarginCollectedByCounterparty1Currency]
+    variationMarginCollectedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.VariationMarginCollectedByTheCounterparty1PreHaircut]
+    variationMarginCollectedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.VariationMarginCollectedByTheCounterparty1PostHaircut]
+    variationMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [ruleReference collateral.VariationMarginCollectedByCounterparty1Currency]
+    excessCollateralPostedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.ExcessCollateralPostedByTheCounterparty1]
+    currencyOfTheExcessCollateralPosted string (0..1)
+        [ruleReference collateral.CurrencyOfTheExcessCollateralPosted]
+    excessCollateralCollectedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [ruleReference collateral.ExcessCollateralCollectedByTheCounterparty1]
+    currencyOfTheExcessCollateralCollected string (0..1)
+        [ruleReference collateral.CurrencyOfExcessCollateralCollected]
+
+type CommonMarginReport extends CriticalDataElement: <"Common Valuation Report represents common attributes for the Valuation report">
+    collateralTimestamp zonedDateTime (0..1)
+        [ruleReference collateral.CollateralTimestamp]
+    variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference collateral.VariationMarginCollateralPortfolioCode]
+    initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference collateral.InitialMarginCollateralPortfolioCode]
+    reportSubmittingEntityID string (1..1)
+        [ruleReference party.ReportSubmittingEntityID]
+    actionType MarginActionEnum (0..1)
+        [ruleReference collateral.ActionType]
+    eventDate date (0..1)
+        [ruleReference datetime.EventDate]
+    eventTimestamp zonedDateTime (0..1)
+        [ruleReference datetime.EventTimestamp]

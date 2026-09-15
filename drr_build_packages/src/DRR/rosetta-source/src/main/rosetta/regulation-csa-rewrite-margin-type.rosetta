@@ -1,0 +1,406 @@
+namespace drr.regulation.csa.rewrite.margin
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.common.margin.*
+import drr.regulation.csa.*
+import drr.standards.iso.*
+
+type CSAMarginReport extends CommonMarginReport:
+    [rootType]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "1 Counterparty 1 (reporting counterparty)"]
+        [docReference CSA Margin dataElement "1" field "Counterparty 1 (reporting counterparty)"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question.
+        In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty.
+        In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty. However, if the allocation of the block trade to specific funds does not take place prior to the reporting deadline, then the fund manager executing the transaction behalf of the fund can be reported as the counterparty.
+        If a trading facility is fulfilling the reporting obligation, the identifier of Counterparty 1 identifies one of the counterparties to the transaction."]
+        [docReference CSA Margin dataElement "1" field "Counterparty 1 (reporting counterparty)" footnote "4"
+            provision "References to OTC derivative and transaction in CDE data element explanations and in the Appendices to the Technical Manual should be read to mean derivative."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 1 (reporting counterparty)"
+            provision "The same CDE Counterparty 1 extraction is required."]
+        [docReference ISDA CanadianDataAndReporting date "20250508" field "Counterparty 1 (reporting counterparty)"
+            provision "Reporting firms on the WG call said they would be using an LEI. There is only a possible use case for crypto trades reporting by SEFs; however, DRR is not going to model this case until is demanded by firms."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "2 Counterparty 2 (non-reporting counterparty)"]
+        [docReference CSA Margin dataElement "2" field "Counterparty 2"
+            provision "Identifier of the second counterparty to an OTC derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty. However, if the allocation of the block trade to specific funds does not take place prior to the reporting deadline, then the fund manager executing the transaction on behalf of the fund can be reported as the counterparty."]
+        [docReference CSA Margin dataElement "2" field "Counterparty 2 (non-reporting counterparty)" footnote "5"
+            provision "Only one counterparty should be reported. In cases where multiple counterparties are legally responsible as the second counterparty (for example joint and several liability, or solidary liability in Quebec), report only one of the counterparties and use the same counterparty for all continuation data and lifecycle events."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 2 (non-reporting counterparty)"
+            provision "The same CDE Counterparty 2 extraction is required."]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "15 Reporting timestamp"]
+        [docReference CSA Margin dataElement "15" field "Reporting Timestamp"
+            provision "Date and time of the submission of the report as reported to the trade repository."]
+        [docReference CSA Margin dataElement "15" field "Reporting Timestamp" footnote "14"
+            provision "Reporting timestamp (#15) is recorded and reported by the submitter."]
+    override uti UTIdentifier (0..1)
+        [label "16 Unique Transaction Identifier (UTI)"]
+        [docReference CSA Margin dataElement "16" field "Unique Transaction Identifier (UTI)"
+            provision "A unique identifier assigned at the transaction or position level which identifies them uniquely throughout their lifecycle and used for all recordkeeping and reporting."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250327" field "Unique Transaction Identifier (UTI)"
+            provision "The group agreed on not considering [UTI ID Prefix] due to it comes from an old format and it had been agreed to only consider one field, that is [UTI ID], considering the concatenation of both fields. Thus, [UTI ID] is the only field that can be populated."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20251203" field "Unique Transaction Identifier"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifier]
+    override reportSubmittingEntityID string (1..1)
+        [label  "21 Submitter identifier"]
+        [docReference CSA Margin dataElement "21" field "Submitter Identifier"
+            provision "Identifier of the entity submitting the data to the swap data repository (TR), the submitter identifier will be the same as the reporting counterparty or  swap execution facility (SEF) unless they use a third-party service provider, to submit the data to SDR in which case, report the underlier of the third party service provider. "]
+        [docReference CSA Margin dataElement "21" field "Submitter Identifier" footnote "15"
+            provision "References to swap data repository or SDR in CFTC data element explanations should be read to mean designated / recognized trade repository."]
+        [docReference CSA Margin dataElement "21" field "Submitter Identifier" footnote "16"
+            provision "References to swap execution facility or SEF in CFTC data element explanations should be read to mean derivatives trading facility / facility or platform for trading derivatives."]
+    override collateralisationCategory CollateralisationType3Code (0..1)
+        [label "79 Collateralisation Category"]
+        [docReference CSA Margin dataElement "79" field "Collateralisation Category"
+            provision "Indicator of whether a collateral agreement (or colateral agreements) between thecounterparties exists (uncollateralised/partially collateralised/oneway collateralised/fully collateralised). This data element is provided for each transaction or each portfolio, depending on whether the collateralisation is performed at the transaction or portfolio level, and is applicable to both cleared and uncleared transactions."]
+    override initialMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "81 Initial margin posted by the reporting counterparty (pre-haircut)"]
+        [docReference CSA Margin dataElement "81" field "Initial margin posted by the reporting counterparty (pre-haircut)"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the  jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transaction, the initial margin posted relates to such single transaction. This refers to the total current value of the initial margin, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared  transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e., committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference CSA Margin dataElement "81" field "Initial margin posted by the reporting counterparty (pre-haircut)" footnote "34"
+            provision "In the case where collateral agreements(s) exists but no initial margin is exchanged primarily between the counterparties (e.g., Because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override initialMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "82 Initial margin posted by the reporting counterparty (post-haircut)"]
+        [docReference CSA Margin dataElement "82" field "Initial margin posted by the reporting counterparty (post-haircut)"
+            provision "Monetary value of initial margin that has been posted by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transaction, the initial margin posted relates to such single transaction. This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the central counterparty, i.e., committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference CSA Margin dataElement "82" field "Initial margin posted by the reporting counterparty (post-haircut)" footnote "35"
+            provision "In the case where collateral agreements(s) exists but no initial margin is exchanged primarily between the counterparties (e.g., Because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override initialMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "83 Currency of Initial Margin Posted"]
+        [docReference CSA Margin dataElement "83" field "Currency of Initial Margin Posted"
+            provision "Currency in which the initial margin posted is denominated. If the initial margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted initial margins."]
+        [docReference CSA Margin dataElement "83" field "Currency of Initial Margin Posted" footnote "36"
+            provision "For portfolio with multiple currencies, it must be converted into a single currency chosen by the reporting counterparty and reported."]
+    override initialMarginCollectedByCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "84 Initial margin collected by the counterparty (pre-haircut)"]
+        [docReference CSA Margin dataElement "84" field "Initial margin collected by the counterparty (pre-haircut)"
+            provision "Monetary value of initial margin that has been collected by the reporting counterparty, including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transaction, the initial margin collected relates to such single transaction. This refers to the total current value of the initial margin, rather than to its dailychange. The data elementrefers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the central counterparty as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference CSA Margin dataElement "84" field "Initial margin collected by the counterparty (pre-haircut)" footnote "37"
+            provision "In the case where collateral agreements(s) exists but no initial margin is exchanged primarily between the counterparties (e.g. because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override initialMarginCollectedByCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "85 Initial margin collected by the counterparty (post-haircut)" ]
+        [docReference CSA Margin dataElement "85" field "Initial margin collected by the counterparty (post-haircut)"
+            provision "Monetary value of initial margin that hasbeen collected by thereporting counterparty, including any margin that is in transit and pending settlementunless inclusion of such margin is not allowed under the jurisdictional requirements. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transaction, the initial margin collected relates to such single transaction. This refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include colateral collected by thecentral counterparty as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference CSA Margin dataElement "84" field "Initial margin collected by the counterparty (post-haircut)" footnote "38"
+            provision "In the case where collateral agreements(s) exists but no initial margin is exchanged primarily between the counterparties (e.g. because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override initialMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "86 Currency of Initial Margin Collected"]
+        [docReference CSA Margin dataElement "86" field "Currency of initial margin collected"
+            provision "Currency in which the initial margin collected is denominated. If the initial margin collected is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of collected initial margins."]
+        [docReference CSA Margin dataElement "86" field "Currency of Initial Margin Collected" footnote "39"
+            provision "For portfolio with multiple currencies, it must be converted into a single currency chosen by the reporting counterparty and reported."]
+    override variationMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "87 Variation margin posted by the reporting counterparty (pre-haircut)"]
+        [docReference CSA Margin dataElement "87" field "Variation margin posted by the reporting counterparty (pre-haircut)"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cashsettled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transaction, the variation margin posted relates to such single transaction. This data element refers to the total current value of the variation margin, cumulated since the first reporting of variation margins posted for the portfolio/transaction If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference CSA Margin dataElement "87" field "Variation margin posted by the reporting counterparty (pre-haircut)" footnote "40"
+            provision "This data element must be reported daily regardless of whether there is a change in the value since the last reporting."]
+        [docReference CSA Margin dataElement "87" field "Variation margin posted by the reporting counterparty (pre-haircut)" footnote "41"
+            provision "In the case where collateral agreements(s) exists but no initial margin is exchanged primarily between the counterparties (e.g. because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override variationMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "88 Variation margin posted by the reporting counterparty (post-haircut)"]
+        [docReference CSA Margin dataElement "88" field "Variation margin posted by the reporting counterparty (post-haircut)"
+            provision "Monetary value of the variation margin posted by the reporting counterparty (including the cashsettled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio; if the collateralisation is performed for single transaction, the variation margin posted relates to such singletransaction. This data element refers to the total current value of the variation margin after application of the haircut (if applicable), cumulated since the first reporting of posted variation margins for the portfolio /transaction. If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by the counterparty 1 and reported as one total value."]
+        [docReference CSA Margin dataElement "88" field "Variation margin posted by the reporting counterparty (post-haircut)" footnote "42"
+            provision "In the case where collateral agreements(s) exists but no variation margin is exchanged primarily between the counterparties (e.g., because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override variationMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "89 Currency of variation margin posted"]
+        [docReference CSA Margin dataElement "89" field "Currency of the variation margins posted"
+            provision "Currency in which the variation margin posted is denominated. If the variation margin posted is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of posted variation margins."]
+    override variationMarginCollectedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "90 Variation margin collected by the reporting counterparty (pre-haircut)"]
+        [docReference CSA Margin dataElement "90" field "Variation margin collected by the reporting counterparty (pre-haircut)"
+            provision "Monetary value of the variation margincollected by the reporting counterparty (including the cashsettled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transaction, the variation margin collected relates to such single transaction. This refers to the total current value of the variation margin, cumulated since thefirst reporting of collected variation margins for the portfolio/ transaction. If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the reporting counterparty and reported as one total value."]
+        [docReference CSA Margin dataElement "90" field "Variation margin collected by the reporting counterparty (pre-haircut)" footnote "43"
+            provision "This data element must be reported daily regardless of whether there is a change in the value since the last reporting."]
+        [docReference CSA Margin dataElement "90" field "Variation margin collected by the reporting counterparty (pre-haircut)" footnote "44"
+            provision "In the case where collateral agreements(s) exists but no variation margin is exchanged primarily between the counterparties (e.g., because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override variationMarginCollectedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "91 Variation margin collected by the reporting counterparty (post-haircut)" ]
+        [docReference CSA Margin dataElement "91" field "Variation margin collected by the reporting counterparty (post-haircut)"
+            provision "Monetary value of the variation margin collected by the reporting counterparty (including the cashsettled one), and including any margin that is in transit and pending settlement unless inclusion of such margin is not allowed under the jurisdictional requirements. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transaction, the variation margin collected relates to such single transaction. This refers to the total current value of the variation margin collected afterapplication of the haircut (if applicable),cumulated since the first reporting of collected variationmargins for the portfolio /transaction.If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by the counterparty 1 and reported as one total value."]
+        [docReference CSA Margin dataElement "91" field "Variation margin collected by the reporting counterparty (post-haircut)" footnote "45"
+            provision "In the case where collateral agreements(s) exists but no variation margin is exchanged primarily between the counterparties (e.g., because the exposure doesnt meet the negotiated threshold) for a given portfolio, report zero until such time an exchange/transfer occurs."]
+    override variationMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "92 Currency of variation margin collected"]
+        [docReference CSA Margin dataElement "92" field "Currency of variation margin collected"
+            provision "Currency in which the variation margin collected is denominated. If the variation margincollected is denominated in more than one currency, this data element reflects one of those currencies into which the reporting counterparty has chosen to convert all the values of collected variation margins."]
+    override eventTimestamp zonedDateTime (1..1)
+        [label "95 Event Timestamp"]
+        [docReference CSA Margin dataElement "95" field "Event Timestamp"
+            provision "Date and time of occurrence of the event. In the case of a modification agreed for a future date, this data element should reflect the date, the modification occurs (becomes effective) and not when it was negotiated. In the case of a correction, this data element should reflect the date and time as of when the correction is applicable. In the case of a clearing event, this data element should reflect the recorded date and time when the alpha transaction is accepted by the central counterparty (CCP) for clearing. In the case of collateral update, the date and time for which the information contained in the report is provided."]
+        [docReference CSA Margin dataElement "95" field "Event Timestamp" footnote "48"
+            provision "Both the date and time portion are required to be reported. The time element is as specific as technologically practicable. If the time portion is not available, report 00:00:00 for the time portion."]
+    override actionType MarginActionEnum (1..1)
+        [label "98 Action Type"]
+        [docReference CSA Margin dataElement "98" field "Action Type"
+            provision "Type of action taken on the transaction or type of end-of-day reporting. See Appendix 3.8 for a description of the allowable values."]
+        [docReference CSA Margin dataElement "98" field "Action Type" footnote "50"
+            provision "Only one Action type value is allowed per submission. Multiple Action type values should not be submitted in one transaction report. For example, if a data element needs to be corrected on a previously submitted transaction that is getting terminated, the Correct (CORR) value should be submitted as a separate submission prior to the submission of the Terminate (TERM) transaction."]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "93 Variation Margin Collateral Portfolio Code"]
+        [docReference CSA Margin dataElement "93" field "Variation Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate variation margin related to a set of open transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [docReference CSA Margin dataElement "93" field "Variation Margin Collateral Portfolio Code" footnote "46"
+            provision "If collateralization was performed on a transaction level basis, TRANSACTIONLEVEL is accepted. NOTAPPLICABLE is accepted if (i)collateralization was performed on a portfolio basis and there is no VM portfolio code, or (ii) it is a submission from a DCO."]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "94 Initial Margin Collateral Portfolio Code"]
+        [docReference CSA Margin dataElement "94" field "Initial Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate initial margin of a set of open transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [docReference CSA Margin dataElement "94" field "Initial Margin Collateral Portfolio Code" footnote "47"
+            provision "If collateralization was performed on a transaction level basis, TRANSACTIONLEVEL is accepted. NOTAPPLICABLE is accepted if (i)collateralization was performed on a portfolio basis and there is no VM portfolio code, or (ii) it is a submission from a DCO."]
+    override counterparty2IdentifierType boolean (0..1)
+        [ruleReference empty]
+    override collateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override collateralPortfolioIndicator boolean (0..1)
+        [ruleReference empty]
+    override eventDate date (0..1)
+        [ruleReference empty]
+    override excessCollateralPostedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override excessCollateralCollectedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override collateralTimestamp zonedDateTime (0..1)
+        [ruleReference empty]
+    counterparty2IdentifierSource Max4Text (1..1)
+        [label "3 Counterparty 2 identifier source"]
+        [docReference CSA Margin dataElement "3" field "Counterparty 2 Identifier Source"
+            provision "Source used to identify the Counterparty 2."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250320" field "Counterparty 2 Identifier Source"
+            provision "Improvement on the logic was done to consider first if person exists. If not, then consider party."]
+        [ruleReference Counterparty2IdentifierSource]
+    portfolioContainingNonReportableComponentIndicator boolean (1..1)
+        [label "80 Portfolio containing non-reportable component indicator"]
+        [docReference CSA Margin dataElement "80" field "Portfolio containing nonreportable component indicator"
+            provision "If collateral is reported on a portfolio basis, indicator of whether the collateral portfolio includes swap transactions exempt from reporting."]
+        [ruleReference PortfolioContainingNonReportableComponentIndicator]
+    // DTCC additional fields
+    tradeParty1IDType PartyIdentifierTypeEnum (1..1)
+        [docReference CSA Margin DTCC_Specs field "Trade Party 1 - ID Type"
+            provision "GTR required Control Field."]
+        [docReference ISDA CanadianDataAndReporting date "20250508" field "Trade Party 1 - ID Type"
+            provision "Reporting firms on the WG call said they would be using an LEI. There is only a possible use case for crypto trades reporting by SEFs; however, DRR is not going to model this case until is demanded by firms."]
+        [ruleReference DTCC_TradeParty1IDType]
+    submittingPartyIDType PartyIdentifierTypeEnum (1..1)
+        [ruleReference DTCC_SubmittingPartyIDType]
+    usiID string (1..1)
+        [ruleReference DTCC_USIID]
+    usiIDPrefix string (1..1)
+        [label "USI ID Prefix"]
+        [docReference CSA Margin DTCC_Specs field "USI ID Prefix"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250327" field "USI ID Prefix"
+            provision "The group agreed on not considering USI ID Prefix due to it comes from an old format and it had been agreed to only consider one field, that is USI ID, considering the concatenation of both fields. Thus, USI ID is the only field that needs to be populated."]
+    tradeParty1ReportingDestination SupervisoryBodyEnum (1..*)
+        [ruleReference DTCC_TradeParty1ReportingDestination]
+    comment1 string (1..1)
+        [label "Comment 1"]
+        [docReference CSA Margin DTCC_Specs field "Comment 1"
+            provision "For CSV submissions if  populated with an * the entire line is treated as comment."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250507" field "Comment 1"
+            provision "Empty because CSV submission is still not supported by current DRR model. This rule will be revisited once Harmonized CSV projection is included."]
+    messageID string (1..1)
+        [docReference CSA Margin DTCC_Specs field "Message ID"
+            provision "Purpose of this field is to allow firms to submit a unique ID that will allow them to tie in specific submissions/modifications. For example if 5 modifications are submitted on a specific PET, this will allow the firm to ensure they receive responses for all 5 modifications."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20250604" field "Message ID"
+            provision "Each Message ID must be unique, irrespective of the report type. This unique identification is achieved by concatenating with the Reporting Timestamp field."]
+        [ruleReference DTCC_MessageID]
+    messageType string (1..1)
+        [ruleReference DTCC_MessageType]
+    version string (1..1)
+        [ruleReference DTCC_Version]
+
+    condition DTCC_CSA_VR_0002_01: <"Counterparty 2 (non-reporting counterparty)">
+        [docReference CSA Margin DTCC_Specs dataElement "2" validationRule "Collateral"
+      provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade.
+        - However, if there is more than one live trade (for the same UTI/USI)  where [Trade Party 1 - ID] and [Trade Party 1 - ID Type] are the same, the submission will NACK."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_CSA_VR_0003_01: <"Counterparty 2 Identifier Source">
+        [docReference CSA Margin DTCC_Specs dataElement "3" validationRule "Collateral"
+      provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+        provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition CSA_VR_0016_01: <"Unique Transaction Identifier">
+        [docReference CSA Margin dataElement "16" validationRule "Collateral"
+      provision "C if [Initial margin collateral portfolio code] = TRANSACTIONLEVEL, else {blank}."]
+        if initialMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+        then uti exists
+        else uti is absent
+
+    condition DTCC_CSA_VR_0079_01: <"Collateralisation Category">
+        [docReference CSA Margin DTCC_Specs dataElement "79" validationRule "Collateral"
+      provision "Required when [NoA - Action Type] = 'MARU."]
+        if actionType = MARU then collateralisationCategory exists
+
+    condition CSA_VR_0081_01: <"Initial margin posted by the reporting counterparty Pre-Haircut">
+        [docReference CSA Margin dataElement "81" validationRule "Collateral"
+      provision "C if ([Collateralisation category] = OWC1 or OWP1 or FLCL), else {blank}."]
+        if ["OWC1", "OWP1", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginPostedByTheCounterparty1PreHaircut exists
+        else initialMarginPostedByTheCounterparty1PreHaircut is absent
+
+    condition CSA_VR_0082_01: <"Initial margin posted by the reporting counterparty Post-Haircut">
+        [docReference CSA Margin dataElement "82" validationRule "Collateral"
+      provision "C if ([Collateralisation category] = OWC1 or OWP1 or FLCL), else {blank}."]
+        if ["OWC1", "OWP1", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginPostedByTheCounterparty1PostHaircut exists
+        else initialMarginPostedByTheCounterparty1PostHaircut is absent
+
+    condition CSA_VR_0083_01: <"Currency Of Initial Margin Posted">
+        [docReference CSA Margin dataElement "83" validationRule "Collateral"
+      provision "C if [Initial margin posted by the reporting counterparty (post-haircut)] or [Initial margin posted by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if initialMarginPostedByTheCounterparty1PostHaircut exists
+                or initialMarginPostedByTheCounterparty1PreHaircut exists
+        then initialMarginPostedByCounterparty1Currency exists
+        else initialMarginPostedByCounterparty1Currency is absent
+
+    condition CSA_VR_0084_01: <"Initial margin collected by the reporting counterparty Pre-Haircut">
+        [docReference CSA Margin dataElement "84" validationRule "Collateral"
+      provision "C if ([Collateralisation category] = OWC2 or  OWP2 or FLCL), else {blank}."]
+        if ["OWC2", "OWP2", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginCollectedByCounterparty1PreHaircut exists
+        else initialMarginCollectedByCounterparty1PreHaircut is absent
+
+    condition CSA_VR_0085_01: <"Initial margin collected by the reporting counterparty Post-Haircut">
+        [docReference CSA Margin dataElement "85" validationRule "Collateral"
+      provision "C if ([Collateralisation category] = OWC2 or  OWP2 or FLCL), else {blank}."]
+        if ["OWC2", "OWP2", "FLCL"] any = collateralisationCategory to-string
+        then initialMarginCollectedByCounterparty1PostHaircut exists
+        else initialMarginCollectedByCounterparty1PostHaircut is absent
+
+    condition CSA_VR_0086_01: <"Currency Of Initial Margin Collected">
+        [docReference CSA Margin dataElement "86" validationRule "Collateral"
+      provision "C if [Initial margin collected by the reporting counterparty (post-haircut)] or [Initial margin collected by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if initialMarginCollectedByCounterparty1PostHaircut exists
+                or initialMarginCollectedByCounterparty1PreHaircut exists
+        then initialMarginCollectedByCounterparty1Currency exists
+        else initialMarginCollectedByCounterparty1Currency is absent
+
+    condition CSA_VR_0087_01: <"Variation margin posted by the reporting counterparty Pre-Haircut">
+        [docReference CSA Margin dataElement "87" validationRule "Collateral"
+      provision "C if ([Collateralisation category] = PRC1 or  PRCL or OWC1 or OWP1 or OWP2 or FLCL), else {blank}."]
+        if ["OWC1", "OWP1", "PRC1", "OWP2", "PRCL", "FLCL"]
+                any = collateralisationCategory to-string
+        then variationMarginPostedByTheCounterparty1PreHaircut exists
+        else variationMarginPostedByTheCounterparty1PreHaircut is absent
+
+    condition CSA_VR_0088_01: <"Variation margin posted by the reporting counterparty Post-Haircut">
+        [docReference CSA Margin dataElement "88" validationRule "Collateral"
+      provision "C if ([Collateralisation category] = PRC1 or  PRCL or OWC1 or OWP1 or OWP2 or FLCL), else {blank}."]
+        if ["OWC1", "OWP1", "PRC1", "OWP2", "PRCL", "FLCL"]
+                any = collateralisationCategory to-string
+        then variationMarginPostedByTheCounterparty1PostHaircut exists
+        else variationMarginPostedByTheCounterparty1PostHaircut is absent
+
+    condition CSA_VR_0089_01: <"Currency of variation margin posted">
+        [docReference CSA Margin dataElement "89" validationRule "Collateral"
+      provision "C if [Variation margin posted by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if variationMarginPostedByTheCounterparty1PreHaircut exists
+        then variationMarginPostedByCounterparty1Currency exists
+        else variationMarginPostedByCounterparty1Currency is absent
+
+    condition DTCC_CSA_VR_0089_01: <"Currency of variation margin posted">
+        [docReference CSA Margin DTCC_Specs dataElement "89" validationRule "Collateral"
+      provision "C if [Variation margin posted by the reporting counterparty (pre-haircut)] or [Variation margin posted by the reporting counterparty (post-haircut)] is populated, else {blank}."]
+        if variationMarginPostedByTheCounterparty1PreHaircut exists
+                or variationMarginPostedByTheCounterparty1PostHaircut exists
+        then variationMarginPostedByCounterparty1Currency exists
+        else variationMarginPostedByCounterparty1Currency is absent
+
+    condition CSA_VR_0090_01: <"Variation margin collected by the reporting counterparty Pre-Haircut">
+        [docReference CSA Margin dataElement "90" validationRule "Collateral"
+      provision "C if ([Collateralisation category] = PRC2 or PRCL or OWC2 or OWP1 or OWP2 or FLCL), else {blank}."]
+        if ["OWP1", "PRC2", "OWC2", "OWP2", "PRCL", "FLCL"]
+                any = collateralisationCategory to-string
+        then variationMarginCollectedByTheCounterparty1PreHaircut exists
+        else variationMarginCollectedByTheCounterparty1PreHaircut is absent
+
+    condition CSA_VR_0091_01: <"Variation margin collected by the reporting counterparty Post-Haircut">
+        [docReference CSA Margin dataElement "91" validationRule "Collateral"
+      provision "Collateral C if ([Collateralisation category] = PRC2 or PRCL or OWC2 or OWP1 or OWP2 or FLCL), else {blank}."]
+        if ["OWP1", "PRC2", "OWC2", "OWP2", "PRCL", "FLCL"]
+                any = collateralisationCategory to-string
+        then variationMarginCollectedByTheCounterparty1PostHaircut exists
+        else variationMarginCollectedByTheCounterparty1PostHaircut is absent
+
+    condition CSA_VR_0092_01: <"Currency of variation margin collected">
+        [docReference CSA Margin dataElement "92" validationRule "Collateral"
+      provision "Collateral C if [Variation margin collected by the reporting counterparty (pre-haircut)] is populated, else {blank}."]
+        if variationMarginCollectedByTheCounterparty1PreHaircut exists
+        then variationMarginCollectedByCounterparty1Currency exists
+        else variationMarginCollectedByCounterparty1Currency is absent
+
+    condition DTCC_CSA_VR_0092_01: <"Currency of variation margin collected">
+        [docReference CSA Margin DTCC_Specs dataElement "92" validationRule "Collateral"
+      provision "Collateral C if [Variation margin collected by the reporting counterparty (pre-haircut)] or [Variation margin collected by the reporting counterparty (post-haircut)] is populated, else {blank}."]
+        if variationMarginCollectedByTheCounterparty1PreHaircut exists
+                or variationMarginCollectedByTheCounterparty1PostHaircut exists
+        then variationMarginCollectedByCounterparty1Currency exists
+        else variationMarginCollectedByCounterparty1Currency is absent
+
+    condition DTCC_CSA_VR_0093_01: <"Variation Margin Collateral Portfolio Code">
+        [docReference CSA Margin DTCC_Specs dataElement "93" validationRule "Collateral"
+      provision "Required if [Initial margin collateral portfolio code] is blank."]
+        if initialMarginCollateralPortfolioCode is absent
+        then variationMarginCollateralPortfolioCode exists
+
+    condition DTCC_CSA_VR_0093_02: <"Variation Margin Collateral Portfolio Code">
+        [docReference CSA Margin DTCC_Specs dataElement "93" validationRule "Collateral"
+      provision "If USI or UTI is populated, the only accepted values are 'TRANSACTIONLEVEL' or 'NOTAPPLICABLE'. All other values will be rejected."]
+        if usiID exists or uti exists
+        then variationMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+                or variationMarginCollateralPortfolioCode = "NOTAPPLICABLE"
+
+    condition DTCC_CSA_VR_0093_03: <"Variation Margin Collateral Portfolio Code">
+        [docReference CSA Margin DTCC_Specs dataElement "93" validationRule "Collateral"
+      provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then False
+
+    condition DTCC_CSA_VR_0094_01: <"Initial Margin Collateral Portfolio Code">
+        [docReference CSA Margin DTCC_Specs dataElement "94" validationRule "Collateral"
+      provision "Required if [Variation margin collateral portfolio code] is blank."]
+        if variationMarginCollateralPortfolioCode is absent
+        then initialMarginCollateralPortfolioCode exists
+
+    condition DTCC_CSA_VR_0094_02: <"Initial Margin Collateral Portfolio Code">
+        [docReference CSA Margin DTCC_Specs dataElement "94" validationRule "Collateral"
+      provision "If USI or UTI is populated, the only accepted values are 'TRANSACTIONLEVEL' or 'NOTAPPLICABLE'. All other values will be rejected."]
+        if usiID exists or uti exists
+        then initialMarginCollateralPortfolioCode = "TRANSACTIONLEVEL"
+                or initialMarginCollateralPortfolioCode = "NOTAPPLICABLE"
+
+    condition DTCC_CSA_VR_0094_03: <"Initial Margin Collateral Portfolio Code">
+        [docReference CSA Margin DTCC_Specs dataElement "94" validationRule "Collateral"
+      provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then False
+
+    condition CSA_VR_0098_01: <"Action Type">
+        [docReference CSA Margin dataElement "98" validationRule "Collateral"
+      provision "M, must equal MARU"]
+        actionType = MARU
+
+    condition DTCC_CSA_VR_DTCC_01: <"USI ID">
+        [docReference CSA Margin DTCC_Specs field "USI ID"  validationRule "Collateral"
+      provision "Required if [Initial margin collateral portfolio code] = TRANSACTIONLEVEL and [UTI ID] is not populated."]
+        if initialMarginCollateralPortfolioCode = "TRANSACTIONLEVEL" and uti is absent
+        then usiID exists

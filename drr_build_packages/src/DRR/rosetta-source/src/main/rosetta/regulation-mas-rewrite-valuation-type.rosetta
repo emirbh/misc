@@ -1,0 +1,151 @@
+namespace drr.regulation.mas.rewrite.valuation
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.mas.*
+import drr.standards.iso.*
+
+type MASValuationReport extends valuation.CommonValuationReport:
+    [rootType]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "50 Reporting Timestamp"]
+        [docReference MAS Valuation dataElement "50" field "Reporting timestamp"
+            provision "Date and time when the contract was reported to the trade repository."]
+    override uniqueTransactionIdentifier Max52AlphaNumericText (1..1)
+        [label "10 Unique Transaction Identifier (UTI)"]
+        [docReference MAS Valuation dataElement "10" field "Unique Transaction Identifier (UTI)"
+            provision "Unique identifier to denote the contract."]
+        [docReference ISDA APACJFSAPeerReviewGroup date "20251203" field "Unique Transaction Identifier (UTI)"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifier]
+    override uniqueTransactionIdentifierProprietary UTIProprietaryIDFormat (0..1)
+        [label "10 Unique Transaction Identifier (Proprietary)"]
+        [docReference MAS Valuation dataElement "10" field "Unique Transaction Identifier (UTI)"
+            provision "Unique identifier to denote the contract."]
+        [docReference ISDA APACJFSAPeerReviewGroup date "20251203" field "Unique Transaction Identifier (UTI)"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifierProprietary]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "1 Counterparty 1"]
+        [docReference MAS Valuation dataElement "1" field "Counterparty 1"
+            provision "Identifier of Counterparty 1."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "2 Counterparty 2"]
+        [docReference MAS Valuation dataElement "2" field "Counterparty 2"
+            provision "Identifier of Counterparty 2"]
+    override counterparty2IdentifierType boolean (1..1)
+        [label "3 Counterparty 2 Identifier Type"]
+        [docReference MAS Valuation dataElement "3" field "Counterparty 2 Identifier Type"
+            provision "Indicator of whether LEI (including pre-LEI) was used to identify Counterparty 2."]
+    override actionType ActionTypeEnum (1..1)
+        [label "133 Action type"]
+        [docReference MAS Valuation dataElement "133" field "Action type"
+            provision "Type of action taken on the contract."]
+    override reportSubmittingEntityID string (1..1)
+        [label "9 Data submitter"]
+        [docReference MAS Valuation dataElement "9" field "Data submitter"
+            provision "Identifier of the entity submitting information on the contract, which is reported to a licensed trade repository or licensed foreign trade repository."]
+    override valuationTimestamp zonedDateTime (1..1)
+        [label "56 Valuation Timestamp"]
+        [docReference MAS Valuation dataElement "56" field "Valuation timestamp"
+            provision "Date and time of the last valuation, whether by 'mark-to-market', 'mark-to-model' or provided by the central counterparty, as the case may be."]
+    override valuationMethod ValuationType1Code (1..1)
+        [label "55 Valuation method"]
+        [docReference MAS Valuation dataElement "55" field "Valuation method"
+            provision "Source and method used for the valuation of the contract by the Reporting specified person."]
+    override valuationAmount ShortFraction5DecimalNumber (1..1)
+        [label  "53 Valuation amount"]
+        [docReference MAS Valuation dataElement "53" field "Valuation amount"
+            provision "Current monetary value of the outstanding contract."]
+    override valuationCurrency ISOCurrencyCodeEnum (1..1)
+        [label "54 Valuation currency"]
+        [docReference MAS Valuation dataElement "54" field "Valuation currency"
+            provision "Currency in which Valuation amount is denominated."]
+    override entityResponsibleForReporting LEIIdentifier (0..1)
+        [label "8 Reporting specified person"]
+        [docReference MAS Valuation dataElement "8" field "Reporting specified person"
+            provision "Identifier of the specified person with the reporting obligation in respect of the contract."]
+    override nextFloatingReferenceResetDateLeg1 ISODate (0..1)
+        [ruleReference empty]
+    override nextFloatingReferenceResetDateLeg2 ISODate (0..1)
+        [ruleReference empty]
+    override eventDate ISODate (0..1)
+         [ruleReference empty]
+    override counterparty2IdentifierSource Max4Text (0..1)
+        [ruleReference empty]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceValueLeg1 Max11Number (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceValueLeg2 Max11Number (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceResetDateLeg1 date (0..1)
+        [ruleReference empty]
+    override lastFloatingReferenceResetDateLeg2 date (0..1)
+        [ruleReference empty]
+    override delta ShortFraction5DecimalNumber (0..1)
+        [ruleReference empty]
+    override technicalRecordId string (0..1)
+        [label "[Internal] Technical Record Id (ISO)"]
+        [docReference MAS Valuation dataElement "[Internal]" field "Technical Record Id (ISO)"
+            provision "Unique technical identification of the original data for which the status is provided for the BDR."]
+        [ruleReference TechnicalRecordId]
+    executionAgentOfTheCounterparty1 LEIIdentifier (0..1)
+        [label "[Not in regulation] Execution agent of Counterparty 1 (DTCC)"]
+        [docReference MAS Valuation dataElement "[Not in regulation]" field "Execution agent of Counterparty 1"
+            provision "LEI of the entity that entered into the Reportable Transaction as agent for the Reporting Entity without becoming a counterparty themselves."]
+        [ruleReference ExecutionAgentOfCounterparty1DTCC]
+    executionAgentOfTheCounterparty2 LEIIdentifier (0..1)
+        [label "[Not in regulation] Execution agent of Counterparty 2 (DTCC)"]
+        [docReference MAS Valuation dataElement "[Not in regulation]" field "Execution agent of Counterparty 2"
+            provision "The Execution agent of the Counterparty 2."]
+        [ruleReference ExecutionAgentOfCounterparty2DTCC]
+
+    condition DTCC_MAS_BR_0001_01: <"Counterparty 1 Condition">
+        [docReference MAS DTCC_Specs dataElement "1" field "Counterparty 1"
+            provision "When [Action Type] = NEWT, MODI, CORR, REVI, TERM, ERROR, MARU, VALU then [Counterparty 1] must NOT = [Counterparty 2]."]
+        trade.party.Counterparty_Validation(actionType, counterparty1, counterparty2)
+
+    condition DTCC_MAS_BR_0002_01: <"Counterparty 2 Condition">
+        [docReference MAS DTCC_Specs dataElement "2" field "Counterparty 2"
+            provision "When [Action Type] = NEWT, MODI, CORR, REVI, TERM, ERROR, MARU, VALU then [Counterparty 1] must NOT = [Counterparty 2]."]
+        trade.party.Counterparty_Validation(actionType, counterparty1, counterparty2)
+
+    condition DTCC_MAS_BR_0050_03: <"Reporting timestamp Condition">
+        [docReference MAS DTCC_Specs dataElement "50" field "Reporting timestamp"
+            provision "When [Action Type] = VALU then [Reporting timestamp] must be equal to or before the [Message Received timestamp] derived by the TR. Reject if the date value of the [Reporting timestamp] is more than 2 days before the date value of the [Message Received timestamp]. [Reporting timestamp] must be equal to or greater than the [Valuation timestamp]."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+            provision "The logic regarding the order between submissions is not modelled. The condition cannot be executed in a stateless environment."]
+        if actionType = VALU
+        then reportingTimestamp >= valuationTimestamp
+
+    condition DTCC_MAS_BR_0054_01: <"Valuation currency Condition">
+        [docReference MAS DTCC_Specs dataElement "54" field "Valuation currency"
+            provision "When [Action Type] = VALU then Reject if [Valuation currency] = XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XTS or XXX"]
+        if actionType = VALU
+                and [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XTS, ISOCurrencyCodeEnum -> XXX] any = valuationCurrency
+        then False
+
+    condition DTCC_MAS_BR_0001a_01: <"Execution agent of the Counterparty 1">
+        [docReference MAS DTCC_Specs dataElement "[Not in regulation]" validationRule "Transaction"
+        provision "When [Action Type] = NEWT, MODI, CORR, REVI, TERM, PRTO, EROR, VALU then [Execution agent of Counterparty 1] must NOT = [Counterparty 1] or [Counterparty 2] or [Reporting Entity]. Reject if [Execution agent of Counterparty 1] = NOAP and Execution agent of Counterparty 2] is <blank>"]
+    [docReference ISDA APACJFSAPeerReviewGroup date "20230515"
+        provision "DTCC has provided clarification stating that the [Reporting Entity] in business rules for data field Execution Agent of the Counterparty 1 refers to [Data Submitter] field in MAS message spec v0.4."]
+        if [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> REVI, ActionTypeEnum -> TERM, ActionTypeEnum -> PRTO, ActionTypeEnum -> EROR, ActionTypeEnum -> VALU] any = actionType
+        then (executionAgentOfTheCounterparty1 <> counterparty1
+                    or executionAgentOfTheCounterparty1 <> counterparty2
+                    or executionAgentOfTheCounterparty1 <> reportSubmittingEntityID)
+                and (if executionAgentOfTheCounterparty1 = "NOAP" then executionAgentOfTheCounterparty2 exists else True)
+
+    condition DTCC_MAS_BR_0002a_01: <"Execution agent of Counterparty 2">
+        [docReference MAS DTCC_Specs dataElement "[Not in regulation]" validationRule "Transaction"
+        provision "when [Action Type] = NEWT, MODI, CORR, REVI, TERM, PRTO, EROR, VALU then Required if [Execution agent of Counterparty 1] = NOAP."]
+        if [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> REVI, ActionTypeEnum -> TERM, ActionTypeEnum -> PRTO, ActionTypeEnum -> VALU] any = actionType
+        then if executionAgentOfTheCounterparty1 = "NOAP"
+            then executionAgentOfTheCounterparty2 exists

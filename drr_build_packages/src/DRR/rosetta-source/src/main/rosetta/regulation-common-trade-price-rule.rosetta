@@ -1,0 +1,33 @@
+namespace drr.regulation.common.trade.price
+version "${project.version}"
+
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version3.* as cde
+
+reporting rule OptionPremiumAmount from TransactionReportInstruction: <"Option premium amount">
+    if common.contract.ContractType = OPTN and cde.price.OptionPremiumAmount is absent
+    then 0
+    else cde.price.OptionPremiumAmount
+
+// Barrier Price
+reporting rule SingleOrUpperAndLowerBarrier from TransactionReportInstruction: <"Lower or only barrier price notation">
+    EconomicTermsForProduct(ProductForEvent) -> payout -> OptionPayout only-element -> feature -> knock
+        then SingleOrUpperAndLowerBarrier {
+                _single: if [knockIn, knockOut] count = 1
+                        then BarrierFromTriggerEvent([knockIn, knockOut] only-element),
+                lower: if [knockIn, knockOut] count > 1
+                    then [knockIn, knockOut] min [ trigger -> level -> value min ]
+                        then BarrierFromTriggerEvent,
+                upper: if [knockIn, knockOut] count > 1
+                    then [knockIn, knockOut] max [ trigger -> level -> value max ]
+                        then BarrierFromTriggerEvent
+            }
+
+reporting rule OptionPremiumCurrency from TransactionReportInstruction:
+    extract
+        cde.price.OptionPremiumCurrency default cde.execution.SettlementCurrency(
+                trade.PayoutLeg1
+            )
+        default cde.quantity.NotionalCurrency(common.PayoutForQuantityLeg1)

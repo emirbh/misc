@@ -1,0 +1,15 @@
+schemas:
+  - name: "dtcc-rds-rosetta"
+    location: "schemas/dtcc/dtcc-rds-xml-2-4.xsd"
+    version: "2.4"
+
+target:
+  defaultNamespace: "iso20022.dtcc.rds.harmonized"
+  namespaceDefinition: "DTCC’s Repository and Derivatives Services (RDS)"
+  namespaceGrouping:
+    groupByNamespace: false
+  preferences:
+    generateDocRefs: false
+  docReference:
+    body: "DTCC"
+    corpus: "RDS_Harmonized"

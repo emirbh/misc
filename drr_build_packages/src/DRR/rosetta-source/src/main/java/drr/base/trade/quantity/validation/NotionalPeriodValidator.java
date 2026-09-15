@@ -1,0 +1,42 @@
+package drr.base.trade.quantity.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.records.Date;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import drr.base.trade.quantity.NotionalPeriod;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class NotionalPeriodValidator implements Validator<NotionalPeriod> {
+
+	private List<ComparisonResult> getComparisonResults(NotionalPeriod o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("effectiveDate", (Date) o.getEffectiveDate() != null ? 1 : 0, 1, 1), 
+				checkCardinality("endDate", (Date) o.getEndDate() != null ? 1 : 0, 0, 1), 
+				checkCardinality("value", (BigDecimal) o.getValue() != null ? 1 : 0, 1, 1)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, NotionalPeriod o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("NotionalPeriod", ValidationResult.ValidationType.CARDINALITY, "NotionalPeriod", path, "", res.getError());
+				}
+				return success("NotionalPeriod", ValidationResult.ValidationType.CARDINALITY, "NotionalPeriod", path, "");
+			})
+			.collect(toList());
+	}
+
+}

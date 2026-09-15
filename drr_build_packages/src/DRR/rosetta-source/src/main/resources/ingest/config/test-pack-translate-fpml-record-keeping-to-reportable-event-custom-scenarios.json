@@ -1,0 +1,281 @@
+{
+  "id" : "test-pack-translate-fpml-record-keeping-to-reportable-event-custom-scenarios",
+  "pipelineId" : "pipeline-translate-fpml-record-keeping-to-reportable-event",
+  "name" : "Custom scenarios",
+  "samples" : [ {
+    "id" : "mockup-agent-trading-capacity",
+    "name" : "mockup agent trading capacity",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-agent-trading-capacity.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-agent-trading-capacity.json",
+    "assertions" : {
+      "inputPathCount" : 241,
+      "outputPathCount" : 241,
+      "modelValidationFailures" : 93,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-clearing-threshold-party-1",
+    "name" : "mockup clearing threshold party 1",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-clearing-threshold-party-1.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-clearing-threshold-party-1.json",
+    "assertions" : {
+      "inputPathCount" : 160,
+      "outputPathCount" : 196,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-com-ex5-gas-v-electricity-spark-spread-singleleg-01",
+    "name" : "mockup com ex5 gas v electricity spark spread singleleg 01",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-com-ex5-gas-v-electricity-spark-spread-singleleg-01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-com-ex5-gas-v-electricity-spark-spread-singleleg-01.json",
+    "assertions" : {
+      "inputPathCount" : 168,
+      "outputPathCount" : 203,
+      "modelValidationFailures" : 12,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-com-ex5-gas-v-electricity-spark-spread-singleleg-02",
+    "name" : "mockup com ex5 gas v electricity spark spread singleleg 02",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-com-ex5-gas-v-electricity-spark-spread-singleleg-02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-com-ex5-gas-v-electricity-spark-spread-singleleg-02.json",
+    "assertions" : {
+      "inputPathCount" : 167,
+      "outputPathCount" : 201,
+      "modelValidationFailures" : 15,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-commodity-delivery",
+    "name" : "mockup commodity delivery",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-commodity-delivery.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-commodity-delivery.json",
+    "assertions" : {
+      "inputPathCount" : 168,
+      "outputPathCount" : 199,
+      "modelValidationFailures" : 10,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-commodity-swap-last-available-spot-price",
+    "name" : "mockup commodity swap last available spot price",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-commodity-swap-last-available-spot-price.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-commodity-swap-last-available-spot-price.json",
+    "assertions" : {
+      "inputPathCount" : 239,
+      "outputPathCount" : 229,
+      "modelValidationFailures" : 38,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-corporate-sector-ex01-single-party-esma",
+    "name" : "mockup corporate sector ex01 single party esma",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-corporate-sector-ex01-single-party-esma.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-corporate-sector-ex01-single-party-esma.json",
+    "assertions" : {
+      "inputPathCount" : 201,
+      "outputPathCount" : 209,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-corporate-sector-ex02-multiple-parties-multiple-regimes",
+    "name" : "mockup corporate sector ex02 multiple parties multiple regimes",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-corporate-sector-ex02-multiple-parties-multiple-regimes.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-corporate-sector-ex02-multiple-parties-multiple-regimes.json",
+    "assertions" : {
+      "inputPathCount" : 228,
+      "outputPathCount" : 221,
+      "modelValidationFailures" : 9,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-data-masking-clearing-threshold",
+    "name" : "mockup data masking clearing threshold",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-data-masking-clearing-threshold.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-data-masking-clearing-threshold.json",
+    "assertions" : {
+      "inputPathCount" : 166,
+      "outputPathCount" : 205,
+      "modelValidationFailures" : 8,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-federal-entity-credit-default-swap",
+    "name" : "mockup federal entity credit default swap",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-federal-entity-credit-default-swap.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-federal-entity-credit-default-swap.json",
+    "assertions" : {
+      "inputPathCount" : 210,
+      "outputPathCount" : 246,
+      "modelValidationFailures" : 99,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-financial-entity-ir-swap",
+    "name" : "mockup financial entity ir swap",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-financial-entity-ir-swap.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-financial-entity-ir-swap.json",
+    "assertions" : {
+      "inputPathCount" : 241,
+      "outputPathCount" : 255,
+      "modelValidationFailures" : 35,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-fx-strategy-forward",
+    "name" : "mockup fx strategy forward",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-fx-strategy-forward.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-fx-strategy-forward.json",
+    "assertions" : {
+      "inputPathCount" : 216,
+      "outputPathCount" : 241,
+      "modelValidationFailures" : 128,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-fx-strategy-spot",
+    "name" : "mockup fx strategy spot",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-fx-strategy-spot.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-fx-strategy-spot.json",
+    "assertions" : {
+      "inputPathCount" : 214,
+      "outputPathCount" : 237,
+      "modelValidationFailures" : 128,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-fx-swap-spot-forward",
+    "name" : "mockup fx swap spot forward",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-fx-swap-spot-forward.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-fx-swap-spot-forward.json",
+    "assertions" : {
+      "inputPathCount" : 226,
+      "outputPathCount" : 258,
+      "modelValidationFailures" : 126,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-irs-new-trade-notional-amount-schedule",
+    "name" : "mockup irs new trade notional amount schedule",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-irs-new-trade-notional-amount-schedule.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-irs-new-trade-notional-amount-schedule.json",
+    "assertions" : {
+      "inputPathCount" : 319,
+      "outputPathCount" : 357,
+      "modelValidationFailures" : 121,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-natural-person-ir-swaption",
+    "name" : "mockup natural person ir swaption",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-natural-person-ir-swaption.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-natural-person-ir-swaption.json",
+    "assertions" : {
+      "inputPathCount" : 249,
+      "outputPathCount" : 270,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-package-price-ir-swap",
+    "name" : "mockup package price ir swap",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-package-price-ir-swap.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-package-price-ir-swap.json",
+    "assertions" : {
+      "inputPathCount" : 206,
+      "outputPathCount" : 229,
+      "modelValidationFailures" : 9,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-post-priced",
+    "name" : "mockup post priced",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-post-priced.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-post-priced.json",
+    "assertions" : {
+      "inputPathCount" : 275,
+      "outputPathCount" : 299,
+      "modelValidationFailures" : 117,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-post-priced-apac",
+    "name" : "mockup post priced apac",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-post-priced-apac.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-post-priced-apac.json",
+    "assertions" : {
+      "inputPathCount" : 293,
+      "outputPathCount" : 313,
+      "modelValidationFailures" : 124,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-principal-trading-capacity",
+    "name" : "mockup principal trading capacity",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-principal-trading-capacity.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-principal-trading-capacity.json",
+    "assertions" : {
+      "inputPathCount" : 241,
+      "outputPathCount" : 241,
+      "modelValidationFailures" : 93,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-strikeprice-ex01-strikepriceschedule",
+    "name" : "mockup strikePrice ex01 strikePriceSchedule",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-strikePrice-ex01-strikePriceSchedule.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-strikePrice-ex01-strikePriceSchedule.json",
+    "assertions" : {
+      "inputPathCount" : 122,
+      "outputPathCount" : 64,
+      "modelValidationFailures" : 22,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-strikeprice-ex02-strikepriceperunitschedule-01",
+    "name" : "mockup strikePrice ex02 strikePricePerUnitSchedule 01",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-strikePrice-ex02-strikePricePerUnitSchedule-01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-strikePrice-ex02-strikePricePerUnitSchedule-01.json",
+    "assertions" : {
+      "inputPathCount" : 224,
+      "outputPathCount" : 188,
+      "modelValidationFailures" : 40,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-strikeprice-ex02-strikepriceperunitschedule-02",
+    "name" : "mockup strikePrice ex02 strikePricePerUnitSchedule 02",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-strikePrice-ex02-strikePricePerUnitSchedule-02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-strikePrice-ex02-strikePricePerUnitSchedule-02.json",
+    "assertions" : {
+      "inputPathCount" : 223,
+      "outputPathCount" : 184,
+      "modelValidationFailures" : 38,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-volatility-strike-price-variance-swap",
+    "name" : "mockup volatility strike price variance swap",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-volatility-strike-price-variance-swap.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-volatility-strike-price-variance-swap.json",
+    "assertions" : {
+      "inputPathCount" : 173,
+      "outputPathCount" : 188,
+      "modelValidationFailures" : 70,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-volatility-swap",
+    "name" : "mockup volatility swap",
+    "inputPath" : "ingest/input/custom-scenarios/mockup-volatility-swap.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/custom-scenarios/mockup-volatility-swap.json",
+    "assertions" : {
+      "inputPathCount" : 167,
+      "outputPathCount" : 164,
+      "modelValidationFailures" : 56,
+      "runtimeError" : false
+    }
+  } ]
+}

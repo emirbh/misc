@@ -1,0 +1,401 @@
+{
+  "originatingWorkflowStep" : {
+    "previousWorkflowStep" : {
+      "globalReference" : "812d02e7"
+    },
+    "timestamp" : [ {
+      "dateTime" : "2018-04-02T10:30:00Z",
+      "qualification" : "eventCreationDateTime"
+    } ],
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "example-2-submission-2"
+        }
+      } ]
+    } ],
+    "action" : "New",
+    "party" : [ {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "DUMMYLEI010000000037",
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          }
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "5151b003"
+        }
+      } ],
+      "name" : {
+        "value" : "Bank X"
+      },
+      "businessUnit" : [ {
+        "name" : "NY Swaps Desk",
+        "meta" : {
+          "globalKey" : "5c10b72e",
+          "externalKey" : "desk1"
+        }
+      } ],
+      "person" : [ {
+        "personId" : [ {
+          "value" : {
+            "identifier" : {
+              "value" : "jjones"
+            },
+            "meta" : {
+              "globalKey" : "baeb8c0d"
+            }
+          }
+        } ],
+        "meta" : {
+          "globalKey" : "baeb8c0d",
+          "externalKey" : "trader"
+        }
+      } ],
+      "personRole" : [ {
+        "personReference" : {
+          "globalReference" : "baeb8c0d",
+          "externalReference" : "trader"
+        },
+        "role" : [ {
+          "value" : "Trader"
+        } ]
+      } ],
+      "meta" : {
+        "globalKey" : "99951b4",
+        "externalKey" : "party1"
+      }
+    }, {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "DUMMYLEI020000000085",
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          }
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "590367e9"
+        }
+      } ],
+      "name" : {
+        "value" : "Bank Y"
+      },
+      "meta" : {
+        "globalKey" : "9bf3693e",
+        "externalKey" : "party2"
+      }
+    }, {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "549300IB5Q45JGNPND58",
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          }
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "dacc64e9"
+        }
+      } ],
+      "name" : {
+        "value" : "ClearItAll"
+      },
+      "meta" : {
+        "globalKey" : "a3344cf2",
+        "externalKey" : "clearing-svc"
+      }
+    }, {
+      "partyId" : [ {
+        "identifier" : {
+          "value" : "549300OL8KL0WCQ34V31",
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          }
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "e9c05cf5"
+        }
+      } ],
+      "name" : {
+        "value" : "Up&Atem"
+      },
+      "meta" : {
+        "globalKey" : "cce42f3b",
+        "externalKey" : "broker1"
+      }
+    } ]
+  },
+  "reportableInformation" : {
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "globalReference" : "99951b4",
+        "externalReference" : "party1"
+      },
+      "relatedPerson" : [ {
+        "personReference" : {
+          "globalReference" : "baeb8c0d",
+          "externalReference" : "trader"
+        },
+        "role" : [ {
+          "value" : "Trader"
+        } ]
+      } ],
+      "relatedParty" : [ {
+        "partyReference" : {
+          "globalReference" : "a3344cf2",
+          "externalReference" : "clearing-svc"
+        },
+        "role" : "ClearingOrganization"
+      }, {
+        "partyReference" : {
+          "globalReference" : "cce42f3b",
+          "externalReference" : "broker1"
+        },
+        "role" : "ArrangingBroker"
+      } ]
+    }, {
+      "partyReference" : {
+        "globalReference" : "9bf3693e",
+        "externalReference" : "party2"
+      }
+    } ],
+    "reportableAction" : "Error",
+    "confirmationMethod" : "Electronic",
+    "originalExecutionTimestamp" : "2018-04-01T10:15:36Z",
+    "jurisdictionInformation" : [ {
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "SEF"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "99951b4",
+          "externalReference" : "party1"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "esmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "9bf3693e",
+          "externalReference" : "party2"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "esmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "ORPI" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "UKEMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "FCA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "SEF"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "99951b4",
+          "externalReference" : "party1"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "fcaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "9bf3693e",
+          "externalReference" : "party2"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "fcaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "ORPI" ]
+          },
+          "exceedsClearingThreshold" : true
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "JFSA"
+      },
+      "supervisoryBody" : {
+        "value" : "JFSA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "SEF"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "99951b4",
+          "externalReference" : "party1"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "value" : "SEF123",
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            }
+          }
+        }
+      }, {
+        "partyReference" : {
+          "globalReference" : "9bf3693e",
+          "externalReference" : "party2"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "value" : "SEF123",
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            }
+          }
+        }
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "CSA"
+      },
+      "supervisoryBody" : {
+        "value" : "CA.AB.ASC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "SEF"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "99951b4",
+          "externalReference" : "party1"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "9bf3693e",
+          "externalReference" : "party2"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "HKMA"
+      },
+      "supervisoryBody" : {
+        "value" : "HKMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "SEF"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "99951b4",
+          "externalReference" : "party1"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "hkmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          }
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "globalReference" : "9bf3693e",
+          "externalReference" : "party2"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "hkmaPartyInformation" : {
+          "natureOfParty" : "Financial",
+          "corporateSector" : {
+            "financialSector" : [ "ORPI" ]
+          }
+        },
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "CFTC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "SEF"
+        },
+        "largeSizeTrade" : false
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "99951b4",
+          "externalReference" : "party1"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      } ]
+    }, {
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "SEC"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "SEF"
+        }
+      },
+      "partyInformation" : [ {
+        "partyReference" : {
+          "globalReference" : "99951b4",
+          "externalReference" : "party1"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "reportingRole" : "ReportingParty"
+      } ]
+    } ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id" : "test-pack-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich-pre-enrich",
+  "pipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich",
+  "name" : "Pre enrich",
+  "samples" : [ {
+    "id" : "mockup-pre-enrich",
+    "name" : "mockup pre enrich",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/pre-enrich/mockup-pre-enrich.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-pre-enrich/pre-enrich/mockup-pre-enrich.json",
+    "assertions" : {
+      "modelValidationFailures" : 182,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "mockup-pre-enrich-ssbs",
+    "name" : "mockup pre enrich ssbs",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/pre-enrich/mockup-pre-enrich-ssbs.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-pre-enrich/pre-enrich/mockup-pre-enrich-ssbs.json",
+    "assertions" : {
+      "modelValidationFailures" : 189,
+      "runtimeError" : false
+    }
+  } ]
+}

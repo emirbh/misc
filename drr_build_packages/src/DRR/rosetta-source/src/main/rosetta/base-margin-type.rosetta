@@ -1,0 +1,23 @@
+namespace drr.base.margin
+version "${project.version}"
+
+import cdm.event.common.*
+import cdm.product.collateral.*
+
+import drr.base.trade.*
+import drr.standards.iso.*
+
+type ReportableCollateralBase:
+    [rootType]
+    collateralDetails CollateralDetails (0..1) <"The reportable collateral information">
+    reportableInformation ReportableInformationBase (1..1)
+
+type CollateralDetails:
+    collateralTimestamp zonedDateTime (1..1)
+    collateral Collateral (0..1)
+    uniqueTradeIdentifier TradeIdentifier (0..1)
+    action MarginActionEnum (0..1)
+    collateralisationCategory CollateralisationType3Code (1..1)
+
+type CollateralReportInstructionBase extends ReportableCollateralBase:
+    reportingSide ReportingSide (1..1)

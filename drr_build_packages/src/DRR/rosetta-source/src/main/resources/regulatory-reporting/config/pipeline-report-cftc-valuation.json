@@ -1,0 +1,10 @@
+{
+  "id" : "pipeline-report-cftc-valuation",
+  "name" : "CFTC / Valuation",
+  "transform" : {
+    "type" : "REPORT",
+    "function" : "drr.regulation.cftc.rewrite.valuation.reports.CFTCValuationReportFunction",
+    "inputType" : "drr.regulation.common.ValuationReportInstruction",
+    "outputType" : "drr.regulation.cftc.rewrite.valuation.CFTCValuationReport"
+  }
+}

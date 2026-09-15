@@ -1,0 +1,83 @@
+namespace drr.regulation.mas.rewrite.valuation
+version "${project.version}"
+
+import cdm.base.*
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.mas.*
+import drr.standards.iosco.uti.*
+import drr.standards.iso.*
+
+corpus Dissemination Valuation
+
+report MAS Valuation in T+1
+  	from ValuationReportInstruction
+  	when ReportableProduct
+  	with type MASValuationReport
+
+eligibility rule ReportableProduct from ValuationReportInstruction: <"When eligible for ASIC">
+    [docReference MAS Valuation
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+reporting rule UniqueTransactionIdentifier from ValuationReportInstruction: <"Unique Transaction Identifier (UTI)">
+    [docReference MAS Valuation dataElement "10" field "Unique Transaction Identifier (UTI)"
+        provision "Unique identifier to denote the contract."]
+    [docReference ISDA APACJFSAPeerReviewGroup date "20251203" field "Unique Transaction Identifier (UTI)"
+        provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+    GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            MAS,
+            item -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UniqueTransactionIdentifierProprietary from ValuationReportInstruction: <"Unique Transaction Identifier (UTI)">
+    [docReference ISDA APACJFSAPeerReviewGroup date "20251203" field "Unique Transaction Identifier (UTI)"
+        provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+    GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            MAS,
+            item -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule TechnicalRecordId from ValuationReportInstruction: <"Technical Record Id (ISO)">
+    extract
+        if trade.link.TechnicalRecordId(reportableInformation, MAS) -> isUnique
+        then trade.link.TechnicalRecordId(reportableInformation, MAS) -> id
+        else trade.link.TechnicalRecordId(reportableInformation, MAS) -> id + "_" + (valuation.datetime.ReportingTimestamp to-string)
+
+reporting rule ExecutionAgentOfCounterparty1DTCC from ValuationReportInstruction: <"Execution agent of Counterparty 1 (DTCC)">
+    extract reportableEvent [
+        reportableEvent -> reportableInformation -> globalPartyInformation
+            then extract
+                if (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingParty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent) exists)
+                then (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingParty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+                then extract PartyLei(partyId))
+                else if (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingCounterparty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent) exists)
+                then "NOAP"
+            then first
+    ]
+
+reporting rule ExecutionAgentOfCounterparty2DTCC from ValuationReportInstruction: <"Execution agent of Counterparty 2 (DTCC)">
+    extract reportableEvent [
+        reportableEvent -> reportableInformation -> globalPartyInformation
+            filter partyReference = reportableEvent -> reportingSide -> reportingCounterparty
+            then distinct only-element
+            then extract ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+            then extract PartyLei(partyId)
+    ]

@@ -1,0 +1,36 @@
+namespace drr.regulation.common.dtcc.trade
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version3.* as cde
+import drr.standards.iso.*
+
+func DTCC_SEFOrDCMAnonymousExecutionIndicator: <"Identifies whether the swap was executed anonymously on a SEF or DCM.">
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+        supervisor SupervisoryBodyEnum (1..1)
+    output:
+        result boolean (0..1)
+
+    set result:
+        if (cde.event.ActionType(transaction) = TERM
+                and [EventTypeEnum -> CLRG, EventTypeEnum -> CLAL]
+                    any = cde.event.EventType(transaction)
+                and cde.execution.CentralCounterparty(transaction) exists)
+        then (transaction -> reportableInformation -> jurisdictionInformation
+            then filter supervisoryBody = supervisor
+            then only-element
+            then extract
+                transactionInformation -> reportableExecutionVenue -> sefOrDcmAnonymousIndicator default False)
+        else (transaction -> reportableInformation -> jurisdictionInformation
+            then filter supervisoryBody = supervisor
+            then only-element
+            then extract
+                if (item exists
+                        and (transaction -> reportableInformation -> globalPartyInformation -> relatedParty
+                            then filter
+                                role = ExecutionFacility
+                                    and partyReference = transaction -> reportingSide -> reportingParty
+                            then exists
+                            ))
+                then (transactionInformation -> reportableExecutionVenue -> sefOrDcmAnonymousIndicator default False))

@@ -1,0 +1,64 @@
+package fpml.consolidated.shared.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.shared.QuotedCurrencyPair;
+import fpml.consolidated.shared.validation.QuotedCurrencyPairTypeFormatValidator;
+import fpml.consolidated.shared.validation.QuotedCurrencyPairValidator;
+import fpml.consolidated.shared.validation.exists.QuotedCurrencyPairOnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version 2.1.1
+ */
+@RosettaMeta(model=QuotedCurrencyPair.class)
+public class QuotedCurrencyPairMeta implements RosettaMetaData<QuotedCurrencyPair> {
+
+	@Override
+	public List<Validator<? super QuotedCurrencyPair>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+		);
+	}
+	
+	@Override
+	public List<Function<? super QuotedCurrencyPair, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super QuotedCurrencyPair> validator(ValidatorFactory factory) {
+		return factory.<QuotedCurrencyPair>create(QuotedCurrencyPairValidator.class);
+	}
+
+	@Override
+	public Validator<? super QuotedCurrencyPair> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<QuotedCurrencyPair>create(QuotedCurrencyPairTypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super QuotedCurrencyPair> validator() {
+		return new QuotedCurrencyPairValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super QuotedCurrencyPair> typeFormatValidator() {
+		return new QuotedCurrencyPairTypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super QuotedCurrencyPair, Set<String>> onlyExistsValidator() {
+		return new QuotedCurrencyPairOnlyExistsValidator();
+	}
+}

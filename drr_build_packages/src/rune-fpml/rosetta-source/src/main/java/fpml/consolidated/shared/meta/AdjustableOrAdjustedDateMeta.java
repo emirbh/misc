@@ -1,0 +1,66 @@
+package fpml.consolidated.shared.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.shared.AdjustableOrAdjustedDate;
+import fpml.consolidated.shared.validation.AdjustableOrAdjustedDateTypeFormatValidator;
+import fpml.consolidated.shared.validation.AdjustableOrAdjustedDateValidator;
+import fpml.consolidated.shared.validation.datarule.AdjustableOrAdjustedDateChoice;
+import fpml.consolidated.shared.validation.exists.AdjustableOrAdjustedDateOnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version 2.1.1
+ */
+@RosettaMeta(model=AdjustableOrAdjustedDate.class)
+public class AdjustableOrAdjustedDateMeta implements RosettaMetaData<AdjustableOrAdjustedDate> {
+
+	@Override
+	public List<Validator<? super AdjustableOrAdjustedDate>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+			factory.<AdjustableOrAdjustedDate>create(AdjustableOrAdjustedDateChoice.class)
+		);
+	}
+	
+	@Override
+	public List<Function<? super AdjustableOrAdjustedDate, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super AdjustableOrAdjustedDate> validator(ValidatorFactory factory) {
+		return factory.<AdjustableOrAdjustedDate>create(AdjustableOrAdjustedDateValidator.class);
+	}
+
+	@Override
+	public Validator<? super AdjustableOrAdjustedDate> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<AdjustableOrAdjustedDate>create(AdjustableOrAdjustedDateTypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super AdjustableOrAdjustedDate> validator() {
+		return new AdjustableOrAdjustedDateValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super AdjustableOrAdjustedDate> typeFormatValidator() {
+		return new AdjustableOrAdjustedDateTypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super AdjustableOrAdjustedDate, Set<String>> onlyExistsValidator() {
+		return new AdjustableOrAdjustedDateOnlyExistsValidator();
+	}
+}

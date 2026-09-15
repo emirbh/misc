@@ -1,0 +1,15 @@
+{
+  "id" : "pipeline-projection-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich-sec-ppd-sec-ppd-report-to-dtcc-rds-harmonized",
+  "name" : "Sec Ppd Report To Dtcc Rds Harmonized",
+  "transform" : {
+    "type" : "PROJECTION",
+    "function" : "drr.projection.dtcc.rds.harmonized.sec.rewrite.trade.functions.Project_SecPpdReportToDtccRdsHarmonized",
+    "inputType" : "drr.regulation.sec.rewrite.trade.SECTransactionReportPPD",
+    "outputType" : "iso20022.dtcc.rds.harmonized.Document"
+  },
+  "upstreamPipelineId" : "pipeline-report-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-pre-enrich-sec-ppd",
+  "outputSerialisation" : {
+    "format" : "XML",
+    "configPath" : "xml-config/dtcc-rds-rosetta-xml-config.json"
+  }
+}

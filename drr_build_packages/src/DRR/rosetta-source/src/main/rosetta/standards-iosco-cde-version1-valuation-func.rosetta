@@ -1,0 +1,26 @@
+namespace drr.standards.iosco.cde.version1.valuation
+version "${project.version}"
+
+import cdm.base.math.*
+import cdm.base.staticdata.asset.common.*
+import cdm.event.common.*
+
+import drr.standards.iso.*
+
+func ValuationAmountFromValuation: <"Report-agnostic extraction of the Valuation Amount">
+    inputs:
+        valuation Valuation (1..1)
+    output:
+        valuationAmount ShortFraction5DecimalNumber (0..1)
+    set valuationAmount:
+        valuation -> amount -> value
+            then extract RoundToPrecision(item, 5, RoundingDirectionEnum -> Nearest, False)
+            then FormatToShortFraction5DecimalNumber
+
+func ValuationCurrencyFromValuation: <"Report-agnostic extraction of the Valuation Currency">
+    inputs:
+        valuation Valuation (1..1)
+    output:
+        valuationCurrency ISOCurrencyCodeEnum (0..1)
+    set valuationCurrency:
+        valuation -> amount -> unit -> currency then extract ConvertNonISOToISOCurrency

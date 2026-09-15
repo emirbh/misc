@@ -1,0 +1,1839 @@
+{
+  "originatingWorkflowStep" : {
+    "action" : "New",
+    "businessEvent" : {
+      "after" : [ {
+        "meta" : {
+          "globalKey" : "bcbd86b2"
+        },
+        "state" : {
+          "positionState" : "Formed"
+        },
+        "trade" : {
+          "contractDetails" : {
+            "documentation" : [ {
+              "contractualParty" : [ {
+                "externalReference" : "party2",
+                "globalReference" : "f1250e27"
+              }, {
+                "externalReference" : "ClearingDCO",
+                "globalReference" : "68d59e03"
+              } ],
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement"
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "6ea93542"
+              }
+            } ],
+            "meta" : {
+              "globalKey" : "6ea93542"
+            }
+          },
+          "counterparty" : [ {
+            "partyReference" : {
+              "externalReference" : "party2",
+              "globalReference" : "f1250e27"
+            },
+            "role" : "Party1"
+          }, {
+            "partyReference" : {
+              "externalReference" : "ClearingDCO",
+              "globalReference" : "68d59e03"
+            },
+            "role" : "Party2"
+          } ],
+          "meta" : {
+            "globalKey" : "2c4b2fe0"
+          },
+          "party" : [ {
+            "contactInformation" : {
+              "address" : [ {
+                "country" : {
+                  "value" : "GB"
+                }
+              } ]
+            },
+            "meta" : {
+              "externalKey" : "ClearingDCO",
+              "globalKey" : "68d59e03"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "F226TOH6YD6XJB17KS62"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "cdfe6928"
+              }
+            } ]
+          }, {
+            "meta" : {
+              "externalKey" : "lchClearingBroker",
+              "globalKey" : "cdfe6928"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "F226TOH6YD6XJB17KS62"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "cdfe6928"
+              }
+            } ]
+          }, {
+            "contactInformation" : {
+              "address" : [ {
+                "country" : {
+                  "value" : "HKG"
+                }
+              } ]
+            },
+            "meta" : {
+              "externalKey" : "party2",
+              "globalKey" : "f1250e27"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "DUMMYLEI010000000037"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "5151b003"
+              }
+            } ]
+          }, {
+            "meta" : {
+              "externalKey" : "clearingBroker1",
+              "globalKey" : "7db8beb1"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "G3SDK4EG3HH735DJJ456"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "7db8beb1"
+              }
+            } ]
+          } ],
+          "partyRole" : [ {
+            "ownershipPartyReference" : {
+              "externalReference" : "ClearingDCO",
+              "globalReference" : "68d59e03"
+            },
+            "partyReference" : {
+              "externalReference" : "ClearingDCO",
+              "globalReference" : "68d59e03"
+            },
+            "role" : "ClearingOrganization"
+          }, {
+            "ownershipPartyReference" : {
+              "externalReference" : "ClearingDCO",
+              "globalReference" : "68d59e03"
+            },
+            "partyReference" : {
+              "externalReference" : "lchClearingBroker",
+              "globalReference" : "cdfe6928"
+            }
+          }, {
+            "ownershipPartyReference" : {
+              "externalReference" : "party2",
+              "globalReference" : "f1250e27"
+            },
+            "partyReference" : {
+              "externalReference" : "clearingBroker1",
+              "globalReference" : "7db8beb1"
+            }
+          } ],
+          "product" : {
+            "economicTerms" : {
+              "nonStandardisedTerms" : false,
+              "payout" : [ {
+                "InterestRatePayout" : {
+                  "calculationPeriodDates" : {
+                    "calculationPeriodDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ {
+                          "value" : "JPTO"
+                        } ],
+                        "meta" : {
+                          "globalKey" : "22da41"
+                        }
+                      },
+                      "businessDayConvention" : "MODFOLLOWING",
+                      "meta" : {
+                        "globalKey" : "365dde12"
+                      }
+                    },
+                    "calculationPeriodFrequency" : {
+                      "meta" : {
+                        "globalKey" : "17f57"
+                      },
+                      "period" : "M",
+                      "periodMultiplier" : 3,
+                      "rollConvention" : "13"
+                    },
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "dateAdjustments" : {
+                          "businessDayConvention" : "NONE",
+                          "meta" : {
+                            "globalKey" : "24a738"
+                          }
+                        },
+                        "meta" : {
+                          "globalKey" : "ed417a83"
+                        },
+                        "unadjustedDate" : "2021-08-11"
+                      },
+                      "meta" : {
+                        "globalKey" : "ed417a83"
+                      }
+                    },
+                    "firstRegularPeriodStartDate" : "2021-08-13",
+                    "meta" : {
+                      "externalKey" : "fixedCalcPeriodDates1",
+                      "globalKey" : "985b7b15"
+                    },
+                    "stubPeriodType" : "ShortInitial",
+                    "terminationDate" : {
+                      "adjustableDate" : {
+                        "dateAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "MODFOLLOWING",
+                          "meta" : {
+                            "globalKey" : "365dde12"
+                          }
+                        },
+                        "meta" : {
+                          "globalKey" : "4737f425"
+                        },
+                        "unadjustedDate" : "2021-08-13"
+                      },
+                      "meta" : {
+                        "globalKey" : "4737f425"
+                      }
+                    }
+                  },
+                  "dayCountFraction" : {
+                    "value" : "ACT/360"
+                  },
+                  "payerReceiver" : {
+                    "payer" : "Party1",
+                    "receiver" : "Party2"
+                  },
+                  "paymentDates" : {
+                    "meta" : {
+                      "externalKey" : "paymentDates1",
+                      "globalKey" : "34732ee4"
+                    },
+                    "payRelativeTo" : "CalculationPeriodEndDate",
+                    "paymentDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ {
+                          "value" : "JPTO"
+                        } ],
+                        "meta" : {
+                          "globalKey" : "22da41"
+                        }
+                      },
+                      "businessDayConvention" : "MODFOLLOWING",
+                      "meta" : {
+                        "globalKey" : "365dde12"
+                      }
+                    },
+                    "paymentDaysOffset" : {
+                      "dayType" : "Business",
+                      "meta" : {
+                        "globalKey" : "ea4abf7e"
+                      },
+                      "period" : "D",
+                      "periodMultiplier" : 2
+                    },
+                    "paymentFrequency" : {
+                      "meta" : {
+                        "globalKey" : "aa"
+                      },
+                      "period" : "M",
+                      "periodMultiplier" : 3
+                    }
+                  },
+                  "priceQuantity" : {
+                    "meta" : {
+                      "globalKey" : "0"
+                    },
+                    "quantitySchedule" : {
+                      "address" : {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-1"
+                      }
+                    }
+                  },
+                  "rateSpecification" : {
+                    "FixedRateSpecification" : {
+                      "meta" : {
+                        "globalKey" : "0"
+                      },
+                      "rateSchedule" : {
+                        "price" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "price-1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "meta" : {
+                  "globalKey" : "8c0ecaf8"
+                }
+              }, {
+                "InterestRatePayout" : {
+                  "calculationPeriodDates" : {
+                    "calculationPeriodDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ {
+                          "value" : "JPTO"
+                        } ],
+                        "meta" : {
+                          "globalKey" : "22da41"
+                        }
+                      },
+                      "businessDayConvention" : "MODFOLLOWING",
+                      "meta" : {
+                        "globalKey" : "365dde12"
+                      }
+                    },
+                    "calculationPeriodFrequency" : {
+                      "meta" : {
+                        "globalKey" : "17f57"
+                      },
+                      "period" : "M",
+                      "periodMultiplier" : 3,
+                      "rollConvention" : "13"
+                    },
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "dateAdjustments" : {
+                          "businessDayConvention" : "NONE",
+                          "meta" : {
+                            "globalKey" : "24a738"
+                          }
+                        },
+                        "meta" : {
+                          "globalKey" : "ed417a83"
+                        },
+                        "unadjustedDate" : "2021-08-11"
+                      },
+                      "meta" : {
+                        "globalKey" : "ed417a83"
+                      }
+                    },
+                    "firstRegularPeriodStartDate" : "2021-08-13",
+                    "meta" : {
+                      "externalKey" : "floatingCalcPeriodDates2",
+                      "globalKey" : "985b7b15"
+                    },
+                    "stubPeriodType" : "ShortInitial",
+                    "terminationDate" : {
+                      "adjustableDate" : {
+                        "dateAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "MODFOLLOWING",
+                          "meta" : {
+                            "globalKey" : "365dde12"
+                          }
+                        },
+                        "meta" : {
+                          "globalKey" : "4737f425"
+                        },
+                        "unadjustedDate" : "2021-08-13"
+                      },
+                      "meta" : {
+                        "globalKey" : "4737f425"
+                      }
+                    }
+                  },
+                  "dayCountFraction" : {
+                    "value" : "ACT/365.FIXED"
+                  },
+                  "payerReceiver" : {
+                    "payer" : "Party2",
+                    "receiver" : "Party1"
+                  },
+                  "paymentDates" : {
+                    "meta" : {
+                      "externalKey" : "paymentDates2",
+                      "globalKey" : "34732ee4"
+                    },
+                    "payRelativeTo" : "CalculationPeriodEndDate",
+                    "paymentDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ {
+                          "value" : "JPTO"
+                        } ],
+                        "meta" : {
+                          "globalKey" : "22da41"
+                        }
+                      },
+                      "businessDayConvention" : "MODFOLLOWING",
+                      "meta" : {
+                        "globalKey" : "365dde12"
+                      }
+                    },
+                    "paymentDaysOffset" : {
+                      "dayType" : "Business",
+                      "meta" : {
+                        "globalKey" : "ea4abf7e"
+                      },
+                      "period" : "D",
+                      "periodMultiplier" : 2
+                    },
+                    "paymentFrequency" : {
+                      "meta" : {
+                        "globalKey" : "aa"
+                      },
+                      "period" : "M",
+                      "periodMultiplier" : 3
+                    }
+                  },
+                  "priceQuantity" : {
+                    "meta" : {
+                      "globalKey" : "0"
+                    },
+                    "quantitySchedule" : {
+                      "address" : {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-2"
+                      }
+                    }
+                  },
+                  "rateSpecification" : {
+                    "FloatingRateSpecification" : {
+                      "meta" : {
+                        "globalKey" : "0"
+                      },
+                      "rateOption" : {
+                        "address" : {
+                          "scope" : "DOCUMENT",
+                          "value" : "InterestRateIndex-1"
+                        }
+                      }
+                    }
+                  },
+                  "resetDates" : {
+                    "calculationPeriodDatesReference" : {
+                      "externalReference" : "floatingCalcPeriodDates2",
+                      "globalReference" : "985b7b15"
+                    },
+                    "fixingDates" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ {
+                          "value" : "JPTO"
+                        } ],
+                        "meta" : {
+                          "globalKey" : "22da41"
+                        }
+                      },
+                      "businessDayConvention" : "PRECEDING",
+                      "dateRelativeTo" : {
+                        "externalReference" : "resetDates2",
+                        "globalReference" : "6e05cb20"
+                      },
+                      "meta" : {
+                        "globalKey" : "bdccc0fe"
+                      },
+                      "period" : "D",
+                      "periodMultiplier" : 0
+                    },
+                    "meta" : {
+                      "externalKey" : "resetDates2",
+                      "globalKey" : "6e05cb20"
+                    },
+                    "resetDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ {
+                          "value" : "JPTO"
+                        } ],
+                        "meta" : {
+                          "globalKey" : "22da41"
+                        }
+                      },
+                      "businessDayConvention" : "MODFOLLOWING",
+                      "meta" : {
+                        "globalKey" : "365dde12"
+                      }
+                    },
+                    "resetFrequency" : {
+                      "meta" : {
+                        "globalKey" : "aa"
+                      },
+                      "period" : "M",
+                      "periodMultiplier" : 3
+                    },
+                    "resetRelativeTo" : "CalculationPeriodEndDate"
+                  }
+                },
+                "meta" : {
+                  "globalKey" : "c99b03be"
+                }
+              } ]
+            },
+            "identifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/product-taxonomy"
+                },
+                "value" : "InterestRate:IRSwap:OIS"
+              },
+              "meta" : {
+                "globalKey" : "2f961685"
+              },
+              "source" : "Other"
+            } ],
+            "meta" : {
+              "globalKey" : "be6e485d"
+            },
+            "taxonomy" : [ {
+              "primaryAssetClass" : {
+                "value" : "InterestRate"
+              }
+            }, {
+              "source" : "CFI",
+              "value" : {
+                "name" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/product-classification/iso10962"
+                  },
+                  "value" : "SRHXXX"
+                }
+              }
+            }, {
+              "productQualifier" : "InterestRate_IRSwap_FixedFloat_OIS",
+              "source" : "ISDA"
+            } ]
+          },
+          "tradeDate" : {
+            "meta" : {
+              "globalKey" : "3f2a0a"
+            },
+            "value" : "2021-08-10"
+          },
+          "tradeIdentifier" : [ {
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                },
+                "value" : "UTIIRIRSFIXEDFLO0183"
+              }
+            } ],
+            "identifierType" : "UniqueTransactionIdentifier",
+            "issuer" : {
+              "meta" : {
+                "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+              },
+              "value" : "DUMMYLEI010000000037"
+            },
+            "meta" : {
+              "globalKey" : "4ad0179d"
+            }
+          } ],
+          "tradeLot" : [ {
+            "priceQuantity" : [ {
+              "meta" : {
+                "globalKey" : "c4540c94"
+              },
+              "price" : [ {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "price-1"
+                  } ]
+                },
+                "value" : {
+                  "perUnitOf" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "priceType" : "InterestRate",
+                  "unit" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "value" : 0.01
+                }
+              } ],
+              "quantity" : [ {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "quantity-1"
+                  } ]
+                },
+                "value" : {
+                  "unit" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "value" : 1
+                }
+              } ]
+            }, {
+              "meta" : {
+                "globalKey" : "545b2066"
+              },
+              "observable" : {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "observable-1"
+                  } ]
+                },
+                "value" : {
+                  "Index" : {
+                    "InterestRateIndex" : {
+                      "meta" : {
+                        "location" : [ {
+                          "scope" : "DOCUMENT",
+                          "value" : "InterestRateIndex-1"
+                        } ]
+                      },
+                      "value" : {
+                        "FloatingRateIndex" : {
+                          "assetClass" : "InterestRate",
+                          "floatingRateIndex" : {
+                            "value" : "JPY-TONA-OIS Compound"
+                          },
+                          "identifier" : [ {
+                            "identifier" : {
+                              "value" : "JPY-TONA-OIS Compound"
+                            },
+                            "identifierType" : "Other"
+                          } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "quantity" : [ {
+                "meta" : {
+                  "location" : [ {
+                    "scope" : "DOCUMENT",
+                    "value" : "quantity-2"
+                  } ]
+                },
+                "value" : {
+                  "unit" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "value" : 1
+                }
+              } ]
+            } ]
+          } ]
+        },
+        "transferHistory" : [ {
+          "meta" : {
+            "globalKey" : "24a9a15"
+          },
+          "transfer" : {
+            "asset" : {
+              "Cash" : {
+                "identifier" : [ {
+                  "identifier" : {
+                    "value" : "JPY"
+                  },
+                  "identifierType" : "CurrencyCode"
+                } ]
+              }
+            },
+            "payerReceiver" : {
+              "payerPartyReference" : {
+                "externalReference" : "ClearingDCO",
+                "globalReference" : "68d59e03"
+              },
+              "receiverPartyReference" : {
+                "externalReference" : "party2",
+                "globalReference" : "f1250e27"
+              }
+            },
+            "quantity" : {
+              "unit" : {
+                "currency" : {
+                  "value" : "JPY"
+                }
+              },
+              "value" : 337.3
+            },
+            "settlementDate" : {
+              "dateAdjustments" : {
+                "businessCenters" : {
+                  "businessCenter" : [ {
+                    "value" : "JPTO"
+                  } ],
+                  "meta" : {
+                    "globalKey" : "22da41"
+                  }
+                },
+                "businessDayConvention" : "MODFOLLOWING",
+                "meta" : {
+                  "globalKey" : "365dde12"
+                }
+              },
+              "unadjustedDate" : "2021-08-13"
+            },
+            "transferExpression" : {
+              "priceTransfer" : "Upfront"
+            }
+          }
+        } ]
+      } ],
+      "eventDate" : "2021-08-11",
+      "eventQualifier" : "ContractFormation",
+      "instruction" : [ {
+        "before" : {
+          "value" : {
+            "meta" : {
+              "globalKey" : "f7bb635"
+            },
+            "trade" : {
+              "contractDetails" : {
+                "documentation" : [ {
+                  "contractualParty" : [ {
+                    "externalReference" : "party2",
+                    "globalReference" : "f1250e27"
+                  }, {
+                    "externalReference" : "ClearingDCO",
+                    "globalReference" : "68d59e03"
+                  } ],
+                  "legalAgreementIdentification" : {
+                    "agreementName" : {
+                      "agreementType" : "MasterAgreement"
+                    },
+                    "vintage" : 2002
+                  },
+                  "meta" : {
+                    "globalKey" : "6ea93542"
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "6ea93542"
+                }
+              },
+              "counterparty" : [ {
+                "partyReference" : {
+                  "externalReference" : "party2",
+                  "globalReference" : "f1250e27"
+                },
+                "role" : "Party1"
+              }, {
+                "partyReference" : {
+                  "externalReference" : "ClearingDCO",
+                  "globalReference" : "68d59e03"
+                },
+                "role" : "Party2"
+              } ],
+              "meta" : {
+                "globalKey" : "2c4b2fe0"
+              },
+              "party" : [ {
+                "contactInformation" : {
+                  "address" : [ {
+                    "country" : {
+                      "value" : "GB"
+                    }
+                  } ]
+                },
+                "meta" : {
+                  "externalKey" : "ClearingDCO",
+                  "globalKey" : "68d59e03"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "F226TOH6YD6XJB17KS62"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "cdfe6928"
+                  }
+                } ]
+              }, {
+                "meta" : {
+                  "externalKey" : "lchClearingBroker",
+                  "globalKey" : "cdfe6928"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "F226TOH6YD6XJB17KS62"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "cdfe6928"
+                  }
+                } ]
+              }, {
+                "contactInformation" : {
+                  "address" : [ {
+                    "country" : {
+                      "value" : "HKG"
+                    }
+                  } ]
+                },
+                "meta" : {
+                  "externalKey" : "party2",
+                  "globalKey" : "f1250e27"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "DUMMYLEI010000000037"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "5151b003"
+                  }
+                } ]
+              }, {
+                "meta" : {
+                  "externalKey" : "clearingBroker1",
+                  "globalKey" : "7db8beb1"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "G3SDK4EG3HH735DJJ456"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "7db8beb1"
+                  }
+                } ]
+              } ],
+              "partyRole" : [ {
+                "ownershipPartyReference" : {
+                  "externalReference" : "ClearingDCO",
+                  "globalReference" : "68d59e03"
+                },
+                "partyReference" : {
+                  "externalReference" : "ClearingDCO",
+                  "globalReference" : "68d59e03"
+                },
+                "role" : "ClearingOrganization"
+              }, {
+                "ownershipPartyReference" : {
+                  "externalReference" : "ClearingDCO",
+                  "globalReference" : "68d59e03"
+                },
+                "partyReference" : {
+                  "externalReference" : "lchClearingBroker",
+                  "globalReference" : "cdfe6928"
+                }
+              }, {
+                "ownershipPartyReference" : {
+                  "externalReference" : "party2",
+                  "globalReference" : "f1250e27"
+                },
+                "partyReference" : {
+                  "externalReference" : "clearingBroker1",
+                  "globalReference" : "7db8beb1"
+                }
+              } ],
+              "product" : {
+                "economicTerms" : {
+                  "nonStandardisedTerms" : false,
+                  "payout" : [ {
+                    "InterestRatePayout" : {
+                      "calculationPeriodDates" : {
+                        "calculationPeriodDatesAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "MODFOLLOWING",
+                          "meta" : {
+                            "globalKey" : "365dde12"
+                          }
+                        },
+                        "calculationPeriodFrequency" : {
+                          "meta" : {
+                            "globalKey" : "17f57"
+                          },
+                          "period" : "M",
+                          "periodMultiplier" : 3,
+                          "rollConvention" : "13"
+                        },
+                        "effectiveDate" : {
+                          "adjustableDate" : {
+                            "dateAdjustments" : {
+                              "businessDayConvention" : "NONE",
+                              "meta" : {
+                                "globalKey" : "24a738"
+                              }
+                            },
+                            "meta" : {
+                              "globalKey" : "ed417a83"
+                            },
+                            "unadjustedDate" : "2021-08-11"
+                          },
+                          "meta" : {
+                            "globalKey" : "ed417a83"
+                          }
+                        },
+                        "firstRegularPeriodStartDate" : "2021-08-13",
+                        "meta" : {
+                          "externalKey" : "fixedCalcPeriodDates1",
+                          "globalKey" : "985b7b15"
+                        },
+                        "stubPeriodType" : "ShortInitial",
+                        "terminationDate" : {
+                          "adjustableDate" : {
+                            "dateAdjustments" : {
+                              "businessCenters" : {
+                                "businessCenter" : [ {
+                                  "value" : "JPTO"
+                                } ],
+                                "meta" : {
+                                  "globalKey" : "22da41"
+                                }
+                              },
+                              "businessDayConvention" : "MODFOLLOWING",
+                              "meta" : {
+                                "globalKey" : "365dde12"
+                              }
+                            },
+                            "meta" : {
+                              "globalKey" : "4737f425"
+                            },
+                            "unadjustedDate" : "2021-08-13"
+                          },
+                          "meta" : {
+                            "globalKey" : "4737f425"
+                          }
+                        }
+                      },
+                      "dayCountFraction" : {
+                        "value" : "ACT/360"
+                      },
+                      "payerReceiver" : {
+                        "payer" : "Party1",
+                        "receiver" : "Party2"
+                      },
+                      "paymentDates" : {
+                        "meta" : {
+                          "externalKey" : "paymentDates1",
+                          "globalKey" : "34732ee4"
+                        },
+                        "payRelativeTo" : "CalculationPeriodEndDate",
+                        "paymentDatesAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "MODFOLLOWING",
+                          "meta" : {
+                            "globalKey" : "365dde12"
+                          }
+                        },
+                        "paymentDaysOffset" : {
+                          "dayType" : "Business",
+                          "meta" : {
+                            "globalKey" : "ea4abf7e"
+                          },
+                          "period" : "D",
+                          "periodMultiplier" : 2
+                        },
+                        "paymentFrequency" : {
+                          "meta" : {
+                            "globalKey" : "aa"
+                          },
+                          "period" : "M",
+                          "periodMultiplier" : 3
+                        }
+                      },
+                      "priceQuantity" : {
+                        "meta" : {
+                          "globalKey" : "0"
+                        },
+                        "quantitySchedule" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "quantity-1"
+                          }
+                        }
+                      },
+                      "rateSpecification" : {
+                        "FixedRateSpecification" : {
+                          "meta" : {
+                            "globalKey" : "0"
+                          },
+                          "rateSchedule" : {
+                            "price" : {
+                              "address" : {
+                                "scope" : "DOCUMENT",
+                                "value" : "price-1"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta" : {
+                      "globalKey" : "8c0ecaf8"
+                    }
+                  }, {
+                    "InterestRatePayout" : {
+                      "calculationPeriodDates" : {
+                        "calculationPeriodDatesAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "MODFOLLOWING",
+                          "meta" : {
+                            "globalKey" : "365dde12"
+                          }
+                        },
+                        "calculationPeriodFrequency" : {
+                          "meta" : {
+                            "globalKey" : "17f57"
+                          },
+                          "period" : "M",
+                          "periodMultiplier" : 3,
+                          "rollConvention" : "13"
+                        },
+                        "effectiveDate" : {
+                          "adjustableDate" : {
+                            "dateAdjustments" : {
+                              "businessDayConvention" : "NONE",
+                              "meta" : {
+                                "globalKey" : "24a738"
+                              }
+                            },
+                            "meta" : {
+                              "globalKey" : "ed417a83"
+                            },
+                            "unadjustedDate" : "2021-08-11"
+                          },
+                          "meta" : {
+                            "globalKey" : "ed417a83"
+                          }
+                        },
+                        "firstRegularPeriodStartDate" : "2021-08-13",
+                        "meta" : {
+                          "externalKey" : "floatingCalcPeriodDates2",
+                          "globalKey" : "985b7b15"
+                        },
+                        "stubPeriodType" : "ShortInitial",
+                        "terminationDate" : {
+                          "adjustableDate" : {
+                            "dateAdjustments" : {
+                              "businessCenters" : {
+                                "businessCenter" : [ {
+                                  "value" : "JPTO"
+                                } ],
+                                "meta" : {
+                                  "globalKey" : "22da41"
+                                }
+                              },
+                              "businessDayConvention" : "MODFOLLOWING",
+                              "meta" : {
+                                "globalKey" : "365dde12"
+                              }
+                            },
+                            "meta" : {
+                              "globalKey" : "4737f425"
+                            },
+                            "unadjustedDate" : "2021-08-13"
+                          },
+                          "meta" : {
+                            "globalKey" : "4737f425"
+                          }
+                        }
+                      },
+                      "dayCountFraction" : {
+                        "value" : "ACT/365.FIXED"
+                      },
+                      "payerReceiver" : {
+                        "payer" : "Party2",
+                        "receiver" : "Party1"
+                      },
+                      "paymentDates" : {
+                        "meta" : {
+                          "externalKey" : "paymentDates2",
+                          "globalKey" : "34732ee4"
+                        },
+                        "payRelativeTo" : "CalculationPeriodEndDate",
+                        "paymentDatesAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "MODFOLLOWING",
+                          "meta" : {
+                            "globalKey" : "365dde12"
+                          }
+                        },
+                        "paymentDaysOffset" : {
+                          "dayType" : "Business",
+                          "meta" : {
+                            "globalKey" : "ea4abf7e"
+                          },
+                          "period" : "D",
+                          "periodMultiplier" : 2
+                        },
+                        "paymentFrequency" : {
+                          "meta" : {
+                            "globalKey" : "aa"
+                          },
+                          "period" : "M",
+                          "periodMultiplier" : 3
+                        }
+                      },
+                      "priceQuantity" : {
+                        "meta" : {
+                          "globalKey" : "0"
+                        },
+                        "quantitySchedule" : {
+                          "address" : {
+                            "scope" : "DOCUMENT",
+                            "value" : "quantity-2"
+                          }
+                        }
+                      },
+                      "rateSpecification" : {
+                        "FloatingRateSpecification" : {
+                          "meta" : {
+                            "globalKey" : "0"
+                          },
+                          "rateOption" : {
+                            "address" : {
+                              "scope" : "DOCUMENT",
+                              "value" : "InterestRateIndex-1"
+                            }
+                          }
+                        }
+                      },
+                      "resetDates" : {
+                        "calculationPeriodDatesReference" : {
+                          "externalReference" : "floatingCalcPeriodDates2",
+                          "globalReference" : "985b7b15"
+                        },
+                        "fixingDates" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "PRECEDING",
+                          "dateRelativeTo" : {
+                            "externalReference" : "resetDates2",
+                            "globalReference" : "6e05cb20"
+                          },
+                          "meta" : {
+                            "globalKey" : "bdccc0fe"
+                          },
+                          "period" : "D",
+                          "periodMultiplier" : 0
+                        },
+                        "meta" : {
+                          "externalKey" : "resetDates2",
+                          "globalKey" : "6e05cb20"
+                        },
+                        "resetDatesAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ {
+                              "value" : "JPTO"
+                            } ],
+                            "meta" : {
+                              "globalKey" : "22da41"
+                            }
+                          },
+                          "businessDayConvention" : "MODFOLLOWING",
+                          "meta" : {
+                            "globalKey" : "365dde12"
+                          }
+                        },
+                        "resetFrequency" : {
+                          "meta" : {
+                            "globalKey" : "aa"
+                          },
+                          "period" : "M",
+                          "periodMultiplier" : 3
+                        },
+                        "resetRelativeTo" : "CalculationPeriodEndDate"
+                      }
+                    },
+                    "meta" : {
+                      "globalKey" : "c99b03be"
+                    }
+                  } ]
+                },
+                "identifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/product-taxonomy"
+                    },
+                    "value" : "InterestRate:IRSwap:OIS"
+                  },
+                  "meta" : {
+                    "globalKey" : "2f961685"
+                  },
+                  "source" : "Other"
+                } ],
+                "meta" : {
+                  "globalKey" : "be6e485d"
+                },
+                "taxonomy" : [ {
+                  "primaryAssetClass" : {
+                    "value" : "InterestRate"
+                  }
+                }, {
+                  "source" : "CFI",
+                  "value" : {
+                    "name" : {
+                      "meta" : {
+                        "scheme" : "http://www.fpml.org/coding-scheme/external/product-classification/iso10962"
+                      },
+                      "value" : "SRHXXX"
+                    }
+                  }
+                }, {
+                  "productQualifier" : "InterestRate_IRSwap_FixedFloat_OIS",
+                  "source" : "ISDA"
+                } ]
+              },
+              "tradeDate" : {
+                "meta" : {
+                  "globalKey" : "3f2a0a"
+                },
+                "value" : "2021-08-10"
+              },
+              "tradeIdentifier" : [ {
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                    },
+                    "value" : "UTIIRIRSFIXEDFLO0183"
+                  }
+                } ],
+                "identifierType" : "UniqueTransactionIdentifier",
+                "issuer" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+                  },
+                  "value" : "DUMMYLEI010000000037"
+                },
+                "meta" : {
+                  "globalKey" : "4ad0179d"
+                }
+              } ],
+              "tradeLot" : [ {
+                "priceQuantity" : [ {
+                  "meta" : {
+                    "globalKey" : "c4540c94"
+                  },
+                  "price" : [ {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "price-1"
+                      } ]
+                    },
+                    "value" : {
+                      "perUnitOf" : {
+                        "currency" : {
+                          "value" : "JPY"
+                        }
+                      },
+                      "priceType" : "InterestRate",
+                      "unit" : {
+                        "currency" : {
+                          "value" : "JPY"
+                        }
+                      },
+                      "value" : 0.01
+                    }
+                  } ],
+                  "quantity" : [ {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-1"
+                      } ]
+                    },
+                    "value" : {
+                      "unit" : {
+                        "currency" : {
+                          "value" : "JPY"
+                        }
+                      },
+                      "value" : 1
+                    }
+                  } ]
+                }, {
+                  "meta" : {
+                    "globalKey" : "545b2066"
+                  },
+                  "observable" : {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "observable-1"
+                      } ]
+                    },
+                    "value" : {
+                      "Index" : {
+                        "InterestRateIndex" : {
+                          "meta" : {
+                            "location" : [ {
+                              "scope" : "DOCUMENT",
+                              "value" : "InterestRateIndex-1"
+                            } ]
+                          },
+                          "value" : {
+                            "FloatingRateIndex" : {
+                              "assetClass" : "InterestRate",
+                              "floatingRateIndex" : {
+                                "value" : "JPY-TONA-OIS Compound"
+                              },
+                              "identifier" : [ {
+                                "identifier" : {
+                                  "value" : "JPY-TONA-OIS Compound"
+                                },
+                                "identifierType" : "Other"
+                              } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "quantity" : [ {
+                    "meta" : {
+                      "location" : [ {
+                        "scope" : "DOCUMENT",
+                        "value" : "quantity-2"
+                      } ]
+                    },
+                    "value" : {
+                      "unit" : {
+                        "currency" : {
+                          "value" : "JPY"
+                        }
+                      },
+                      "value" : 1
+                    }
+                  } ]
+                } ]
+              } ]
+            },
+            "transferHistory" : [ {
+              "meta" : {
+                "globalKey" : "24a9a15"
+              },
+              "transfer" : {
+                "asset" : {
+                  "Cash" : {
+                    "identifier" : [ {
+                      "identifier" : {
+                        "value" : "JPY"
+                      },
+                      "identifierType" : "CurrencyCode"
+                    } ]
+                  }
+                },
+                "payerReceiver" : {
+                  "payerPartyReference" : {
+                    "externalReference" : "ClearingDCO",
+                    "globalReference" : "68d59e03"
+                  },
+                  "receiverPartyReference" : {
+                    "externalReference" : "party2",
+                    "globalReference" : "f1250e27"
+                  }
+                },
+                "quantity" : {
+                  "unit" : {
+                    "currency" : {
+                      "value" : "JPY"
+                    }
+                  },
+                  "value" : 337.3
+                },
+                "settlementDate" : {
+                  "dateAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ {
+                        "value" : "JPTO"
+                      } ],
+                      "meta" : {
+                        "globalKey" : "22da41"
+                      }
+                    },
+                    "businessDayConvention" : "MODFOLLOWING",
+                    "meta" : {
+                      "globalKey" : "365dde12"
+                    }
+                  },
+                  "unadjustedDate" : "2021-08-13"
+                },
+                "transferExpression" : {
+                  "priceTransfer" : "Upfront"
+                }
+              }
+            } ]
+          }
+        },
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "contractualParty" : [ {
+                "externalReference" : "party2",
+                "globalReference" : "f1250e27"
+              }, {
+                "externalReference" : "ClearingDCO",
+                "globalReference" : "68d59e03"
+              } ],
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement"
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "6ea93542"
+              }
+            } ]
+          }
+        }
+      } ],
+      "intent" : "ContractFormation",
+      "meta" : {
+        "globalKey" : "7c228f9e"
+      }
+    },
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "JF6472404"
+        }
+      } ],
+      "meta" : {
+        "globalKey" : "c7c56bc3"
+      }
+    } ],
+    "messageInformation" : {
+      "messageId" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+        },
+        "value" : "JF6472404"
+      },
+      "sentBy" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+        },
+        "value" : "F226TOH6YD6XJB17KS62"
+      },
+      "sentTo" : [ {
+        "value" : "DTCCUS"
+      } ]
+    },
+    "meta" : {
+      "globalKey" : "4cce9c8a"
+    },
+    "nextEvent" : {
+      "intent" : "Clearing"
+    },
+    "party" : [ {
+      "contactInformation" : {
+        "address" : [ {
+          "country" : {
+            "value" : "GB"
+          }
+        } ]
+      },
+      "meta" : {
+        "externalKey" : "ClearingDCO",
+        "globalKey" : "68d59e03"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "F226TOH6YD6XJB17KS62"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "cdfe6928"
+        }
+      } ]
+    }, {
+      "meta" : {
+        "externalKey" : "lchClearingBroker",
+        "globalKey" : "cdfe6928"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "F226TOH6YD6XJB17KS62"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "cdfe6928"
+        }
+      } ]
+    }, {
+      "contactInformation" : {
+        "address" : [ {
+          "country" : {
+            "value" : "HKG"
+          }
+        } ]
+      },
+      "meta" : {
+        "externalKey" : "party2",
+        "globalKey" : "f1250e27"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "DUMMYLEI010000000037"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "5151b003"
+        }
+      } ]
+    }, {
+      "meta" : {
+        "externalKey" : "clearingBroker1",
+        "globalKey" : "7db8beb1"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "G3SDK4EG3HH735DJJ456"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "7db8beb1"
+        }
+      } ]
+    } ],
+    "previousWorkflowStep" : {
+      "globalReference" : "61490b50"
+    },
+    "timestamp" : [ {
+      "dateTime" : "2021-08-11T03:00:00Z",
+      "qualification" : "eventCreationDateTime"
+    }, {
+      "dateTime" : "2021-08-11T03:00:00Z",
+      "qualification" : "executionDateTime"
+    } ]
+  },
+  "reportableInformation" : {
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "externalReference" : "ClearingDCO",
+        "globalReference" : "68d59e03"
+      },
+      "relatedParty" : [ {
+        "partyReference" : {
+          "externalReference" : "ClearingDCO",
+          "globalReference" : "68d59e03"
+        },
+        "role" : "ClearingOrganization"
+      }, {
+        "partyReference" : {
+          "externalReference" : "lchClearingBroker",
+          "globalReference" : "cdfe6928"
+        }
+      } ]
+    }, {
+      "partyReference" : {
+        "externalReference" : "party2",
+        "globalReference" : "f1250e27"
+      },
+      "relatedParty" : [ {
+        "partyReference" : {
+          "externalReference" : "clearingBroker1",
+          "globalReference" : "7db8beb1"
+        }
+      } ]
+    } ],
+    "jurisdictionInformation" : [ {
+      "partyInformation" : [ {
+        "esmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "UCIT" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "ClearingDCO",
+          "globalReference" : "68d59e03"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "esmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "f1250e27"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      }
+    }, {
+      "partyInformation" : [ {
+        "fcaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "UCIT" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "ClearingDCO",
+          "globalReference" : "68d59e03"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "fcaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "f1250e27"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "UKEMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "FCA"
+      }
+    }, {
+      "partyInformation" : [ {
+        "partyReference" : {
+          "externalReference" : "ClearingDCO",
+          "globalReference" : "68d59e03"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            },
+            "value" : "JF6472404"
+          }
+        }
+      }, {
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "f1250e27"
+        },
+        "reportingRole" : "ReportingParty",
+        "technicalRecordId" : {
+          "id" : {
+            "meta" : {
+              "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+            },
+            "value" : "JF6472404"
+          }
+        }
+      } ],
+      "regimeName" : {
+        "value" : "JFSA"
+      },
+      "supervisoryBody" : {
+        "value" : "JFSA"
+      }
+    }, {
+      "partyInformation" : [ {
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "ClearingDCO",
+          "globalReference" : "68d59e03"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "f1250e27"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "CSA"
+      },
+      "supervisoryBody" : {
+        "value" : "CA.AB.ASC"
+      }
+    }, {
+      "partyInformation" : [ {
+        "hkmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "UCIT" ]
+          },
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "ClearingDCO",
+          "globalReference" : "68d59e03"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "hkmaPartyInformation" : {
+          "corporateSector" : {
+            "financialSector" : [ "INVF" ]
+          },
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "f1250e27"
+        },
+        "reportingRole" : "ReportingParty"
+      } ],
+      "regimeName" : {
+        "value" : "HKMA"
+      },
+      "supervisoryBody" : {
+        "value" : "HKMA"
+      }
+    }, {
+      "partyInformation" : [ {
+        "partyReference" : {
+          "externalReference" : "ClearingDCO",
+          "globalReference" : "68d59e03"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "f1250e27"
+        }
+      } ],
+      "regimeName" : {
+        "value" : "DoddFrankAct"
+      },
+      "supervisoryBody" : {
+        "value" : "CFTC"
+      },
+      "transactionInformation" : {
+        "largeSizeTrade" : false
+      }
+    } ],
+    "originalExecutionTimestamp" : "2021-08-11T03:00:00Z"
+  },
+  "reportingSide" : {
+    "reportingCounterparty" : {
+      "externalReference" : "ClearingDCO",
+      "globalReference" : "68d59e03"
+    },
+    "reportingParty" : {
+      "externalReference" : "party2",
+      "globalReference" : "f1250e27"
+    }
+  }
+}

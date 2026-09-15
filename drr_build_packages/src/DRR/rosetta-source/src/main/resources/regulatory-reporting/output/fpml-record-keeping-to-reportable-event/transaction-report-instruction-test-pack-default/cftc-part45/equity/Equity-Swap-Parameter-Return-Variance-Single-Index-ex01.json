@@ -1,0 +1,84 @@
+{
+  "actionType" : "NEWT",
+  "allocationIndicator" : "UNAL",
+  "blockTradeElectionIndicator" : false,
+  "buyerIdentifier" : "DUMMYLEI010000000037",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI020000000085",
+  "counterparty1FederalEntityIndicator" : false,
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI010000000037",
+  "counterparty2FederalEntityIndicator" : false,
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "changeInNotionalAmount1" : 1000,
+    "largeNotionalOffFacilitySwapElectionIndicator" : false,
+    "mandatoryClearingIndicator" : false,
+    "messageID" : "DTDApproved2407119003DFCFTCRiskNewNewEquity2024-04-29T00:00Z",
+    "messageType" : "Trade State",
+    "physicalCommodityContractIndicator" : false,
+    "primaryAssetClass" : "Equity",
+    "sefOrDcmIndicator" : false,
+    "submittedForParty" : "DUMMYLEI020000000085",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC" ],
+    "tradeParty1TransactionID" : "EQUITYSWAPPARAMETE01",
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "version" : "CORE1.0"
+  },
+  "effectiveDate" : "2022-02-07",
+  "eventIdentifier" : "DTDApproved2407119003DFCFTCRiskNewNewEquity",
+  "eventTimestamp" : "2022-02-07T10:42:17Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2022-02-07T10:36:37Z",
+  "jurisdiction" : "CFTC",
+  "leg1" : {
+    "notionalAmount" : 1000,
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "DUMMYLEI020000000085",
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifier" : "DUMMYLEI010000000037",
+    "receiverIdentifierFormat" : "Lei",
+    "settlementCurrency" : "USD"
+  },
+  "leg2" : {
+    "payerIdentifierFormat" : "Lei",
+    "receiverIdentifierFormat" : "Lei",
+    "settlementCurrency" : "USD"
+  },
+  "nonReportable" : {
+    "buyerIdentifierFormat" : "Lei",
+    "counterparty1Format" : "Lei",
+    "counterparty2Format" : "Lei",
+    "deliveryType" : "CASH",
+    "executionVenueType" : "OffFacility",
+    "instrumentType" : "Swap",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "SettlementCurrency" : "USD"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "sellerIdentifierFormat" : "Lei",
+    "underlyingAssetType" : "Index"
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "postPricedSwapIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI020000000085",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "sellerIdentifier" : "DUMMYLEI020000000085",
+  "uniqueTransactionIdentifier" : "UTIEQUITYSWAPPAR0241"
+}

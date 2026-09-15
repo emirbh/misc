@@ -1,0 +1,70 @@
+{
+  "actionType" : "NEWT",
+  "blockTradeElectionIndicator" : false,
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty2" : "DUMMYLEI010000000037",
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "changeInNotionalAmount1" : 1,
+    "changeInNotionalAmount2" : 1,
+    "messageID" : "DUMMYLEI0100000000372024-04-29T00:00Z",
+    "messageType" : "RT",
+    "primaryAssetClass" : "ForeignExchange",
+    "sefOrDcmIndicator" : false,
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ],
+    "version" : "PPD1.0"
+  },
+  "effectiveDate" : "2020-01-01",
+  "eventTimestamp" : "2020-01-01T10:06:10Z",
+  "eventType" : "TRAD",
+  "exchangeRate" : 1,
+  "exchangeRateBasis" : "USD/JPY",
+  "executionTimestamp" : "2020-01-01T08:59:51Z",
+  "expirationDate" : "2021-08-16",
+  "leg1" : {
+    "notionalAmount" : 1,
+    "notionalCurrency" : "JPY",
+    "settlementCurrency" : "JPY"
+  },
+  "leg2" : {
+    "notionalAmount" : 1,
+    "notionalCurrency" : "USD"
+  },
+  "nonReportable" : {
+    "counterparty1Format" : "Lei",
+    "counterparty2Format" : "Lei",
+    "deliveryType" : "CASH",
+    "instrumentType" : "Forward",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH",
+          "OtherUnderlierID" : "USD",
+          "OtherUnderlierIDSource" : "CCY",
+          "UnderlierID" : "JPY",
+          "UnderlierIDSource" : "CCY"
+        },
+        "Header" : {
+          "AssetClass" : "Foreign_Exchange",
+          "InstrumentType" : "Forward",
+          "Level" : "UPI",
+          "UseCase" : "Forward"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "platformIdentifier" : "XOFF",
+  "postPricedSwapIndicator" : false,
+  "primeBrokerageTransactionIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIFXNDFEXCONFIR0245"
+}

@@ -1,0 +1,106 @@
+namespace drr.regulation.jfsa.rewrite
+version "${project.version}"
+
+import cdm.product.qualification.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+func MarginAmount_Validation:
+    inputs:
+        actionType MarginActionEnum (0..1)
+        collateralisationCategory CollateralisationType3Code (0..1)
+        amount number (0..1)
+        collateralisationCategories CollateralisationType3Code (1..*)
+    output:
+        result boolean (0..1)
+
+    set result:
+        if actionType = MarginActionEnum -> MARU
+                and collateralisationCategories any = collateralisationCategory
+        then amount exists and amount >= 0
+
+func GetUnderlyingIndexIndicator:
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+    output:
+        result IndexEnum (0..1)
+
+    set result:
+        ProductForEvent(transaction)
+            then extract
+                (if IsCreditSwaption or IsIRSwaption
+                then underlier.UnderlierForProduct as Product as NonTransferableProduct
+                else item)
+            then extract
+                underlier.UnderlierProductIdentifier(item, Name) -> identifier first
+                    default if IsFRA
+                        then EconomicTermsForProduct -> payout as InterestRatePayout -> rateSpecification as FloatingRateSpecification -> rateOption as FloatingRateIndex -> floatingRateIndex
+                            first
+                            to-string
+                        else if Qualify_BaseProduct_IRSwap(EconomicTermsForProduct)
+                        then EconomicTermsForProduct -> payout as InterestRatePayout -> rateSpecification as FloatingRateSpecification -> rateOption as FloatingRateIndex -> floatingRateIndex
+                            first
+                            to-string
+            then extract GetIndexIndicatorFromFloatingRate
+
+func FrequencyPeriodMultiplier_Validation:
+    inputs:
+        actionType ActionTypeEnum (1..1)
+        frequencyPeriod FrequencyPeriodEnum (0..1)
+        multiplier Max3Number (0..1)
+    output:
+        result boolean (0..1)
+
+    alias reportingAction:
+        [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> REVI] any = actionType
+
+    alias negativeValidationAction:
+        [ActionTypeEnum -> PRTO, ActionTypeEnum -> EROR, ActionTypeEnum -> TERM] any = actionType
+
+    set result:
+        if reportingAction and [FrequencyPeriodEnum -> YEAR, FrequencyPeriodEnum -> MNTH, FrequencyPeriodEnum -> WEEK, FrequencyPeriodEnum -> DAIL] any = frequencyPeriod
+        then multiplier exists and multiplier >= 0
+        else if reportingAction and frequencyPeriod = FrequencyPeriodEnum -> EXPI
+        then multiplier exists and multiplier = 1
+        else if negativeValidationAction and multiplier exists
+        then multiplier >= 0
+        else True
+
+func ReferencePeriodMultiplier_Validation:
+    inputs:
+        actionType ActionTypeEnum (1..1)
+        frequencyPeriod FrequencyPeriodEnum (0..1)
+        multiplier Max3Number (0..1)
+    output:
+        result boolean (0..1)
+
+    set result:
+        if [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> REVI] any = actionType
+                and [FrequencyPeriodEnum -> YEAR, FrequencyPeriodEnum -> MNTH, FrequencyPeriodEnum -> WEEK, FrequencyPeriodEnum -> DAIL] any = frequencyPeriod
+        then multiplier exists and multiplier >= 0
+
+func EventTimestamp_Validation:
+    inputs:
+        eventTimestamp zonedDateTime (0..1)
+        executionTimestamp zonedDateTime (0..1)
+        reportingTimestamp zonedDateTime (0..1)
+        expirationDate date (0..1)
+        earlyTerminationDate date (0..1)
+    output:
+        result boolean (0..1)
+
+    set result:
+        eventTimestamp exists
+            and executionTimestamp exists
+            and reportingTimestamp exists
+            and eventTimestamp >= executionTimestamp
+            and eventTimestamp <= reportingTimestamp
+            and (if expirationDate exists
+                then eventTimestamp -> date <= expirationDate
+                else True)
+            and (if earlyTerminationDate exists
+                then eventTimestamp -> date <= earlyTerminationDate
+                else True)

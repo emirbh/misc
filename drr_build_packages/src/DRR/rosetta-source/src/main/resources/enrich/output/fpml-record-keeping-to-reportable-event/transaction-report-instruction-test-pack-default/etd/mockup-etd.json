@@ -1,0 +1,534 @@
+{
+  "originatingWorkflowStep" : {
+    "action" : "New",
+    "businessEvent" : {
+      "after" : [ {
+        "meta" : {
+          "globalKey" : "6aa0faa2"
+        },
+        "state" : {
+          "positionState" : "Formed"
+        },
+        "trade" : {
+          "contractDetails" : {
+            "documentation" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "c6cc4d2b"
+              }
+            } ],
+            "meta" : {
+              "globalKey" : "c6cc4d2b"
+            }
+          },
+          "meta" : {
+            "globalKey" : "870a91ff"
+          },
+          "party" : [ {
+            "meta" : {
+              "externalKey" : "party1",
+              "globalKey" : "85947d9"
+            },
+            "name" : {
+              "value" : "Test Firm 1"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                },
+                "value" : "213800IV9PCAC364HN60"
+              },
+              "identifierType" : "LEI",
+              "meta" : {
+                "globalKey" : "365954bc"
+              }
+            } ]
+          }, {
+            "meta" : {
+              "externalKey" : "party2",
+              "globalKey" : "aca2bce8"
+            },
+            "name" : {
+              "value" : "Test Firm 2"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/exchange-id-MIC"
+                },
+                "value" : "XCBT"
+              },
+              "identifierType" : "MIC",
+              "meta" : {
+                "globalKey" : "4f8b54a"
+              }
+            } ]
+          }, {
+            "meta" : {
+              "externalKey" : "executionVenue",
+              "globalKey" : "4fe3710"
+            },
+            "partyId" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/mifir/extension-iso10383"
+                },
+                "value" : "XOFF"
+              },
+              "identifierType" : "MIC",
+              "meta" : {
+                "globalKey" : "4fe3710"
+              }
+            } ]
+          } ],
+          "partyRole" : [ {
+            "ownershipPartyReference" : {
+              "externalReference" : "party1",
+              "globalReference" : "85947d9"
+            },
+            "partyReference" : {
+              "externalReference" : "party2",
+              "globalReference" : "aca2bce8"
+            },
+            "role" : "Beneficiary"
+          }, {
+            "ownershipPartyReference" : {
+              "externalReference" : "party1",
+              "globalReference" : "85947d9"
+            },
+            "partyReference" : {
+              "externalReference" : "executionVenue",
+              "globalReference" : "4fe3710"
+            },
+            "role" : "ExecutionFacility"
+          }, {
+            "ownershipPartyReference" : {
+              "externalReference" : "party2",
+              "globalReference" : "aca2bce8"
+            },
+            "partyReference" : {
+              "externalReference" : "party2",
+              "globalReference" : "aca2bce8"
+            },
+            "role" : "Beneficiary"
+          } ],
+          "tradeDate" : {
+            "meta" : {
+              "globalKey" : "3f39d3"
+            },
+            "value" : "2023-07-19"
+          },
+          "tradeIdentifier" : [ {
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                },
+                "value" : "MOCKUPETDXMLXXXXXX00L11M10X9D8T7E6P5U4K3C2O1M0"
+              }
+            } ],
+            "identifierType" : "UniqueTransactionIdentifier",
+            "issuerReference" : {
+              "externalReference" : "party1",
+              "globalReference" : "85947d9"
+            },
+            "meta" : {
+              "globalKey" : "e7352e3a"
+            }
+          }, {
+            "assignedIdentifier" : [ {
+              "identifier" : {
+                "meta" : {
+                  "scheme" : "https://www.cmegroup.com/confluence/display/EPICSANDBOX/CME+STP+-+FIXML+Message+Samples#CMESTPFIXMLMessageSamples-FutureSample-Pit"
+                },
+                "value" : "100071"
+              }
+            } ],
+            "issuer" : {
+              "meta" : {
+                "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+              },
+              "value" : "9991234569"
+            },
+            "meta" : {
+              "globalKey" : "d48e835c"
+            }
+          } ]
+        }
+      } ],
+      "eventDate" : "2023-07-19",
+      "eventQualifier" : "ContractFormation",
+      "instruction" : [ {
+        "before" : {
+          "value" : {
+            "meta" : {
+              "globalKey" : "870a91ff"
+            },
+            "trade" : {
+              "contractDetails" : {
+                "documentation" : [ {
+                  "legalAgreementIdentification" : {
+                    "agreementName" : {
+                      "agreementType" : "MasterAgreement",
+                      "masterAgreementType" : {
+                        "value" : "ISDAMaster"
+                      }
+                    },
+                    "vintage" : 2002
+                  },
+                  "meta" : {
+                    "globalKey" : "c6cc4d2b"
+                  }
+                } ],
+                "meta" : {
+                  "globalKey" : "c6cc4d2b"
+                }
+              },
+              "meta" : {
+                "globalKey" : "870a91ff"
+              },
+              "party" : [ {
+                "meta" : {
+                  "externalKey" : "party1",
+                  "globalKey" : "85947d9"
+                },
+                "name" : {
+                  "value" : "Test Firm 1"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+                    },
+                    "value" : "213800IV9PCAC364HN60"
+                  },
+                  "identifierType" : "LEI",
+                  "meta" : {
+                    "globalKey" : "365954bc"
+                  }
+                } ]
+              }, {
+                "meta" : {
+                  "externalKey" : "party2",
+                  "globalKey" : "aca2bce8"
+                },
+                "name" : {
+                  "value" : "Test Firm 2"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/exchange-id-MIC"
+                    },
+                    "value" : "XCBT"
+                  },
+                  "identifierType" : "MIC",
+                  "meta" : {
+                    "globalKey" : "4f8b54a"
+                  }
+                } ]
+              }, {
+                "meta" : {
+                  "externalKey" : "executionVenue",
+                  "globalKey" : "4fe3710"
+                },
+                "partyId" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/mifir/extension-iso10383"
+                    },
+                    "value" : "XOFF"
+                  },
+                  "identifierType" : "MIC",
+                  "meta" : {
+                    "globalKey" : "4fe3710"
+                  }
+                } ]
+              } ],
+              "partyRole" : [ {
+                "ownershipPartyReference" : {
+                  "externalReference" : "party1",
+                  "globalReference" : "85947d9"
+                },
+                "partyReference" : {
+                  "externalReference" : "party2",
+                  "globalReference" : "aca2bce8"
+                },
+                "role" : "Beneficiary"
+              }, {
+                "ownershipPartyReference" : {
+                  "externalReference" : "party1",
+                  "globalReference" : "85947d9"
+                },
+                "partyReference" : {
+                  "externalReference" : "executionVenue",
+                  "globalReference" : "4fe3710"
+                },
+                "role" : "ExecutionFacility"
+              }, {
+                "ownershipPartyReference" : {
+                  "externalReference" : "party2",
+                  "globalReference" : "aca2bce8"
+                },
+                "partyReference" : {
+                  "externalReference" : "party2",
+                  "globalReference" : "aca2bce8"
+                },
+                "role" : "Beneficiary"
+              } ],
+              "tradeDate" : {
+                "meta" : {
+                  "globalKey" : "3f39d3"
+                },
+                "value" : "2023-07-19"
+              },
+              "tradeIdentifier" : [ {
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier"
+                    },
+                    "value" : "MOCKUPETDXMLXXXXXX00L11M10X9D8T7E6P5U4K3C2O1M0"
+                  }
+                } ],
+                "identifierType" : "UniqueTransactionIdentifier",
+                "issuerReference" : {
+                  "externalReference" : "party1",
+                  "globalReference" : "85947d9"
+                },
+                "meta" : {
+                  "globalKey" : "e7352e3a"
+                }
+              }, {
+                "assignedIdentifier" : [ {
+                  "identifier" : {
+                    "meta" : {
+                      "scheme" : "https://www.cmegroup.com/confluence/display/EPICSANDBOX/CME+STP+-+FIXML+Message+Samples#CMESTPFIXMLMessageSamples-FutureSample-Pit"
+                    },
+                    "value" : "100071"
+                  }
+                } ],
+                "issuer" : {
+                  "meta" : {
+                    "scheme" : "http://www.fpml.org/coding-scheme/external/issuer-identifier"
+                  },
+                  "value" : "9991234569"
+                },
+                "meta" : {
+                  "globalKey" : "d48e835c"
+                }
+              } ]
+            }
+          }
+        },
+        "primitiveInstruction" : {
+          "contractFormation" : {
+            "legalAgreement" : [ {
+              "legalAgreementIdentification" : {
+                "agreementName" : {
+                  "agreementType" : "MasterAgreement",
+                  "masterAgreementType" : {
+                    "value" : "ISDAMaster"
+                  }
+                },
+                "vintage" : 2002
+              },
+              "meta" : {
+                "globalKey" : "c6cc4d2b"
+              }
+            } ]
+          }
+        }
+      } ],
+      "intent" : "ContractFormation",
+      "meta" : {
+        "globalKey" : "f52dcd29"
+      }
+    },
+    "eventIdentifier" : [ {
+      "assignedIdentifier" : [ {
+        "identifier" : {
+          "value" : "00122941455512345BR777123456789"
+        }
+      } ],
+      "meta" : {
+        "globalKey" : "bc542d3b"
+      }
+    } ],
+    "messageInformation" : {
+      "messageId" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/technical-record-id"
+        },
+        "value" : "00122941455512345BR777123456789"
+      },
+      "sentBy" : {
+        "meta" : {
+          "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+        },
+        "value" : "213800IV9PCAC364HN60"
+      },
+      "sentTo" : [ {
+        "value" : "IFEU"
+      } ]
+    },
+    "meta" : {
+      "globalKey" : "ea8b6de5"
+    },
+    "party" : [ {
+      "meta" : {
+        "externalKey" : "party1",
+        "globalKey" : "85947d9"
+      },
+      "name" : {
+        "value" : "Test Firm 1"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+          },
+          "value" : "213800IV9PCAC364HN60"
+        },
+        "identifierType" : "LEI",
+        "meta" : {
+          "globalKey" : "365954bc"
+        }
+      } ]
+    }, {
+      "meta" : {
+        "externalKey" : "party2",
+        "globalKey" : "aca2bce8"
+      },
+      "name" : {
+        "value" : "Test Firm 2"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/exchange-id-MIC"
+          },
+          "value" : "XCBT"
+        },
+        "identifierType" : "MIC",
+        "meta" : {
+          "globalKey" : "4f8b54a"
+        }
+      } ]
+    }, {
+      "meta" : {
+        "externalKey" : "executionVenue",
+        "globalKey" : "4fe3710"
+      },
+      "partyId" : [ {
+        "identifier" : {
+          "meta" : {
+            "scheme" : "http://www.fpml.org/coding-scheme/external/mifir/extension-iso10383"
+          },
+          "value" : "XOFF"
+        },
+        "identifierType" : "MIC",
+        "meta" : {
+          "globalKey" : "4fe3710"
+        }
+      } ]
+    } ],
+    "previousWorkflowStep" : {
+      "globalReference" : "4b808e39"
+    },
+    "timestamp" : [ {
+      "dateTime" : "2023-07-19T14:44:58Z",
+      "qualification" : "eventCreationDateTime"
+    }, {
+      "dateTime" : "2023-07-19T14:44:58Z",
+      "qualification" : "executionDateTime"
+    } ]
+  },
+  "reportableInformation" : {
+    "confirmationMethod" : "NotConfirmed",
+    "globalPartyInformation" : [ {
+      "partyReference" : {
+        "externalReference" : "party1",
+        "globalReference" : "85947d9"
+      },
+      "relatedParty" : [ {
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "aca2bce8"
+        },
+        "role" : "Beneficiary"
+      }, {
+        "partyReference" : {
+          "externalReference" : "executionVenue",
+          "globalReference" : "4fe3710"
+        },
+        "role" : "ExecutionFacility"
+      } ]
+    }, {
+      "partyReference" : {
+        "externalReference" : "party2",
+        "globalReference" : "aca2bce8"
+      },
+      "relatedParty" : [ {
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "aca2bce8"
+        },
+        "role" : "Beneficiary"
+      } ]
+    } ],
+    "intragroup" : false,
+    "jurisdictionInformation" : [ {
+      "partyInformation" : [ {
+        "esmaPartyInformation" : {
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "Financial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "party1",
+          "globalReference" : "85947d9"
+        },
+        "reportingRole" : "ReportingParty"
+      }, {
+        "esmaPartyInformation" : {
+          "exceedsClearingThreshold" : true,
+          "natureOfParty" : "NonFinancial"
+        },
+        "mandatorilyClearable" : "ProductMandatoryButNotCpty",
+        "partyReference" : {
+          "externalReference" : "party2",
+          "globalReference" : "aca2bce8"
+        },
+        "reportingRole" : "Counterparty"
+      } ],
+      "regimeName" : {
+        "value" : "EMIR"
+      },
+      "supervisoryBody" : {
+        "value" : "ESMA"
+      },
+      "transactionInformation" : {
+        "reportableExecutionVenue" : {
+          "executionVenueType" : "OffFacility"
+        }
+      }
+    } ],
+    "originalExecutionTimestamp" : "2023-07-19T14:44:58Z"
+  },
+  "reportingSide" : {
+    "reportingCounterparty" : {
+      "externalReference" : "party1",
+      "globalReference" : "85947d9"
+    }
+  }
+}

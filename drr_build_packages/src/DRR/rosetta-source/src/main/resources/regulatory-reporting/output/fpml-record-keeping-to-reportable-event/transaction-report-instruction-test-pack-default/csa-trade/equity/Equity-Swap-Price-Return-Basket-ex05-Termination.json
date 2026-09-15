@@ -1,0 +1,103 @@
+{
+  "actionType" : "NEWT",
+  "basketConstituents" : [ {
+    "identifier" : "ABBV.N",
+    "numberOfUnits" : 0.1650618982,
+    "source" : "RIC"
+  }, {
+    "identifier" : "ADS.N",
+    "numberOfUnits" : 0.2164144888,
+    "source" : "RIC"
+  }, {
+    "identifier" : "CMCSA.O",
+    "numberOfUnits" : 0.2769371848,
+    "source" : "RIC"
+  }, {
+    "identifier" : "COHR.O",
+    "numberOfUnits" : 0.0110041265,
+    "source" : "RIC"
+  }, {
+    "identifier" : "NLSN.N",
+    "numberOfUnits" : 0.0751948647,
+    "source" : "RIC"
+  }, {
+    "identifier" : "TYL.N",
+    "numberOfUnits" : 0.0050435580,
+    "source" : "RIC"
+  }, {
+    "identifier" : "VRSK.O",
+    "numberOfUnits" : 0.0119211371,
+    "source" : "RIC"
+  }, {
+    "identifier" : "WMT.N",
+    "numberOfUnits" : 0.2200825309,
+    "source" : "RIC"
+  }, {
+    "identifier" : "ZBH.N",
+    "numberOfUnits" : 0.0183402109,
+    "source" : "RIC"
+  } ],
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI020000000085",
+  "counterparty2" : "DUMMYLEI010000000037",
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : true,
+  "dtccAdditionalFields" : {
+    "allocationType" : "UNAL",
+    "messageID" : "2230f227c5a641eda4634300cce2fee92024-04-29T00:00Z",
+    "messageTypeTransaction" : "Trade State",
+    "primaryAssetClass" : "Equity",
+    "submittedForParty" : "DUMMYLEI020000000085",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC", "CFTC" ],
+    "tradeParty2ReportingDestination" : [ "ESMA", "FCA", "JFSA", "HKMA" ],
+    "underlyingAsset" : [ {
+      "underlyingAssetIDType" : "Basket"
+    } ],
+    "versionTransaction" : "CORE1.0"
+  },
+  "effectiveDate" : "2021-12-09",
+  "eventIdentifier" : "2230f227c5a641eda4634300cce2fee9",
+  "eventTimestamp" : "2022-01-04T15:11:22.5767007Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2021-12-07T21:57:18Z",
+  "jurisdictionOfCounterparty1" : [ "NON-CA" ],
+  "jurisdictionOfCounterparty2" : [ "NON-CA" ],
+  "leg1" : {
+    "notionalAmount" : 100881730,
+    "notionalCurrency" : "USD",
+    "payerIdentifier" : "DUMMYLEI020000000085",
+    "receiverIdentifier" : "DUMMYLEI010000000037",
+    "totalNotionalQuantity" : 99999999999999999999.99999
+  },
+  "level" : "TCTN",
+  "masterAgreementType" : "ISDA",
+  "masterAgreementVersion" : 2002,
+  "nonReportable" : {
+    "deliveryType" : "CASH",
+    "executionVenueType" : "OffFacility",
+    "instrumentType" : "Swap",
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "CASH"
+        },
+        "Header" : {
+          "AssetClass" : "Equity",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI"
+        }
+      },
+      "requestType" : "ProductRequest"
+    },
+    "returnorPayoutTrigger" : "Contract_for_Difference_CFD_",
+    "underlyingAssetType" : "Index"
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "priceUnitOfMeasure" : "OTHR",
+  "reportSubmittingEntityID" : "DUMMYLEI020000000085",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIEQUITYSWAPPRI0154"
+}

@@ -1,0 +1,37 @@
+namespace drr.regulation.csa.rewrite.valuation
+version "${project.version}"
+
+import drr.base.*
+import drr.regulation.common.*
+import drr.regulation.csa.*
+import drr.regulation.csa.rewrite.trade.* as csaTrade
+import drr.standards.iosco.uti.*
+import drr.standards.iso.*
+
+corpus Dissemination Valuation
+
+report CSA Valuation in T+1
+  	from ValuationReportInstruction
+  	when ReportableProduct
+  	with type CSAValuationReport
+
+eligibility rule ReportableProduct from ValuationReportInstruction: <"When eligible for CSA">
+    [docReference CSA Valuation
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+// CSA definitions
+reporting rule UniqueTransactionIdentifier from ValuationReportInstruction: <"Unique Transaction Identifier (UTI)">
+    GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            csaTrade.SupervisoryBodyForCSA,
+            item -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True
+
+reporting rule UniqueProductIdentifier from ValuationReportInstruction: <"Unique Product Identifier">
+    extract valuationDetails -> tradeInformation -> uniqueProductIdentifier
+    then filter source = UPI
+    then only-element
+    then extract identifier

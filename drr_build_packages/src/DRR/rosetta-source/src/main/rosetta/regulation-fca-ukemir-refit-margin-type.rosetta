@@ -1,0 +1,804 @@
+namespace drr.regulation.fca.ukemir.refit.margin
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.base.util.datetime.*
+import drr.base.util.string.*
+import drr.enrichment.common.*
+import drr.enrichment.lei.*
+import drr.regulation.common.*
+import drr.regulation.common.margin.*
+import drr.regulation.fca.*
+import drr.regulation.fca.ukemir.*
+import drr.regulation.fca.ukemir.refit.*
+import drr.standards.iso.*
+
+type FCAUKEMIRMarginReport extends CommonMarginReport:
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "3.1 Reporting Timestamp"]
+        [docReference FCA UKEMIR table "3" dataElement "1" field "Reporting timestamp"
+            provision "Date and time of the submission of the report to the trade repository."]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "3.4 Counterparty 1 (Reporting counterparty)"]
+        [docReference FCA UKEMIR table "3" dataElement "4" field "Counterparty 1"
+            provision "Identifier of the counterparty to a derivative transaction who is fulfilling its reporting obligation via the report in question. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty."]
+    override counterparty2IdentifierType boolean (0..1)
+        [label "3.5 Counterparty 2 identifier type"]
+        [docReference FCA UKEMIR table "3" dataElement "5" field "Counterparty 2 identifier type"
+            provision "Indicator of whether LEI was used to identify the counterparty 2."]
+    override counterparty2 Min20Max72AlphaNumericText (0..1)
+        [label "3.6 Counterparty 2"]
+        [docReference FCA UKEMIR table "3" dataElement "6" field "Counterparty 2"
+            provision "Identifier of the second counterparty to a derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund and not the fund manager is reported as the counterparty."]
+    override collateralTimestamp zonedDateTime (0..1)
+        [label "3.7 Collateral timestamp"]
+        [docReference FCA UKEMIR table "3" dataElement "7" field "Collateral Timestamp"
+            provision "Date and time as of which the values of the margins are reported."]
+    override collateralPortfolioIndicator boolean (0..1)
+        [label "3.8 Collateral portfolio indicator"]
+        [docReference FCA UKEMIR table "3" dataElement "9" field "Collateral portfolio code"
+            provision "If collateral is reported on a portfolio basis, unique code assigned by counterparty 1 to the portfolio. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement or if no collateral is posted or received."]
+    override collateralPortfolioCode Max52AlphaNumericText (0..1)
+        [label "3.9 Collateral portfolio code"]
+        [docReference FCA UKEMIR table "3" dataElement "8" field "Collateral Portfolio Indicator"
+            provision "Indicator of whether the collateralisation was performed on a portfolio basis. Under portfolio, it is understood the set of transactions that are margined together (either on a net or a gross basis) rather than an individual transaction."]
+    override uti CollateralUTIString (0..1)
+        [label "3.10 UTI"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "10" field "UTI"
+            provision "Unique Trade Identifier as referred to in Article 7 of [PO please insert reference to C(2022) 3588]."]
+    override collateralisationCategory CollateralisationType3Code (0..1)
+        [label "3.11 Collateralisation category"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "11" field "Collateralisation category"
+            provision "Indicate whether a collateral agreement between the counterparties exists. This data element is provided for each transaction or each portfolio, depending on whether the collateralisation is performed at the transaction or portfolio level, and is applicable to both cleared and uncleared transactions."]
+    override initialMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.12 Initial margin posted by the counterparty 1 (pre-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "12" field "Initial margin posted by the counterparty 1 (pre-haircut)"
+            provision "Monetary value of initial margin that has been posted by counterparty 1, including any margin that is in transit and pending settlement. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction. This field refers to the total current value of the initial margin, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the CCP, i.e. committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by counterparty 1 and reported as one total value."]
+    override initialMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.13 Initial margin posted by the counterparty 1 (post-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "13" field "Initial margin posted by the counterparty 1 (post-haircut)"
+            provision "Monetary value of initial margin that has been posted by counterparty 1, including any margin that is in transit and pending settlement. If the collateralisation is performed at portfolio level, the initial margin posted relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin posted relates to such single transaction. This field refers to the total current value of the initial margin after application of the haircut (if applicable), rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include default fund contributions, nor collateral posted against liquidity provisions to the CCP, i.e. committed credit lines. If the initial margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by counterparty 1 and reported as one total value."]
+    override initialMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.14 Currency of the initial margins posted"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "14" field "Currency of the initial margins posted"
+            provision "Currency in which the initial margin posted is denominated. 
+                If the initial margin posted is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of posted initial margins."]
+    override variationMarginPostedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label  "3.15 Variation margin posted by the counterparty 1 (pre-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "15" field "Variation margin posted by the counterparty 1 (pre-haircut)"
+            provision "Value of the variation margin posted by counterparty 1, including the cash-settled margin and any margin that is in transit and pending settlement. Contingent variation margin is not included.
+            If the collateralisation is performed at portfolio level, the variation margin posted relates to the whole portfolio;
+            If the collateralisation is performed for single transactions, the variation margin posted relates to such single transaction.
+            This field refers to the total current value of the variation margin, cumulated since the first reporting of variation margins posted for the portfolio or transaction.
+            If the variation margin posted is denominated in more than one currency, those amounts are converted into a single currency chosen by counterparty 1 and reported as one total value."]
+    override variationMarginPostedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.16 Variation margin posted by the counterparty 1 (post-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "17" field "Currency of the variation margins posted"
+            provision "Currency in which the variation margin posted is denominated.
+            If the variation margin posted is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of posted variation margins."]
+    override variationMarginPostedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.17 Currency of the variation margins posted"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "17" field "Currency of the variation margins posted"
+            provision "Currency in which the variation margin posted is denominated.
+            If the variation margin posted is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of posted variation margins."]
+    override initialMarginCollectedByCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.20 Initial margin collected by the counterparty 1 (pre-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "20" field "Initial margin collected by the counterparty 1 (pre-haircut)"
+            provision "Monetary value of initial margin that has been collected by counterparty 1, including any margin that is in transit and pending settlement. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction. This field refers to the total current value of the initial margin, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the CCP as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by counterparty 1 and reported as one total value."]
+    override initialMarginCollectedByCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.21 Initial margin collected by the counterparty 1 (post-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "21" field "Initial margin collected by the counterparty 1 (post-haircut)"
+            provision "Monetary value of initial margin that has been collected by counterparty 1, including any margin that is in transit and pending settlement. If the collateralisation is performed at portfolio level, the initial margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the initial margin collected relates to such single transaction. This field refers to the total current value of the initial margin after application of the haircut, if applicable, rather than to its daily change. The data element refers both to uncleared and centrally cleared transactions. For centrally cleared transactions, the data element does not include collateral collected by the CCP as part of its investment activity. If the initial margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by counterparty 1 and reported as one total value."]
+    override initialMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.22 Currency of initial margin collected"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "22" field "Currency of initial margin collected"
+            provision "Currency in which the initial margin collected is denominated. If the initial margin collected is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of collected initial margins."]
+    override variationMarginCollectedByTheCounterparty1PreHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.23 Variation margin collected by the counterparty 1 (pre-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "23" field "Variation margin collected by the counterparty 1 (pre-haircut)"
+            provision "Monetary value of the variation margin collected by counterparty 1, including the cash-settled margin and any margin that is in transit and pending settlement. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin collected relates to such single transaction. This field refers to the total current value of the variation margin, cumulated since the first reporting of collected variation margins for the portfolio/transaction. If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by counterparty 1 and reported as one total value."]
+    override variationMarginCollectedByTheCounterparty1PostHaircut ShortFraction5DecimalNumber (0..1)
+        [label "3.24 Variation margin collected by the counterparty 1 (post-haircut)"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "24" field "Variation margin collected by the counterparty 1 (post-haircut)"
+            provision "Monetary value of the variation margin collected by counterparty 1, including the cash-settled margin, and any margin that is in transit and pending settlement. Contingent variation margin is not included. If the collateralisation is performed at portfolio level, the variation margin collected relates to the whole portfolio; if the collateralisation is performed for single transactions, the variation margin collected relates to such single transaction. This field refers to the total current value of the variation margin collected after application of the haircut, if applicable, cumulated since the first reporting of collected variation margins for the portfolio/transaction. If the variation margin collected is denominated in more than one currency, those amounts are converted into a single currency chosen by counterparty 1 and reported as one total value."]
+    override variationMarginCollectedByCounterparty1Currency ISOCurrencyCodeEnum (0..1)
+        [label "3.25 Currency of variation margin collected"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "25" field "Currency of variation margin collected"
+            provision "Currency in which the variation margin collected is denominated. If the variation margin collected is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of collected variation margins."]
+    override excessCollateralPostedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [label "3.18 Excess collateral posted by the counterparty 1"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "18" field "Excess collateral posted by the counterparty 1"
+            provision "Monetary value of any additional collateral posted by counterparty 1 separate and independent from initial and variation margin. This field refers to the total current value of the excess collateral before application of the haircut, if applicable, rather than to its daily change. Any initial or variation margin amount posted that exceeds the required initial margin or required variation margin, is reported as part of the initial margin posted or variation margin posted respectively rather than included as excess collateral posted. For centrally cleared transactions, excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+        [docReference ISDA EMEADataAndReporting date "20230206"
+            provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or FCA."]
+    override currencyOfTheExcessCollateralPosted string (0..1)
+        [label "3.19 Currency of the excess collateral posted"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "19" field "Currency of the excess collateral posted"
+            provision "Currency in which the excess collateral posted is denominated. If the excess collateral posted is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of posted excess collateral."]
+        [docReference ISDA EMEADataAndReporting date "20230206"
+            provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or FCA."]
+    override excessCollateralCollectedByTheCounterparty1 ShortFraction5DecimalNumber (0..1)
+        [label "3.26 Excess collateral collected by the counterparty 1"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "26" field "Excess collateral collected by the counterparty 1"
+            provision "Monetary value of any additional collateral collected by counterparty 1 separate and independent from initial and variation margin. This data element refers to the total current value of the excess collateral before application of the haircut, if applicable, rather than to its daily change. Any initial or variation margin amount collected that exceeds the required initial margin or required variation margin, is reported as part of the initial margin collected or variation margin collected respectively, rather than included as excess collateral collected. For centrally cleared transactions excess collateral is reported only to the extent it can be assigned to a specific portfolio or transaction."]
+        [docReference ISDA EMEADataAndReporting date "20230206"
+            provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or FCA."]
+    override currencyOfTheExcessCollateralCollected string (0..1)
+        [label "3.27 Currency of excess collateral collected"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "27" field "Currency of excess collateral collected"
+            provision "Currency in which the excess collateral collected is denominated. If the excess collateral is denominated in more than one currency, this data element reflects one of those currencies into which counterparty 1 has chosen to convert all the values of collected excess collateral."]
+        [docReference ISDA EMEADataAndReporting date "20230206"
+            provision "No scenarios identified, this field will not be populated until further guidance from the ROC and/or FCA."]
+    override actionType MarginActionEnum (0..1)
+        [label "3.28 Action Type"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "28" field "Action type"
+            provision "If collateral is reported on a portfolio basis, unique code assigned by counterparty 1 to the portfolio. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement or if no collateral is posted or received."]
+    override eventDate date (1..1)
+        [label "3.29 Event date"]
+        [docReference FCA UKEMIR Margin table "3" dataElement "29" field "Event date"
+            provision "Date on which the reportable event relating to the derivative contract and captured by the report took place. In the case of collateral update - the date for which the information contained in the report is provided."]
+    override reportSubmittingEntityID LEIIdentifier (1..1)
+        [label "3.2 Report Submitting entity ID"]
+        [docReference FCA UKEMIR table "3" dataElement "2" field "Report submitting entity ID"
+            provision "In the case where the entity responsible for reporting has delegated the submission of the report to a third party or to the other counterparty, this entity has to be identified in this field by a unique code. Otherwise the entity responsible for reporting should be identified in this field."]
+    override eventTimestamp zonedDateTime (0..1)
+        [ruleReference empty]
+    entityResponsibleForReporting LEIIdentifier (0..1)
+        [label "3.3 Entity responsible for reporting"]
+        [docReference FCA UKEMIR table "3" dataElement "3" field "Entity responsible for reporting"
+            provision "Where a financial counterparty is solely responsible, and legally liable, for reporting on behalf of both counterparties in accordance with Article 9(1a) of Regulation (EU) No 648/2012 and the non-financial counterparty does not decide to report itself the details of its OTC derivative contracts with the financial counterparty, the unique code identifying that financial counterparty. Where a management company is responsible, and legally liable, for reporting on behalf of an Undertaking for Collective Investment in Transferable Securities (UCITS) in accordance with Article 9(1b) of that Regulation, the unique code identifying that management company. Where an Alternative Investment Fund Manager (AIFM) is responsible, and legally liable, for reporting on behalf of an Alternative Investment Fund (AIF) in accordance with Article 9(1c) of that Regulation, the unique code identifying that AIFM. Where the trustees or managers of an occupational pension scheme are responsible, and legally liable, for reporting on its behalf in accordance with Article 9(1d) of that Regulation, the unique code identifying those trustees on managers. This field is applicable only to the OTC derivatives."]
+        [ruleReference EntityResponsibleForReporting]
+    nonReportable FCAUKEMIRNonReportableCollateralData (0..1)
+    executionAgentOfCounterparty1 LEIIdentifier (0..1)
+            [label "3.30 Execution Agent of Counterparty 1"]
+        [docReference FCA UKEMIR Margin dataElement "3.30" field "Execution agent"
+            provision "LEI identifying the entity that executed the transaction on behalf of the counterparty, and binds the counterparty to the terms of the transaction, but is not a broker."]
+            [ruleReference ExecutionAgentOfCounterparty1]
+    executionAgentOfCounterparty2 LEIIdentifier (0..1)
+            [label "3.30 Execution Agent of Counterparty 2"]
+        [docReference FCA UKEMIR Margin dataElement "3.30" field "Execution agent"
+            provision "LEI identifying the entity that executed the transaction on behalf of the counterparty, and binds the counterparty to the terms of the transaction, but is not a broker."]
+            [ruleReference ExecutionAgentOfCounterparty2]
+
+// UK EMIR Validation Rules
+    // Validation Rules
+    condition UKEMIR_VR_3001_01: <"Reporting timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "1" validationRule "Collateral"
+          provision "Common input format: YYYY-MM-DDThh:MM:SSZ."]
+        True
+
+    condition UKEMIR_VR_3001_02: <"Reporting timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "2" validationRule "Collateral"
+          provision "The reporting timestamp should be equal or earlier than the timestamp of the receipt of the report by the TR."]
+        // This field is set to True as this data is known post submission (same as for field 1.1 in Transaction report).
+        True
+
+    condition UKEMIR_VR_3001_03: <"Reporting timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "3" validationRule "Collateral"
+          provision "The date part of the timestamp cannot be earlier than the day preceding the date of the receipt of the report by the TR. The receipt of the report should be understood as the moment the report enters a TRs system."]
+        // This field is set to True as this data is known post submission (same as for field 1.1 in Transaction report).
+        True
+
+    condition UKEMIR_VR_3001_04: <"Reporting timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "4" validationRule "Collateral"
+          provision "The reporting timestamp should be equal or later than 2024-09-30."]
+        CompareDateTo(reportingTimestamp -> date, 2024, 9, 30) >= 0
+
+    condition UKEMIR_VR_3002_01: <"Report Submitting entity ID - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "2" validationRule "Margin"
+          provision "This field shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        API_GetLeiData(reportSubmittingEntityID) exists // where "valid" is understood as existing in the GLEIF
+
+    condition UKEMIR_VR_3002_02: <"Report Submitting entity ID - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "2" validationRule "Margin"
+          provision "The status of the LEI for all the above action types shall be 'Issued', 'Lapsed', 'Pending transfer' or 'Pending archival'.
+        Correct status of the LEI should be verified as of the date reported in the field 3.1 Reporting timestamp."]
+        [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> Lapsed, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival] contains API_GetLeiData(
+                reportSubmittingEntityID
+            ) -> registrationStatus
+
+    condition UKEMIR_VR_3002_03: <"Report Submitting entity ID - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "2" validationRule "Margin"
+          provision "The LEI shall pertain to a legal entity and not a branch."]
+        API_GetLeiData(reportSubmittingEntityID) -> generalCategory <> LeiGeneralCategoryEnum -> BRANCH
+
+    condition UKEMIR_VR_3003_01: <"Entity responsible for reporting">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "3" validationRule "Collateral"
+          provision "If the margin update pertains to a derivative or a portfolio of derivatives for which the field 2.41 is not populated with a MIC code of a trading venue that was a regulated market or a third-country market considered as equivalent to a regulated market at the time of the conclusion of the derivative, this field shall be populated and shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]    
+        [docReference ISDA EMEADataAndReporting date "20230710"
+          provision "ERR at margin level should be reported if at least one corresponding derivative has the ERR reported.
+        Scenario 1: Margin portfolio includes trades executed on and off venues (only OTC)                      -> ERR reported
+        Scenario 2: Margin portfolio includes trades executed on RM or 3rd country equivalent market (only ETD) -> ERR not reported
+        Scenario 3: Margin portfolio includes trades executed on RM and off venue trades (ETD and OTC)          -> ERR reported
+        Scenario 4: Margin portfolio includes trades executed on RM and non-equivalent markets (ETD and OTC)    -> ERR (the FC) reported
+        Note for scenario 4 (ESMA answer): For an FC facing an NFC-, the ERR would be different depending on ETD v OTC. Could report ERR as the FC to reflect the OTC portion of trades -> ERR (the FC) reported"]
+        // TODO: For OTC, ERR (Entity responsible for reporting), must always be reported according to the 4 scenarios identified above. To digitize the condition of the validation rule, more input data is requiered, to be revisited for ETD
+        if (GetOrFetchMicData(nonReportable -> enrichment -> micData, nonReportable -> mic)
+                extract
+                    marketCategory = MicMarketCategoryEnum -> RMKT
+                        or IsFCAThirdCountryEquivalentMarket(mic)) = False
+        then True
+
+    condition UKEMIR_VR_3003_02: <"Entity responsible for reporting">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "3" validationRule "Collateral"        
+          provision "The status of the LEI for all the above action types shall be 'Issued', 'Pending transfer' or 'Pending archival'.
+        Correct status of the LEI should be verified as of the date reported in the field 3.1 Reporting timestamp. Validation of the status should not be applied if 3.29 Event date is earlier than the day preceding the date reported in 3.1 Reporting timestamp."] 
+        [docReference ISDA TechnicalExecutionGroup date "20231006"
+          provision "The action types are not defined in the validation rule, currently the rule is applied for any action type."]
+        // if 3.29 EventDate < 3.1 ReportingTimestamp -> date -1day then True
+        // elif
+        // VR cannot be fully modelled as it requires data from the trade report
+        [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival] contains API_GetLeiData(
+                entityResponsibleForReporting
+            ) -> registrationStatus
+
+    condition UKEMIR_VR_3003_03: <"Entity responsible for reporting">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "3" validationRule "Collateral"
+          provision "The LEI shall pertain to a legal entity and not a branch."]
+        (GetOrFetchLeiData(empty, entityResponsibleForReporting) exists
+            and GetOrFetchLeiData(empty, entityResponsibleForReporting) -> entityCategory <> LeiCategoryEnum -> Branch)
+
+    condition UKEMIR_VR_3004_01: <"Counterparty 1 (Reporting counterparty) - Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "4" validationRule "Margin"
+          provision "This field shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        API_GetLeiData(counterparty1) exists // where "valid" is understood as existing in the GLEIF
+
+    condition UKEMIR_VR_3004_02: <"Counterparty 1 (Reporting counterparty) - Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "4" validationRule "Margin"
+          provision "The status of the LEI for all the above action types shall be 'Issued', 'Pending transfer' or 'Pending archival'.
+        Correct status of the LEI should be verified as of the date reported in the field 3.1 Reporting timestamp. Validation of the status should not be applied if 3.29 Event date is earlier than the day preceding the date reported in 3.1 Reporting timestamp."]
+        [docReference ISDA TechnicalExecutionGroup date "20230717"
+          provision "VR cannot be fully modelled as it requires data from the trade report"]
+        // if 3.29 EventDate < 3.1 ReportingTimestamp -> date -1day then True
+        // elif
+        [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival] contains API_GetLeiData(
+                counterparty1
+            ) -> registrationStatus
+
+    condition UKEMIR_VR_3004_03: <"Counterparty 1 (Reporting counterparty) - Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "4" validationRule "Margin"
+          provision "The LEI shall pertain to a legal entity and not a branch."]
+        API_GetLeiData(counterparty1) -> generalCategory <> LeiGeneralCategoryEnum -> BRANCH
+
+    condition UKEMIR_VR_3004_04: <"Counterparty 1 (Reporting counterparty) - Condition 4">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "4" validationRule "Margin"
+          provision "The value populated in this field when the trade is reported for the first time, shall not be modified in the subsequent reports."]
+        [docReference ISDA TechnicalExecutionGroup date "20230717"
+          provision "VR cannot be fully modelled as it requires data from the trade report"]
+        True
+
+    condition UKEMIR_VR_3005_01: <"Counterparty 2 identifier type">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "05" validationRule "Collateral"
+          provision "Shall only contain one of the following values: LEI (if this field is TRUE) or Natural Person Identifier (if this field is FALSE)."]
+        if counterparty2IdentifierType exists then True
+
+    condition UKEMIR_VR_3005_02: <"Counterparty 2 identifier type">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "05" validationRule "Collateral"
+          provision "The value populated in this field when the trade is reported for the first time, shall not be modified in the subsequent reports."]
+        [docReference ISDA TechnicalExecutionGroup 
+          provision "DRR being stateless, this cannot be modelled"]
+        True
+
+    condition UKEMIR_VR_3006_01: <"Counterparty 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "06" validationRule "Collateral"
+          provision "If an LEI has been reported to identify Counterparty 2: This field shall contain a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        if counterparty2IdentifierType = True // Counterparty 2 uses LEI
+        then API_GetLeiData(counterparty2) -> lei exists
+
+    condition UKEMIR_VR_3006_02: <"Counterparty 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "06" validationRule "Collateral"
+          provision "If an LEI has been reported to identify Counterparty 2: The status of the LEI for all the above action types shall be 'Issued', 'Lapsed', 'Pending transfer' or 'Pending archival'. Correct status of the LEI should be verified as of the date reported in the field 3.1 Reporting timestamp. Validation of the status should not be applied if 2.153 Event date is earlier than the day preceding the date reported in 1.1 Reporting timestamp. "]
+        [docReference ISDA TechnicalExecutionGroup 
+          provision "Extraction of trade attributes in margin is not feasible"]
+        if counterparty2IdentifierType = True // Counterparty 2 uses LEI
+        then [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> Lapsed, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival] any = API_GetLeiData(
+                    counterparty2
+                ) -> registrationStatus
+
+    condition UKEMIR_VR_3006_03: <"Counterparty 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "06" validationRule "Collateral"
+          provision "If an LEI has been reported to identify Counterparty 2: The LEI shall pertain to a legal entity and not a branch."]
+        if counterparty2IdentifierType = True // Counterparty 2 uses LEI
+        then (API_GetLeiData(counterparty2) -> entityStatus exists
+                and API_GetLeiData(counterparty2) -> entityCategory <> LeiCategoryEnum -> Branch)
+
+    condition UKEMIR_VR_3006_04: <"Counterparty 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "06" validationRule "Collateral"
+          provision "If an LEI has been reported to identify Counterparty 2: Fields 3.4 and 3.6 cannot contain the same LEI, unless this corresponds to the LEI of the CCP under field 2.33."]
+        [docReference ISDA TechnicalExecutionGroup 
+          provision "Extraction of trade attributes in margin is not feasible"]
+        if counterparty2IdentifierType = True // Counterparty 2 uses LEI
+        then counterparty1 <> counterparty2
+
+    condition UKEMIR_VR_3006_05: <"Counterparty 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "06" validationRule "Collateral"
+          provision "If a natural person identifier has been reported to identify Counterparty 2, this field shall contain up to 72 alphanumeric characters."]
+        if counterparty2IdentifierType = False // Natural Person
+        then counterparty2 exists
+
+    condition UKEMIR_VR_3006_06: <"Counterparty 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "06" validationRule "Collateral"
+          provision "If a natural person identifier has been reported to identify Counterparty 2, the first 20 characters of the client code should be equal to the LEI reported in the field 3.4 Counterparty 1 (Reporting counterparty)"]
+        if counterparty2IdentifierType = False // Natural Person
+        then SubString(counterparty2, 1, 20) = counterparty1
+
+    condition UKEMIR_VR_3006_07: <"Counterparty 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "06" validationRule "Collateral"
+          provision "In all cases, the value populated in this field when the trade is reported for the first time, shall not be modified in the subsequent reports."]
+        [docReference ISDA TechnicalExecutionGroup date "20231005"
+          provision "Cannot be implemented yet since Margin report has currently no access to trade report."]
+        True
+
+    condition UKEMIR_VR_3007_01: <"Collateral timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "01" validationRule "Collateral"
+          provision "This field shall be populated in a common input format: YYYY-MM-DDThh:mm:ssZ."]
+        True
+
+    condition UKEMIR_VR_3007_02: <"Collateral timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "07" validationRule "Collateral"
+          provision "The collateral timestamp shall  be equal or later than 2014-02-12."]
+        CompareDateTo(collateralTimestamp -> date, 2014, 2, 12) >= 0
+
+    condition UKEMIR_VR_3007_03: <"Collateral timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "07" validationRule "Collateral"
+          provision "The collateral timestamp shall be equal or earlier than 3.1 reporting timestamp."]
+        collateralTimestamp <= reportingTimestamp
+
+    condition UKEMIR_VR_3007_04: <"Collateral timestamp">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "07" validationRule "Collateral"
+          provision "The date part of the collateral timestamp shall be equal to 3.29 Event date."]
+        collateralTimestamp -> date = eventDate
+
+    condition UKEMIR_VR_3008_01: <"Collateral portfolio indicator">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "08" validationRule "Collateral"
+          provision "This field shall contain only one of the following values: 'TRUE' or 'FALSE'."]
+        if collateralPortfolioIndicator exists then True
+
+    condition UKEMIR_VR_3008_02: <"Collateral portfolio indicator">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "08" validationRule "Collateral"
+          provision "The value of this field shall be equal to the value of the field 2.26 for a given derivative."]
+        [docReference ISDA TechnicalExecutionGroup date "20231005"
+          provision "Cannot be implemented yet since Margin report has currently no access to trade report"]
+        True
+
+    condition UKEMIR_VR_3009_01: <"Collateral portfolio code">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "09" validationRule "Collateral"
+          provision "If field 3.8 is populated with 'TRUE', this field shall be populated and shall contain up to 52 alphanumerical characters. Special characters are not allowed. Otherwise, the field shall be left blank."]
+        if collateralPortfolioIndicator = True
+        then collateralPortfolioCode exists
+        else collateralPortfolioCode is absent
+
+    // This can not be modelled.
+    condition UKEMIR_VR_3009_02: <"Collateral portfolio code">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "09" validationRule "Collateral"
+          provision "The portfolio code should pertain to at least one previously reported derivative."]
+        True
+
+    condition UKEMIR_VR_3010_01: <"UTI">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "10" validationRule "Collateral"
+          provision "If field 3.8 is populated with 'FALSE', this field shall be populated and shall contain up to 52 alphanumerical characters. Four special characters are allowed ':', '.',  '-', '_' .  Special characters not allowed at the beginning or the end. Otherwise, the field shall be left blank."]
+        if collateralPortfolioIndicator exists and collateralPortfolioIndicator = False
+        then uti exists
+        else uti is absent
+
+    // This can not be modelled.
+    condition UKEMIR_VR_3010_02: <"UTI">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "10" validationRule "Collateral"
+          provision "The UTI should pertain to a previously reported derivative."]
+        True
+
+    condition UKEMIR_VR_3011_01: <"Collateralisation category">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "11" validationRule "Collateral"
+          provision "This field shall contain only one of the following values: 'UNCL', 'PRC1', 'PRC2', 'PRCL', 'OWC1', 'OWC2', 'OWP1', 'OWP2', or 'FLCL'. 4 alphabetical characters."]
+        if collateralisationCategory exists then True
+
+    condition UKEMIR_VR_3012_01: <"Initial margin posted by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "12" validationRule "Collateral"
+          provision "If field 3.11 is populated with  'OWC1', 'OWP1' or 'FLCL', this field shall be populated."]
+        if [CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginPostedByTheCounterparty1PreHaircut exists
+
+    condition UKEMIR_VR_3012_02: <"Initial margin posted by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "12" validationRule "Collateral"
+          provision "Up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        if initialMarginPostedByTheCounterparty1PreHaircut exists
+        then True
+
+    condition UKEMIR_VR_3013_01: <"Initial margin posted by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "12" validationRule "Collateral"
+          provision "If field 3.11 is populated with 'OWC1', 'OWP1' or 'FLCL', this field shall be populated."]
+        if [CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginPostedByTheCounterparty1PostHaircut exists
+
+    condition UKEMIR_VR_3013_02: <"Initial margin posted by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "12" validationRule "Collateral"
+          provision "Up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        if initialMarginPostedByTheCounterparty1PostHaircut exists
+        then True
+
+    condition UKEMIR_VR_3013_03: <"Initial margin posted by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "12" validationRule "Collateral"
+          provision "The value reported in 3.13 should be less than or equal to the value reported in 3.12"]
+        if initialMarginPostedByTheCounterparty1PostHaircut exists
+        then initialMarginPostedByTheCounterparty1PreHaircut >= initialMarginPostedByTheCounterparty1PostHaircut
+
+    condition UKEMIR_VR_3014_01: <"Currency of the initial margin posted">
+        [docReference FCA UKEMIR Margin ValidationRules table "3" dataElement "14" validationRule "Collateral"
+          provision "If field 3.11 is populated with  'OWC1', 'OWP1' or 'FLCL', this field shall be populated with ISO 4217 Currency Code (official list only), 3 alphabetical characters."]
+        if [CollateralisationType3Code -> OWC1, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginPostedByCounterparty1Currency exists
+
+    condition UKEMIR_VR_3014_02: <"Currency of the initial margins posted">
+        [docReference FCA UKEMIR Margin ValidationRules table "3" dataElement "14" validationRule "Collateral"
+          provision "The following special currency codes are not allowed: XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XXX."]
+        if initialMarginPostedByCounterparty1Currency exists
+        then // Note: "XEU" & "XFU" are not part of ISOCurrencyCodeEnum
+            [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX] all <> initialMarginPostedByCounterparty1Currency
+
+    condition UKEMIR_VR_3015_01: <"Variation margin posted by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "15" validationRule "Collateral"
+          provision "If field 3.11 is populated with 'PRCL',  'OWP1', 'OWP2' or 'FLCL', one of the fields 3.15 or 3.23 shall be populated with a positive value or zero while the other field shall be populated with zero."]
+        if [CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then (if (variationMarginCollectedByTheCounterparty1PreHaircut exists and variationMarginCollectedByTheCounterparty1PreHaircut = 0 and variationMarginPostedByTheCounterparty1PreHaircut exists and variationMarginPostedByTheCounterparty1PreHaircut >= 0)
+            then True
+            else if (variationMarginCollectedByTheCounterparty1PreHaircut exists and variationMarginCollectedByTheCounterparty1PreHaircut >= 0 and variationMarginPostedByTheCounterparty1PreHaircut exists and variationMarginPostedByTheCounterparty1PreHaircut = 0)
+            then True
+            else False)
+
+    condition UKEMIR_VR_3015_02: <"Variation margin posted by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "15" validationRule "Collateral"
+          provision "If field 3.11 is populated with 'PRC1' or 'OWC1', this field shall be populated with a positive value or zero."]
+        if [CollateralisationType3Code -> PRC1, CollateralisationType3Code -> OWC1] contains collateralisationCategory
+        then variationMarginPostedByTheCounterparty1PreHaircut exists and variationMarginPostedByTheCounterparty1PreHaircut >= 0
+
+    condition UKEMIR_VR_3015_03: <"Variation margin posted by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "16" validationRule "Collateral"
+          provision "When populated, this field will contain up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        if variationMarginPostedByTheCounterparty1PreHaircut exists
+        then variationMarginPostedByTheCounterparty1PreHaircut >= 0
+
+    condition UKEMIR_VR_3016_01: <"Variation margin posted by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "16" validationRule "Collateral"
+          provision "If field 3.15 is populated, this field shall be populated with a positive value or zero."]
+        if variationMarginPostedByTheCounterparty1PreHaircut exists
+        then variationMarginPostedByTheCounterparty1PostHaircut >= 0
+
+    condition UKEMIR_VR_3016_02: <"Variation margin posted by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "16" validationRule "Collateral"
+          provision "When populated, this field will contain up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        if variationMarginPostedByTheCounterparty1PostHaircut exists
+        then variationMarginPostedByTheCounterparty1PostHaircut >= 0
+
+    condition UKEMIR_VR_3016_03: <"Variation margin posted by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "16" validationRule "Collateral"
+          provision "The value reported in 3.16 should be less than or equal to the value reported in 3.15"]
+        variationMarginPostedByTheCounterparty1PostHaircut <= variationMarginPostedByTheCounterparty1PreHaircut
+
+    condition UKEMIR_VR_3017_01: <"Currency of the variation margins posted">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "17" validationRule "Collateral"
+          provision "If field 3.15 and 3.16 are populated, this field shall be populated with ISO 4217 Currency Code (official list only), 3 alphabetical characters."]
+        if variationMarginPostedByTheCounterparty1PreHaircut exists
+                and variationMarginPostedByTheCounterparty1PostHaircut exists
+        then variationMarginPostedByCounterparty1Currency exists
+
+    condition UKEMIR_VR_3017_02: <"Currency of the variation margins posted">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "17" validationRule "Collateral"
+          provision "The following special currency codes are not allowed: XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XXX."]
+        if variationMarginPostedByCounterparty1Currency exists
+        then // Note: "XEU" & "XFU" are not part of ISOCurrencyCodeEnum
+            [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX] all <> variationMarginPostedByCounterparty1Currency
+
+    condition UKEMIR_VR_3018_01: <"Excess collateral posted by the counterparty 1">
+        [docReference ESMA Margin table "3" dataElement "18" validationRule "Margin"
+          provision "When populated, this field will contain up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        // Field is always blank, validation rule not checked (see rationale reporting rule ExcessCollateralPostedByTheCounterparty1)
+        if True = False then True
+
+    condition UKEMIR_VR_3019_01: <"Currency of the excess collateral posted">
+        [docReference ESMA Margin table "3" dataElement "19" validationRule "Margin"
+          provision "If field 3.18 is populated, this field shall be populated with ISO 4217 Currency Code (official list only), 3 alphabetical characters. Otherwise, the field shall be left blank."]
+        // Field is always blank, validation rule not checked (see rationale reporting rule CurrencyOfTheExcessCollateralPosted)
+        if True = False then True
+
+    condition UKEMIR_VR_3019_02: <"Currency of the excess collateral posted">
+        [docReference ESMA Margin table "3" dataElement "19" validationRule "Margin"
+          provision "The following special currency codes are not allowed: XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XXX."]
+        // Field is always blank, validation rule not checked (see rationale reporting rule CurrencyOfTheExcessCollateralPosted)
+        if True = False then True
+
+    condition UKEMIR_VR_3020_01: <"Initial margin collected by the counterparty 1 (pre-haircut) Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "20" validationRule "Margin"
+          provision "If field 3.11 is populated with  'OWC2', 'OWP2' or 'FLCL', this field shall be populated."]
+        if [CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginCollectedByCounterparty1PreHaircut exists
+
+    condition UKEMIR_VR_3020_02: <"Initial margin collected by the counterparty 1 (pre-haircut) Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "20" validationRule "Margin"
+          provision "Up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        initialMarginCollectedByCounterparty1PreHaircut >= 0
+
+    condition UKEMIR_VR_3021_01: <"Initial margin collected by the counterparty 1 (post-haircut) Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "21" validationRule "Margin"
+          provision "If field 3.11 is populated with  'OWC2', 'OWP2' or 'FLCL', this field shall be populated."]
+        if [CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginCollectedByCounterparty1PostHaircut exists
+
+    condition UKEMIR_VR_3021_02: <"Initial margin collected by the counterparty 1 (post-haircut) Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "21" validationRule "Margin"
+          provision "Up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        initialMarginCollectedByCounterparty1PostHaircut >= 0
+
+    condition UKEMIR_VR_3021_03: <"Initial margin collected by the counterparty 1 (post-haircut) Condition 3">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "21" validationRule "Margin"
+          provision "The value reported in 3.21 should be less than or equal to the value reported in 3.20"]
+        initialMarginCollectedByCounterparty1PostHaircut <= initialMarginCollectedByCounterparty1PreHaircut
+
+    condition UKEMIR_VR_3022_01: <"Currency of initial margin collected Condition 1">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "22" validationRule "Margin"
+          provision "If field 3.11 is populated with  'OWC2', 'OWP2' or 'FLCL', this field shall be populated with ISO 4217 Currency Code (official list only), 3 alphabetical characters."]
+        if [CollateralisationType3Code -> OWC2, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then initialMarginCollectedByCounterparty1Currency exists
+
+    condition UKEMIR_VR_3022_02: <"Currency of initial margin collected Condition 2">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "22" validationRule "Margin"
+          provision "The following special currency codes are not allowed: XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XXX."]
+        // Following two country codes are historic "XEU" and "XFU" and are not part of ISOCurrencyCodeEnum
+        [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX] all <> initialMarginCollectedByCounterparty1Currency
+
+    condition UKEMIR_VR_3023_01: <"Variation margin collected by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "23" validationRule "Collateral"
+          provision "If field 3.11 is populated with 'PRCL', 'OWP1', 'OWP2' or 'FLCL', one of the fields 3.15 or 3.23 shall be populated with a positive value or zero while the other field shall be populated with zero."]
+        if [CollateralisationType3Code -> PRCL, CollateralisationType3Code -> OWP1, CollateralisationType3Code -> OWP2, CollateralisationType3Code -> FLCL] any = collateralisationCategory
+        then (variationMarginPostedByTheCounterparty1PreHaircut >= 0 and variationMarginCollectedByTheCounterparty1PreHaircut = 0)
+                or (variationMarginPostedByTheCounterparty1PreHaircut = 0 and variationMarginCollectedByTheCounterparty1PreHaircut >= 0)
+
+    condition UKEMIR_VR_3023_02: <"Variation margin collected by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "23" validationRule "Collateral"
+          provision "If field 3.11 is populated with 'PRC2' or 'OWC2', this field shall be populated with a positive value or zero."]
+        if [CollateralisationType3Code -> PRC2, CollateralisationType3Code -> OWC2] any = collateralisationCategory
+        then variationMarginCollectedByTheCounterparty1PreHaircut >= 0
+
+    condition UKEMIR_VR_3023_03: <"Variation margin collected by the counterparty 1 (pre-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "23" validationRule "Collateral"
+          provision "When populated, this field will contain up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        if variationMarginCollectedByTheCounterparty1PreHaircut exists
+        then True
+
+    condition UKEMIR_VR_3024_01: <"Variation margin collected by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "24" validationRule "Collateral"
+          provision "If field 3.23 is populated, this field shall be populated with a positive value or zero."]
+        if variationMarginCollectedByTheCounterparty1PreHaircut exists
+        then variationMarginCollectedByTheCounterparty1PostHaircut >= 0
+
+    condition UKEMIR_VR_3024_02: <"Variation margin collected by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "24" validationRule "Collateral"
+          provision "When populated, this field will contain up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        if variationMarginCollectedByTheCounterparty1PostHaircut exists
+        then True
+
+    condition UKEMIR_VR_3024_03: <"Variation margin collected by the counterparty 1 (post-haircut)">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "24" validationRule "Collateral"
+          provision "The value reported in 3.24 should  be less than or equal to the value reported in 3.23"]
+        variationMarginCollectedByTheCounterparty1PostHaircut <= variationMarginCollectedByTheCounterparty1PreHaircut
+
+    condition UKEMIR_VR_3025_01: <"Currency of variation margin collected">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "25" validationRule "Collateral"
+          provision "If field 3.23 and 3.24 are populated, this field shall be populated with ISO 4217 Currency Code (official list only), 3 alphabetical characters."]
+        if variationMarginCollectedByTheCounterparty1PreHaircut exists
+                and variationMarginCollectedByTheCounterparty1PostHaircut exists
+        then variationMarginCollectedByCounterparty1Currency exists
+
+    condition UKEMIR_VR_3025_02: <"Currency of variation margin collected">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "25" validationRule "Collateral"
+          provision "The following special currency codes are not allowed: XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XXX."]
+        // Following two country codes are historix "XEU" and "XFU" and are not part of ISOCurrencyCodeEnum
+        if variationMarginCollectedByCounterparty1Currency exists
+        then [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX] all <> variationMarginCollectedByCounterparty1Currency
+
+    condition UKEMIR_VR_3026_01: <"Excess collateral collected by the counterparty 1">
+        [docReference ESMA Margin table "3" dataElement "26" validationRule "Margin"
+          provision "When populated, this field will contain up to 25 numerical characters including up to 5 decimal places. The decimal mark is not counted as a numerical character. If populated, it shall be represented with a dot. Negative values are not allowed."]
+        // Field is alsways blank, validation rule not checked (see rationale reporting rule ExcessCollateralCollectedByTheCounterparty1)
+        if True = False then True
+
+    condition UKEMIR_VR_3027_01: <"Currency of the excess collateral posted">
+        [docReference ESMA Margin table "3" dataElement "27" validationRule "Margin"
+          provision "If field 3.26 is populated, this field shall be populated with ISO 4217 Currency Code (official list only), 3 alphabetical characters. Otherwise, the field shall be left blank."]
+        // Field is alsways blank, validation rule not checked (see rationale reporting rule CurrencyOfExcessCollateralCollected)
+        if True = False then True
+
+    condition UKEMIR_VR_3027_02: <"Currency of the excess collateral posted">
+        [docReference ESMA Margin table "3" dataElement "27" validationRule "Margin"
+          provision "The following special currency codes are not allowed: XAG, XAU, XBA, XBB, XBC, XBD, XDR, XEU, XFU, XPD, XPT, XXX."]
+        // Field is alsways blank, validation rule not checked (see rationale reporting rule CurrencyOfTheExcessCollateralPosted)
+        if True = False then True
+
+    condition UKEMIR_VR_3028_01: <"Action type">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "28" validationRule "Collateral"
+          provision "This field shall be populated and shall contain one of the following values:  'MARU' or 'CORR'. 4 alphabetical characters."]
+        if actionType exists then True
+
+    condition UKEMIR_VR_3029_01: <"Event date">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "29" validationRule "Collateral"
+          provision "This field shall be populated in a common input format: YYYY-MM-DD."]
+        True
+
+    condition UKEMIR_VR_3029_02: <"Event date">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "29" validationRule "Collateral"
+          provision "The event date should be equal or later than 2014-02-12."]
+        CompareDateTo(eventDate, 2014, 2, 12) >= 0
+
+    condition UKEMIR_VR_3029_03: <"Event date">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "29" validationRule "Collateral"
+          provision "The event date should be equal or earlier than the date part of the reporting timestamp (field 3.1)."]
+        // to do: the below does not compile
+        // eventDate <= reportingTimestamp -> date
+        True
+
+    condition UKEMIR_VR_3029_04: <"Event date">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "29" validationRule "Collateral"
+          provision "The event date shall be prior or equal to the Expiration date and -if populated- the Termination date reported of the given derivative or the derivative in the portfolio with the latest Expiration/Termination date."]
+    [docReference ISDA PeerReviewGroup date "20230710"
+          provision "It is not possible for Digitizers to provide Trade Event dates (Expiration and Termination Dates) in Margin reports since Margin systems do not interact with Trade systems. Hence this validation rule is passed as True"]
+        True
+
+    condition UKEMIR_VR_3029_05: <"Event date">
+        [docReference FCA UKEMIR ValidationRules table "3" dataElement "29" validationRule "Collateral"
+          provision "The event date shall be equal or later than the date part of the Execution timestamp reported for the given derivative or the derivative in the portfolio with the earliest Execution timestamp."]
+    [docReference ISDA PeerReviewGroup date "20230710"
+          provision "It is not possible for Digitizers to provide Trade Event dates (Expiration and Termination Dates) in Margin reports since Margin systems do not interact with Trade systems. Hence this validation rule is passed as True"]
+        True
+
+    condition UKEMIR_VR_3030_01: <"Execution Agent – Condition 1">
+        [docReference FCA UKEMIR Margin table "3" dataElement "30" validationRule "Margin"
+         provision "If two Execution Agents are reported or no Execution Agents are reported, Relationship Record must be omitted."]
+        if (executionAgentOfCounterparty1 exists and executionAgentOfCounterparty2 exists)
+                or (executionAgentOfCounterparty1 is absent
+                    and executionAgentOfCounterparty2 is absent)
+        then nonReportable -> relationshipRecord is absent
+
+    condition UKEMIR_VR_3030_02: <"Execution Agent – Condition 2">
+        [docReference FCA UKEMIR Margin table "3" dataElement "30" validationRule "Margin"
+         provision "If only one Execution Agent is reported, Relationship Record must be populated once and only once."]
+        if (executionAgentOfCounterparty1 exists
+                    and executionAgentOfCounterparty2 is absent)
+                or (executionAgentOfCounterparty1 is absent
+                    and executionAgentOfCounterparty2 exists)
+        then nonReportable -> relationshipRecord exists
+
+    condition UKEMIR_VR_3030_03: <"Execution Agent – Condition 3">
+        [docReference FCA UKEMIR Margin table "3" dataElement "30" validationRule "Margin"
+         provision "For action types 'MARU' and 'CORR', every reported Execution Agent will be a valid LEI included in the GLEIF database maintained by the Central Operating Unit."]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+        then ( // Only CP1
+            if executionAgentOfCounterparty1 exists
+                    and executionAgentOfCounterparty2 is absent
+            then GetOrFetchLeiData(
+                    nonReportable -> enrichment -> leiData,
+                    executionAgentOfCounterparty1
+                )
+                exists
+            // Only CP2
+            else if executionAgentOfCounterparty2 exists
+                    and executionAgentOfCounterparty1 is absent
+            then GetOrFetchLeiData(
+                    nonReportable -> enrichment -> leiData,
+                    executionAgentOfCounterparty2
+                )
+                exists
+            // Both CP1 and CP2
+            else if executionAgentOfCounterparty1 exists
+                    and executionAgentOfCounterparty2 exists
+            then GetOrFetchLeiData(
+                        nonReportable -> enrichment -> leiData,
+                        executionAgentOfCounterparty1
+                    )
+                    exists
+                    and GetOrFetchLeiData(
+                            nonReportable -> enrichment -> leiData,
+                            executionAgentOfCounterparty2
+                        )
+                        exists)
+
+    condition UKEMIR_VR_3030_04: <"Execution Agent – Condition 4">
+        [docReference FCA UKEMIR Margin table "3" dataElement "30" validationRule "Margin"
+         provision "The status of the LEI for all the above action types shall be 'Issued', 'Lapsed', 'Pending transfer' or 'Pending archival'. Correct status of the LEI should be verified as of the date reported in the field 3.1 Reporting timestamp.  Validation of the status should not be applied if 3.29 Event date is earlier than the day preceding the date reported in 3.1 Reporting timestamp. "]
+        if [MarginActionEnum -> MARU, MarginActionEnum -> CORR] any = actionType
+        then ( // Only CP1
+            if executionAgentOfCounterparty1 exists
+                    and executionAgentOfCounterparty2 is absent
+            then LeiRegistrationStatusIsValidForStatus(
+                        nonReportable -> enrichment -> leiData,
+                        executionAgentOfCounterparty1,
+                        eventDate,
+                        reportingTimestamp -> date,
+                        [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> Lapsed, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival]
+                    )
+            // Only CP2
+            else if executionAgentOfCounterparty2 exists
+                    and executionAgentOfCounterparty1 is absent
+            then LeiRegistrationStatusIsValidForStatus(
+                        nonReportable -> enrichment -> leiData,
+                        executionAgentOfCounterparty2,
+                        eventDate,
+                        reportingTimestamp -> date,
+                        [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> Lapsed, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival]
+                    )
+            // Both
+            else if executionAgentOfCounterparty1 exists
+                    and executionAgentOfCounterparty2 exists
+            then LeiRegistrationStatusIsValidForStatus(
+                        nonReportable -> enrichment -> leiData,
+                        executionAgentOfCounterparty1,
+                        eventDate,
+                        reportingTimestamp -> date,
+                        [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> Lapsed, LeiRegistrationStatusEnum -> PendingArchival]
+                    )
+                    and LeiRegistrationStatusIsValidForStatus(
+                            nonReportable -> enrichment -> leiData,
+                            executionAgentOfCounterparty2,
+                            eventDate,
+                            reportingTimestamp -> date,
+                            [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> Lapsed, LeiRegistrationStatusEnum -> PendingArchival]
+                        ))
+
+    condition UKEMIR_VR_3030_05: <"Execution Agent – Condition 5">
+        [docReference FCA UKEMIR Margin table "3" dataElement "30" validationRule "Margin"
+         provision "When populated, the LEI shall pertain to a legal entity and not a branch."]
+        ( // Only CP1
+        if executionAgentOfCounterparty1 exists and executionAgentOfCounterparty2 is absent
+        then (if GetOrFetchLeiData(
+                    nonReportable -> enrichment -> leiData,
+                    executionAgentOfCounterparty1
+                )
+                exists
+            then GetOrFetchLeiData(
+                        nonReportable -> enrichment -> leiData,
+                        executionAgentOfCounterparty1
+                    ) -> entityCategory <> LeiCategoryEnum -> Branch)
+        // Only CP2
+        else if executionAgentOfCounterparty2 exists
+                and executionAgentOfCounterparty1 is absent
+        then (if GetOrFetchLeiData(
+                    nonReportable -> enrichment -> leiData,
+                    executionAgentOfCounterparty2
+                )
+                exists
+            then GetOrFetchLeiData(
+                        nonReportable -> enrichment -> leiData,
+                        executionAgentOfCounterparty2
+                    ) -> entityCategory <> LeiCategoryEnum -> Branch)
+        // Both CP1 and CP2
+        else if executionAgentOfCounterparty1 exists
+                and executionAgentOfCounterparty2 exists
+        then ((if GetOrFetchLeiData(
+                    nonReportable -> enrichment -> leiData,
+                    executionAgentOfCounterparty1
+                )
+                exists
+            then GetOrFetchLeiData(
+                        nonReportable -> enrichment -> leiData,
+                        executionAgentOfCounterparty1
+                    ) -> entityCategory <> LeiCategoryEnum -> Branch)
+                and (if GetOrFetchLeiData(
+                            nonReportable -> enrichment -> leiData,
+                            executionAgentOfCounterparty2
+                        )
+                        exists
+                    then GetOrFetchLeiData(
+                                nonReportable -> enrichment -> leiData,
+                                executionAgentOfCounterparty2
+                            ) -> entityCategory <> LeiCategoryEnum -> Branch
+                    else True)))
+
+type FCAUKEMIRNonReportableCollateralData:
+    enrichment EnrichmentData (0..1) <"Populated by pre-enrichment process">
+        [nonReportable]
+        [ruleReference CollateralEnrichmentData]
+    mic string (0..1)
+        [ruleReference MICCollateral]
+    relationshipRecord string (0..1)
+        [nonReportable]

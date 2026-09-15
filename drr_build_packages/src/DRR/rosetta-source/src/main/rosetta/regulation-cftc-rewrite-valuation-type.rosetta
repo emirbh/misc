@@ -1,0 +1,271 @@
+namespace drr.regulation.cftc.rewrite.valuation
+version "${project.version}"
+
+import cdm.base.*
+import cdm.base.staticdata.asset.common.*
+
+import drr.base.*
+import drr.regulation.cftc.*
+import drr.regulation.cftc.rewrite.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+type CFTCValuationReport extends valuation.CommonValuationReport:
+    [rootType]
+    override counterparty1 LEIIdentifier (1..1)
+        [label "13 Counterparty 1 (reporting counterparty)"]
+        [docReference CFTC Valuation appendix "1" dataElement "13" field "Counterparty 1 (reporting counterparty)"
+            provision "Identifier of the counterparty to an OTC derivative transaction who is fulfilling its reporting obligation via the report in question. In jurisdictions where both parties must report the transaction, the identifier of Counterparty 1 always identifies the reporting counterparty. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund, and not the fund manager is reported as the counterparty."]
+        [docReference CFTC Valuation appendix "1" dataElement "13" field "Counterparty 1 (reporting counterparty)" footnote "24"
+            provision "Throughout this Technical Specification, references to 'OTC derivatives' in CDE data elements should be read to mean swaps."]
+        [docReference CFTC Valuation appendix "1" dataElement "13" field "Counterparty 1 (reporting counterparty)" footnote "25"
+            provision " ROC Statement  Individuals Acting in a Business Capacity, ROC Statement - Individuals Acting in a Business Capacity."]
+    override counterparty2 Min20Max72AlphaNumericText (1..1)
+        [label "14 Counterparty 2"]
+        [docReference CFTC Valuation appendix "1" dataElement "14" field "Counterparty 2"
+            provision "Identifier of the second counterparty to an OTC derivative transaction. In the case of an allocated derivative transaction executed by a fund manager on behalf of a fund, the fund, and not the fund manager is reported as the counterparty."]
+        [docReference CFTC Valuation appendix "1" dataElement "14" field "Counterparty 2" footnote "26"
+            provision "In the case of a swap transaction for pre-allocated block executed by a fund manager on behalf of a fund, the fund manager is reported as the counterparty."]
+        [docReference CFTC Valuation appendix "1" dataElement "14" field "Counterparty 2" footnote "27"
+            provision "Only one counterparty should be reported. In cases where multiple counterparties are legally responsible as the second counterparty (such as an obligated group, for example), report only one of the counterparties and use the
+            same counterparty for all continuation data and lifecycle events."]
+        [docReference CFTC Valuation appendix "1" dataElement "14" field "Counterparty 2" footnote "28"
+            provision "ROC Statement  Individuals Acting in a Business Capacity, ROC Statement - Individuals Acting in a Business Capacity"]
+        [docReference CFTC Valuation appendix "1" dataElement "14" field "Counterparty 2" footnote "29"
+            provision "Throughout this Technical Specification, Privacy Law Identifier (PLI) has been added as an allowable value for all Counterparty 2 (#14) associated data elements"]
+    override counterparty2IdentifierSource Max4Text (1..1)
+        [label "15 Counterparty 2 identifier source"]
+        [docReference CFTC Valuation appendix "1" dataElement "15" field "Counterparty 2 Identifier Source"
+            provision "Source used to identify the Counterparty 2."]
+        [docReference CFTC Valuation appendix "1" dataElement "15" field "Counterparty 2 Identifier Source" footnote "30"
+            provision "Throughout this Technical Specification, for references to 'Privacy Law Identifiers', refer to DMO Letter No. 17-16, http://www.cftc.gov/idc/groups/public/@lrlettergeneral/documents/letter/17-16.pdf"]
+    override reportSubmittingEntityID string (1..1)
+        [label "22 Submitter identifier"]
+        [docReference CFTC Valuation appendix "1" dataElement "22" field "Submitter Identifier"
+            provision "Identifier of the entity submitting the data to the swap data repository (SDR). The Submitter identifier will be the same as the reporting counterparty or swap execution facility (SEF), unless they use a third-party service provider to submit the data to SDR in which case, report the identifier of the third-party service provider."]
+        [docReference ISDA PeerReviewGroup date "20220309"
+            provision "Check whether trade is executed in a SEF first. If it is, SEF is obliged to be the Submitter. Then check for Reporting Party and Data Submitter."]
+    override  actionType ActionTypeEnum (1..1)
+        [label "26 Action type"]
+        [docReference CFTC Valuation appendix "1" dataElement "26" field "Action Type"
+            provision "Type of action taken on the swap transaction or type of end-of-day reporting. Actions may include, but are not limited to, new, modify, correct, error, terminate, revive, transfer out, valuation, and collateral.
+                - New: An action that reports a new swap transaction. It applies to the first message relating to a new USI or UTI.
+                - Modify: An action that modifies the state of a previously submitted transaction (e.g., credit event) or changes a term of a previously submitted transaction due to a newly negotiated modification (amendment) or updates previously missing information (e.g., post price swap). It does not include correction of a previous transaction.
+                - Correct: An action that corrects erroneous data of a previously submitted transaction.
+                - Error: An action of cancellation of a wrongly submitted entire transaction in case it never came into existence or was not subject to part 43/part 45 reporting requirements but was reported erroneously.
+                - Terminate: An action that closes an existing transaction because of a new event (e.g., Compression, Novation). This does not apply to transactions that terminate at contractual maturity date.
+                - Revive: An action that reinstates a swap transaction that was reported as error or terminated by mistake.
+                - Transfer out: An action that transfers swap transaction from one SDR to another SDR (change of swap data repository).
+                - Valuation: An update to valuation data. There will be no corresponding Event type.
+                - Collateral: An update to collateral margin data. There will be no corresponding Event type. Refer to appendix F for event model sample scenarios"]
+        [docReference CFTC Valuation appendix "1" dataElement "26" field "Action Type" footnote "33"
+            provision "Only one Action type value is allowed per submission. Multiple Action type values should not be submitted in one transaction report. For example, if a data element needs to be corrected on a previously submitted transaction that is getting terminated, the Correct (CORR) value should be submitted as a separate submission prior to the submission of the Terminate (TERM) transaction."]
+    override reportingTimestamp zonedDateTime (1..1)
+        [label "97 Reporting timestamp"]
+        [docReference CFTC Valuation appendix "1" dataElement "97" field "Reporting Timestamp"
+            provision "Date and time of the submission of the report to the trade repository"]
+        [docReference CFTC Valuation appendix "1" dataElement "97" field "Reporting Timestamp" footnote "74"
+            provision "Reporting timestamp (#97) is recorded and reported by the submitter."]
+    override uniqueTransactionIdentifier UTIdentifier (1..1)
+        [label "103 Unique Transaction Identifier (UTI)"]
+        [docReference CFTC Valuation appendix "1" dataElement "103" field "Unique Transaction Identifier (UTI)"
+            provision "A unique identifier assigned to all swap transactions which identifies the swap uniquely throughout its lifecycle and used for all recordkeeping and all swap data reporting pursuant to para 45.5. A UTI is comprised of the LEI of the generating entity and a unique alphanumeric code."]
+        [docReference ISDA PeerReviewGroup date "20220309"
+            provision "Rule does not model UTI > USI priority defined in CFTC specification."]
+        [docReference ISDA PeerReviewGroup date "20220309"
+            provision "Firms do expect to report USI/UTI in both formats: as a single identifier field as well as using Issuer + identifier. The functional model needs to handle both scenarios."]
+        [docReference ISDA EUUKNAPeerReviewGroup date "20251203" field "Unique Transaction Identifier (UTI)"
+            provision "It has been agreed to represent the transaction identifier under reportable information, in addition to the CDM trade, because the UTI reported can vary across jurisdictions. Each regime may apply different rules for generation, formatting, and lifecycle interpretation."]
+        [ruleReference UniqueTransactionIdentifier]
+    override delta ShortFraction5DecimalNumber (0..1)
+        [label "109 Delta"]
+        [docReference CFTC Valuation appendix "1" dataElement "109" field "Delta"
+            provision "The ratio of the absolute change in price of an OTC derivative transaction to the change in price of the underlier, at the time a new transaction is reported or when a change in the notional amount is reported."]
+        [docReference CFTC Valuation appendix "1" dataElement "109" field "Delta" footnote "77"
+            provision "Delta must be reported daily regardless of whether there is a change in the value since the last reporting."]
+    override valuationAmount ShortFraction5DecimalNumber (1..1)
+        [label "110 Valuation Amount"]
+        [docReference CFTC Valuation appendix "1" dataElement "110" field "Valuation Amount"
+            provision "Current value of the outstanding contract. Valuation amount is expressed as the exit cost of the contract or components of the contract, i.e., the price that would be received to sell the contract (in the market in an orderly transaction at the valuation date)."]
+        [docReference CFTC Valuation appendix "1" dataElement "110" field "Valuation Amount" footnote "78"
+            provision "Valuation amount must be reported daily regardless of whether there is a change in the value since the last reporting."]
+    override valuationCurrency ISOCurrencyCodeEnum (1..1)
+        [label "111 Valuation Currency"]
+        [docReference CFTC Valuation appendix "1" dataElement "111" field "Valuation Currency"
+            provision "Currency in which the valuation amount is denominated."]
+    override valuationMethod ValuationType1Code (1..1)
+        [label "112 Valuation Method"]
+        [docReference CFTC Valuation appendix "1" dataElement "112" field "Valuation Method"
+            provision "Source and method used for the valuation of the transaction by the reporting counterparty. If at least one valuation input is used that is classified as mark-to-model in appendix D, then the whole valuation is classified as mark-to-model. If only inputs are used that are classified as mark-to-market in appendix D, then the whole valuation is classified as mark-to-market."]
+    override valuationTimestamp zonedDateTime (1..1)
+        [label "113 Valuation Timestamp"]
+        [docReference CFTC Valuation appendix "1" dataElement "113" field "Valuation Timestamp"
+            provision "Date and time of the last valuation marked to market, provided by the central counterparty (CCP) or calculated using the current or last available market price of the inputs. If for example a currency exchange rate is the basis for a transactions valuation, then the valuation timestamp reflects the moment in time that exchange rate was current."]
+        [docReference CFTC Valuation appendix "1" dataElement "113" field "Valuation Timestamp" footnote "79"
+            provision "Reported by the derivatives clearing organization (DCO) for cleared swaps and by the swap dealer for uncleared swaps"]
+        [docReference CFTC Valuation appendix "1" dataElement "113" field "Valuation Timestamp" footnote "80"
+            provision "The timestamp portion is not required to be represented for Valuation timestamp. The format must be reported as YYYY-MM-DD."]
+    override nextFloatingReferenceResetDateLeg1 date (0..1)
+        [label "106 Next Floating Reference Reset Date-Leg 1"]
+        [docReference CFTC Valuation appendix "1" dataElement "106" field "Next Floating Reference Reset Date"
+            provision "The nearest date in the future that the floating reference resets on."]
+    override nextFloatingReferenceResetDateLeg2 date (0..1)
+        [label "106 Next Floating Reference Reset Date-Leg 2"]
+        [docReference CFTC Valuation appendix "1" dataElement "106" field "Next Floating Reference Reset Date"
+            provision "The nearest date in the future that the floating reference resets on."]
+    override initialMarginCollateralPortfolioCode Max52AlphaNumericText (1..1)
+        [label "116 Initial Margin Collateral Portfolio Code"]
+        [docReference CFTC Valuation appendix "1" dataElement "116" field "Initial Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate initial margin of a set of open swap transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [docReference CFTC Valuation appendix "1" dataElement "116" field "Initial Margin Collateral Portfolio Code" footnote "82"
+            provision "If collateralization was performed on a transaction level basis, 'TRANSACTION-LEVEL' is accepted. “NOTAPPLICABLE” is accepted if (i) collateralization was performed on a portfolio basis and there is no IM portfolio code, or (ii) it is a submission from a DCO. "]
+        [docReference CFTC Valuation appendix "1" dataElement "116" field "Initial Margin Collateral Portfolio Code" footnote "83"
+            provision " The M in the Part 43/45 Asset Class column is for collateral and valuation reporting only."]
+    override variationMarginCollateralPortfolioCode Max52AlphaNumericText (1..1)
+        [label "124 Variation Margin Collateral Portfolio Code"]
+        [docReference CFTC Valuation appendix "1" dataElement "124" field "Variation Margin Collateral Portfolio Code"
+            provision "If collateral is reported on a portfolio basis, a unique code assigned by the reporting counterparty to the portfolio that tracks the aggregate variation margin related to a set of open swap transactions. This data element is not applicable if the collateralisation was performed on a transaction level basis, or if there is no collateral agreement, or if no collateral is posted or received. The portfolio code is required for both collateral reporting and valuation reporting in order to link the 2 data sets."]
+        [docReference CFTC Valuation appendix "1" dataElement "124" field "Variation Margin Collateral Portfolio Code" footnote "90"
+            provision "If collateralization was performed on a transaction level basis, 'TRANSACTION-LEVEL' is accepted. “NOTAPPLICABLE” is accepted if (i) collateralization was performed on a portfolio basis and there is no VM portfolio code, or (ii) it is a submission from a DCO."]
+        [docReference CFTC Valuation appendix "1" dataElement "124" field "Variation Margin Collateral Portfolio Code" footnote "91"
+            provision "The 'M' in the 'Part 43/45 Asset Class' column is for collateral and valuation reporting only."]
+    override lastFloatingReferenceValueLeg1 Max11Number (0..1)
+        [label "107 Last Floating Reference Vale-Leg 1"]
+        [docReference CFTC Valuation appendix "1" dataElement "107" field "Last Floating Reference Value"
+            provision "The most recent sampling of the value of the floating reference for to determine cash flow. Ties to Last floating reference reset date data element."]
+    override lastFloatingReferenceValueLeg2 Max11Number (0..1)
+        [label "107 Last Floating Reference Vale-Leg 2"]
+        [docReference CFTC Valuation appendix "1" dataElement "107" field "Last Floating Reference Value"
+            provision "The most recent sampling of the value of the floating reference for to determine cash flow. Ties to Last floating reference reset date data element."]
+    override lastFloatingReferenceResetDateLeg1 date (0..1)
+        [label "108 Last floating reference reset date-Leg 1"]
+        [docReference CFTC Valuation appendix "1" dataElement "108" field "Last floating reference reset date"
+            provision "The date of the most recent sampling of the floating reference to determine cash flow. Ties to Last floating reference value data element."]
+    override lastFloatingReferenceResetDateLeg2 date (0..1)
+        [label "108 Last floating reference reset date-Leg 2"]
+        [docReference CFTC Valuation appendix "1" dataElement "108" field "Last floating reference reset date"
+            provision "The date of the most recent sampling of the floating reference to determine cash flow. Ties to Last floating reference value data element."]
+    override counterparty2IdentifierType boolean (0..1)
+        [ruleReference empty]
+    override entityResponsibleForReporting LEIIdentifier (0..1)
+        [ruleReference empty]
+    override  eventDate ISODate (0..1)
+        [ruleReference empty]
+    dtccValuationFields dtcc.valuation.DTCCAdditionalValuationFields (0..1)
+    uniqueProductIdentifier Max52AlphaNumericText (1..1)
+        [label "87 Unique product identifier"]
+        [docReference CFTC Valuation appendix "1" dataElement "87" field "Unique Product Identifier"
+            provision "A unique set of characters that represents a particular OTC derivative. The Commission will designate a UPI pursuant to part 45.7.
+				   Note: A Unique product identifier short name (D4), defined as, 'When the Commission designates a UPI pursuant to part 45, a humanly readable description made available by the UPI issuer corresponding to the UPI'."]
+        [docReference CFTC Valuation appendix "1" dataElement "87" field "Unique Product Identifier" footnote "68"
+            provision "Until the Commission designates a UPI for the commodity asset class pursuant to part 45, continue reporting product data elements according to the internal product identifier or product description used by the swap data repository to which the swap is reported. When the Commission designates a UPI for the commodity asset class pursuant to part 45, report the UPI."]
+        [ruleReference UniqueProductIdentifier]
+    uniqueSwapIdentifier string (0..1)
+        [label "102 Unique Swap Identifier (USI)"]
+        [docReference CFTC Valuation appendix "1" dataElement "102" field "Unique Swap Identifier (USI)"
+            provision "The USI is a unique identifier assigned to all swap transactions which identifies the transaction (the swap and its counterparties) uniquely throughout its duration. It consists of a namespace and a transaction identifier."]
+        [docReference CFTC Valuation appendix "1" dataElement "102" field "Unique Swap Identifier (USI)" footnote "76"
+            provision "Throughout this Technical Specification, references to 'CFTC USI Data Standard' should refer to the USI Data Standard, https://www.cftc.gov/sites/default/files/idc/groups/public/@swaps/documents/dfsubmission/usidatastandards100112.pdf"]
+        [docReference ISDA PeerReviewGroup date "20220309"
+            provision "Rule does not model UTI > USI priority defined in CFTC specification."]
+        [docReference ISDA PeerReviewGroup date "20220309"
+            provision "Firms do expect to report USI/UTI in both formats: as a single identifier field as well as using Issuer + identifier. The functional model needs to handle both scenarios."]
+        [ruleReference UniqueSwapIdentifier]
+
+    condition DTCC_CFTC_VR_0014_01: <"Counterparty 2 (non-reporting counterparty)">
+        [docReference CFTC Valuation DTCC_Specs appendix "1" dataElement "14" validationRule "Valuation"
+            provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade.
+        - However, if there is more than one live trade (for the same UTI/USI)  where [Trade Party 1 - ID] and [Trade Party 1 - ID Type] are the same, the submission will NACK."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+            provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition DTCC_CFTC_VR_0015_01: <"Counterparty 2 Identifier Source">
+        [docReference CFTC Valuation DTCC_Specs appendix "1" dataElement "15" validationRule "Valuation"
+            provision "If [NoA - Action Type] = 'EROR', 'TERM', or 'PRTO', rules have been relaxed to allow for the termination of trades where the Counterparty's identifiers are not known as follows:
+        - Counterparty fields [Trade Party 2 - ID] and [Trade Party 2 - ID Type] do not have to match the [Trade Party 2 - ID] and [Trade Party 2 - ID Type] of the live trade."]
+        [docReference ISDA ISDAWorkingGroup date "unknown"
+            provision "Not modelled. The condition cannot be executed in a stateless environment."]
+        True
+
+    condition CFTC_VR_0026_01: <"Action Type">
+        [docReference CFTC Valuation appendix "1" dataElement "26" validationRule "Valuation"
+            provision "M, must equal VALU"]
+        actionType = VALU
+
+    condition CFTC_VR_0102_01: <"Unique Swap Identifier">
+        [docReference CFTC Valuation appendix "1" dataElement "102" validationRule "Valuation"
+            provision "C if [Unique transaction identifier (UTI)] is not populated, else {blank}."]
+        if uniqueTransactionIdentifier is absent
+        then uniqueSwapIdentifier exists
+        else uniqueSwapIdentifier is absent
+
+    condition CFTC_VR_0103_01: <"Unique Transaction Identifier">
+        [docReference CFTC Valuation appendix "1" dataElement "103" validationRule "Valuation"
+            provision "C if [Unique swap identifier (USI)] is not populated, else {blank}."]
+        if uniqueSwapIdentifier is absent
+        then uniqueTransactionIdentifier exists
+        else uniqueTransactionIdentifier is absent
+
+    condition DTCC_CFTC_VR_0103_01: <"Unique Transaction Identifier">
+        [docReference CFTC Valuation DTCC_Specs appendix "1" dataElement "103" validationRule "Valuation"
+            provision "Required when [NoA - Action Type] = 'NEWT' or when [USI ID] is blank."]
+        if actionType = NEWT or uniqueSwapIdentifier is absent
+        then uniqueTransactionIdentifier exists
+
+    condition CFTC_VR_0109_01: <"Delta">
+        [docReference CFTC Valuation appendix "1" dataElement "109" validationRule "Valuation"
+            provision "C if UPI.[Instrument type] = Option, else {blank}."]
+        True
+
+    condition CFTC_VR_0112_01: <"Valuation Method">
+        [docReference CFTC Valuation appendix "1" dataElement "112" validationRule "Valuation"
+            provision "M, when populated with CCPV, [Cleared] must be Y."]
+        True
+
+    condition DTCC_CFTC_VR_0116_01: <"Initial Margin Collateral Portfolio Code">
+        [docReference CFTC Valuation DTCC_Specs appendix "1" dataElement "116" validationRule "Valuation"
+            provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank.
+                Where a portfolio code is not applicable per the description, 'NOTAPPLICABLE' is an accepted value."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then initialMarginCollateralPortfolioCode is absent
+
+    condition DTCC_CFTC_VR_0124_01: <"Variation Margin Collateral Portfolio Code">
+        [docReference CFTC Valuation DTCC_Specs appendix "1" dataElement "124" validationRule "Valuation"
+            provision "Reject if [Initial margin collateral portfolio code] and [Variation margin collateral portfolio code] are both blank.
+                Where a portfolio code is not applicable per the description, 'NOTAPPLICABLE' is an accepted value."]
+        if initialMarginCollateralPortfolioCode is absent
+                and variationMarginCollateralPortfolioCode is absent
+        then variationMarginCollateralPortfolioCode is absent
+
+    condition DTCC_CFTC_VR_DTCC_01: <"Submitted For Party">
+        [docReference CFTC Valuation DTCC_Specs field "Submitted For Party" validationRule "Valuation"
+            provision "If the value is not 'Party1' or 'BOTH', then the value must = the value in [Trade Party 1 - ID]."]
+        if ["Party1", "BOTH"] all <> dtccValuationFields -> submittedForParty
+        then dtccValuationFields -> submittedForParty = counterparty1
+
+    condition DTCC_CFTC_VR_DTCC_02: <"Trade Party 1 - Execution Agent ID">
+        [docReference CFTC Valuation DTCC_Specs field "Trade Party 1 - Execution Agent ID" validationRule "Valuation"
+            provision "Required if [Trade Party 1 - Execution Agent ID Type] is populated."]
+        if dtccValuationFields -> tradeParty1ExecutionAgentIDType exists
+        then dtccValuationFields -> tradeParty1ExecutionAgentID exists
+
+    condition DTCC_CFTC_VR_DTCC_03: <"Trade Party 2 - Execution Agent ID">
+        [docReference CFTC Valuation DTCC_Specs field "Trade Party 2 - Execution Agent ID" validationRule "Valuation"
+            provision "Required if [Trade Party 2 - Execution Agent ID Type] is populated."]
+        if dtccValuationFields -> tradeParty2ExecutionAgentIDType exists
+        then dtccValuationFields -> tradeParty2ExecutionAgentID exists
+
+    condition DTCC_CFTC_VR_DTCC_04: <"Trade Party 1 - Execution Agent ID Type">
+        [docReference CFTC Valuation DTCC_Specs field "Trade Party 1 - Execution Agent ID Type" validationRule "Valuation"
+            provision "Required if [Trade Party 1 - Execution Agent ID] is populated."]
+        if dtccValuationFields -> tradeParty1ExecutionAgentID exists
+        then dtccValuationFields -> tradeParty1ExecutionAgentIDType exists
+
+    condition DTCC_CFTC_VR_DTCC_05: <"Trade Party 2 - Execution Agent ID Type">
+        [docReference CFTC Valuation DTCC_Specs field "Trade Party 2 - Execution Agent ID Type" validationRule "Valuation"
+            provision "Required if [Trade Party 2 - Execution Agent ID] is populated."]
+        if dtccValuationFields -> tradeParty2ExecutionAgentID exists
+        then dtccValuationFields -> tradeParty2ExecutionAgentIDType exists

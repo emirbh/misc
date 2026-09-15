@@ -1,0 +1,71 @@
+namespace drr.regulation.mas.rewrite.margin
+version "${project.version}"
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.common.*
+import drr.regulation.mas.*
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Margin
+
+report MAS Margin in T+1
+    from CollateralReportInstruction
+    when ReportableProduct
+    with type MASMarginReport
+
+//eligibility rules
+eligibility rule ReportableProduct from CollateralReportInstruction:
+    [docReference MAS Margin
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+//ReportingRules
+reporting rule ReportingSpecifiedPerson from CollateralReportInstruction: <"Reporting specified person">
+    extract ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule UniqueTransactionIdentifier from CollateralReportInstruction: <"Unique Transaction Identifier (UTI)">
+    uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            MAS,
+            item -> collateralDetails -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UniqueTransactionIdentifierProprietary from CollateralReportInstruction: <"Unique Transaction Identifier (UTI)">
+    uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            MAS,
+            item -> collateralDetails -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule TechnicalRecordId from CollateralReportInstruction: <"Technical Record Id (ISO)">
+    extract
+        if trade.link.TechnicalRecordId(reportableInformation, MAS) -> isUnique
+        then trade.link.TechnicalRecordId(reportableInformation, MAS) -> id
+        else trade.link.TechnicalRecordId(reportableInformation, MAS) -> id + "_" + (margin.datetime.ReportingTimestamp to-string)
+
+reporting rule ExecutionAgentOfTheCounterparty1DTCC from CollateralReportInstruction: <"Execution agent of Counterparty 1 (DTCC)">
+    extract reportableEvent [
+        reportableEvent -> reportableInformation -> globalPartyInformation
+            then extract
+                if (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingParty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent) exists)
+                then (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingParty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+                then extract PartyLei(partyId))
+                else if (filter
+                    partyReference = reportableEvent -> reportingSide -> reportingCounterparty
+                then extract
+                    ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent) exists)
+                then "NOAP"
+            then first
+    ]

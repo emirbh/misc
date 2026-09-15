@@ -1,0 +1,129 @@
+namespace drr.regulation.cftc.rewrite
+version "${project.version}"
+
+import cdm.base.math.*
+import cdm.event.qualification.*
+
+import drr.base.qualification.*
+import drr.base.trade.*
+import drr.base.util.party.*
+import drr.base.util.string.*
+import drr.regulation.cftc.rewrite.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iosco.cde.version2.* as cde
+import drr.standards.iosco.cde.version2.quantity.*
+
+func PrimeBrokerageTransactionIndicatorFunc:
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+    output:
+        indicator boolean (0..1)
+    alias primeBrokerExists:
+        ExtractPartyFromRelatedPartyByRole(
+                transaction -> reportableInformation -> globalPartyInformation -> relatedParty,
+                PrimeBroker
+            )
+            exists
+    alias executingBrokerPartyInfo:
+        transaction -> reportableInformation -> jurisdictionInformation
+            then filter regimeName = DoddFrankAct and supervisoryBody = CFTC
+            then only-element
+            then extract partyInformation
+            then filter
+                partyReference = ExtractPartyFromRelatedPartyByRole(
+                        transaction -> reportableInformation -> globalPartyInformation -> relatedParty,
+                        ExecutingBroker
+                    )
+    alias executingBrokerIsUSPerson:
+        executingBrokerPartyInfo -> cftcPartyInformation -> isUSPerson first default False
+
+    set indicator: primeBrokerExists and executingBrokerIsUSPerson
+
+func ValidatePartyIdentifierFormat:
+    inputs:
+        partyIdentifier string (0..1)
+        format PartyIdentifierFormatEnum (1..1)
+    output:
+        validOrEmpty boolean (1..1)
+
+    set validOrEmpty:
+        if partyIdentifier is absent
+        then True
+        else if format = PartyIdentifierFormatEnum -> Lei
+        then StringLength(partyIdentifier) = 20
+        else if format = PartyIdentifierFormatEnum -> LeiAndPerson
+        then StringLength(partyIdentifier) > 20 and StringLength(partyIdentifier) <= 72
+        else False
+
+func ChangeInNotionalAmountLeg1:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        defaultValue number (1..1)
+    output:
+        change number (0..1)
+
+    alias businessEvent:
+        transactionReportInstruction -> originatingWorkflowStep -> businessEvent
+
+    alias payoutBefore:
+        BeforeTradeForEvent(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg1(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    alias NotionalAmountBefore: NotionalAmountFormat(payoutBefore, defaultValue)
+
+    alias NotionalAmountAfter:
+        cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg1(transactionReportInstruction),
+                defaultValue
+            )
+
+    set change:
+        if NotionalAmountBefore = defaultValue or NotionalAmountAfter = defaultValue
+        then defaultValue
+        else if event.IsActionTypeTERM(transactionReportInstruction)
+                or ((event.IsActionTypeNEWT(transactionReportInstruction) and EventType(transactionReportInstruction) = TRAD)
+                    and (Qualify_ContractFormation(businessEvent) or Qualify_Execution(businessEvent)))
+        then NotionalAmountAfter
+        else Abs(NotionalAmountAfter - NotionalAmountBefore)
+
+func ChangeInNotionalAmountLeg2:
+    inputs:
+        transactionReportInstruction TransactionReportInstruction (1..1)
+        defaultValue number (1..1)
+    output:
+        change number (0..1)
+
+    alias businessEvent:
+        transactionReportInstruction -> originatingWorkflowStep -> businessEvent
+
+    alias payoutBefore:
+        BeforeTradeForEvent(transactionReportInstruction)
+            then extract
+                common.PayoutFromProductLeg2(
+                        item -> product,
+                        item -> tradeLot only-element,
+                        transactionReportInstruction -> reportableInformation
+                    )
+
+    alias NotionalAmountBefore: NotionalAmountFormat(payoutBefore, defaultValue)
+
+    alias NotionalAmountAfter:
+        cde.quantity.NotionalAmountFormat(
+                common.PayoutForQuantityLeg2(transactionReportInstruction),
+                defaultValue
+            )
+
+    set change:
+        if NotionalAmountBefore = defaultValue or NotionalAmountAfter = defaultValue
+        then defaultValue
+        else if event.IsActionTypeTERM(transactionReportInstruction)
+                or ((event.IsActionTypeNEWT(transactionReportInstruction) and EventType(transactionReportInstruction) = TRAD)
+                    and (Qualify_ContractFormation(businessEvent) or Qualify_Execution(businessEvent)))
+        then NotionalAmountAfter
+        else Abs(NotionalAmountAfter - NotionalAmountBefore)

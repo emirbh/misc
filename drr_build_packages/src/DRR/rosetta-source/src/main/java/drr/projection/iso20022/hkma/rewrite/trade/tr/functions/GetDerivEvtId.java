@@ -1,0 +1,55 @@
+package drr.projection.iso20022.hkma.rewrite.trade.tr.functions;
+
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.functions.ModelObjectValidator;
+import com.rosetta.model.lib.functions.RosettaFunction;
+import com.rosetta.model.lib.mapper.MapperS;
+import drr.regulation.hkma.rewrite.trade.HKMATransactionReport;
+import iso20022.auth030.hkma.tr.EventIdentifier1Choice__1;
+import java.util.Optional;
+import javax.inject.Inject;
+
+
+@ImplementedBy(GetDerivEvtId.GetDerivEvtIdDefault.class)
+public abstract class GetDerivEvtId implements RosettaFunction {
+	
+	@Inject protected ModelObjectValidator objectValidator;
+
+	/**
+	* @param drrReport 
+	* @return id 
+	*/
+	public EventIdentifier1Choice__1 evaluate(HKMATransactionReport drrReport) {
+		EventIdentifier1Choice__1.EventIdentifier1Choice__1Builder idBuilder = doEvaluate(drrReport);
+		
+		final EventIdentifier1Choice__1 id;
+		if (idBuilder == null) {
+			id = null;
+		} else {
+			id = idBuilder.build();
+			objectValidator.validate(EventIdentifier1Choice__1.class, id);
+		}
+		
+		return id;
+	}
+
+	protected abstract EventIdentifier1Choice__1.EventIdentifier1Choice__1Builder doEvaluate(HKMATransactionReport drrReport);
+
+	public static class GetDerivEvtIdDefault extends GetDerivEvtId {
+		@Override
+		protected EventIdentifier1Choice__1.EventIdentifier1Choice__1Builder doEvaluate(HKMATransactionReport drrReport) {
+			EventIdentifier1Choice__1.EventIdentifier1Choice__1Builder id = EventIdentifier1Choice__1.builder();
+			return assignOutput(id, drrReport);
+		}
+		
+		protected EventIdentifier1Choice__1.EventIdentifier1Choice__1Builder assignOutput(EventIdentifier1Choice__1.EventIdentifier1Choice__1Builder id, HKMATransactionReport drrReport) {
+			id = toBuilder(EventIdentifier1Choice__1.builder()
+				.setEvtIdr(MapperS.of(drrReport).<String>map("getEventIdentifier", hKMATransactionReport -> hKMATransactionReport.getEventIdentifier()).get())
+				.build());
+			
+			return Optional.ofNullable(id)
+				.map(o -> o.prune())
+				.orElse(null);
+		}
+	}
+}

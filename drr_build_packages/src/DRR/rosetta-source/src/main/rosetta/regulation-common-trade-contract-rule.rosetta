@@ -1,0 +1,301 @@
+namespace drr.regulation.common.trade.contract
+version "${project.version}"
+
+import cdm.product.common.settlement.*
+import cdm.product.qualification.*
+import cdm.product.template.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.* as common
+import drr.standards.iso.*
+
+reporting rule AssetClass from ReportableEventBase: <"Asset class">
+    extract ProductForEvent
+    then extract
+        if Qualify_AssetClass_InterestRate(EconomicTermsForProduct)
+        then CommonAssetClass -> INTR
+        else if Qualify_AssetClass_Credit(EconomicTermsForProduct)
+        then CRDT
+        else if Qualify_AssetClass_Equity(EconomicTermsForProduct)
+        then EQUI
+        else if Qualify_AssetClass_Commodity(EconomicTermsForProduct) or IsSingleCommodityPayoutProduct
+        then COMM
+        else if Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct)
+        then CURR
+
+reporting rule ContractType from TransactionReportInstruction: <"Contract type">
+    ProductForEvent
+        then extract
+            if IsProductETD
+            then (if EconomicTermsForProduct -> payout -> SettlementPayout only exists
+                then CommonContractType -> FUTR
+                else if EconomicTermsForProduct -> payout -> OptionPayout only exists
+                then OPTN
+                else OTHR)
+            else (if IsFRA
+            then FRAS
+            else if Qualify_ForeignExchange_Spot_Forward(economicTerms)
+                    or Qualify_ForeignExchange_NDF(economicTerms)
+                    or IsSingleCommodityPayoutProduct
+                    or IsCommodityForward
+                    or Qualify_InterestRate_Forward_Debt(EconomicTermsForProduct)
+                    or (Qualify_EquityForward_PriceReturnBasicPerformance_SingleIndex(
+                            economicTerms
+                        )
+                        or Qualify_EquityForward_PriceReturnBasicPerformance_SingleName(
+                                economicTerms
+                            )
+                        or Qualify_EquityForward_PriceReturnBasicPerformance_Basket(
+                                economicTerms
+                            ))
+            then FORW
+            else if IsIRSwaption or IsCreditSwaption or IsCommoditySwaption
+            then SWPT
+            else if Qualify_InterestRate_CapFloor(EconomicTermsForProduct)
+                    or (EconomicTermsForProduct -> payout -> OptionPayout only exists
+                        and (EconomicTermsForProduct -> nonStandardisedTerms is absent or EconomicTermsForProduct -> nonStandardisedTerms = False))
+            then OPTN
+            else if Qualify_BaseProduct_IRSwap(economicTerms)
+                    or Qualify_BaseProduct_Inflation(economicTerms)
+                    or Qualify_BaseProduct_CrossCurrency(economicTerms)
+                    or Qualify_InterestRate_InflationSwap_FixedFloat_YearOn_Year(
+                            economicTerms
+                        )
+                    or Qualify_InterestRate_InflationSwap_FixedFloat_ZeroCoupon(
+                            economicTerms
+                        )
+                    or Qualify_InterestRate_InflationSwap_Basis_YearOn_Year(economicTerms)
+                    or Qualify_InterestRate_InflationSwap_Basis_ZeroCoupon(economicTerms)
+                    or (Qualify_AssetClass_Credit(economicTerms)
+                        and (EconomicTermsForProduct -> nonStandardisedTerms is absent or EconomicTermsForProduct -> nonStandardisedTerms = False))
+                    or (Qualify_BaseProduct_EquitySwap(economicTerms)
+                        and IsEquityOther = False) // Checking of Base product is Equity but its not an exotic product
+                    or Qualify_Commodity_Swap_FixedFloat(economicTerms)
+                    or Qualify_Commodity_Swap_Basis(economicTerms)
+                    or IsFXSwap
+                    or economicTerms -> payout -> PerformancePayout only exists
+            then SWAP
+            else if IsProductETD and EconomicTermsForProduct -> payout -> SettlementPayout only exists
+            then FUTR
+            else OTHR)
+
+reporting rule OptionType from TransactionReportInstruction: <"Option Type">
+    extract ProductForEvent
+    then extract
+        if IsPutOption or IsFloor
+        then OptionTypeCode -> PUTO
+        else if IsCallOption or IsCap
+        then CALL
+        else if IsOption
+        then OTHR
+
+reporting rule OptionStyle from TransactionReportInstruction: <"Option Style">
+    extract ProductForEvent
+    then extract
+        if (EconomicTermsForProduct -> payout -> OptionPayout only-element -> strike -> averagingStrikeFeature exists
+                or EconomicTermsForProduct -> payout -> OptionPayout only-element -> feature -> averagingFeature exists)
+        then OptionStyleEnum -> ASIA
+        else if IsFloor or IsCap
+        then EURO
+        else if IsOption
+        then (EconomicTermsForProduct -> payout -> OptionPayout only-element -> exerciseTerms -> style
+            extract
+                if item = American
+                then AMER
+                else if item = European
+                then EURO
+                else if item = Bermuda
+                then BERM)
+
+reporting rule DeliveryType from TransactionReportInstruction:
+    extract
+        DeliveryTypeFromSettlement(common.execution.SettlementTerms)
+            default DeliveryTypeFromProduct(ProductForEvent)
+
+reporting rule EmbeddedOptionType from TransactionReportInstruction: <"Embedded option type">
+    extract TradeForEvent
+    then extract product -> economicTerms
+    then extract
+        if terminationProvision -> extendibleProvision only exists
+        then EmbeddedOptionTypeEnum -> EXTD
+        else if terminationProvision -> cancelableProvision only exists
+        then CANC
+        else if terminationProvision -> earlyTerminationProvision only exists
+                and terminationProvision -> earlyTerminationProvision -> optionalEarlyTermination only exists
+        then OPET
+        else if terminationProvision -> earlyTerminationProvision only exists
+                and terminationProvision -> earlyTerminationProvision -> mandatoryEarlyTermination only exists
+        then MDET
+        else if terminationProvision -> extendibleProvision exists
+                or terminationProvision -> cancelableProvision exists
+                or terminationProvision -> earlyTerminationProvision exists
+        then OTHR
+
+reporting rule MasterAgreementType from TransactionReportInstruction: <"Master Agreement type">
+    extract
+        (if TradeForEvent exists
+        then TradeForEvent -> contractDetails
+        else if PositionForEvent exists
+        then PositionForEvent -> contractDetails)
+    then extract documentation
+    then filter
+        legalAgreementIdentification -> agreementName -> agreementType = MasterAgreement
+    then only-element
+    then extract legalAgreementIdentification -> agreementName
+    then extract
+        if masterAgreementType = ISDAMaster
+        then MasterAgreementEnum -> ISDA
+        else if masterAgreementType = ISDAFIA_CDEA
+        then CDEA
+        else if masterAgreementType = EMA
+        then EUMA
+        else if masterAgreementType = FBF
+        then FMAT
+        else if masterAgreementType = German
+        then DERV
+        else if masterAgreementType = CMOF
+        then CMOP
+        else if masterAgreementType = Swiss
+        then CHMA
+        else if masterAgreementType = EFETElectricity
+        then EFMA
+        else if masterAgreementType = EFETGas
+        then EFMA
+        else if masterAgreementType = GMRA
+        then GMRA
+        else if masterAgreementType = GMSLA
+        then GMSL
+        else if masterAgreementType = Bespoke
+        then BIAG
+        else if masterAgreementType = ISDAIIFM_TMA
+        then IDMA
+        else OTHR
+
+//      TO DO: check full list to confirm if others need code other than OTHR
+reporting rule OtherMasterAgreementType from TransactionReportInstruction: <"Other master agreement type">
+    extract
+        (if TradeForEvent exists
+        then TradeForEvent -> contractDetails
+        else if PositionForEvent exists
+        then PositionForEvent -> contractDetails)
+    then extract documentation
+    then filter
+        legalAgreementIdentification -> agreementName -> agreementType = MasterAgreement
+    then only-element
+    then extract legalAgreementIdentification -> agreementName
+    then extract
+        if masterAgreementType = AFB
+        then "AFBMAForFXAndDerivativesTransactions"
+        else if masterAgreementType = CMA
+        then "ClearingMA"
+        else if masterAgreementType = IFEMA
+        then "InternationalForeignExchangeMA"
+        else if masterAgreementType = IFEOMA
+        then "InternationalForeignExchangeAndOptionsMA"
+        else if masterAgreementType = ICOM
+        then "InternationalCurrencyOptionsMarketMA"
+        else if masterAgreementType = JSCC
+        then "MasterAgreementOfJapanSecuritiesClearingCorp"
+        else if masterAgreementType = EEIPower
+        then "EEIMasterPowerPurchaseAndSaleAgreement"
+        else if masterAgreementType = GTMA
+        then "FOAGridTradeMasterAgreement"
+        else if masterAgreementType = GasEDI
+        then "GasEDIBaseCntrctShortTermSaleAndPurNatGas"
+        else if masterAgreementType = IETA_ERPA
+        then "IntlEmissionTAEmissionReductionPurchaseAgrmt"
+        else if masterAgreementType = IETA_ETMA
+        then "IntlEmissionsTradingAssocEmissionsTradingMA"
+        else if masterAgreementType = IETA_IETMA
+        then "IntlEmissionsTradingAssocAndTradingMA"
+        else if masterAgreementType = LBMA
+        then "IntlBullionMATermsByTheLdnBullionMktAssoc"
+        else if masterAgreementType = LEAP
+        then "LeadershipInEnergyAutomatedProcessing"
+        else if masterAgreementType = MCPSA
+        then "CTAMasterCoalPurchaseAndSalesAgreement"
+        else if masterAgreementType = NAESBGas
+        then "NAESBBaseContractSaleAndPurchaseOfNaturalGas"
+        else if masterAgreementType = NBP
+        then "ShortTermFlatNBPTradingTermsAndConditions"
+        else if masterAgreementType = RussianDerivatives
+        then "StdDocForDerivTxnsOnTheRussianFinMarkets"
+        else if masterAgreementType = RussianRepo
+        then "MAForRepurchaseAgreementOnTheRussianFinMkt"
+        else if masterAgreementType = SCoTA
+        then "globalCOALStandardCoalTradingAgreement"
+        else if masterAgreementType = TTF
+        then "TTFHubNaturalGasTradingTermsAndConditions"
+        else if masterAgreementType = ZBT
+        then "ZeebruggeHubNaturalGasTradingTandC"
+        else otherAgreement
+
+reporting rule MasterAgreementVersion from TransactionReportInstruction: <"Master Agreement version">
+    extract TradeForEvent
+    then extract contractDetails -> documentation
+    then filter
+        legalAgreementIdentification -> agreementName -> agreementType = MasterAgreement
+    then only-element
+    then extract legalAgreementIdentification -> vintage
+
+reporting rule NonStandardizedTermIndicator from TransactionReportInstruction: <"Non-standardized Term Indicator">
+    extract TradeForEvent
+    then extract ProductForTrade
+    then extract
+        if economicTerms -> nonStandardisedTerms exists
+        then economicTerms -> nonStandardisedTerms
+        else False
+
+reporting rule UnderlyingAssetType from TransactionReportInstruction: <"Underlying Asset Type (non-reportable)">
+    extract
+        if IsUnderlyingAssetTypeFixedFixed
+        then "Fixed_Fixed"
+        else if Qualify_CreditDefaultSwap_IndexTranche(
+                    EconomicTermsForProduct(ProductForEvent)
+                )
+        then "Index_Tranche"
+        else if IsUnderlyingAssetTypeIndex
+        then "Index"
+
+reporting rule DeliveryTypeFromSettlement from SettlementTerms:
+    if (settlementType = Cash or cashSettlementTerms exists)
+    then DeliveryTypeEnum -> CASH
+    else if (settlementType = Physical or physicalSettlementTerms exists)
+    then PHYS
+    else if (settlementType = CashOrPhysical or settlementType = Election)
+    then OPTL
+
+reporting rule DeliveryTypeFromProduct from NonTransferableProduct:
+    if Qualify_AssetClass_InterestRate(EconomicTermsForProduct) // CASH if it is a non-deliverable product, in which case cashSettlementTerms would be populated, therefore never reaching this instance
+    then DeliveryTypeEnum -> PHYS
+    else if Qualify_AssetClass_Equity(EconomicTermsForProduct)
+    then (if IsVarianceSwap
+                or IsVolatilitySwap
+                or taxonomy -> primaryAssetClass any = Equity
+                or underlier.UnderlierForProduct -> Observable -> Index ->> assetClass = Equity
+        then CASH)
+    else if Qualify_AssetClass_Credit(EconomicTermsForProduct)
+    then OPTL
+    else if Qualify_AssetClass_ForeignExchange(EconomicTermsForProduct)
+    then (if Qualify_ForeignExchange_NDF(EconomicTermsForProduct)
+                or // This instance should never be reached
+                Qualify_ForeignExchange_NDS(EconomicTermsForProduct)
+        // NDO
+        then CASH
+        else if Qualify_ForeignExchange_Swap(EconomicTermsForProduct)
+                or Qualify_ForeignExchange_Spot_Forward(EconomicTermsForProduct)
+                or Qualify_ForeignExchange_VanillaOption(EconomicTermsForProduct)
+        then PHYS)
+    else if Qualify_AssetClass_Commodity(EconomicTermsForProduct)
+    then (if Qualify_Commodity_Swap_FixedFloat(EconomicTermsForProduct)
+                or Qualify_Commodity_Swap_Basis(EconomicTermsForProduct)
+                or // This should never be reached
+                Qualify_Commodity_Option_Cash(EconomicTermsForProduct)
+        then CASH
+        else if Qualify_Commodity_Forward(EconomicTermsForProduct)
+                or Qualify_Commodity_Option_Physical(EconomicTermsForProduct)
+                or // This should never be reached
+                Qualify_Commodity_Swaption(EconomicTermsForProduct)
+        then PHYS)

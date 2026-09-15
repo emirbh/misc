@@ -1,0 +1,39 @@
+namespace drr.regulation.cftc.rewrite.valuation
+version "${project.version}"
+
+import drr.regulation.cftc.*
+import drr.regulation.common.*
+import drr.standards.iosco.uti.*
+import drr.standards.iso.*
+
+corpus Dissemination Valuation
+
+corpus Dissemination DTCC_Harmonized
+
+report CFTC Valuation in T+1
+  	from ValuationReportInstruction
+  	when ReportableProduct
+  	with type CFTCValuationReport
+
+eligibility rule ReportableProduct from ValuationReportInstruction: <"When eligible for CFTC">
+    [docReference CFTC Valuation
+        provision "Demonstrative eligibility rule for display"]
+    True
+
+reporting rule UniqueProductIdentifier from ValuationReportInstruction: <"Unique Product Identifier">
+    extract valuationDetails -> tradeInformation -> uniqueProductIdentifier
+    then filter source = UPI
+    then only-element
+    then extract identifier
+
+reporting rule UniqueSwapIdentifier from ValuationReportInstruction: <"Unique Swap Identifier (USI)">
+    UniqueSwapIdentifierForValuation(item, CFTC)
+
+reporting rule UniqueTransactionIdentifier from ValuationReportInstruction: <"Unique Transaction Identifier (UTI)">
+    GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            CFTC,
+            item -> valuationDetails -> tradeInformation -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericTextWithSpecialChars = True

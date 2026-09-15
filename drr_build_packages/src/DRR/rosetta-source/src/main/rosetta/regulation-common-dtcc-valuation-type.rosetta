@@ -1,0 +1,42 @@
+namespace drr.regulation.common.dtcc.valuation
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.party.*
+
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+type DTCCCommonValuationFields:
+    tradeParty1IDType PartyIdentifierTypeEnum (0..1)
+        [ruleReference DTCC_TradeParty1IDType]
+    submittingPartyIDType PartyIdentifierTypeEnum (0..1)
+        [ruleReference DTCC_SubmittingPartyIDType]
+    usiIDPrefix string (0..1)
+    utiIDPrefix string (0..1)
+    submittedForParty LEIIdentifier (0..1)
+        [ruleReference DTCC_SubmittedForParty]
+    tradeParty1ReportingDestination SupervisoryBodyEnum (0..*)
+        [ruleReference DTCC_TradeParty1ReportingDestination]
+    tradeParty2ReportingDestination SupervisoryBodyEnum (0..*)
+        [ruleReference DTCC_TradeParty2ReportingDestination]
+    primaryAssetClass AssetClassEnum (1..1)
+        [ruleReference DTCC_PrimaryAssetClass]
+    comment1 string (0..1)
+        [ruleReference DTCC_Comment1]
+    messageID string (0..1)
+        [ruleReference DTCC_MessageID]
+    messageType string (0..1)
+        [ruleReference DTCC_MessageType]
+    tradeParty2ExecutionAgentID string (0..1)
+        [ruleReference DTCC_TradeParty2ExecutionAgentID]
+    tradeParty2ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [ruleReference DTCC_TradeParty2ExecutionAgentIDType]
+    tradeParty1ExecutionAgentID string (0..1)
+        [ruleReference DTCC_TradeParty1ExecutionAgentID]
+    tradeParty1ExecutionAgentIDType PartyIdentifierTypeEnum (0..1)
+        [ruleReference DTCC_TradeParty1ExecutionAgentIDType]
+    tradeParty1TransactionID string (0..1)
+        [ruleReference DTCC_TradeParty1TransactionID]
+    version string (0..1)
+        [ruleReference DTCC_Version]

@@ -1,0 +1,69 @@
+{
+  "id" : "test-pack-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-delegated-reporting",
+  "pipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default",
+  "name" : "Delegated reporting",
+  "samples" : [ {
+    "id" : "dr-ex01-cftc-partya-self",
+    "name" : "dr ex01 cftc partyA self",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/delegated-reporting/dr-ex01-cftc-partyA-self.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/delegated-reporting/dr-ex01-cftc-partyA-self.json",
+    "assertions" : {
+      "modelValidationFailures" : 196,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "dr-ex01-emir-partya-self",
+    "name" : "dr ex01 emir partyA self",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/delegated-reporting/dr-ex01-emir-partyA-self.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/delegated-reporting/dr-ex01-emir-partyA-self.json",
+    "assertions" : {
+      "modelValidationFailures" : 196,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "dr-ex01-emir-partyb-self",
+    "name" : "dr ex01 emir partyB self",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/delegated-reporting/dr-ex01-emir-partyB-self.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/delegated-reporting/dr-ex01-emir-partyB-self.json",
+    "assertions" : {
+      "modelValidationFailures" : 196,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "dr-ex02-emir-partya-mandatory-delegated",
+    "name" : "dr ex02 emir partyA mandatory delegated",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/delegated-reporting/dr-ex02-emir-partyA-mandatory-delegated.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/delegated-reporting/dr-ex02-emir-partyA-mandatory-delegated.json",
+    "assertions" : {
+      "modelValidationFailures" : 197,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "dr-ex02-emir-partya-self",
+    "name" : "dr ex02 emir partyA self",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/delegated-reporting/dr-ex02-emir-partyA-self.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/delegated-reporting/dr-ex02-emir-partyA-self.json",
+    "assertions" : {
+      "modelValidationFailures" : 197,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "dr-ex03-emir-partya-self",
+    "name" : "dr ex03 emir partyA self",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/delegated-reporting/dr-ex03-emir-partyA-self.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/delegated-reporting/dr-ex03-emir-partyA-self.json",
+    "assertions" : {
+      "modelValidationFailures" : 197,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "dr-ex03-emir-partya-voluntary-delegated",
+    "name" : "dr ex03 emir partyA voluntary delegated",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/delegated-reporting/dr-ex03-emir-partyA-voluntary-delegated.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/delegated-reporting/dr-ex03-emir-partyA-voluntary-delegated.json",
+    "assertions" : {
+      "modelValidationFailures" : 197,
+      "runtimeError" : false
+    }
+  } ]
+}

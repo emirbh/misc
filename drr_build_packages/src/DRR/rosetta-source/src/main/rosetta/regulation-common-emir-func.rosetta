@@ -1,0 +1,413 @@
+namespace drr.regulation.common.emir
+version "${project.version}"
+
+import cdm.base.staticdata.asset.common.*
+import cdm.product.qualification.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.base.util.datetime.*
+import drr.enrichment.common.*
+import drr.enrichment.lei.*
+import drr.regulation.common.*
+import drr.standards.iso.*
+
+func IsMicXOFF:
+    inputs:
+        transaction TransactionReportInstruction (0..1)
+    output:
+        isMicXOFF boolean (1..1)
+    set isMicXOFF:
+        transaction -> reportableInformation -> enrichment -> micData is absent
+            and GetVenueOfExecution(transaction -> reportableInformation) is absent
+            and GetTransactionInformationForRegime(transaction, EMIR, ESMA) -> transactionInformation -> tradableOnTradingVenue = Admitted
+
+func IsMicXXXX:
+    inputs:
+        transaction TransactionReportInstruction (0..1)
+    output:
+        isMicXXXX boolean (1..1)
+    set isMicXXXX:
+        transaction -> reportableInformation -> enrichment -> micData is absent
+            and GetVenueOfExecution(transaction -> reportableInformation) is absent
+            and GetTransactionInformationForRegime(transaction, EMIR, ESMA) -> transactionInformation -> tradableOnTradingVenue = NotAdmitted
+
+//Validation Functions
+func ReportingTimestamp_05_Validation_EU: <"Validation Function Specific to EU EMIR Reporting Timestamp Condition 5 (for Trade and Valuation Reports)">
+    inputs:
+        reportingTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result: CompareDateTo(reportingTimestamp -> date, 2024, 4, 29) >= 0
+
+func ReportingTimestamp_05_Validation_UK: <"Validation Function Specific to UK EMIR Reporting Timestamp Condition 5 (for Trade and Valuation Reports)">
+    inputs:
+        reportingTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result: CompareDateTo(reportingTimestamp -> date, 2024, 9, 30) >= 0
+
+func ReportSubmittingEntityID_01_Validation: <"Validation Function to EU/UK EMIR Report Submitting Entity ID Condition 1 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        reportSubmittingEntityID string (1..1)
+    output:
+        result boolean (1..1)
+    set result: GetOrFetchLeiData(enrichment -> leiData, reportSubmittingEntityID) exists
+
+func ReportSubmittingEntityID_02_Validation: <"Validation Function to EU/UK EMIR Report Submitting Entity ID Condition 2 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        reportSubmittingEntityID string (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> Lapsed, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival] contains GetOrFetchLeiData(
+                enrichment -> leiData,
+                reportSubmittingEntityID
+            ) -> registrationStatus
+
+func ReportSubmittingEntityID_04_Validation: <"Validation Function to EU/UK EMIR Report Submitting Entity ID Condition 4 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        reportSubmittingEntityID string (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        GetOrFetchLeiData(enrichment -> leiData, reportSubmittingEntityID) -> entityCategory <> Branch
+
+func EntityResponsibleForReporting_02_Validation: <"Validation Function to EU/UK EMIR Entity Responsible for Reporting Condition 2 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        entityResponsibleForReporting LEIIdentifier (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        GetOrFetchLeiData(enrichment -> leiData, entityResponsibleForReporting) exists
+
+func EntityResponsibleForReporting_03_Validation: <"Validation Function to EU/UK EMIR Entity Responsible for Reporting Condition 3 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        entityResponsibleForReporting LEIIdentifier (1..1)
+        reportingTimestamp zonedDateTime (1..1)
+        eventDate ISODate (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        LeiRegistrationStatusIsValidForStatus(
+                enrichment -> leiData,
+                entityResponsibleForReporting,
+                eventDate,
+                reportingTimestamp -> date,
+                [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival]
+            )
+
+func EntityResponsibleForReporting_05_Validation: <"Validation Function to EU/UK EMIR Entity Responsible for Reporting Condition 5 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        entityResponsibleForReporting LEIIdentifier (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if entityResponsibleForReporting exists
+        then (GetOrFetchLeiData(enrichment -> leiData, entityResponsibleForReporting) -> entityStatus exists
+                and GetOrFetchLeiData(enrichment -> leiData, entityResponsibleForReporting) -> entityCategory <> Branch)
+
+func Counterparty1_01_Validation: <"Validation Function to EU/UK EMIR Counterparty 1 Condition 1 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        counterparty1 LEIIdentifier (1..1)
+    output:
+        result boolean (1..1)
+    set result: GetOrFetchLeiData(enrichment -> leiData, counterparty1) exists
+
+func Counterparty1_02_Validation: <"Validation Function to EU/UK EMIR Counterparty 1 Condition 2 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        counterparty1 LEIIdentifier (1..1)
+        eventDate ISODate (1..1)
+        reportingTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        LeiRegistrationStatusIsValidForStatus(
+                enrichment -> leiData,
+                counterparty1,
+                eventDate,
+                reportingTimestamp -> date,
+                [LeiRegistrationStatusEnum -> Issued, LeiRegistrationStatusEnum -> PendingTransfer, LeiRegistrationStatusEnum -> PendingArchival]
+            )
+
+func Counterparty1_04_Validation: <"Validation Function to EU/UK EMIR Counterparty 1 Condition 4 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        counterparty1 LEIIdentifier (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        GetOrFetchLeiData(enrichment -> leiData, counterparty1) -> entityCategory <> Branch
+
+func Counterparty2IdentifierType_01_Validation: <"Validation Function to EU/UK EMIR Counterparty 2 Identifier Type Condition 1 (for Trade and Valuation Reports)">
+    inputs:
+        counterparty2IdentifierType boolean (1..1)
+    output:
+        result boolean (1..1)
+    set result: counterparty2IdentifierType = True or counterparty2IdentifierType = False
+
+func Counterparty2_01_Validation: <"Validation Function to EU/UK EMIR Counterparty 2 Condition 1 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        counterparty2IdentifierType boolean (1..1)
+        counterparty2 Min20Max72AlphaNumericText (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if counterparty2IdentifierType = True
+        then GetOrFetchLeiData(enrichment -> leiData, counterparty2) exists
+
+func Counterparty2_02_Validation: <"Validation Function to EU/UK EMIR Counterparty 2 Condition 2 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        counterparty2IdentifierType boolean (1..1)
+        counterparty2 Min20Max72AlphaNumericText (1..1)
+        eventDate ISODate (1..1)
+        reportingTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if counterparty2IdentifierType = True
+        then LeiRegistrationStatusIsValid(
+                    enrichment -> leiData,
+                    counterparty2,
+                    eventDate,
+                    reportingTimestamp -> date
+                )
+
+func Counterparty2_04_Validation: <"Validation Function to EU/UK EMIR Counterparty 2 Condition 4 (for Trade and Valuation Reports)">
+    inputs:
+        enrichment EnrichmentData (1..1)
+        counterparty2IdentifierType boolean (1..1)
+        counterparty2 Min20Max72AlphaNumericText (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if counterparty2IdentifierType = True
+        then (GetOrFetchLeiData(enrichment -> leiData, counterparty2) -> entityStatus exists
+                and GetOrFetchLeiData(enrichment -> leiData, counterparty2) -> entityCategory <> Branch)
+
+func Counterparty2_06_Validation: <"Validation Function to EU/UK EMIR Counterparty 2 Condition 6 (for Trade and Valuation Reports)">
+    inputs:
+        counterparty2IdentifierType boolean (1..1)
+        counterparty2 Min20Max72AlphaNumericText (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if counterparty2IdentifierType = False
+        then counterparty2 exists
+
+func ValuationCurrency_01_Validation: <"Validation Function to EU/UK EMIR Valuation Currency Condition 1 (for Trade and Valuation Reports)">
+    inputs:
+        valuationAmount ShortFraction5DecimalNumber (1..1)
+        valuationCurrency ISOCurrencyCodeEnum (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if valuationAmount exists then valuationCurrency exists
+
+func ValuationCurrency_02_Validation: <"Validation Function to EU/UK EMIR Valuation Currency Condition 2 (for Trade and Valuation Reports)">
+    inputs:
+        valuationCurrency ISOCurrencyCodeEnum (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        // TH Sprint 2025-19: the following ISOCurrencyCodeEnum are not present: XEU and XFU
+        if valuationCurrency exists
+        then [ISOCurrencyCodeEnum -> XAG, ISOCurrencyCodeEnum -> XAU, ISOCurrencyCodeEnum -> XBA, ISOCurrencyCodeEnum -> XBB, ISOCurrencyCodeEnum -> XBC, ISOCurrencyCodeEnum -> XBD, ISOCurrencyCodeEnum -> XDR, ISOCurrencyCodeEnum -> XPD, ISOCurrencyCodeEnum -> XPT, ISOCurrencyCodeEnum -> XXX] all <> valuationCurrency
+
+func ValuationCurrency_03_Validation: <"Validation Function to EU/UK EMIR Valuation Currency Condition 3 (for Trade and Valuation Reports)">
+    inputs:
+        valuationAmount ShortFraction5DecimalNumber (1..1)
+        valuationCurrency ISOCurrencyCodeEnum (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if valuationAmount is absent then valuationCurrency is absent
+
+func ValuationTimestamp_01_Validation: <"Validation Function to EU/UK EMIR Valuation Timestamp Condition 1 (for Trade and Valuation Reports)">
+    inputs:
+        valuationAmount ShortFraction5DecimalNumber (1..1)
+        valuationTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if valuationAmount exists then valuationTimestamp exists
+
+func ValuationTimestamp_04_Validation: <"Validation Function to EU/UK EMIR Valuation Timestamp Condition 4 (for Trade and Valuation Reports)">
+    inputs:
+        valuationAmount ShortFraction5DecimalNumber (1..1)
+        valuationTimestamp zonedDateTime (1..1)
+        reportingTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if valuationAmount exists
+        then valuationTimestamp <= reportingTimestamp
+
+func ValuationTimestamp_06_Validation: <"Validation Function to EU/UK EMIR Valuation Timestamp Condition 6 (for Trade and Valuation Reports)">
+    inputs:
+        valuationAmount ShortFraction5DecimalNumber (1..1)
+        valuationTimestamp zonedDateTime (1..1)
+        eventDate ISODate (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if valuationAmount exists
+        then valuationTimestamp -> date = eventDate
+
+func ValuationTimestamp_07_Validation: <"Validation Function to EU/UK EMIR Valuation Timestamp Condition 7 (for Trade and Valuation Reports)">
+    inputs:
+        valuationAmount ShortFraction5DecimalNumber (1..1)
+        valuationTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if valuationAmount is absent then valuationTimestamp is absent
+
+func ValuationMethod_03_Validation: <"Validation Function to EU/UK EMIR Valuation Method Condition 3 (for Trade and Valuation Reports)">
+    inputs:
+        valuationAmount ShortFraction5DecimalNumber (1..1)
+        valuationMethod ValuationType1Code (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        if valuationAmount is absent then valuationMethod is absent
+
+func Delta_02_Validation: <"Validation Function to EU/UK EMIR Delta Condition 2 (for Trade and Valuation Reports)">
+    inputs:
+        delta ShortFraction5DecimalNumber (1..1)
+    output:
+        result boolean (1..1)
+    set result: if delta exists then True else delta is absent
+
+func Delta_03_Validation: <"Validation Function to EU/UK EMIR Delta Condition 3 (for Trade and Valuation Reports)">
+    inputs:
+        delta ShortFraction5DecimalNumber (1..1)
+    output:
+        result boolean (1..1)
+    set result: if delta exists then delta >= -1 and delta <= 1
+
+func EventDate_03_Validation: <"Validation Function to EU/UK EMIR Event Date Condition 3 (for Trade and Valuation Reports)">
+    inputs:
+        eventDate ISODate (1..1)
+    output:
+        result boolean (1..1)
+    set result: CompareDateTo(eventDate, 2014, 2, 12) >= 0
+
+func EventDate_04_Validation: <"Validation Function to EU/UK EMIR Event Date Condition 4 (for Trade and Valuation Reports)">
+    inputs:
+        eventDate ISODate (1..1)
+        reportingTimestamp zonedDateTime (1..1)
+    output:
+        result boolean (1..1)
+    set result: eventDate <= reportingTimestamp -> date
+
+func Level_01_Validation: <"Validation Function to EU/UK EMIR Level Condition 1 (for Trade and Valuation Reports)">
+    inputs:
+        level ReportLevelEnum (1..1)
+    output:
+        result boolean (1..1)
+    set result: [ReportLevelEnum -> TCTN, ReportLevelEnum -> PSTN] any = level
+
+func GetReportableDelivery: <"Extracts the period for a price schedule">
+    inputs:
+        transaction TransactionReportInstruction (1..1)
+    output:
+        reportableDelivery ReportableDelivery (0..*)
+    alias product: ProductForEvent(transaction)
+    alias economicTerms: EconomicTermsForProduct(product)
+    alias delivery:
+        if Qualify_Commodity_Swap_FixedFloat(economicTerms)
+                or Qualify_Commodity_Swap_Basis(economicTerms)
+        then economicTerms -> payout -> CommodityPayout -> delivery first
+        else if Qualify_Commodity_Option(economicTerms)
+        then economicTerms -> payout -> OptionPayout -> delivery only-element
+        else if Qualify_Commodity_Swaption(economicTerms)
+        then EconomicTermsForProduct(
+                economicTerms -> payout -> OptionPayout -> underlier -> Product -> NonTransferableProduct only-element
+            ) -> payout -> CommodityPayout -> delivery first
+        else if IsSingleCommodityPayoutProduct(product)
+        then economicTerms -> payout -> CommodityPayout only-element -> delivery
+        else if Qualify_Commodity_Forward(economicTerms)
+        then economicTerms -> payout -> SettlementPayout only-element -> delivery
+    alias customizedSchedule:
+        if Qualify_Commodity_Swap_FixedFloat(economicTerms)
+                or Qualify_Commodity_Swap_Basis(economicTerms)
+        then economicTerms -> payout -> CommodityPayout -> schedule first
+        else if Qualify_Commodity_Option(economicTerms)
+                or Qualify_Commodity_Swaption(economicTerms)
+        then economicTerms -> payout -> OptionPayout only-element -> schedule
+        else if IsSingleCommodityPayoutProduct(product)
+        then economicTerms -> payout -> CommodityPayout only-element -> schedule
+        else if Qualify_Commodity_Forward(economicTerms)
+        then economicTerms -> payout -> SettlementPayout only-element -> schedule
+    alias duration:
+        GetTransactionInformationForRegime(transaction, EMIR, ESMA) -> transactionInformation -> duration
+    add reportableDelivery:
+        if customizedSchedule exists
+        then (customizedSchedule -> schedulePeriod
+            extract schedulePeriod [
+                schedulePeriod -> deliveryPeriod -> profile
+                    extract deliveryProfile [
+                        deliveryProfile -> block
+                            extract deliveryBlock [
+                                Create_DeliveryBlock(
+                                        deliveryBlock -> startTime,
+                                        deliveryBlock -> endTime,
+                                        schedulePeriod -> deliveryPeriod -> startDate,
+                                        schedulePeriod -> deliveryPeriod -> endDate,
+                                        deliveryProfile -> bankHolidaysTreatment,
+                                        duration,
+                                        deliveryBlock -> dayOfWeek,
+                                        if schedulePeriod -> deliveryPeriod -> deliveryCapacity exists
+                                        then schedulePeriod -> deliveryPeriod -> deliveryCapacity
+                                        else if deliveryBlock -> deliveryCapacity exists
+                                        then deliveryBlock -> deliveryCapacity,
+                                        if schedulePeriod -> deliveryPeriod -> priceTimeIntervalQuantity exists
+                                        then schedulePeriod -> deliveryPeriod -> priceTimeIntervalQuantity -> value
+                                        else if deliveryBlock -> priceTimeIntervalQuantity exists
+                                        then deliveryBlock -> priceTimeIntervalQuantity -> value,
+                                        if schedulePeriod -> deliveryPeriod -> priceTimeIntervalQuantity exists
+                                        then schedulePeriod -> deliveryPeriod -> priceTimeIntervalQuantity -> unit -> currency
+                                        else if deliveryBlock -> priceTimeIntervalQuantity exists
+                                        then deliveryBlock -> priceTimeIntervalQuantity -> unit -> currency
+                                    )
+                            ]
+                    ]
+                    then flatten
+            ]
+            then flatten)
+        else delivery -> periods
+            extract periods [
+                periods -> profile
+                    extract deliveryProfile [
+                        deliveryProfile -> block
+                            extract deliveryBlock [
+                                Create_DeliveryBlock(
+                                        deliveryBlock -> startTime,
+                                        deliveryBlock -> endTime,
+                                        periods -> startDate,
+                                        periods -> endDate,
+                                        deliveryProfile -> bankHolidaysTreatment,
+                                        duration,
+                                        deliveryBlock -> dayOfWeek,
+                                        if delivery -> deliveryCapacity exists
+                                        then delivery -> deliveryCapacity
+                                        else if deliveryBlock -> deliveryCapacity exists
+                                        then deliveryBlock -> deliveryCapacity,
+                                        deliveryBlock -> priceTimeIntervalQuantity -> value,
+                                        deliveryBlock -> priceTimeIntervalQuantity -> unit -> currency
+                                    )
+                            ]
+                    ]
+                    then flatten
+            ]

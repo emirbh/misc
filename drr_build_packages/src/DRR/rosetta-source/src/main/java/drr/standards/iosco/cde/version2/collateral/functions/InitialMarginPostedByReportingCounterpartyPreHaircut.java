@@ -1,0 +1,44 @@
+package drr.standards.iosco.cde.version2.collateral.functions;
+
+import cdm.base.staticdata.party.Party;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.functions.RosettaFunction;
+import drr.base.margin.ReportableCollateralBase;
+import java.math.BigDecimal;
+import javax.inject.Inject;
+
+
+@ImplementedBy(InitialMarginPostedByReportingCounterpartyPreHaircut.InitialMarginPostedByReportingCounterpartyPreHaircutDefault.class)
+public abstract class InitialMarginPostedByReportingCounterpartyPreHaircut implements RosettaFunction {
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected drr.standards.iosco.cde.version1.collateral.functions.InitialMarginPostedByReportingCounterpartyPreHaircut initialMarginPostedByReportingCounterpartyPreHaircut;
+
+	/**
+	* @param reportableCollateral 
+	* @param reportingCounterparty 
+	* @return marginValue 
+	*/
+	public BigDecimal evaluate(ReportableCollateralBase reportableCollateral, Party reportingCounterparty) {
+		BigDecimal marginValue = doEvaluate(reportableCollateral, reportingCounterparty);
+		
+		return marginValue;
+	}
+
+	protected abstract BigDecimal doEvaluate(ReportableCollateralBase reportableCollateral, Party reportingCounterparty);
+
+	public static class InitialMarginPostedByReportingCounterpartyPreHaircutDefault extends InitialMarginPostedByReportingCounterpartyPreHaircut {
+		@Override
+		protected BigDecimal doEvaluate(ReportableCollateralBase reportableCollateral, Party reportingCounterparty) {
+			BigDecimal marginValue = null;
+			return assignOutput(marginValue, reportableCollateral, reportingCounterparty);
+		}
+		
+		protected BigDecimal assignOutput(BigDecimal marginValue, ReportableCollateralBase reportableCollateral, Party reportingCounterparty) {
+			marginValue = initialMarginPostedByReportingCounterpartyPreHaircut.evaluate(reportableCollateral, reportingCounterparty);
+			
+			return marginValue;
+		}
+	}
+}

@@ -1,0 +1,512 @@
+{
+  "id" : "test-pack-translate-fpml-record-keeping-to-reportable-event-rates",
+  "pipelineId" : "pipeline-translate-fpml-record-keeping-to-reportable-event",
+  "name" : "Rates",
+  "samples" : [ {
+    "id" : "ir-capfloor-ex01-cap-premium",
+    "name" : "IR CapFloor ex01 Cap Premium",
+    "inputPath" : "ingest/input/rates/IR-CapFloor-ex01-Cap-Premium.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CapFloor-ex01-Cap-Premium.json",
+    "assertions" : {
+      "inputPathCount" : 220,
+      "outputPathCount" : 219,
+      "modelValidationFailures" : 36,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-capfloor-ex02-cap-spread",
+    "name" : "IR CapFloor ex02 Cap Spread",
+    "inputPath" : "ingest/input/rates/IR-CapFloor-ex02-Cap-Spread.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CapFloor-ex02-Cap-Spread.json",
+    "assertions" : {
+      "inputPathCount" : 236,
+      "outputPathCount" : 244,
+      "modelValidationFailures" : 98,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-capfloor-ex03-cap",
+    "name" : "IR CapFloor ex03 Cap",
+    "inputPath" : "ingest/input/rates/IR-CapFloor-ex03-Cap.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CapFloor-ex03-Cap.json",
+    "assertions" : {
+      "inputPathCount" : 176,
+      "outputPathCount" : 192,
+      "modelValidationFailures" : 111,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-ccs-fixed-fixed-ex01",
+    "name" : "IR CCS Fixed Fixed ex01",
+    "inputPath" : "ingest/input/rates/IR-CCS-Fixed-Fixed-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CCS-Fixed-Fixed-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 234,
+      "outputPathCount" : 229,
+      "modelValidationFailures" : 87,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-ccs-fixed-fixed-ex02",
+    "name" : "IR CCS Fixed Fixed ex02",
+    "inputPath" : "ingest/input/rates/IR-CCS-Fixed-Fixed-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CCS-Fixed-Fixed-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 276,
+      "outputPathCount" : 288,
+      "modelValidationFailures" : 57,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-ccs-fixed-float-ex02",
+    "name" : "IR CCS Fixed Float ex02",
+    "inputPath" : "ingest/input/rates/IR-CCS-Fixed-Float-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CCS-Fixed-Float-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 242,
+      "outputPathCount" : 234,
+      "modelValidationFailures" : 90,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-ccs-fixed-float-ex03-nds",
+    "name" : "IR CCS Fixed Float ex03 NDS",
+    "inputPath" : "ingest/input/rates/IR-CCS-Fixed-Float-ex03-NDS.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CCS-Fixed-Float-ex03-NDS.json",
+    "assertions" : {
+      "inputPathCount" : 231,
+      "outputPathCount" : 222,
+      "modelValidationFailures" : 85,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-ccs-fixed-float-ex04",
+    "name" : "IR CCS Fixed Float ex04",
+    "inputPath" : "ingest/input/rates/IR-CCS-Fixed-Float-ex04.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-CCS-Fixed-Float-ex04.json",
+    "assertions" : {
+      "inputPathCount" : 182,
+      "outputPathCount" : 200,
+      "modelValidationFailures" : 113,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-forward-debt-ex01",
+    "name" : "IR Forward Debt ex01",
+    "inputPath" : "ingest/input/rates/IR-Forward-Debt-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Forward-Debt-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 195,
+      "outputPathCount" : 178,
+      "modelValidationFailures" : 36,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-forward-debt-ex02",
+    "name" : "IR Forward Debt ex02",
+    "inputPath" : "ingest/input/rates/IR-Forward-Debt-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Forward-Debt-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 197,
+      "outputPathCount" : 178,
+      "modelValidationFailures" : 36,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-fra-ex01",
+    "name" : "IR FRA ex01",
+    "inputPath" : "ingest/input/rates/IR-FRA-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-FRA-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 179,
+      "outputPathCount" : 195,
+      "modelValidationFailures" : 42,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-fra-ex02",
+    "name" : "IR FRA ex02",
+    "inputPath" : "ingest/input/rates/IR-FRA-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-FRA-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 192,
+      "outputPathCount" : 196,
+      "modelValidationFailures" : 89,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-inflation-fixed-float-ex01-yoy",
+    "name" : "IR Inflation Fixed Float ex01 YoY",
+    "inputPath" : "ingest/input/rates/IR-Inflation-Fixed-Float-ex01-YoY.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Inflation-Fixed-Float-ex01-YoY.json",
+    "assertions" : {
+      "inputPathCount" : 237,
+      "outputPathCount" : 228,
+      "modelValidationFailures" : 97,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-inflation-fixed-float-ex02-zc-fixedamt",
+    "name" : "IR Inflation Fixed Float ex02 ZC FixedAmt",
+    "inputPath" : "ingest/input/rates/IR-Inflation-Fixed-Float-ex02-ZC-FixedAmt.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Inflation-Fixed-Float-ex02-ZC-FixedAmt.json",
+    "assertions" : {
+      "inputPathCount" : 245,
+      "outputPathCount" : 255,
+      "modelValidationFailures" : 67,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-inflation-fixed-float-zc-notionalamt",
+    "name" : "IR Inflation Fixed Float ZC NotionalAmt",
+    "inputPath" : "ingest/input/rates/IR-Inflation-Fixed-Float-ZC-NotionalAmt.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Inflation-Fixed-Float-ZC-NotionalAmt.json",
+    "assertions" : {
+      "inputPathCount" : 251,
+      "outputPathCount" : 263,
+      "modelValidationFailures" : 67,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-basis-ex01",
+    "name" : "IR IRS Basis ex01",
+    "inputPath" : "ingest/input/rates/IR-IRS-Basis-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Basis-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 243,
+      "outputPathCount" : 241,
+      "modelValidationFailures" : 78,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-basis-ex02",
+    "name" : "IR IRS Basis ex02",
+    "inputPath" : "ingest/input/rates/IR-IRS-Basis-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Basis-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 192,
+      "outputPathCount" : 214,
+      "modelValidationFailures" : 116,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-basis-ex03",
+    "name" : "IR IRS Basis ex03",
+    "inputPath" : "ingest/input/rates/IR-IRS-Basis-ex03.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Basis-ex03.json",
+    "assertions" : {
+      "inputPathCount" : 253,
+      "outputPathCount" : 244,
+      "modelValidationFailures" : 39,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-basis-ex03-ois",
+    "name" : "IR IRS Basis ex03 OIS",
+    "inputPath" : "ingest/input/rates/IR-IRS-Basis-ex03-OIS.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Basis-ex03-OIS.json",
+    "assertions" : {
+      "inputPathCount" : 283,
+      "outputPathCount" : 309,
+      "modelValidationFailures" : 60,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-dcf-1-1-a020",
+    "name" : "IR IRS Fixed Float DCF 1 1 A020",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-DCF-1-1-A020.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-DCF-1-1-A020.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-dcf-30e-360-isda-a007",
+    "name" : "IR IRS Fixed Float DCF 30E 360 ISDA A007",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-DCF-30E-360-ISDA-A007.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-DCF-30E-360-ISDA-A007.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-dcf-act-365l-a009",
+    "name" : "IR IRS Fixed Float DCF ACT 365L A009",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-DCF-ACT-365L-A009.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-DCF-ACT-365L-A009.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-dcf-act-act-afb-a010",
+    "name" : "IR IRS Fixed Float DCF ACT ACT AFB A010",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-DCF-ACT-ACT-AFB-A010.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-DCF-ACT-ACT-AFB-A010.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-dcf-act-act-icma-a006",
+    "name" : "IR IRS Fixed Float DCF ACT ACT ICMA A006",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-DCF-ACT-ACT-ICMA-A006.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-DCF-ACT-ACT-ICMA-A006.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-dcf-act-act-isda-a008",
+    "name" : "IR IRS Fixed Float DCF ACT ACT ISDA A008",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-DCF-ACT-ACT-ISDA-A008.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-DCF-ACT-ACT-ISDA-A008.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex01",
+    "name" : "IR IRS Fixed Float ex01",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex01-compensation-ois",
+    "name" : "IR IRS Fixed Float ex01 Compensation OIS",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex01-Compensation-OIS.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex01-Compensation-OIS.json",
+    "assertions" : {
+      "inputPathCount" : 240,
+      "outputPathCount" : 231,
+      "modelValidationFailures" : 44,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex01-conversion-ois",
+    "name" : "IR IRS Fixed Float ex01 Conversion OIS",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex01-Conversion-OIS.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex01-Conversion-OIS.json",
+    "assertions" : {
+      "inputPathCount" : 227,
+      "outputPathCount" : 221,
+      "modelValidationFailures" : 39,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex01-week",
+    "name" : "IR IRS Fixed Float ex01 Week",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex01-Week.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex01-Week.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 8,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex02",
+    "name" : "IR IRS Fixed Float ex02",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex02.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex02.json",
+    "assertions" : {
+      "inputPathCount" : 197,
+      "outputPathCount" : 230,
+      "modelValidationFailures" : 6,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex02-zc",
+    "name" : "IR IRS Fixed Float ex02 ZC",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex02-ZC.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex02-ZC.json",
+    "assertions" : {
+      "inputPathCount" : 262,
+      "outputPathCount" : 276,
+      "modelValidationFailures" : 60,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex03",
+    "name" : "IR IRS Fixed Float ex03",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex03.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex03.json",
+    "assertions" : {
+      "inputPathCount" : 215,
+      "outputPathCount" : 247,
+      "modelValidationFailures" : 8,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex04-spread",
+    "name" : "IR IRS Fixed Float ex04 Spread",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex04-Spread.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex04-Spread.json",
+    "assertions" : {
+      "inputPathCount" : 232,
+      "outputPathCount" : 231,
+      "modelValidationFailures" : 86,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex05",
+    "name" : "IR IRS Fixed Float ex05",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex05.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex05.json",
+    "assertions" : {
+      "inputPathCount" : 182,
+      "outputPathCount" : 200,
+      "modelValidationFailures" : 113,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex06-ois",
+    "name" : "IR IRS Fixed Float ex06 OIS",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex06-OIS.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex06-OIS.json",
+    "assertions" : {
+      "inputPathCount" : 220,
+      "outputPathCount" : 217,
+      "modelValidationFailures" : 86,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex07",
+    "name" : "IR IRS Fixed Float ex07",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex07.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex07.json",
+    "assertions" : {
+      "inputPathCount" : 181,
+      "outputPathCount" : 205,
+      "modelValidationFailures" : 113,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-ex08",
+    "name" : "IR IRS Fixed Float ex08",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-ex08.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-ex08.json",
+    "assertions" : {
+      "inputPathCount" : 168,
+      "outputPathCount" : 192,
+      "modelValidationFailures" : 5,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-submitter-id-1",
+    "name" : "IR IRS Fixed Float Submitter ID 1",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-Submitter-ID-1.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-Submitter-ID-1.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-submitter-id-2",
+    "name" : "IR IRS Fixed Float Submitter ID 2",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-Submitter-ID-2.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-Submitter-ID-2.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixed-float-submitter-id-3",
+    "name" : "IR IRS Fixed Float Submitter ID 3",
+    "inputPath" : "ingest/input/rates/IR-IRS-Fixed-Float-Submitter-ID-3.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-Fixed-Float-Submitter-ID-3.json",
+    "assertions" : {
+      "inputPathCount" : 209,
+      "outputPathCount" : 239,
+      "modelValidationFailures" : 7,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-irs-fixedfloat-zc-knownamount",
+    "name" : "IR IRS FixedFloat ZC KnownAmount",
+    "inputPath" : "ingest/input/rates/IR-IRS-FixedFloat-ZC-KnownAmount.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-IRS-FixedFloat-ZC-KnownAmount.json",
+    "assertions" : {
+      "inputPathCount" : 255,
+      "outputPathCount" : 263,
+      "modelValidationFailures" : 13,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-option-debt-option-ex01",
+    "name" : "IR Option Debt Option ex01",
+    "inputPath" : "ingest/input/rates/IR-Option-Debt-Option-ex01.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Option-Debt-Option-ex01.json",
+    "assertions" : {
+      "inputPathCount" : 243,
+      "outputPathCount" : 225,
+      "modelValidationFailures" : 112,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-option-swaption-ex01-bermuda",
+    "name" : "IR Option Swaption ex01 Bermuda",
+    "inputPath" : "ingest/input/rates/IR-Option-Swaption-ex01-Bermuda.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Option-Swaption-ex01-Bermuda.json",
+    "assertions" : {
+      "inputPathCount" : 241,
+      "outputPathCount" : 233,
+      "modelValidationFailures" : 128,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-option-swaption-ex02-europe",
+    "name" : "IR Option Swaption ex02 Europe",
+    "inputPath" : "ingest/input/rates/IR-Option-Swaption-ex02-Europe.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Option-Swaption-ex02-Europe.json",
+    "assertions" : {
+      "inputPathCount" : 211,
+      "outputPathCount" : 241,
+      "modelValidationFailures" : 130,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-package-price",
+    "name" : "IR Package Price",
+    "inputPath" : "ingest/input/rates/IR-Package-Price.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Package-Price.json",
+    "assertions" : {
+      "inputPathCount" : 206,
+      "outputPathCount" : 229,
+      "modelValidationFailures" : 9,
+      "runtimeError" : false
+    }
+  }, {
+    "id" : "ir-package-spread",
+    "name" : "IR Package Spread",
+    "inputPath" : "ingest/input/rates/IR-Package-Spread.xml",
+    "outputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/rates/IR-Package-Spread.json",
+    "assertions" : {
+      "inputPathCount" : 205,
+      "outputPathCount" : 232,
+      "modelValidationFailures" : 9,
+      "runtimeError" : false
+    }
+  } ]
+}

@@ -1,0 +1,15 @@
+{
+  "id" : "test-pack-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default-etd",
+  "pipelineId" : "pipeline-enrich-fpml-record-keeping-to-reportable-event-transaction-report-instruction-test-pack-default",
+  "name" : "Etd",
+  "samples" : [ {
+    "id" : "mockup-etd",
+    "name" : "mockup etd",
+    "inputPath" : "ingest/output/fpml-record-keeping-to-reportable-event/etd/mockup-etd.json",
+    "outputPath" : "enrich/output/fpml-record-keeping-to-reportable-event/transaction-report-instruction-test-pack-default/etd/mockup-etd.json",
+    "assertions" : {
+      "modelValidationFailures" : 18,
+      "runtimeError" : false
+    }
+  } ]
+}

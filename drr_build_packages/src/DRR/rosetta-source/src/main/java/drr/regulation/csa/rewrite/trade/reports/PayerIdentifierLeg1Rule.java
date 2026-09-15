@@ -1,0 +1,75 @@
+package drr.regulation.csa.rewrite.trade.reports;
+
+import cdm.base.staticdata.party.metafields.ReferenceWithMetaParty;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.reports.ReportFunction;
+import drr.base.qualification.product.functions.IsVarianceSwap;
+import drr.base.qualification.product.functions.IsVolatilitySwap;
+import drr.base.trade.ReportingSide;
+import drr.base.trade.functions.ProductForEvent;
+import drr.base.util.party.functions.CounterpartiesForEvent;
+import drr.base.util.party.functions.PartyLeiAndPersonByRoles;
+import drr.regulation.common.TransactionReportInstruction;
+import drr.regulation.csa.rewrite.trade.functions.IsAllowableActionForCSA;
+import drr.regulation.csa.rewrite.trade.functions.PayoutLeg1;
+import drr.standards.iosco.cde.version3.party.functions.PayerParty;
+import javax.inject.Inject;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+@ImplementedBy(PayerIdentifierLeg1Rule.PayerIdentifierLeg1RuleDefault.class)
+public abstract class PayerIdentifierLeg1Rule implements ReportFunction<TransactionReportInstruction, String> {
+	
+	// RosettaFunction dependencies
+	//
+	@Inject protected BuyerIdentifierRule buyerIdentifierRule;
+	@Inject protected CounterpartiesForEvent counterpartiesForEvent;
+	@Inject protected IsAllowableActionForCSA isAllowableActionForCSA;
+	@Inject protected IsVarianceSwap isVarianceSwap;
+	@Inject protected IsVolatilitySwap isVolatilitySwap;
+	@Inject protected PartyLeiAndPersonByRoles partyLeiAndPersonByRoles;
+	@Inject protected PayerParty payerParty;
+	@Inject protected PayoutLeg1 payoutLeg1;
+	@Inject protected ProductForEvent productForEvent;
+
+	/**
+	* @param input 
+	* @return output 
+	*/
+	@Override
+	public String evaluate(TransactionReportInstruction input) {
+		String output = doEvaluate(input);
+		
+		return output;
+	}
+
+	protected abstract String doEvaluate(TransactionReportInstruction input);
+
+	public static class PayerIdentifierLeg1RuleDefault extends PayerIdentifierLeg1Rule {
+		@Override
+		protected String doEvaluate(TransactionReportInstruction input) {
+			String output = null;
+			return assignOutput(output, input);
+		}
+		
+		protected String assignOutput(String output, TransactionReportInstruction input) {
+			final MapperS<TransactionReportInstruction> thenArg = MapperS.of(input)
+				.filterSingleNullSafe(item -> isAllowableActionForCSA.evaluate(item.get()));
+			final MapperS<String> ifThenElseResult;
+			if (notExists(MapperS.of(buyerIdentifierRule.evaluate(thenArg.get()))).orNullSafe(ComparisonResult.ofNullSafe(MapperS.of(isVarianceSwap.evaluate(productForEvent.evaluate(thenArg.get()))))).orNullSafe(ComparisonResult.ofNullSafe(MapperS.of(isVolatilitySwap.evaluate(productForEvent.evaluate(thenArg.get()))))).getOrDefault(false)) {
+				ifThenElseResult = thenArg
+					.mapSingleToItem(item -> {
+						final ReferenceWithMetaParty referenceWithMetaParty = item.<ReportingSide>map("getReportingSide", transactionReportInstruction -> transactionReportInstruction.getReportingSide()).<ReferenceWithMetaParty>map("getReportingParty", reportingSide -> reportingSide.getReportingParty()).get();
+						return MapperS.of(partyLeiAndPersonByRoles.evaluate(payerParty.evaluate(payoutLeg1.evaluate(item.get()), counterpartiesForEvent.evaluate(item.get())), (referenceWithMetaParty == null ? null : referenceWithMetaParty.getValue())));
+					});
+			} else {
+				ifThenElseResult = MapperS.<String>ofNull();
+			}
+			output = ifThenElseResult.get();
+			
+			return output;
+		}
+	}
+}

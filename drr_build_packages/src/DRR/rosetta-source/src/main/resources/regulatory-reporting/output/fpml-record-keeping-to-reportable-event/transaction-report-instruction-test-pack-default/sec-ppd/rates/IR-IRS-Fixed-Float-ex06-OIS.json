@@ -1,0 +1,79 @@
+{
+  "actionType" : "NEWT",
+  "cleared" : "N",
+  "counterparty1" : "DUMMYLEI010000000037",
+  "counterparty1FinancialEntityIndicator" : false,
+  "counterparty2" : "DUMMYLEI020000000085",
+  "counterparty2FinancialEntityIndicator" : false,
+  "counterparty2IdentifierSource" : "LEID",
+  "customBasketIndicator" : false,
+  "dtccAdditionalFields" : {
+    "messageID" : "DTDApproved2380442703EMIRRiskNewNewInterest2024-04-29T00:00Z",
+    "primaryAssetClass" : "InterestRate",
+    "submittedForParty" : "DUMMYLEI010000000037",
+    "submittingPartyIDType" : "LEI",
+    "tradeParty1IDType" : "LEI",
+    "tradeParty1ReportingDestination" : [ "CA.AB.ASC" ]
+  },
+  "effectiveDate" : "2021-03-15",
+  "eventTimestamp" : "2021-03-12T09:45:08Z",
+  "eventType" : "TRAD",
+  "executionTimestamp" : "2021-03-12T09:43:47Z",
+  "expirationDate" : "2021-12-10",
+  "leg1" : {
+    "fixedRate" : 0.05,
+    "notionalAmount" : 33000000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "fixedRateDayCountConvention" : "A004",
+      "fixedRatePaymentFrequencyPeriod" : "YEAR",
+      "fixedRatePaymentFrequencyPeriodMultiplier" : 1
+    }
+  },
+  "leg2" : {
+    "floatingRateIndex" : "USD-Federal Funds-H.15-OIS-COMPOUND",
+    "notionalAmount" : 33000000,
+    "notionalCurrency" : "USD",
+    "periodicPayment" : {
+      "floatingRateDayCountConvention" : "A004",
+      "floatingRatePaymentFrequencyPeriod" : "YEAR",
+      "floatingRatePaymentFrequencyPeriodMultiplier" : 1,
+      "floatingRateResetFrequencyMultiplier" : 1,
+      "floatingRateResetFrequencyPeriod" : "DAIL"
+    },
+    "spread" : {
+      "basis" : 1
+    },
+    "spreadNotation" : "Basis"
+  },
+  "level" : "TCTN",
+  "nonReportable" : {
+    "preUpiData" : {
+      "request" : {
+        "Attributes" : {
+          "DeliveryType" : "PHYS",
+          "NotionalCurrency" : "USD",
+          "NotionalSchedule" : "Constant",
+          "ReferenceRateTermUnit" : "DAYS",
+          "ReferenceRateTermValue" : 1,
+          "UnderlierID" : "USD-Federal Funds-H.15-OIS-COMPOUND",
+          "UnderlierIDSource" : "FPML"
+        },
+        "Header" : {
+          "AssetClass" : "Rates",
+          "InstrumentType" : "Swap",
+          "Level" : "UPI",
+          "UseCase" : "Fixed_Float_OIS"
+        }
+      },
+      "requestType" : "ProductRequest"
+    }
+  },
+  "nonStandardizedTermIndicator" : false,
+  "packageIndicator" : false,
+  "platformIdentifier" : "XXXX",
+  "postPricedSwapIndicator" : false,
+  "reportSubmittingEntityID" : "DUMMYLEI010000000037",
+  "reportingTimestamp" : "2024-04-29T00:00:00Z",
+  "uniqueTransactionIdentifier" : "UTIIRIRSFIXEDFLO0377"
+}

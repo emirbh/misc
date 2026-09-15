@@ -1,0 +1,15 @@
+{
+  "id" : "pipeline-projection-esma-emir-valuation-esma-emir-valuation-report-to-iso20022",
+  "name" : "Esma Emir Valuation Report To Iso20022",
+  "transform" : {
+    "type" : "PROJECTION",
+    "function" : "drr.projection.iso20022.esma.emir.refit.valuation.functions.Project_EsmaEmirValuationReportToIso20022",
+    "inputType" : "drr.regulation.esma.emir.refit.valuation.ESMAValuationReport",
+    "outputType" : "iso20022.auth030.esma.Document"
+  },
+  "upstreamPipelineId" : "pipeline-report-esma-emir-valuation",
+  "outputSerialisation" : {
+    "format" : "XML",
+    "configPath" : "xml-config/auth030-esma-rosetta-xml-config.json"
+  }
+}

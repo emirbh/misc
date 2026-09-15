@@ -1,0 +1,133 @@
+namespace drr.regulation.common.margin.collateral
+version "${project.version}"
+
+import drr.regulation.common.*
+import drr.standards.iosco.cde.version2.* as cdeV3
+
+reporting rule CollateralTimestamp from CollateralReportInstruction: <"Collateral timestamp">
+    extract collateralDetails -> collateralTimestamp
+
+reporting rule CollateralPortfolioIndicator from CollateralReportInstruction: <"Collateral Portfolio Indicator">
+    extract collateralDetails -> collateral -> portfolioIdentifier exists
+
+reporting rule CollateralPortfolioCode from CollateralReportInstruction: <"Collateral Portfolio Code">
+    extract
+        collateralDetails -> collateral -> portfolioIdentifier -> assignedIdentifier -> identifier
+    then last
+
+reporting rule UTI from CollateralReportInstruction: <"UTI">
+    extract
+        item -> collateralDetails -> uniqueTradeIdentifier -> assignedIdentifier -> identifier only-element
+
+reporting rule CollateralisationCategory from CollateralReportInstruction: <"Collateralisation category">
+    extract item -> collateralDetails -> collateralisationCategory
+
+reporting rule InitialMarginPostedByTheCounterparty1PreHaircut from CollateralReportInstruction: <"Initial margin posted by the counterparty 1 (pre-haircut)">
+    extract
+        cdeV3.collateral.InitialMarginPostedByReportingCounterpartyPreHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule InitialMarginPostedByTheCounterparty1PostHaircut from CollateralReportInstruction: <"Initial margin posted by the counterparty 1 (post-haircut)">
+    extract
+        cdeV3.collateral.InitialMarginPostedByReportingCounterpartyPostHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule InitialMarginPostedByCounterparty1Currency from CollateralReportInstruction: <"Currency of the initial margins posted">
+    extract
+        cdeV3.collateral.InitialMarginPostedByReportingCounterpartyCurrency(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule VariationMarginPostedByTheCounterparty1PreHaircut from CollateralReportInstruction: <"Variation margin posted by the counterparty 1 (pre-haircut)">
+    extract
+        cdeV3.collateral.VariationMarginPostedByReportingCounterpartyPreHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule VariationMarginPostedByTheCounterparty1PostHaircut from CollateralReportInstruction: <"Variation margin posted by the counterparty 1 (post-haircut)">
+    extract
+        cdeV3.collateral.VariationMarginPostedByReportingCounterpartyPostHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule VariationMarginPostedByCounterparty1Currency from CollateralReportInstruction: <"Currency of the variation margins posted">
+    extract
+        cdeV3.collateral.VariationMarginPostedByReportingCounterpartyCurrency(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule ExcessCollateralPostedByTheCounterparty1 from CollateralReportInstruction: <"Excess Collateral Posted By The Counterparty 1">
+    cdeV3.collateral.ExcessCollateralPostedByTheReportingCounterparty
+
+// then extract RoundToPrecision(item, 5, RoundingDirectionEnum -> Nearest)
+reporting rule CurrencyOfTheExcessCollateralPosted from CollateralReportInstruction: <"Currency Of The Excess Collateral Posted">
+    cdeV3.collateral.CurrencyOfExcessCollateralPosted
+
+reporting rule InitialMarginCollectedByCounterparty1PreHaircut from CollateralReportInstruction: <"Initial margin collected by the counterparty 1 (pre-haircut)">
+    extract
+        cdeV3.collateral.InitialMarginCollectedByReportingCounterpartyPreHaircut(
+                item,
+                reportingSide -> reportingParty
+            )
+
+reporting rule InitialMarginCollectedByCounterparty1PostHaircut from CollateralReportInstruction: <"Initial margin collected by the counterparty 1 (post-haircut)">
+    cdeV3.collateral.InitialMarginCollectedByReportingCounterpartyPostHaircut(
+            item,
+            reportingSide -> reportingParty
+        )
+
+reporting rule InitialMarginCollectedByCounterparty1Currency from CollateralReportInstruction: <"Currency of initial margin collected">
+    cdeV3.collateral.InitialMarginCollectedByReportingCounterpartyCurrency(
+            item,
+            reportingSide -> reportingParty
+        )
+
+reporting rule VariationMarginCollectedByTheCounterparty1PreHaircut from CollateralReportInstruction: <"Variation margin collected by the counterparty 1 cdeV">
+    cdeV3.collateral.VariationMarginCollectedByReportingCounterpartyPreHaircut(
+            item,
+            reportingSide -> reportingParty
+        )
+
+reporting rule VariationMarginCollectedByTheCounterparty1PostHaircut from CollateralReportInstruction: <"Variation margin collected by the counterparty 1 (post-haircut)">
+    cdeV3.collateral.VariationMarginCollectedByReportingCounterpartyPostHaircut(
+            item,
+            reportingSide -> reportingParty
+        )
+
+reporting rule VariationMarginCollectedByCounterparty1Currency from CollateralReportInstruction: <"Currency of variation margin collected">
+    cdeV3.collateral.VariationMarginCollectedByReportingCounterpartyCurrency(
+            item,
+            reportingSide -> reportingParty
+        )
+
+reporting rule ExcessCollateralCollectedByTheCounterparty1 from CollateralReportInstruction: <"Excess Collateral Collected By The Counterparty 1">
+    cdeV3.collateral.ExcessCollateralCollectedByTheReportingCounterparty
+
+// then extract RoundToPrecision(item, 5, RoundingDirectionEnum -> Nearest)
+reporting rule CurrencyOfExcessCollateralCollected from CollateralReportInstruction: <"Currency Of Excess Collateral Collected">
+    cdeV3.collateral.CurrencyOfExcessCollateralCollected
+
+reporting rule ActionType from CollateralReportInstruction: <"Action Type">
+    collateralDetails -> action
+
+reporting rule VariationMarginCollateralPortfolioCode from CollateralReportInstruction: <"Variation Margin Collateral Portfolio Code">
+    extract collateralDetails -> collateral -> collateralPortfolio
+    then filter
+        legalAgreement -> legalAgreementIdentification -> agreementName -> creditSupportAgreementMarginType = VariationMargin
+    then only-element
+    then portfolioIdentifier -> assignedIdentifier -> identifier last
+
+reporting rule InitialMarginCollateralPortfolioCode from CollateralReportInstruction: <"Initial Margin Collateral Portfolio Code">
+    extract collateralDetails -> collateral -> collateralPortfolio
+    then filter
+        legalAgreement -> legalAgreementIdentification -> agreementName -> creditSupportAgreementMarginType = InitialMargin
+    then only-element
+    then portfolioIdentifier -> assignedIdentifier -> identifier last

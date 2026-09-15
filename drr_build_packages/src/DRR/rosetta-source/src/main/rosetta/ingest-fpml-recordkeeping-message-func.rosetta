@@ -1,0 +1,168 @@
+namespace drr.ingest.fpml.recordkeeping.message
+version "${project.version}"
+
+import cdm.event.common.*
+import cdm.event.workflow.*
+import cdm.ingest.fpml.confirmation.common.*
+import cdm.ingest.fpml.confirmation.datetime.*
+import cdm.ingest.fpml.confirmation.workflowstep.*
+
+import drr.ingest.fpml.recordkeeping.reportableinfo.*
+import drr.regulation.common.*
+
+import fpml.consolidated.doc.* as fpml
+import fpml.consolidated.recordkeeping.processes.* as fpml
+
+func Ingest_FpmlRecordKeepingToReportableEvent:
+    [ingest XML]
+    inputs:
+        fpmlDocument fpml.Document (0..1)
+    output:
+        reportableEvent ReportableEvent (0..1)
+
+    set reportableEvent -> originatingWorkflowStep:
+        fpmlDocument switch
+            fpml.NonpublicExecutionReport then MapNonpublicExecutionReportToWorkflowStep,
+            default empty
+
+    set reportableEvent -> reportableInformation:
+        fpmlDocument switch
+            fpml.NonpublicExecutionReport then
+                MapTradeHeaderToReportableInformation(
+                        GetTradeHeaderForNonpublicExecutionReport,
+                        withdrawal,
+                        party,
+                        quote,
+                        header
+                    ),
+            default empty
+
+func GetTradeHeaderForNonpublicExecutionReport:
+    inputs:
+        fpmlNonpublicExecutionReport fpml.NonpublicExecutionReport (0..1)
+    output:
+        fpmlTradeHeader fpml.TradeHeader (0..1)
+
+    set fpmlTradeHeader:
+        if fpmlNonpublicExecutionReport -> trade -> tradeHeader exists
+        then fpmlNonpublicExecutionReport -> trade -> tradeHeader
+        else if fpmlNonpublicExecutionReport -> novation -> oldTrade -> tradeHeader exists
+        then fpmlNonpublicExecutionReport -> novation -> oldTrade -> tradeHeader
+        else if fpmlNonpublicExecutionReport -> termination -> originalTrade -> tradeHeader exists
+        then fpmlNonpublicExecutionReport -> termination -> originalTrade -> tradeHeader
+        else if fpmlNonpublicExecutionReport -> amendment -> trade -> tradeHeader exists
+        then fpmlNonpublicExecutionReport -> amendment -> trade -> tradeHeader
+
+func MapNonpublicExecutionReportToWorkflowStep:
+    inputs:
+        fpmlNonpublicExecutionReport fpml.NonpublicExecutionReport (1..1)
+    output:
+        workflowStep WorkflowStep (1..1)
+
+    alias fpmlTrade:
+        fpmlNonpublicExecutionReport -> trade default GetFpmlTrade(
+                empty,
+                empty,
+                fpmlNonpublicExecutionReport -> novation,
+                fpmlNonpublicExecutionReport -> termination,
+                fpmlNonpublicExecutionReport -> amendment
+            )
+
+    alias action: MapMessageAction(fpmlNonpublicExecutionReport -> isCorrection, empty)
+
+    alias fpmlTermination: fpmlNonpublicExecutionReport -> termination
+    alias fpmlNovation: fpmlNonpublicExecutionReport -> novation
+    alias fpmlAmendment: fpmlNonpublicExecutionReport -> amendment
+
+    alias eventDate:
+        if fpmlNovation exists // this seems wrong
+        then empty
+        else (fpmlAmendment -> agreementDate
+            then default fpmlAmendment -> trade -> tradeHeader -> partyTradeInformation -> executionDateTime -> value first
+            then default fpmlTermination -> agreementDate
+            then default fpmlTermination -> originalTrade -> tradeHeader -> partyTradeInformation -> executionDateTime -> value first
+            then default fpmlTrade -> tradeHeader -> partyTradeInformation -> executionDateTime -> value first
+            then default fpmlNonpublicExecutionReport -> tradingEvent -> agreementDate first
+            then default fpmlNovation -> novationDate
+            then default fpmlNovation -> novationTradeDate
+            then MapZoneDateTimeToDate)
+
+    alias tradingEventEffectiveDate:
+        fpmlNonpublicExecutionReport -> tradingEvent -> effectiveDate first
+
+    alias effectiveDate:
+        tradingEventEffectiveDate default fpmlTermination -> effectiveDate
+            then MapZoneDateTimeToDate
+
+    alias fpmlAdditionalPartyTradeIdentifier:
+        fpmlNonpublicExecutionReport -> withdrawal -> partyTradeIdentifier
+
+    set workflowStep:
+        MapWorkflowStep(
+                fpmlNonpublicExecutionReport -> header -> messageId,
+                fpmlNonpublicExecutionReport -> header -> creationTimestamp,
+                fpmlNonpublicExecutionReport -> header -> sentBy,
+                fpmlNonpublicExecutionReport -> header -> sendTo,
+                action,
+                fpmlTrade,
+                fpmlNonpublicExecutionReport -> novation,
+                fpmlNonpublicExecutionReport -> termination,
+                fpmlNonpublicExecutionReport -> amendment,
+                fpmlNonpublicExecutionReport -> party,
+                fpmlNonpublicExecutionReport -> account,
+                fpmlNonpublicExecutionReport -> quote,
+                MapIntent(fpmlNonpublicExecutionReport),
+                eventDate,
+                effectiveDate,
+                fpmlNonpublicExecutionReport -> tradingEvent only-element,
+                fpmlAdditionalPartyTradeIdentifier
+            )
+
+//TODO: align the logic between MapIntent in CDM and here as they differ then use the version in CDM instead of this
+func MapIntent:
+    inputs:
+        fpmlNonpublicExecutionReport fpml.NonpublicExecutionReport (0..1)
+    output:
+        intent EventIntentEnum (0..1)
+
+    alias partyTradeInformation:
+        fpmlNonpublicExecutionReport -> trade -> tradeHeader -> partyTradeInformation
+
+    alias clearing:
+        fpmlNonpublicExecutionReport
+            then [trade, amendment -> trade]
+            then [tradeHeader -> partyTradeInformation] filter intentToClear = True
+
+    alias intentToAllocate: partyTradeInformation extract intentToAllocate = True
+    alias postAllocation:
+        partyTradeInformation extract allocationStatus -> value = "PostAllocation"
+
+    set intent:
+        fpmlNonpublicExecutionReport
+            extract
+                if originatingEvent -> value = "Netting"
+                        or originatingEvent -> value = "PortfolioCompression"
+                        or terminatingEvent -> value = "PortfolioCompression"
+                        or terminatingEvent -> value = "Netting"
+                then Compression
+                else if postAllocation first and intentToAllocate exists
+                        or originatingEvent -> value = "Allocation"
+                        or terminatingEvent -> value = "Allocation"
+                then Allocation
+                else if originatingEvent -> value = "PortfolioRebalancing"
+                        or terminatingEvent -> value = "PortfolioRebalancing"
+                then PortfolioRebalancing
+                else if originatingEvent -> value = "Trade"
+                        or originatingEvent -> value = "ForwardAgainstFixing"
+                        or trade exists
+                then ContractFormation
+                else if originatingEvent -> value = "Novation" or novation exists
+                then Novation
+                else if optionExercise exists or originatingEvent -> value = "Exercise"
+                then OptionExercise
+                else if amendment exists
+                then ContractTermsAmendment
+                else if clearing exists
+                then Clearing
+                else if originatingEvent -> value = "CreditEvent"
+                then CreditEvent

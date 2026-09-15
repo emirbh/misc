@@ -1,0 +1,38 @@
+namespace drr.enrichment.common
+version "${project.version}"
+
+import cdm.base.*
+
+import drr.base.*
+import drr.base.trade.*
+import drr.enrichment.upi.*
+import drr.regulation.common.*
+
+reporting rule EnrichmentData from TransactionReportInstruction: <"Copy enrichment data from reportable information.">
+    extract reportableInformation -> enrichment
+
+reporting rule CollateralEnrichmentData from CollateralReportInstruction: <"Copy enrichment data from reportable information.">
+    extract reportableInformation -> enrichment
+
+reporting rule ValuationEnrichmentData from ValuationReportInstruction: <"Copy enrichment data from reportable information.">
+    extract reportableInformation -> enrichment
+
+reporting rule UpiPreEnrichmentData from TransactionReportInstructionBase: <"Copy pre-enrichment data from reportable event.">
+    [docReference ISDA EUUKNAPeerReviewGroup date "20250709"
+        provision "The 'Create_AnnaDsbUpiRequestFromReportableEvent' function generates Anna DSB requests which can be at either the product level or the underlier level. The generation level is determined by the 'requestType' attribute, which accepts two values: 'ProductRequest' for product-level generation and 'UnderlyingProductRequest' for underlier-level generation. However, due to validation requirements for reporting across all jurisdictions, generation must occur at the product level. Therefore, only the 'ProductRequest' value is permitted to generate both 'preUpiData' and 'postUpiData'. This means that both the request and the corresponding record from Anna DSB will be generated if the enrichment is performed at the product level."]
+    if reportableInformation -> enrichment -> upiData -> upiValidation is absent
+            or reportableInformation -> enrichment -> upiData -> upiValidation any = True
+    then extract
+        if Create_AnnaDsbUpiRequestFromReportableEvent(item) -> requestType = ProductRequest
+        then Create_AnnaDsbUpiRequestFromReportableEvent(item)
+
+reporting rule UpiPostEnrichmentData from TransactionReportInstruction: <"Copy post-enrichment data from reportable event.">
+    [docReference ISDA EUUKNAPeerReviewGroup date "20250709"
+        provision "The 'Create_AnnaDsbUpiRequestFromReportableEvent' function generates Anna DSB requests which can be at either the product level or the underlier level. The generation level is determined by the 'requestType' attribute, which accepts two values: 'ProductRequest' for product-level generation and 'UnderlyingProductRequest' for underlier-level generation. However, due to validation requirements for reporting across all jurisdictions, generation must occur at the product level. Therefore, only the 'ProductRequest' value is permitted to generate both 'preUpiData' and 'postUpiData'. This means that both the request and the corresponding record from Anna DSB will be generated if the enrichment is performed at the product level."]
+    if reportableInformation -> enrichment -> upiData -> upiValidation is absent
+            or reportableInformation -> enrichment -> upiData -> upiValidation any = True
+    then extract
+        if Create_AnnaDsbUpiRequestFromReportableEvent(item) -> requestType = ProductRequest
+        then API_AnnaDsbRetrieveUpi(
+                    Create_AnnaDsbUpiRequestFromReportableEvent(item) -> request
+                )

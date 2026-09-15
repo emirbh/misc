@@ -1,0 +1,31 @@
+namespace drr.regulation.common.trade.payment
+version "${project.version}"
+
+import cdm.product.asset.*
+
+import drr.base.qualification.product.*
+import drr.base.trade.*
+import drr.regulation.common.*
+import drr.regulation.common.trade.*
+import drr.standards.iso.*
+
+//Leg agnostic rules
+reporting rule NextFloatingReferenceResetDateLeg1 from TransactionReportInstruction:
+    filter IsFRA(ProductForEvent) = False
+    then FloatingInterestRatePayoutFromPayout(PayoutLeg1)
+    then NextFloatingReferenceResetDate
+
+reporting rule NextFloatingReferenceResetDateLeg2 from TransactionReportInstruction:
+    filter IsFRA(ProductForEvent) = False
+    then FloatingInterestRatePayoutFromPayout(PayoutLeg2)
+    then NextFloatingReferenceResetDate
+
+reporting rule NextFloatingReferenceResetDate from InterestRatePayout:
+    if resetDates exists
+    then resetDates -> fixingDates -> adjustedDate
+
+reporting rule FloatingRateResetFrequencyPeriod from InterestRatePayout: <"Floating rate reset frequency period">
+    ConvertPeriodtoISOFrequencyPeriod(resetDates -> resetFrequency -> period)
+
+reporting rule FloatingRateResetFrequencyPeriodMultiplier from InterestRatePayout: <"Floating rate reset frequency period muliplier">
+    resetDates -> resetFrequency -> periodMultiplier then FormatToMax3Number

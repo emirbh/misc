@@ -1,0 +1,81 @@
+namespace drr.regulation.asic.rewrite.margin
+version "${project.version}"
+
+import drr.base.*
+import drr.base.util.party.*
+import drr.regulation.asic.*
+import drr.regulation.common.*
+import drr.standards.iosco.uti.* as uti
+import drr.standards.iso.*
+
+corpus Dissemination Margin
+
+report ASIC Margin in T+1
+    from CollateralReportInstruction
+    when IsCollateralReportable
+    with type ASICMarginReport
+
+eligibility rule IsCollateralReportable from CollateralReportInstruction: <"When eligible for ASIC">
+    [docReference ASIC Margin article "9" paragraph "1"
+        provision "Counterparties and CCPs shall ensure that the details of any derivative contract they have concluded and of any modification or termination of the contract are reported to a trade repository registered in accordance with Article 55 or recognised in accordance with Article 77. The details shall be reported no later than the working day following the conclusion, modification or termination of the contract."]
+    filter HasCollateral
+
+eligibility rule HasCollateral from CollateralReportInstruction: <"When eligible for ASIC">
+    [docReference ASIC Margin article "2" paragraph "5"
+        provision "Derivative or derivative contract means a financial instrument as set out in points (4) to (10) of Section C of Annex I to Directive 2004/39 EC as implemented by Article 38 and 39 of Regulation (EC) No 1287/2006"]
+    extract collateralDetails -> collateral exists
+
+//ASIC Definitions
+reporting rule UniqueTransactionIdentifier from CollateralReportInstruction: <"Unique transaction identifier">
+    uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            ASIC,
+            item -> collateralDetails -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = True
+
+reporting rule UniqueTransactionIdentifierProprietary from CollateralReportInstruction: <"Unique transaction identifier">
+    uti.GetUniqueTransactionIdentifier(
+            item -> reportableInformation,
+            ASIC,
+            item -> collateralDetails -> uniqueTradeIdentifier,
+            empty
+        )
+        then filter IsMax52UpperCaseAlphanumericText = False
+
+reporting rule ReportingEntity from CollateralReportInstruction: <"Reporting entity">
+    extract ExtractPartyResponsibleForReportingIdentifier(reportingSide)
+
+reporting rule SmallScaleBuySideEntityIndicator from CollateralReportInstruction: <"Small-scale Buy-side Entity indicator">
+    extract item -> reportableInformation -> jurisdictionInformation
+    then filter supervisoryBody = SupervisoryBodyEnum -> ASIC
+    then only-element
+    then extract
+        partyInformation -> asicPartyInformation -> smallScaleBuySideIndicator distinct
+    then extract if item exists and item = True then "SSBS"
+    then only-element
+
+reporting rule PortfolioContainingNonReportedComponentIndicator from CollateralReportInstruction: <"Portfolio containing non-reported component indicator">
+    extract reportableInformation -> jurisdictionInformation
+    then filter supervisoryBody = ASIC
+    then only-element
+    then extract
+        if partyInformation -> asicPartyInformation -> nonReportedTradePortfolio exists
+        then partyInformation -> asicPartyInformation -> nonReportedTradePortfolio first
+        else False
+
+reporting rule TechnicalRecordId from CollateralReportInstruction: <"Technical Record Id (ISO)">
+    extract
+        if trade.link.TechnicalRecordId(reportableInformation, ASIC) -> isUnique
+        then trade.link.TechnicalRecordId(reportableInformation, ASIC) -> id
+        else trade.link.TechnicalRecordId(reportableInformation, ASIC) -> id + "_" + (margin.datetime.ReportingTimestamp to-string)
+
+reporting rule ExecutionAgentOfCounterparty1 from CollateralReportInstruction: <"Execution agent of the Counterparty 1 (DTCC)">
+    extract reportableCollateral [
+        reportableCollateral -> reportableInformation -> globalPartyInformation
+            filter partyReference = reportableCollateral -> reportingSide -> reportingParty
+            then distinct only-element
+            then extract ExtractPartyFromRelatedPartyByRole(relatedParty, ExecutionAgent)
+            then extract PartyLei(partyId)
+    ]
