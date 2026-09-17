@@ -79,6 +79,14 @@ rm -f "$OUT"/*.jar
 # temp/built/. This also runs on failure or Ctrl+C, and at the start, to recover
 # from an interrupted run.
 
+# Maven module directories (those holding a pom.xml) under the given paths. POMs
+# never live inside src/ or target/, so those are not entered: it keeps the
+# search fast, and on Windows it avoids source paths beyond 260 characters.
+module_dirs() { # path...
+  find "$@" \( -name src -o -name target -o -name .git -o -name node_modules \) -prune \
+    -o -type f -name pom.xml -print 2>/dev/null | sed 's|/pom.xml$||'
+}
+
 save_original() { # file
   local manifest="$ORIGINALS/manifest" n
   mkdir -p "$ORIGINALS"
@@ -96,16 +104,19 @@ move_out() { # path
 
 restore_src() {
   set +e
-  # 1. undo edits: files kept by save_original, then versions:set backups
+  # 1. undo edits. versions:set backups first: a POM can be edited before
+  # versions:set runs, and its backup then holds the edited POM. The files kept
+  # by save_original are the state before the build, so they are applied last.
+  local d f dirs=("$SRC"/*/)
+  [ "${DRR_SRC#"$SRC"/}" = "$DRR_SRC" ] && dirs+=("$DRR_SRC/")
+  module_dirs "${dirs[@]}" | while IFS= read -r f; do
+    [ -f "$f/pom.xml.versionsBackup" ] && mv "$f/pom.xml.versionsBackup" "$f/pom.xml"
+  done
   if [ -f "$ORIGINALS/manifest" ]; then
-    local n=0 f
+    local n=0
     while IFS= read -r f; do n=$((n + 1)); cp -p "$ORIGINALS/$n" "$f"; done < "$ORIGINALS/manifest"
   fi
   rm -rf "$ORIGINALS"
-  local d dirs=("$SRC"/*/)
-  [ "${DRR_SRC#"$SRC"/}" = "$DRR_SRC" ] && dirs+=("$DRR_SRC/")
-  find "${dirs[@]}" -name 'pom.xml.versionsBackup' -not -path '*/.git/*' 2>/dev/null |
-    while IFS= read -r f; do mv "$f" "${f%.versionsBackup}"; done
   # 2. move build output out of src/
   for d in "${dirs[@]}"; do
     d="${d%/}"
@@ -114,8 +125,9 @@ restore_src() {
         while IFS= read -r p; do move_out "$d/${p%/}"; done
       [ -z "$(cd "$d" && git status --porcelain)" ] || echo "WARNING: ${d#"$ROOT"/} still differs from its checkout" >&2
     else
-      find "$d" -type d \( -name target -o -path '*/src/generated' \) -prune -print 2>/dev/null |
-        while IFS= read -r p; do move_out "$p"; done
+      module_dirs "$d" | while IFS= read -r m; do
+        for p in "$m/target" "$m/src/generated"; do [ -d "$p" ] && move_out "$p"; done
+      done
     fi
   done
   set -e
@@ -157,7 +169,8 @@ set_version() { # name dir version
 # from a project's POMs before it is built; restore_src puts the originals back.
 strip_generator() { # project-dir
   local f tmp="$TEMP/pom.stripped"
-  find "$1" -name pom.xml -not -path '*/target/*' -not -path '*/.git/*' | while IFS= read -r f; do
+  module_dirs "$1" | while IFS= read -r f; do
+    f="$f/pom.xml"
     perl -0pe '
       s{\s*<plugin>\s*(?:<groupId>[^<]*</groupId>\s*)?<artifactId>(?:rosetta|rune)-maven-plugin</artifactId>.*?</plugin>}{}gs;
       s{\s*<dependency>\s*<groupId>[^<]*</groupId>\s*<artifactId>(?:com\.regnosys\.rosetta(?:\.tests|\.xcore|\.tools|\.ide)?|rosetta-maven-plugin|rosetta-testing|rune-(?:lang|maven-plugin|testing|xcore-plugin-dependencies|generator-api|tools|ide))</artifactId>(?:(?!</dependency>).)*</dependency>}{}gs;

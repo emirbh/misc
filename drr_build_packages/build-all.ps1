@@ -87,6 +87,23 @@ Remove-Item (Join-Path $Out '*.jar') -ErrorAction SilentlyContinue
 # temp\built\. This also runs on failure or Ctrl+C, and at the start, to recover
 # from an interrupted run.
 
+# Maven module directories (those holding a pom.xml) under a path. POMs never
+# live inside src\ or target\, so those are not entered: Windows PowerShell
+# cannot read paths beyond 260 characters, and the DRR sources go well past it.
+function Get-ModuleDirs([string]$Dir) {
+    $found = New-Object System.Collections.Generic.List[string]
+    $stack = New-Object System.Collections.Generic.Stack[string]
+    $stack.Push([IO.Path]::GetFullPath($Dir))
+    while ($stack.Count -gt 0) {
+        $d = $stack.Pop()
+        if ([IO.File]::Exists((Join-Path $d 'pom.xml'))) { $found.Add($d) }
+        foreach ($child in [IO.Directory]::GetDirectories($d)) {
+            if (@('src', 'target', '.git', 'node_modules') -notcontains [IO.Path]::GetFileName($child)) { $stack.Push($child) }
+        }
+    }
+    return ,$found
+}
+
 function Save-Original([string]$File) {
     $manifest = Join-Path $Originals 'manifest'
     New-Item -ItemType Directory -Force -Path $Originals | Out-Null
@@ -115,20 +132,23 @@ function Move-Out([string]$Path) {
 
 function Restore-Src {
     $ErrorActionPreference = 'Continue'
-    # 1. undo edits: files kept by Save-Original, then versions:set backups
+    # 1. undo edits. versions:set backups first: a POM can be edited before
+    # versions:set runs, and its backup then holds the edited POM. The files kept
+    # by Save-Original are the state before the build, so they are applied last.
+    $dirs = @(Get-ChildItem -LiteralPath $Src -Directory | ForEach-Object { $_.FullName })
+    if (-not ([IO.Path]::GetFullPath($DrrSrc)).StartsWith($Src + [IO.Path]::DirectorySeparatorChar)) { $dirs += $DrrSrc }
+    foreach ($d in $dirs) {
+        foreach ($m in (Get-ModuleDirs $d)) {
+            $backup = Join-Path $m 'pom.xml.versionsBackup'
+            if ([IO.File]::Exists($backup)) { Move-Item -LiteralPath $backup -Destination (Join-Path $m 'pom.xml') -Force }
+        }
+    }
     $manifest = Join-Path $Originals 'manifest'
     if (Test-Path $manifest) {
         $n = 0
         foreach ($file in @(Get-Content $manifest)) { $n++; Copy-Item -LiteralPath (Join-Path $Originals $n) -Destination $file -Force }
     }
     Remove-Item -LiteralPath $Originals -Recurse -Force -ErrorAction SilentlyContinue
-    $dirs = @(Get-ChildItem -LiteralPath $Src -Directory | ForEach-Object { $_.FullName })
-    if (-not ([IO.Path]::GetFullPath($DrrSrc)).StartsWith($Src + [IO.Path]::DirectorySeparatorChar)) { $dirs += $DrrSrc }
-    foreach ($d in $dirs) {
-        Get-ChildItem -LiteralPath $d -Recurse -Force -Filter 'pom.xml.versionsBackup' -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' } |
-            ForEach-Object { Move-Item -LiteralPath $_.FullName -Destination (Join-Path $_.DirectoryName 'pom.xml') -Force }
-    }
     # 2. move build output out of src\
     foreach ($d in $dirs) {
         if (Test-Path (Join-Path $d '.git')) {
@@ -139,14 +159,11 @@ function Restore-Src {
                 Write-Warning "$($d.Substring($Root.Length + 1)) still differs from its checkout"
             }
         } else {
-            $moved = @()
-            Get-ChildItem -LiteralPath $d -Recurse -Directory -Force -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -eq 'target' -or ($_.Name -eq 'generated' -and $_.Parent.Name -eq 'src') } |
-                Sort-Object { $_.FullName.Length } |
-                ForEach-Object {
-                    $p = $_.FullName
-                    if (-not ($moved | Where-Object { $p.StartsWith($_ + [IO.Path]::DirectorySeparatorChar) })) { Move-Out $p; $moved += $p }
+            foreach ($m in (Get-ModuleDirs $d)) {
+                foreach ($p in @((Join-Path $m 'target'), (Join-Path $m 'src\generated'))) {
+                    if ([IO.Directory]::Exists($p)) { Move-Out $p }
                 }
+            }
         }
     }
 }
@@ -201,10 +218,8 @@ function Update-Pom([string]$File, [scriptblock]$Transform) {
 }
 
 function Remove-Generator([string]$Dir) {
-    Get-ChildItem -LiteralPath $Dir -Recurse -Filter 'pom.xml' -File |
-        Where-Object { $_.FullName -notmatch '[\\/](target|\.git)[\\/]' } |
-        ForEach-Object {
-            Update-Pom $_.FullName {
+    foreach ($m in (Get-ModuleDirs $Dir)) {
+            Update-Pom (Join-Path $m 'pom.xml') {
                 param($t)
                 $t = [regex]::Replace($t, '\s*<plugin>\s*(?:<groupId>[^<]*</groupId>\s*)?<artifactId>(?:rosetta|rune)-maven-plugin</artifactId>.*?</plugin>', '', $RegexOpts)
                 $t = [regex]::Replace($t, '\s*<dependency>\s*<groupId>[^<]*</groupId>\s*<artifactId>(?:com\.regnosys\.rosetta(?:\.tests|\.xcore|\.tools|\.ide)?|rosetta-maven-plugin|rosetta-testing|rune-(?:lang|maven-plugin|testing|xcore-plugin-dependencies|generator-api|tools|ide))</artifactId>(?:(?!</dependency>).)*</dependency>', '', $RegexOpts)
