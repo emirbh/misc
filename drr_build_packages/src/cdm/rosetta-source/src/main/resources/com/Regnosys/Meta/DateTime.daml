@@ -1,0 +1,12 @@
+daml 1.2
+
+-- | This file is auto-generated from the ISDA Common
+--   Domain Model, do not edit.
+--   @version ${project.version}
+module Com.Regnosys.Meta.DateTime
+  ( module Com.Regnosys.Meta.DateTime ) where
+
+data DateTime = DateTime with
+  dateTime : Time
+  timezone : Text
+    deriving (Eq, Ord, Show)

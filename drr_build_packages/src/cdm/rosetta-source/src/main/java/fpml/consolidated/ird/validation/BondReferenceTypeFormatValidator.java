@@ -1,0 +1,36 @@
+package fpml.consolidated.ird.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.ird.BondReference;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class BondReferenceTypeFormatValidator implements Validator<BondReference> {
+
+	private List<ComparisonResult> getComparisonResults(BondReference o) {
+		return Lists.<ComparisonResult>newArrayList(
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, BondReference o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("BondReference", ValidationResult.ValidationType.TYPE_FORMAT, "BondReference", path, "", res.getError());
+				}
+				return success("BondReference", ValidationResult.ValidationType.TYPE_FORMAT, "BondReference", path, "");
+			})
+			.collect(toList());
+	}
+
+}

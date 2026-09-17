@@ -1,0 +1,64 @@
+package fpml.consolidated.doc.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.doc.PackageSummary;
+import fpml.consolidated.doc.validation.PackageSummaryTypeFormatValidator;
+import fpml.consolidated.doc.validation.PackageSummaryValidator;
+import fpml.consolidated.doc.validation.exists.PackageSummaryOnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version 2.1.1
+ */
+@RosettaMeta(model=PackageSummary.class)
+public class PackageSummaryMeta implements RosettaMetaData<PackageSummary> {
+
+	@Override
+	public List<Validator<? super PackageSummary>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+		);
+	}
+	
+	@Override
+	public List<Function<? super PackageSummary, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super PackageSummary> validator(ValidatorFactory factory) {
+		return factory.<PackageSummary>create(PackageSummaryValidator.class);
+	}
+
+	@Override
+	public Validator<? super PackageSummary> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<PackageSummary>create(PackageSummaryTypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super PackageSummary> validator() {
+		return new PackageSummaryValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super PackageSummary> typeFormatValidator() {
+		return new PackageSummaryTypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super PackageSummary, Set<String>> onlyExistsValidator() {
+		return new PackageSummaryOnlyExistsValidator();
+	}
+}

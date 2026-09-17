@@ -1,0 +1,36 @@
+package fpml.consolidated.loan.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.loan.LoanCovenantObligationReference;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class LoanCovenantObligationReferenceTypeFormatValidator implements Validator<LoanCovenantObligationReference> {
+
+	private List<ComparisonResult> getComparisonResults(LoanCovenantObligationReference o) {
+		return Lists.<ComparisonResult>newArrayList(
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, LoanCovenantObligationReference o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("LoanCovenantObligationReference", ValidationResult.ValidationType.TYPE_FORMAT, "LoanCovenantObligationReference", path, "", res.getError());
+				}
+				return success("LoanCovenantObligationReference", ValidationResult.ValidationType.TYPE_FORMAT, "LoanCovenantObligationReference", path, "");
+			})
+			.collect(toList());
+	}
+
+}

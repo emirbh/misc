@@ -1,0 +1,62 @@
+package fpml.consolidated.com.validation.datarule;
+
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.annotations.RosettaDataRule;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.com.CommodityBasketOption;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+/**
+ * @version 2.1.1
+ */
+@RosettaDataRule("CommodityBasketOptionChoice3")
+@ImplementedBy(CommodityBasketOptionChoice3.Default.class)
+public interface CommodityBasketOptionChoice3 extends Validator<CommodityBasketOption> {
+	
+	String NAME = "CommodityBasketOptionChoice3";
+	String DEFINITION = "optional choice strikePriceUnderlyingReference, strikePriceBasketReference";
+	
+	class Default implements CommodityBasketOptionChoice3 {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, CommodityBasketOption commodityBasketOption) {
+			ComparisonResult result = executeDataRule(commodityBasketOption);
+			if (result.getOrDefault(true)) {
+				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "CommodityBasketOption", path, DEFINITION));
+			}
+			
+			String failureMessage = result.getError();
+			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+				failureMessage = "Condition has failed.";
+			}
+			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "CommodityBasketOption", path, DEFINITION, failureMessage));
+		}
+		
+		private ComparisonResult executeDataRule(CommodityBasketOption commodityBasketOption) {
+			try {
+				return choice(MapperS.of(commodityBasketOption), Arrays.asList("strikePriceUnderlyingReference", "strikePriceBasketReference"), ChoiceRuleValidationMethod.OPTIONAL);
+			}
+			catch (Exception ex) {
+				return ComparisonResult.failure(ex.getMessage());
+			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	class NoOp implements CommodityBasketOptionChoice3 {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, CommodityBasketOption commodityBasketOption) {
+			return Collections.emptyList();
+		}
+	}
+}

@@ -1,0 +1,44 @@
+package fpml.consolidated.validation.exists;
+
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.DigestMethodType;
+import fpml.consolidated.ReferenceType;
+import fpml.consolidated.TransformsType;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class ReferenceTypeOnlyExistsValidator implements ValidatorWithArg<ReferenceType, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends ReferenceType> ValidationResult<ReferenceType> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("id", ExistenceChecker.isSet((String) o.getId()))
+				.put("uri", ExistenceChecker.isSet((String) o.getUri()))
+				.put("type", ExistenceChecker.isSet((String) o._getType()))
+				.put("transforms", ExistenceChecker.isSet((TransformsType) o.getTransforms()))
+				.put("digestMethod", ExistenceChecker.isSet((DigestMethodType) o.getDigestMethod()))
+				.put("digestValue", ExistenceChecker.isSet((String) o.getDigestValue()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("ReferenceType", ValidationResult.ValidationType.ONLY_EXISTS, "ReferenceType", path, "");
+		}
+		return failure("ReferenceType", ValidationResult.ValidationType.ONLY_EXISTS, "ReferenceType", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

@@ -1,0 +1,319 @@
+package fpml.consolidated.shared;
+
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.Required;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import fpml.consolidated.shared.meta.TimeZoneMeta;
+import java.time.LocalTime;
+import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision Class TimeZone from CDM: The time alongside with the timezone location information. This class makes use of the FpML TimezoneLocation construct.
+ *
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "confirmation-5.13"
+ *
+ * Provision Class TimeZone from CDM: The time alongside with the timezone location information. This class makes use of the FpML TimezoneLocation construct.
+ *
+ */
+@RosettaDataType(value="TimeZone", builder=TimeZone.TimeZoneBuilderImpl.class, version="2.1.1")
+@RuneDataType(value="TimeZone", model="fpml", builder=TimeZone.TimeZoneBuilderImpl.class, version="2.1.1")
+public interface TimeZone extends RosettaModelObject {
+
+	TimeZoneMeta metaData = new TimeZoneMeta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision 
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision 
+	 *
+	 */
+	LocalTime getTime();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision 
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision 
+	 *
+	 */
+	TimezoneLocation getLocation();
+
+	/*********************** Build Methods  ***********************/
+	TimeZone build();
+	
+	TimeZone.TimeZoneBuilder toBuilder();
+	
+	static TimeZone.TimeZoneBuilder builder() {
+		return new TimeZone.TimeZoneBuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends TimeZone> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends TimeZone> getType() {
+		return TimeZone.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("time"), LocalTime.class, getTime(), this);
+		processRosetta(path.newSubPath("location"), processor, TimezoneLocation.class, getLocation());
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface TimeZoneBuilder extends TimeZone, RosettaModelObjectBuilder {
+		TimezoneLocation.TimezoneLocationBuilder getOrCreateLocation();
+		@Override
+		TimezoneLocation.TimezoneLocationBuilder getLocation();
+		TimeZone.TimeZoneBuilder setTime(LocalTime time);
+		TimeZone.TimeZoneBuilder setLocation(TimezoneLocation location);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("time"), LocalTime.class, getTime(), this);
+			processRosetta(path.newSubPath("location"), processor, TimezoneLocation.TimezoneLocationBuilder.class, getLocation());
+		}
+		
+
+		TimeZone.TimeZoneBuilder prune();
+	}
+
+	/*********************** Immutable Implementation of TimeZone  ***********************/
+	class TimeZoneImpl implements TimeZone {
+		private final LocalTime time;
+		private final TimezoneLocation location;
+		
+		protected TimeZoneImpl(TimeZone.TimeZoneBuilder builder) {
+			this.time = builder.getTime();
+			this.location = ofNullable(builder.getLocation()).map(f->f.build()).orElse(null);
+		}
+		
+		@Override
+		@RosettaAttribute("time")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("time")
+		public LocalTime getTime() {
+			return time;
+		}
+		
+		@Override
+		@RosettaAttribute("location")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("location")
+		public TimezoneLocation getLocation() {
+			return location;
+		}
+		
+		@Override
+		public TimeZone build() {
+			return this;
+		}
+		
+		@Override
+		public TimeZone.TimeZoneBuilder toBuilder() {
+			TimeZone.TimeZoneBuilder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(TimeZone.TimeZoneBuilder builder) {
+			ofNullable(getTime()).ifPresent(builder::setTime);
+			ofNullable(getLocation()).ifPresent(builder::setLocation);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			TimeZone _that = getType().cast(o);
+		
+			if (!Objects.equals(time, _that.getTime())) return false;
+			if (!Objects.equals(location, _that.getLocation())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (time != null ? time.hashCode() : 0);
+			_result = 31 * _result + (location != null ? location.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "TimeZone {" +
+				"time=" + this.time + ", " +
+				"location=" + this.location +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of TimeZone  ***********************/
+	class TimeZoneBuilderImpl implements TimeZone.TimeZoneBuilder {
+	
+		protected LocalTime time;
+		protected TimezoneLocation.TimezoneLocationBuilder location;
+		
+		@Override
+		@RosettaAttribute("time")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("time")
+		public LocalTime getTime() {
+			return time;
+		}
+		
+		@Override
+		@RosettaAttribute("location")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("location")
+		public TimezoneLocation.TimezoneLocationBuilder getLocation() {
+			return location;
+		}
+		
+		@Override
+		public TimezoneLocation.TimezoneLocationBuilder getOrCreateLocation() {
+			TimezoneLocation.TimezoneLocationBuilder result;
+			if (location!=null) {
+				result = location;
+			}
+			else {
+				result = location = TimezoneLocation.builder();
+			}
+			
+			return result;
+		}
+		
+		@RosettaAttribute("time")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("time")
+		@Override
+		public TimeZone.TimeZoneBuilder setTime(LocalTime _time) {
+			this.time = _time == null ? null : _time;
+			return this;
+		}
+		
+		@RosettaAttribute("location")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("location")
+		@Override
+		public TimeZone.TimeZoneBuilder setLocation(TimezoneLocation _location) {
+			this.location = _location == null ? null : _location.toBuilder();
+			return this;
+		}
+		
+		@Override
+		public TimeZone build() {
+			return new TimeZone.TimeZoneImpl(this);
+		}
+		
+		@Override
+		public TimeZone.TimeZoneBuilder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public TimeZone.TimeZoneBuilder prune() {
+			if (location!=null && !location.prune().hasData()) location = null;
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getTime()!=null) return true;
+			if (getLocation()!=null && getLocation().hasData()) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public TimeZone.TimeZoneBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			TimeZone.TimeZoneBuilder o = (TimeZone.TimeZoneBuilder) other;
+			
+			merger.mergeRosetta(getLocation(), o.getLocation(), this::setLocation);
+			
+			merger.mergeBasic(getTime(), o.getTime(), this::setTime);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			TimeZone _that = getType().cast(o);
+		
+			if (!Objects.equals(time, _that.getTime())) return false;
+			if (!Objects.equals(location, _that.getLocation())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (time != null ? time.hashCode() : 0);
+			_result = 31 * _result + (location != null ? location.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "TimeZoneBuilder {" +
+				"time=" + this.time + ", " +
+				"location=" + this.location +
+			'}';
+		}
+	}
+}

@@ -1,0 +1,890 @@
+package fpml.consolidated.fx.targets;
+
+import com.google.common.collect.ImmutableList;
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.Multi;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import com.rosetta.util.ListEquals;
+import fpml.consolidated.fpmlenum.DayTypeEnum;
+import fpml.consolidated.fx.targets.meta.FxScheduleMeta;
+import fpml.consolidated.shared.BusinessCenters;
+import fpml.consolidated.shared.BusinessCentersReference;
+import fpml.consolidated.shared.BusinessDayAdjustments;
+import fpml.consolidated.shared.ObservationFrequency;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision The FxSchedule may be expressed as explicit adjusted dates, or a parametric representation plus optional adjusted dates, or as an offset plus optional adusted dates.
+ *
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "confirmation-5.13"
+ *
+ * Provision The FxSchedule may be expressed as explicit adjusted dates, or a parametric representation plus optional adjusted dates, or as an offset plus optional adusted dates.
+ *
+ */
+@RosettaDataType(value="FxSchedule", builder=FxSchedule.FxScheduleBuilderImpl.class, version="2.1.1")
+@RuneDataType(value="FxSchedule", model="fpml", builder=FxSchedule.FxScheduleBuilderImpl.class, version="2.1.1")
+public interface FxSchedule extends RosettaModelObject {
+
+	FxScheduleMeta metaData = new FxScheduleMeta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision 
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision 
+	 *
+	 */
+	String getId();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision Date adjustments applied to the adjusted dates including the business day convention and the business centers.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision Date adjustments applied to the adjusted dates including the business day convention and the business centers.
+	 *
+	 */
+	BusinessDayAdjustments getDateAdjustments();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.
+	 *
+	 */
+	List<ZonedDateTime> getAdjustedDate();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision Start of the schedule.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision Start of the schedule.
+	 *
+	 */
+	ZonedDateTime getStartDate();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision End of the schedule.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision End of the schedule.
+	 *
+	 */
+	ZonedDateTime getEndDate();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision Defines the frequency at which calculation period end dates occur within the period schedule and their roll date convention.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision Defines the frequency at which calculation period end dates occur within the period schedule and their roll date convention.
+	 *
+	 */
+	ObservationFrequency getObservationFrequency();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision A day type classification, e.g. Business, Calendar, etc.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision A day type classification, e.g. Business, Calendar, etc.
+	 *
+	 */
+	DayTypeEnum getDayType();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision A pointer style reference to a set of financial business centers defined elsewhere in the document. This set of business centers is used to determine whether a particular day is a business day or not.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision A pointer style reference to a set of financial business centers defined elsewhere in the document. This set of business centers is used to determine whether a particular day is a business day or not.
+	 *
+	 */
+	BusinessCentersReference getBusinessCentersReference();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision 
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision 
+	 *
+	 */
+	BusinessCenters getBusinessCenters();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision The representation of the schedule as an offset relative to another schedule. For example, the settlement schedule may be relative to the expiry schedule by an FxForward offset.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision The representation of the schedule as an offset relative to another schedule. For example, the settlement schedule may be relative to the expiry schedule by an FxForward offset.
+	 *
+	 */
+	FxDateOffset getDateOffset();
+
+	/*********************** Build Methods  ***********************/
+	FxSchedule build();
+	
+	FxSchedule.FxScheduleBuilder toBuilder();
+	
+	static FxSchedule.FxScheduleBuilder builder() {
+		return new FxSchedule.FxScheduleBuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends FxSchedule> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends FxSchedule> getType() {
+		return FxSchedule.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("id"), String.class, getId(), this);
+		processRosetta(path.newSubPath("dateAdjustments"), processor, BusinessDayAdjustments.class, getDateAdjustments());
+		processor.processBasic(path.newSubPath("adjustedDate"), ZonedDateTime.class, getAdjustedDate(), this);
+		processor.processBasic(path.newSubPath("startDate"), ZonedDateTime.class, getStartDate(), this);
+		processor.processBasic(path.newSubPath("endDate"), ZonedDateTime.class, getEndDate(), this);
+		processRosetta(path.newSubPath("observationFrequency"), processor, ObservationFrequency.class, getObservationFrequency());
+		processor.processBasic(path.newSubPath("dayType"), DayTypeEnum.class, getDayType(), this);
+		processRosetta(path.newSubPath("businessCentersReference"), processor, BusinessCentersReference.class, getBusinessCentersReference());
+		processRosetta(path.newSubPath("businessCenters"), processor, BusinessCenters.class, getBusinessCenters());
+		processRosetta(path.newSubPath("dateOffset"), processor, FxDateOffset.class, getDateOffset());
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface FxScheduleBuilder extends FxSchedule, RosettaModelObjectBuilder {
+		BusinessDayAdjustments.BusinessDayAdjustmentsBuilder getOrCreateDateAdjustments();
+		@Override
+		BusinessDayAdjustments.BusinessDayAdjustmentsBuilder getDateAdjustments();
+		ObservationFrequency.ObservationFrequencyBuilder getOrCreateObservationFrequency();
+		@Override
+		ObservationFrequency.ObservationFrequencyBuilder getObservationFrequency();
+		BusinessCentersReference.BusinessCentersReferenceBuilder getOrCreateBusinessCentersReference();
+		@Override
+		BusinessCentersReference.BusinessCentersReferenceBuilder getBusinessCentersReference();
+		BusinessCenters.BusinessCentersBuilder getOrCreateBusinessCenters();
+		@Override
+		BusinessCenters.BusinessCentersBuilder getBusinessCenters();
+		FxDateOffset.FxDateOffsetBuilder getOrCreateDateOffset();
+		@Override
+		FxDateOffset.FxDateOffsetBuilder getDateOffset();
+		FxSchedule.FxScheduleBuilder setId(String id);
+		FxSchedule.FxScheduleBuilder setDateAdjustments(BusinessDayAdjustments dateAdjustments);
+		FxSchedule.FxScheduleBuilder addAdjustedDate(ZonedDateTime adjustedDate);
+		FxSchedule.FxScheduleBuilder addAdjustedDate(ZonedDateTime adjustedDate, int idx);
+		FxSchedule.FxScheduleBuilder addAdjustedDate(List<ZonedDateTime> adjustedDate);
+		FxSchedule.FxScheduleBuilder setAdjustedDate(List<ZonedDateTime> adjustedDate);
+		FxSchedule.FxScheduleBuilder setStartDate(ZonedDateTime startDate);
+		FxSchedule.FxScheduleBuilder setEndDate(ZonedDateTime endDate);
+		FxSchedule.FxScheduleBuilder setObservationFrequency(ObservationFrequency observationFrequency);
+		FxSchedule.FxScheduleBuilder setDayType(DayTypeEnum dayType);
+		FxSchedule.FxScheduleBuilder setBusinessCentersReference(BusinessCentersReference businessCentersReference);
+		FxSchedule.FxScheduleBuilder setBusinessCenters(BusinessCenters businessCenters);
+		FxSchedule.FxScheduleBuilder setDateOffset(FxDateOffset dateOffset);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("id"), String.class, getId(), this);
+			processRosetta(path.newSubPath("dateAdjustments"), processor, BusinessDayAdjustments.BusinessDayAdjustmentsBuilder.class, getDateAdjustments());
+			processor.processBasic(path.newSubPath("adjustedDate"), ZonedDateTime.class, getAdjustedDate(), this);
+			processor.processBasic(path.newSubPath("startDate"), ZonedDateTime.class, getStartDate(), this);
+			processor.processBasic(path.newSubPath("endDate"), ZonedDateTime.class, getEndDate(), this);
+			processRosetta(path.newSubPath("observationFrequency"), processor, ObservationFrequency.ObservationFrequencyBuilder.class, getObservationFrequency());
+			processor.processBasic(path.newSubPath("dayType"), DayTypeEnum.class, getDayType(), this);
+			processRosetta(path.newSubPath("businessCentersReference"), processor, BusinessCentersReference.BusinessCentersReferenceBuilder.class, getBusinessCentersReference());
+			processRosetta(path.newSubPath("businessCenters"), processor, BusinessCenters.BusinessCentersBuilder.class, getBusinessCenters());
+			processRosetta(path.newSubPath("dateOffset"), processor, FxDateOffset.FxDateOffsetBuilder.class, getDateOffset());
+		}
+		
+
+		FxSchedule.FxScheduleBuilder prune();
+	}
+
+	/*********************** Immutable Implementation of FxSchedule  ***********************/
+	class FxScheduleImpl implements FxSchedule {
+		private final String id;
+		private final BusinessDayAdjustments dateAdjustments;
+		private final List<ZonedDateTime> adjustedDate;
+		private final ZonedDateTime startDate;
+		private final ZonedDateTime endDate;
+		private final ObservationFrequency observationFrequency;
+		private final DayTypeEnum dayType;
+		private final BusinessCentersReference businessCentersReference;
+		private final BusinessCenters businessCenters;
+		private final FxDateOffset dateOffset;
+		
+		protected FxScheduleImpl(FxSchedule.FxScheduleBuilder builder) {
+			this.id = builder.getId();
+			this.dateAdjustments = ofNullable(builder.getDateAdjustments()).map(f->f.build()).orElse(null);
+			this.adjustedDate = ofNullable(builder.getAdjustedDate()).filter(_l->!_l.isEmpty()).map(ImmutableList::copyOf).orElse(null);
+			this.startDate = builder.getStartDate();
+			this.endDate = builder.getEndDate();
+			this.observationFrequency = ofNullable(builder.getObservationFrequency()).map(f->f.build()).orElse(null);
+			this.dayType = builder.getDayType();
+			this.businessCentersReference = ofNullable(builder.getBusinessCentersReference()).map(f->f.build()).orElse(null);
+			this.businessCenters = ofNullable(builder.getBusinessCenters()).map(f->f.build()).orElse(null);
+			this.dateOffset = ofNullable(builder.getDateOffset()).map(f->f.build()).orElse(null);
+		}
+		
+		@Override
+		@RosettaAttribute("id")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("id")
+		public String getId() {
+			return id;
+		}
+		
+		@Override
+		@RosettaAttribute("dateAdjustments")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dateAdjustments")
+		public BusinessDayAdjustments getDateAdjustments() {
+			return dateAdjustments;
+		}
+		
+		@Override
+		@RosettaAttribute("adjustedDate")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("adjustedDate")
+		public List<ZonedDateTime> getAdjustedDate() {
+			return adjustedDate;
+		}
+		
+		@Override
+		@RosettaAttribute("startDate")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("startDate")
+		public ZonedDateTime getStartDate() {
+			return startDate;
+		}
+		
+		@Override
+		@RosettaAttribute("endDate")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("endDate")
+		public ZonedDateTime getEndDate() {
+			return endDate;
+		}
+		
+		@Override
+		@RosettaAttribute("observationFrequency")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("observationFrequency")
+		public ObservationFrequency getObservationFrequency() {
+			return observationFrequency;
+		}
+		
+		@Override
+		@RosettaAttribute("dayType")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dayType")
+		public DayTypeEnum getDayType() {
+			return dayType;
+		}
+		
+		@Override
+		@RosettaAttribute("businessCentersReference")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessCentersReference")
+		public BusinessCentersReference getBusinessCentersReference() {
+			return businessCentersReference;
+		}
+		
+		@Override
+		@RosettaAttribute("businessCenters")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessCenters")
+		public BusinessCenters getBusinessCenters() {
+			return businessCenters;
+		}
+		
+		@Override
+		@RosettaAttribute("dateOffset")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dateOffset")
+		public FxDateOffset getDateOffset() {
+			return dateOffset;
+		}
+		
+		@Override
+		public FxSchedule build() {
+			return this;
+		}
+		
+		@Override
+		public FxSchedule.FxScheduleBuilder toBuilder() {
+			FxSchedule.FxScheduleBuilder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(FxSchedule.FxScheduleBuilder builder) {
+			ofNullable(getId()).ifPresent(builder::setId);
+			ofNullable(getDateAdjustments()).ifPresent(builder::setDateAdjustments);
+			ofNullable(getAdjustedDate()).ifPresent(builder::setAdjustedDate);
+			ofNullable(getStartDate()).ifPresent(builder::setStartDate);
+			ofNullable(getEndDate()).ifPresent(builder::setEndDate);
+			ofNullable(getObservationFrequency()).ifPresent(builder::setObservationFrequency);
+			ofNullable(getDayType()).ifPresent(builder::setDayType);
+			ofNullable(getBusinessCentersReference()).ifPresent(builder::setBusinessCentersReference);
+			ofNullable(getBusinessCenters()).ifPresent(builder::setBusinessCenters);
+			ofNullable(getDateOffset()).ifPresent(builder::setDateOffset);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			FxSchedule _that = getType().cast(o);
+		
+			if (!Objects.equals(id, _that.getId())) return false;
+			if (!Objects.equals(dateAdjustments, _that.getDateAdjustments())) return false;
+			if (!ListEquals.listEquals(adjustedDate, _that.getAdjustedDate())) return false;
+			if (!Objects.equals(startDate, _that.getStartDate())) return false;
+			if (!Objects.equals(endDate, _that.getEndDate())) return false;
+			if (!Objects.equals(observationFrequency, _that.getObservationFrequency())) return false;
+			if (!Objects.equals(dayType, _that.getDayType())) return false;
+			if (!Objects.equals(businessCentersReference, _that.getBusinessCentersReference())) return false;
+			if (!Objects.equals(businessCenters, _that.getBusinessCenters())) return false;
+			if (!Objects.equals(dateOffset, _that.getDateOffset())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (id != null ? id.hashCode() : 0);
+			_result = 31 * _result + (dateAdjustments != null ? dateAdjustments.hashCode() : 0);
+			_result = 31 * _result + (adjustedDate != null ? adjustedDate.hashCode() : 0);
+			_result = 31 * _result + (startDate != null ? startDate.hashCode() : 0);
+			_result = 31 * _result + (endDate != null ? endDate.hashCode() : 0);
+			_result = 31 * _result + (observationFrequency != null ? observationFrequency.hashCode() : 0);
+			_result = 31 * _result + (dayType != null ? dayType.getClass().getName().hashCode() : 0);
+			_result = 31 * _result + (businessCentersReference != null ? businessCentersReference.hashCode() : 0);
+			_result = 31 * _result + (businessCenters != null ? businessCenters.hashCode() : 0);
+			_result = 31 * _result + (dateOffset != null ? dateOffset.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "FxSchedule {" +
+				"id=" + this.id + ", " +
+				"dateAdjustments=" + this.dateAdjustments + ", " +
+				"adjustedDate=" + this.adjustedDate + ", " +
+				"startDate=" + this.startDate + ", " +
+				"endDate=" + this.endDate + ", " +
+				"observationFrequency=" + this.observationFrequency + ", " +
+				"dayType=" + this.dayType + ", " +
+				"businessCentersReference=" + this.businessCentersReference + ", " +
+				"businessCenters=" + this.businessCenters + ", " +
+				"dateOffset=" + this.dateOffset +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of FxSchedule  ***********************/
+	class FxScheduleBuilderImpl implements FxSchedule.FxScheduleBuilder {
+	
+		protected String id;
+		protected BusinessDayAdjustments.BusinessDayAdjustmentsBuilder dateAdjustments;
+		protected List<ZonedDateTime> adjustedDate = new ArrayList<>();
+		protected ZonedDateTime startDate;
+		protected ZonedDateTime endDate;
+		protected ObservationFrequency.ObservationFrequencyBuilder observationFrequency;
+		protected DayTypeEnum dayType;
+		protected BusinessCentersReference.BusinessCentersReferenceBuilder businessCentersReference;
+		protected BusinessCenters.BusinessCentersBuilder businessCenters;
+		protected FxDateOffset.FxDateOffsetBuilder dateOffset;
+		
+		@Override
+		@RosettaAttribute("id")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("id")
+		public String getId() {
+			return id;
+		}
+		
+		@Override
+		@RosettaAttribute("dateAdjustments")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dateAdjustments")
+		public BusinessDayAdjustments.BusinessDayAdjustmentsBuilder getDateAdjustments() {
+			return dateAdjustments;
+		}
+		
+		@Override
+		public BusinessDayAdjustments.BusinessDayAdjustmentsBuilder getOrCreateDateAdjustments() {
+			BusinessDayAdjustments.BusinessDayAdjustmentsBuilder result;
+			if (dateAdjustments!=null) {
+				result = dateAdjustments;
+			}
+			else {
+				result = dateAdjustments = BusinessDayAdjustments.builder();
+			}
+			
+			return result;
+		}
+		
+		@Override
+		@RosettaAttribute("adjustedDate")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("adjustedDate")
+		public List<ZonedDateTime> getAdjustedDate() {
+			return adjustedDate;
+		}
+		
+		@Override
+		@RosettaAttribute("startDate")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("startDate")
+		public ZonedDateTime getStartDate() {
+			return startDate;
+		}
+		
+		@Override
+		@RosettaAttribute("endDate")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("endDate")
+		public ZonedDateTime getEndDate() {
+			return endDate;
+		}
+		
+		@Override
+		@RosettaAttribute("observationFrequency")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("observationFrequency")
+		public ObservationFrequency.ObservationFrequencyBuilder getObservationFrequency() {
+			return observationFrequency;
+		}
+		
+		@Override
+		public ObservationFrequency.ObservationFrequencyBuilder getOrCreateObservationFrequency() {
+			ObservationFrequency.ObservationFrequencyBuilder result;
+			if (observationFrequency!=null) {
+				result = observationFrequency;
+			}
+			else {
+				result = observationFrequency = ObservationFrequency.builder();
+			}
+			
+			return result;
+		}
+		
+		@Override
+		@RosettaAttribute("dayType")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dayType")
+		public DayTypeEnum getDayType() {
+			return dayType;
+		}
+		
+		@Override
+		@RosettaAttribute("businessCentersReference")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessCentersReference")
+		public BusinessCentersReference.BusinessCentersReferenceBuilder getBusinessCentersReference() {
+			return businessCentersReference;
+		}
+		
+		@Override
+		public BusinessCentersReference.BusinessCentersReferenceBuilder getOrCreateBusinessCentersReference() {
+			BusinessCentersReference.BusinessCentersReferenceBuilder result;
+			if (businessCentersReference!=null) {
+				result = businessCentersReference;
+			}
+			else {
+				result = businessCentersReference = BusinessCentersReference.builder();
+			}
+			
+			return result;
+		}
+		
+		@Override
+		@RosettaAttribute("businessCenters")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("businessCenters")
+		public BusinessCenters.BusinessCentersBuilder getBusinessCenters() {
+			return businessCenters;
+		}
+		
+		@Override
+		public BusinessCenters.BusinessCentersBuilder getOrCreateBusinessCenters() {
+			BusinessCenters.BusinessCentersBuilder result;
+			if (businessCenters!=null) {
+				result = businessCenters;
+			}
+			else {
+				result = businessCenters = BusinessCenters.builder();
+			}
+			
+			return result;
+		}
+		
+		@Override
+		@RosettaAttribute("dateOffset")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("dateOffset")
+		public FxDateOffset.FxDateOffsetBuilder getDateOffset() {
+			return dateOffset;
+		}
+		
+		@Override
+		public FxDateOffset.FxDateOffsetBuilder getOrCreateDateOffset() {
+			FxDateOffset.FxDateOffsetBuilder result;
+			if (dateOffset!=null) {
+				result = dateOffset;
+			}
+			else {
+				result = dateOffset = FxDateOffset.builder();
+			}
+			
+			return result;
+		}
+		
+		@RosettaAttribute("id")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("id")
+		@Override
+		public FxSchedule.FxScheduleBuilder setId(String _id) {
+			this.id = _id == null ? null : _id;
+			return this;
+		}
+		
+		@RosettaAttribute("dateAdjustments")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("dateAdjustments")
+		@Override
+		public FxSchedule.FxScheduleBuilder setDateAdjustments(BusinessDayAdjustments _dateAdjustments) {
+			this.dateAdjustments = _dateAdjustments == null ? null : _dateAdjustments.toBuilder();
+			return this;
+		}
+		
+		@RosettaAttribute("adjustedDate")
+		@Accessor(AccessorType.ADDER)
+		@Multi
+		@RuneAttribute("adjustedDate")
+		@Override
+		public FxSchedule.FxScheduleBuilder addAdjustedDate(ZonedDateTime _adjustedDate) {
+			if (_adjustedDate != null) {
+				this.adjustedDate.add(_adjustedDate);
+			}
+			return this;
+		}
+		
+		@Override
+		public FxSchedule.FxScheduleBuilder addAdjustedDate(ZonedDateTime _adjustedDate, int idx) {
+			getIndex(this.adjustedDate, idx, () -> _adjustedDate);
+			return this;
+		}
+		
+		@Override
+		public FxSchedule.FxScheduleBuilder addAdjustedDate(List<ZonedDateTime> adjustedDates) {
+			if (adjustedDates != null) {
+				for (final ZonedDateTime toAdd : adjustedDates) {
+					this.adjustedDate.add(toAdd);
+				}
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("adjustedDate")
+		@Accessor(AccessorType.SETTER)
+		@Multi
+		@RuneAttribute("adjustedDate")
+		@Override
+		public FxSchedule.FxScheduleBuilder setAdjustedDate(List<ZonedDateTime> adjustedDates) {
+			if (adjustedDates == null) {
+				this.adjustedDate = new ArrayList<>();
+			} else {
+				this.adjustedDate = adjustedDates.stream()
+					.collect(Collectors.toCollection(()->new ArrayList<>()));
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("startDate")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("startDate")
+		@Override
+		public FxSchedule.FxScheduleBuilder setStartDate(ZonedDateTime _startDate) {
+			this.startDate = _startDate == null ? null : _startDate;
+			return this;
+		}
+		
+		@RosettaAttribute("endDate")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("endDate")
+		@Override
+		public FxSchedule.FxScheduleBuilder setEndDate(ZonedDateTime _endDate) {
+			this.endDate = _endDate == null ? null : _endDate;
+			return this;
+		}
+		
+		@RosettaAttribute("observationFrequency")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("observationFrequency")
+		@Override
+		public FxSchedule.FxScheduleBuilder setObservationFrequency(ObservationFrequency _observationFrequency) {
+			this.observationFrequency = _observationFrequency == null ? null : _observationFrequency.toBuilder();
+			return this;
+		}
+		
+		@RosettaAttribute("dayType")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("dayType")
+		@Override
+		public FxSchedule.FxScheduleBuilder setDayType(DayTypeEnum _dayType) {
+			this.dayType = _dayType == null ? null : _dayType;
+			return this;
+		}
+		
+		@RosettaAttribute("businessCentersReference")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("businessCentersReference")
+		@Override
+		public FxSchedule.FxScheduleBuilder setBusinessCentersReference(BusinessCentersReference _businessCentersReference) {
+			this.businessCentersReference = _businessCentersReference == null ? null : _businessCentersReference.toBuilder();
+			return this;
+		}
+		
+		@RosettaAttribute("businessCenters")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("businessCenters")
+		@Override
+		public FxSchedule.FxScheduleBuilder setBusinessCenters(BusinessCenters _businessCenters) {
+			this.businessCenters = _businessCenters == null ? null : _businessCenters.toBuilder();
+			return this;
+		}
+		
+		@RosettaAttribute("dateOffset")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("dateOffset")
+		@Override
+		public FxSchedule.FxScheduleBuilder setDateOffset(FxDateOffset _dateOffset) {
+			this.dateOffset = _dateOffset == null ? null : _dateOffset.toBuilder();
+			return this;
+		}
+		
+		@Override
+		public FxSchedule build() {
+			return new FxSchedule.FxScheduleImpl(this);
+		}
+		
+		@Override
+		public FxSchedule.FxScheduleBuilder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public FxSchedule.FxScheduleBuilder prune() {
+			if (dateAdjustments!=null && !dateAdjustments.prune().hasData()) dateAdjustments = null;
+			if (observationFrequency!=null && !observationFrequency.prune().hasData()) observationFrequency = null;
+			if (businessCentersReference!=null && !businessCentersReference.prune().hasData()) businessCentersReference = null;
+			if (businessCenters!=null && !businessCenters.prune().hasData()) businessCenters = null;
+			if (dateOffset!=null && !dateOffset.prune().hasData()) dateOffset = null;
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getId()!=null) return true;
+			if (getDateAdjustments()!=null && getDateAdjustments().hasData()) return true;
+			if (getAdjustedDate()!=null && !getAdjustedDate().isEmpty()) return true;
+			if (getStartDate()!=null) return true;
+			if (getEndDate()!=null) return true;
+			if (getObservationFrequency()!=null && getObservationFrequency().hasData()) return true;
+			if (getDayType()!=null) return true;
+			if (getBusinessCentersReference()!=null && getBusinessCentersReference().hasData()) return true;
+			if (getBusinessCenters()!=null && getBusinessCenters().hasData()) return true;
+			if (getDateOffset()!=null && getDateOffset().hasData()) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public FxSchedule.FxScheduleBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			FxSchedule.FxScheduleBuilder o = (FxSchedule.FxScheduleBuilder) other;
+			
+			merger.mergeRosetta(getDateAdjustments(), o.getDateAdjustments(), this::setDateAdjustments);
+			merger.mergeRosetta(getObservationFrequency(), o.getObservationFrequency(), this::setObservationFrequency);
+			merger.mergeRosetta(getBusinessCentersReference(), o.getBusinessCentersReference(), this::setBusinessCentersReference);
+			merger.mergeRosetta(getBusinessCenters(), o.getBusinessCenters(), this::setBusinessCenters);
+			merger.mergeRosetta(getDateOffset(), o.getDateOffset(), this::setDateOffset);
+			
+			merger.mergeBasic(getId(), o.getId(), this::setId);
+			merger.mergeBasic(getAdjustedDate(), o.getAdjustedDate(), (Consumer<ZonedDateTime>) this::addAdjustedDate);
+			merger.mergeBasic(getStartDate(), o.getStartDate(), this::setStartDate);
+			merger.mergeBasic(getEndDate(), o.getEndDate(), this::setEndDate);
+			merger.mergeBasic(getDayType(), o.getDayType(), this::setDayType);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			FxSchedule _that = getType().cast(o);
+		
+			if (!Objects.equals(id, _that.getId())) return false;
+			if (!Objects.equals(dateAdjustments, _that.getDateAdjustments())) return false;
+			if (!ListEquals.listEquals(adjustedDate, _that.getAdjustedDate())) return false;
+			if (!Objects.equals(startDate, _that.getStartDate())) return false;
+			if (!Objects.equals(endDate, _that.getEndDate())) return false;
+			if (!Objects.equals(observationFrequency, _that.getObservationFrequency())) return false;
+			if (!Objects.equals(dayType, _that.getDayType())) return false;
+			if (!Objects.equals(businessCentersReference, _that.getBusinessCentersReference())) return false;
+			if (!Objects.equals(businessCenters, _that.getBusinessCenters())) return false;
+			if (!Objects.equals(dateOffset, _that.getDateOffset())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (id != null ? id.hashCode() : 0);
+			_result = 31 * _result + (dateAdjustments != null ? dateAdjustments.hashCode() : 0);
+			_result = 31 * _result + (adjustedDate != null ? adjustedDate.hashCode() : 0);
+			_result = 31 * _result + (startDate != null ? startDate.hashCode() : 0);
+			_result = 31 * _result + (endDate != null ? endDate.hashCode() : 0);
+			_result = 31 * _result + (observationFrequency != null ? observationFrequency.hashCode() : 0);
+			_result = 31 * _result + (dayType != null ? dayType.getClass().getName().hashCode() : 0);
+			_result = 31 * _result + (businessCentersReference != null ? businessCentersReference.hashCode() : 0);
+			_result = 31 * _result + (businessCenters != null ? businessCenters.hashCode() : 0);
+			_result = 31 * _result + (dateOffset != null ? dateOffset.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "FxScheduleBuilder {" +
+				"id=" + this.id + ", " +
+				"dateAdjustments=" + this.dateAdjustments + ", " +
+				"adjustedDate=" + this.adjustedDate + ", " +
+				"startDate=" + this.startDate + ", " +
+				"endDate=" + this.endDate + ", " +
+				"observationFrequency=" + this.observationFrequency + ", " +
+				"dayType=" + this.dayType + ", " +
+				"businessCentersReference=" + this.businessCentersReference + ", " +
+				"businessCenters=" + this.businessCenters + ", " +
+				"dateOffset=" + this.dateOffset +
+			'}';
+		}
+	}
+}

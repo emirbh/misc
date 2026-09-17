@@ -1,0 +1,42 @@
+package fpml.consolidated.option.shared.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.option.shared.FailureToPay;
+import fpml.consolidated.option.shared.GracePeriodExtension;
+import fpml.consolidated.shared.Money;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class FailureToPayValidator implements Validator<FailureToPay> {
+
+	private List<ComparisonResult> getComparisonResults(FailureToPay o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("applicable", (Boolean) o.getApplicable() != null ? 1 : 0, 0, 1), 
+				checkCardinality("gracePeriodExtension", (GracePeriodExtension) o.getGracePeriodExtension() != null ? 1 : 0, 0, 1), 
+				checkCardinality("paymentRequirement", (Money) o.getPaymentRequirement() != null ? 1 : 0, 0, 1)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, FailureToPay o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("FailureToPay", ValidationResult.ValidationType.CARDINALITY, "FailureToPay", path, "", res.getError());
+				}
+				return success("FailureToPay", ValidationResult.ValidationType.CARDINALITY, "FailureToPay", path, "");
+			})
+			.collect(toList());
+	}
+
+}

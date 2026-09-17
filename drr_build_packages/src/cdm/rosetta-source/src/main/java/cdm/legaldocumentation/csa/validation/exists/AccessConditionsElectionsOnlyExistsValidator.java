@@ -1,0 +1,43 @@
+package cdm.legaldocumentation.csa.validation.exists;
+
+import cdm.base.staticdata.party.CounterpartyRoleEnum;
+import cdm.legaldocumentation.csa.AccessConditionsElections;
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class AccessConditionsElectionsOnlyExistsValidator implements ValidatorWithArg<AccessConditionsElections, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends AccessConditionsElections> ValidationResult<AccessConditionsElections> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("party", ExistenceChecker.isSet((CounterpartyRoleEnum) o.getParty()))
+				.put("illegality", ExistenceChecker.isSet((Boolean) o.getIllegality()))
+				.put("forceMajeure", ExistenceChecker.isSet((Boolean) o.getForceMajeure()))
+				.put("taxEvent", ExistenceChecker.isSet((Boolean) o.getTaxEvent()))
+				.put("taxEventUponMerger", ExistenceChecker.isSet((Boolean) o.getTaxEventUponMerger()))
+				.put("creditEventUponMerger", ExistenceChecker.isSet((Boolean) o.getCreditEventUponMerger()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("AccessConditionsElections", ValidationResult.ValidationType.ONLY_EXISTS, "AccessConditionsElections", path, "");
+		}
+		return failure("AccessConditionsElections", ValidationResult.ValidationType.ONLY_EXISTS, "AccessConditionsElections", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

@@ -1,0 +1,28 @@
+daml 1.2
+
+-- | This file is auto-generated from the ISDA Common
+--   Domain Model, do not edit.
+--   @version 6.23.0
+module Com.Regnosys.Meta.MetaFields
+  ( module Com.Regnosys.Meta.MetaFields ) where
+
+data MetaFields = MetaFields with
+  scheme : Optional Text
+  globalKey : Optional Text
+  externalKey : Optional Text
+  location: [Key]
+    deriving (Eq, Ord, Show)
+
+data MetaAndTemplateFields = MetaAndTemplateFields with
+  scheme : Optional Text
+  globalKey : Optional Text
+  externalKey : Optional Text
+  templateGlobalReference : Optional Text
+  location: [Key]
+    deriving (Eq, Ord, Show)
+
+data Key = Key with
+  scope : Optional Text
+  value : Optional Text
+    deriving (Eq, Ord, Show)
+

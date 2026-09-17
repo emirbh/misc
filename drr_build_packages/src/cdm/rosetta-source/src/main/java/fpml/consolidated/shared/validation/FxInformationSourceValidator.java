@@ -1,0 +1,44 @@
+package fpml.consolidated.shared.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.shared.BusinessCenterTime;
+import fpml.consolidated.shared.FxInformationSource;
+import fpml.consolidated.shared.InformationProvider;
+import fpml.consolidated.shared.RateSourcePage;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class FxInformationSourceValidator implements Validator<FxInformationSource> {
+
+	private List<ComparisonResult> getComparisonResults(FxInformationSource o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("rateSource", (InformationProvider) o.getRateSource() != null ? 1 : 0, 0, 1), 
+				checkCardinality("rateSourcePage", (RateSourcePage) o.getRateSourcePage() != null ? 1 : 0, 0, 1), 
+				checkCardinality("rateSourcePageHeading", (String) o.getRateSourcePageHeading() != null ? 1 : 0, 0, 1), 
+				checkCardinality("fixingTime", (BusinessCenterTime) o.getFixingTime() != null ? 1 : 0, 0, 1)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, FxInformationSource o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("FxInformationSource", ValidationResult.ValidationType.CARDINALITY, "FxInformationSource", path, "", res.getError());
+				}
+				return success("FxInformationSource", ValidationResult.ValidationType.CARDINALITY, "FxInformationSource", path, "");
+			})
+			.collect(toList());
+	}
+
+}

@@ -1,0 +1,27 @@
+daml 1.2
+
+-- | This file is auto-generated from the ISDA Common
+--   Domain Model, do not edit.
+--   @version ${project.version}
+module Com.Regnosys.Meta.MetaClasses
+  ( module Com.Regnosys.Meta.MetaClasses ) where
+
+import Com.Regnosys.Meta.MetaFields
+
+data ReferenceWithMeta a = ReferenceWithMeta with
+  globalReference : Optional Text
+  externalReference : Optional Text
+  address: Optional Reference
+  value : Optional a
+    deriving (Eq, Ord, Show)
+
+data FieldWithMeta a = FieldWithMeta with
+  value : a
+  meta : Optional MetaFields
+    deriving (Eq, Ord, Show)
+
+data Reference = Reference with
+  scope : Optional Text
+  value : Optional Text
+    deriving (Eq, Ord, Show)
+

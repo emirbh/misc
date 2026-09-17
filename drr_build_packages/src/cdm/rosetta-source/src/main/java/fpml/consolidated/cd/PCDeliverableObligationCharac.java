@@ -1,0 +1,297 @@
+package fpml.consolidated.cd;
+
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import fpml.consolidated.cd.meta.PCDeliverableObligationCharacMeta;
+import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision 
+ *
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "confirmation-5.13"
+ *
+ * Provision 
+ *
+ */
+@RosettaDataType(value="PCDeliverableObligationCharac", builder=PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilderImpl.class, version="2.1.1")
+@RuneDataType(value="PCDeliverableObligationCharac", model="fpml", builder=PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilderImpl.class, version="2.1.1")
+public interface PCDeliverableObligationCharac extends RosettaModelObject {
+
+	PCDeliverableObligationCharacMeta metaData = new PCDeliverableObligationCharacMeta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision Indicates whether the provision is applicable.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision Indicates whether the provision is applicable.
+	 *
+	 */
+	Boolean getApplicable();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision Specifies whether either 'Partial Cash Settlement of Assignable Loans', 'Partial Cash Settlement of Consent Required Loans' or 'Partial Cash Settlement of Participations' is applicable. If this element is specified and Assignable Loan is a Deliverable Obligation Chracteristic, any Assignable Loan that is deliverable, but where a non-receipt of Consent by the Physical Settlement Date has occurred, the Loan can be cash settled rather than physically delivered. If this element is specified and Consent Required Loan is a Deliverable Obligation Characterisitc, any Consent Required Loan that is deliverable, but where a non-receipt of Consent by the Physical Settlement Date has occurred, the Loan can be cash settled rather than physically delivered. If this element is specified and Direct Loan Participation is a Deliverable Obligation Characterisitic, any Participation that is deliverable, but where this participation has not been effected (has not come into effect) by the Physical Settlement Date, the participation can be cash settled rather than physically delivered.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision Specifies whether either 'Partial Cash Settlement of Assignable Loans', 'Partial Cash Settlement of Consent Required Loans' or 'Partial Cash Settlement of Participations' is applicable. If this element is specified and Assignable Loan is a Deliverable Obligation Chracteristic, any Assignable Loan that is deliverable, but where a non-receipt of Consent by the Physical Settlement Date has occurred, the Loan can be cash settled rather than physically delivered. If this element is specified and Consent Required Loan is a Deliverable Obligation Characterisitc, any Consent Required Loan that is deliverable, but where a non-receipt of Consent by the Physical Settlement Date has occurred, the Loan can be cash settled rather than physically delivered. If this element is specified and Direct Loan Participation is a Deliverable Obligation Characterisitic, any Participation that is deliverable, but where this participation has not been effected (has not come into effect) by the Physical Settlement Date, the participation can be cash settled rather than physically delivered.
+	 *
+	 */
+	Boolean getPartialCashSettlement();
+
+	/*********************** Build Methods  ***********************/
+	PCDeliverableObligationCharac build();
+	
+	PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder toBuilder();
+	
+	static PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder builder() {
+		return new PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends PCDeliverableObligationCharac> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends PCDeliverableObligationCharac> getType() {
+		return PCDeliverableObligationCharac.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("applicable"), Boolean.class, getApplicable(), this);
+		processor.processBasic(path.newSubPath("partialCashSettlement"), Boolean.class, getPartialCashSettlement(), this);
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface PCDeliverableObligationCharacBuilder extends PCDeliverableObligationCharac, RosettaModelObjectBuilder {
+		PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder setApplicable(Boolean applicable);
+		PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder setPartialCashSettlement(Boolean partialCashSettlement);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("applicable"), Boolean.class, getApplicable(), this);
+			processor.processBasic(path.newSubPath("partialCashSettlement"), Boolean.class, getPartialCashSettlement(), this);
+		}
+		
+
+		PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder prune();
+	}
+
+	/*********************** Immutable Implementation of PCDeliverableObligationCharac  ***********************/
+	class PCDeliverableObligationCharacImpl implements PCDeliverableObligationCharac {
+		private final Boolean applicable;
+		private final Boolean partialCashSettlement;
+		
+		protected PCDeliverableObligationCharacImpl(PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder builder) {
+			this.applicable = builder.getApplicable();
+			this.partialCashSettlement = builder.getPartialCashSettlement();
+		}
+		
+		@Override
+		@RosettaAttribute("applicable")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("applicable")
+		public Boolean getApplicable() {
+			return applicable;
+		}
+		
+		@Override
+		@RosettaAttribute("partialCashSettlement")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("partialCashSettlement")
+		public Boolean getPartialCashSettlement() {
+			return partialCashSettlement;
+		}
+		
+		@Override
+		public PCDeliverableObligationCharac build() {
+			return this;
+		}
+		
+		@Override
+		public PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder toBuilder() {
+			PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder builder) {
+			ofNullable(getApplicable()).ifPresent(builder::setApplicable);
+			ofNullable(getPartialCashSettlement()).ifPresent(builder::setPartialCashSettlement);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			PCDeliverableObligationCharac _that = getType().cast(o);
+		
+			if (!Objects.equals(applicable, _that.getApplicable())) return false;
+			if (!Objects.equals(partialCashSettlement, _that.getPartialCashSettlement())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (applicable != null ? applicable.hashCode() : 0);
+			_result = 31 * _result + (partialCashSettlement != null ? partialCashSettlement.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "PCDeliverableObligationCharac {" +
+				"applicable=" + this.applicable + ", " +
+				"partialCashSettlement=" + this.partialCashSettlement +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of PCDeliverableObligationCharac  ***********************/
+	class PCDeliverableObligationCharacBuilderImpl implements PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder {
+	
+		protected Boolean applicable;
+		protected Boolean partialCashSettlement;
+		
+		@Override
+		@RosettaAttribute("applicable")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("applicable")
+		public Boolean getApplicable() {
+			return applicable;
+		}
+		
+		@Override
+		@RosettaAttribute("partialCashSettlement")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("partialCashSettlement")
+		public Boolean getPartialCashSettlement() {
+			return partialCashSettlement;
+		}
+		
+		@RosettaAttribute("applicable")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("applicable")
+		@Override
+		public PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder setApplicable(Boolean _applicable) {
+			this.applicable = _applicable == null ? null : _applicable;
+			return this;
+		}
+		
+		@RosettaAttribute("partialCashSettlement")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("partialCashSettlement")
+		@Override
+		public PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder setPartialCashSettlement(Boolean _partialCashSettlement) {
+			this.partialCashSettlement = _partialCashSettlement == null ? null : _partialCashSettlement;
+			return this;
+		}
+		
+		@Override
+		public PCDeliverableObligationCharac build() {
+			return new PCDeliverableObligationCharac.PCDeliverableObligationCharacImpl(this);
+		}
+		
+		@Override
+		public PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder prune() {
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getApplicable()!=null) return true;
+			if (getPartialCashSettlement()!=null) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder o = (PCDeliverableObligationCharac.PCDeliverableObligationCharacBuilder) other;
+			
+			
+			merger.mergeBasic(getApplicable(), o.getApplicable(), this::setApplicable);
+			merger.mergeBasic(getPartialCashSettlement(), o.getPartialCashSettlement(), this::setPartialCashSettlement);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			PCDeliverableObligationCharac _that = getType().cast(o);
+		
+			if (!Objects.equals(applicable, _that.getApplicable())) return false;
+			if (!Objects.equals(partialCashSettlement, _that.getPartialCashSettlement())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (applicable != null ? applicable.hashCode() : 0);
+			_result = 31 * _result + (partialCashSettlement != null ? partialCashSettlement.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "PCDeliverableObligationCharacBuilder {" +
+				"applicable=" + this.applicable + ", " +
+				"partialCashSettlement=" + this.partialCashSettlement +
+			'}';
+		}
+	}
+}

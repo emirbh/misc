@@ -1,0 +1,80 @@
+package fpml.consolidated.fpmlenum;
+
+import com.rosetta.model.lib.annotations.RosettaEnum;
+import com.rosetta.model.lib.annotations.RosettaEnumValue;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision 
+ *
+ */
+@RosettaEnum("DividendEntitlementEnum")
+public enum DividendEntitlementEnum {
+
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision 
+	 *
+	 */
+	@RosettaEnumValue(value = "ExDate") 
+	EX_DATE("ExDate", null),
+	
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision 
+	 *
+	 */
+	@RosettaEnumValue(value = "RecordDate") 
+	RECORD_DATE("RecordDate", null)
+;
+	private static Map<String, DividendEntitlementEnum> values;
+	static {
+        Map<String, DividendEntitlementEnum> map = new ConcurrentHashMap<>();
+		for (DividendEntitlementEnum instance : DividendEntitlementEnum.values()) {
+			map.put(instance.toDisplayString(), instance);
+		}
+		values = Collections.unmodifiableMap(map);
+    }
+
+	private final String rosettaName;
+	private final String displayName;
+
+	DividendEntitlementEnum(String rosettaName, String displayName) {
+		this.rosettaName = rosettaName;
+		this.displayName = displayName;
+	}
+
+	public static DividendEntitlementEnum fromDisplayName(String name) {
+		DividendEntitlementEnum value = values.get(name);
+		if (value == null) {
+			throw new IllegalArgumentException("No enum constant with display name \"" + name + "\".");
+		}
+		return value;
+	}
+
+	@Override
+	public String toString() {
+		return toDisplayString();
+	}
+
+	public String toDisplayString() {
+		return displayName != null ?  displayName : rosettaName;
+	}
+}

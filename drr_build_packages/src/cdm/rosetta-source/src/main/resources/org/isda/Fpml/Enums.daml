@@ -1,0 +1,1245 @@
+daml 1.2
+
+-- | This file is auto-generated from the ISDA Common
+--   Domain Model, do not edit.
+--   @version 6.23.0
+module Org.Isda.Fpml.Enums
+  ( module Org.Isda.Fpml.Enums ) where
+
+data AccountingStandardEnum 
+  = AccountingStandardEnum_GAAP
+  | AccountingStandardEnum_IFRS
+    deriving (Eq, Ord, Show)
+
+data AccrualReferenceAmountTypeEnum 
+  = AccrualReferenceAmountTypeEnum_Commitment
+  | AccrualReferenceAmountTypeEnum_Funded
+  | AccrualReferenceAmountTypeEnum_Other
+  | AccrualReferenceAmountTypeEnum_Unfunded
+  | AccrualReferenceAmountTypeEnum_Unutilized
+  | AccrualReferenceAmountTypeEnum_Utilized
+    deriving (Eq, Ord, Show)
+
+data AmountAdjustmentEnum 
+  = AmountAdjustmentEnum_Decrease
+  | AmountAdjustmentEnum_Increase
+    deriving (Eq, Ord, Show)
+
+data AveragingInOutEnum 
+  = AveragingInOutEnum_Both
+  | AveragingInOutEnum_In
+  | AveragingInOutEnum_Out
+    deriving (Eq, Ord, Show)
+
+data AveragingMethodEnum 
+  = AveragingMethodEnum_Unweighted
+  | AveragingMethodEnum_Weighted
+    deriving (Eq, Ord, Show)
+
+data BreakageCalculatedByEnum 
+  = BreakageCalculatedByEnum_AgentBank
+  | BreakageCalculatedByEnum_Lender
+    deriving (Eq, Ord, Show)
+
+data BullionTypeEnum 
+  = BullionTypeEnum_Gold
+  | BullionTypeEnum_Iridium
+  | BullionTypeEnum_Osmium
+  | BullionTypeEnum_Palladium
+  | BullionTypeEnum_Platinum
+  | BullionTypeEnum_Rhodium
+  | BullionTypeEnum_RhodiumSponge
+  | BullionTypeEnum_Ruthenium
+  | BullionTypeEnum_Silver
+    deriving (Eq, Ord, Show)
+
+data BusinessDayConventionEnum 
+  = BusinessDayConventionEnum_FOLLOWING
+  | BusinessDayConventionEnum_FRN
+  | BusinessDayConventionEnum_MODFOLLOWING
+  | BusinessDayConventionEnum_MODPRECEDING
+  | BusinessDayConventionEnum_NEAREST
+  | BusinessDayConventionEnum_NONE
+  | BusinessDayConventionEnum_NotApplicable
+  | BusinessDayConventionEnum_PRECEDING
+    deriving (Eq, Ord, Show)
+
+data BuySellEnum 
+  = BuySellEnum_Buyer
+  | BuySellEnum_Seller
+    deriving (Eq, Ord, Show)
+
+data CalculationAgentPartyEnum 
+  = CalculationAgentPartyEnum_AsSpecifiedInMasterAgreement
+  | CalculationAgentPartyEnum_AsSpecifiedInStandardTermsSupplement
+  | CalculationAgentPartyEnum_Both
+  | CalculationAgentPartyEnum_ExercisingParty
+  | CalculationAgentPartyEnum_NonExercisingParty
+    deriving (Eq, Ord, Show)
+
+data CalculationMethodEnum 
+  = CalculationMethodEnum_Averaging
+  | CalculationMethodEnum_CompoundedIndex
+  | CalculationMethodEnum_Compounding
+    deriving (Eq, Ord, Show)
+
+data CalendarSourceEnum 
+  = CalendarSourceEnum_Future
+  | CalendarSourceEnum_ListedOption
+    deriving (Eq, Ord, Show)
+
+data CallingPartyEnum 
+  = CallingPartyEnum_AsDefinedInMasterAgreement
+  | CallingPartyEnum_Either
+  | CallingPartyEnum_InitialBuyer
+  | CallingPartyEnum_InitialSeller
+    deriving (Eq, Ord, Show)
+
+data CashOrPhysicalSettlementEnum 
+  = CashOrPhysicalSettlementEnum_Cash
+  | CashOrPhysicalSettlementEnum_Physical
+    deriving (Eq, Ord, Show)
+
+data CollateralValueAllocationEnum 
+  = CollateralValueAllocationEnum_Buffer
+  | CollateralValueAllocationEnum_ExcessOverMargin
+  | CollateralValueAllocationEnum_Full
+  | CollateralValueAllocationEnum_Margin
+    deriving (Eq, Ord, Show)
+
+data CommissionDenominationEnum 
+  = CommissionDenominationEnum_BPS
+  | CommissionDenominationEnum_CentsPerShare
+  | CommissionDenominationEnum_FixedAmount
+  | CommissionDenominationEnum_Percentage
+    deriving (Eq, Ord, Show)
+
+data CommodityBullionSettlementDisruptionEnum 
+  = CommodityBullionSettlementDisruptionEnum_Cancellation_and_Payment
+  | CommodityBullionSettlementDisruptionEnum_Negotiation
+    deriving (Eq, Ord, Show)
+
+data CommodityDayTypeEnum 
+  = CommodityDayTypeEnum_Business
+  | CommodityDayTypeEnum_Calendar
+  | CommodityDayTypeEnum_CommodityBusiness
+  | CommodityDayTypeEnum_CurrencyBusiness
+  | CommodityDayTypeEnum_ExchangeBusiness
+  | CommodityDayTypeEnum_GasFlow
+  | CommodityDayTypeEnum_NearbyContractDay
+  | CommodityDayTypeEnum_ScheduledTradingDay
+    deriving (Eq, Ord, Show)
+
+data CommodityKnockEnum 
+  = CommodityKnockEnum_In
+  | CommodityKnockEnum_Out
+    deriving (Eq, Ord, Show)
+
+data CommodityPayRelativeToEnum 
+  = CommodityPayRelativeToEnum_CalculationDate
+  | CommodityPayRelativeToEnum_CalculationPeriodEndDate
+  | CommodityPayRelativeToEnum_CalculationPeriodMonthEnd
+  | CommodityPayRelativeToEnum_CalculationPeriodMonthStart
+  | CommodityPayRelativeToEnum_CalculationPeriodStartDate
+  | CommodityPayRelativeToEnum_EffectiveDate
+  | CommodityPayRelativeToEnum_FirstPricingDate
+  | CommodityPayRelativeToEnum_LastPricingDate
+  | CommodityPayRelativeToEnum_PricingPeriodEndOfWeek
+  | CommodityPayRelativeToEnum_PricingPeriodMonthEnd
+  | CommodityPayRelativeToEnum_ResetDate
+  | CommodityPayRelativeToEnum_TerminationOrExpirationDate
+  | CommodityPayRelativeToEnum_TradeDate
+  | CommodityPayRelativeToEnum_ValuationDate
+    deriving (Eq, Ord, Show)
+
+data CommodityReturnCalculationFormulaEnum 
+  = CommodityReturnCalculationFormulaEnum_CompoundFormula
+  | CommodityReturnCalculationFormulaEnum_SimpleFormula
+    deriving (Eq, Ord, Show)
+
+data CompoundingMethodEnum 
+  = CompoundingMethodEnum_Flat
+  | CompoundingMethodEnum_None
+  | CompoundingMethodEnum_SpreadExclusive
+  | CompoundingMethodEnum_Straight
+    deriving (Eq, Ord, Show)
+
+data ConditionEnum 
+  = ConditionEnum_Above
+  | ConditionEnum_AtOrAbove
+  | ConditionEnum_AtOrBelow
+  | ConditionEnum_Below
+    deriving (Eq, Ord, Show)
+
+data ConditionsPrecedentMetEnum 
+  = ConditionsPrecedentMetEnum_No
+  | ConditionsPrecedentMetEnum_Waived
+  | ConditionsPrecedentMetEnum_Yes
+    deriving (Eq, Ord, Show)
+
+data CsaTypeEnum 
+  = CsaTypeEnum_ExistingCSA
+  | CsaTypeEnum_NoCSA
+  | CsaTypeEnum_ReferenceVMCSA
+    deriving (Eq, Ord, Show)
+
+data DayOfWeekEnum 
+  = DayOfWeekEnum_FRI
+  | DayOfWeekEnum_MON
+  | DayOfWeekEnum_SAT
+  | DayOfWeekEnum_SUN
+  | DayOfWeekEnum_THU
+  | DayOfWeekEnum_TUE
+  | DayOfWeekEnum_WED
+    deriving (Eq, Ord, Show)
+
+data DayOfWeekExtEnum 
+  = DayOfWeekExtEnum_FRI
+  | DayOfWeekExtEnum_MON
+  | DayOfWeekExtEnum_SAT
+  | DayOfWeekExtEnum_SUN
+  | DayOfWeekExtEnum_THU
+  | DayOfWeekExtEnum_TUE
+  | DayOfWeekExtEnum_WD
+  | DayOfWeekExtEnum_WED
+  | DayOfWeekExtEnum_WN
+    deriving (Eq, Ord, Show)
+
+data DayTypeEnum 
+  = DayTypeEnum_Business
+  | DayTypeEnum_Calendar
+  | DayTypeEnum_CommodityBusiness
+  | DayTypeEnum_CurrencyBusiness
+  | DayTypeEnum_ExchangeBusiness
+  | DayTypeEnum_ScheduledTradingDay
+    deriving (Eq, Ord, Show)
+
+data DealtCurrencyEnum 
+  = DealtCurrencyEnum_ExchangedCurrency1
+  | DealtCurrencyEnum_ExchangedCurrency2
+    deriving (Eq, Ord, Show)
+
+data DeliveryDatesEnum 
+  = DeliveryDatesEnum_CalculationPeriod
+  | DeliveryDatesEnum_EighteenthNearby
+  | DeliveryDatesEnum_EighteenthNearbyWeek
+  | DeliveryDatesEnum_EighthNearby
+  | DeliveryDatesEnum_EighthNearbyWeek
+  | DeliveryDatesEnum_EleventhNearby
+  | DeliveryDatesEnum_EleventhNearbyWeek
+  | DeliveryDatesEnum_FifteenthNearby
+  | DeliveryDatesEnum_FifteenthNearbyWeek
+  | DeliveryDatesEnum_FifthNearby
+  | DeliveryDatesEnum_FifthNearbyWeek
+  | DeliveryDatesEnum_FiftiethNearby
+  | DeliveryDatesEnum_FiftiethNearbyWeek
+  | DeliveryDatesEnum_FiftyEighthNearby
+  | DeliveryDatesEnum_FiftyFifthNearby
+  | DeliveryDatesEnum_FiftyFirstNearby
+  | DeliveryDatesEnum_FiftyFirstNearbyWeek
+  | DeliveryDatesEnum_FiftyFourthNearby
+  | DeliveryDatesEnum_FiftyNinthNearby
+  | DeliveryDatesEnum_FiftySecondNearby
+  | DeliveryDatesEnum_FiftySecondNearbyWeek
+  | DeliveryDatesEnum_FiftySeventhNearby
+  | DeliveryDatesEnum_FiftySixthNearby
+  | DeliveryDatesEnum_FiftyThirdNearby
+  | DeliveryDatesEnum_FirstNearby
+  | DeliveryDatesEnum_FirstNearbyWeek
+  | DeliveryDatesEnum_FortiethNearby
+  | DeliveryDatesEnum_FortiethNearbyWeek
+  | DeliveryDatesEnum_FortyEighthNearby
+  | DeliveryDatesEnum_FortyEighthNearbyWeek
+  | DeliveryDatesEnum_FortyFifthNearby
+  | DeliveryDatesEnum_FortyFifthNearbyWeek
+  | DeliveryDatesEnum_FortyFirstNearby
+  | DeliveryDatesEnum_FortyFirstNearbyWeek
+  | DeliveryDatesEnum_FortyFourthNearby
+  | DeliveryDatesEnum_FortyFourthNearbyWeek
+  | DeliveryDatesEnum_FortyNinthNearby
+  | DeliveryDatesEnum_FortyNinthNearbyWeek
+  | DeliveryDatesEnum_FortySecondNearby
+  | DeliveryDatesEnum_FortySecondNearbyWeek
+  | DeliveryDatesEnum_FortySeventhNearby
+  | DeliveryDatesEnum_FortySeventhNearbyWeek
+  | DeliveryDatesEnum_FortySixthNearby
+  | DeliveryDatesEnum_FortySixthNearbyWeek
+  | DeliveryDatesEnum_FortyThirdNearby
+  | DeliveryDatesEnum_FortyThirdNearbyWeek
+  | DeliveryDatesEnum_FourteenthNearby
+  | DeliveryDatesEnum_FourteenthNearbyWeek
+  | DeliveryDatesEnum_FourthNearby
+  | DeliveryDatesEnum_FourthNearbyWeek
+  | DeliveryDatesEnum_NineteenthNearby
+  | DeliveryDatesEnum_NineteenthNearbyWeek
+  | DeliveryDatesEnum_NinthNearby
+  | DeliveryDatesEnum_NinthNearbyWeek
+  | DeliveryDatesEnum_SecondNearby
+  | DeliveryDatesEnum_SecondNearbyWeek
+  | DeliveryDatesEnum_SeventeenthNearby
+  | DeliveryDatesEnum_SeventeenthNearbyWeek
+  | DeliveryDatesEnum_SeventhNearby
+  | DeliveryDatesEnum_SeventhNearbyWeek
+  | DeliveryDatesEnum_SixteenthNearby
+  | DeliveryDatesEnum_SixteenthNearbyWeek
+  | DeliveryDatesEnum_SixthNearby
+  | DeliveryDatesEnum_SixthNearbyWeek
+  | DeliveryDatesEnum_Spot
+  | DeliveryDatesEnum_TenthNearby
+  | DeliveryDatesEnum_TenthNearbyWeek
+  | DeliveryDatesEnum_ThirdNearby
+  | DeliveryDatesEnum_ThirdNearbyWeek
+  | DeliveryDatesEnum_ThirteenthNearby
+  | DeliveryDatesEnum_ThirteenthNearbyWeek
+  | DeliveryDatesEnum_ThirtiethNearby
+  | DeliveryDatesEnum_ThirtiethNearbyWeek
+  | DeliveryDatesEnum_ThirtyEighthNearby
+  | DeliveryDatesEnum_ThirtyEighthNearbyWeek
+  | DeliveryDatesEnum_ThirtyFifthNearby
+  | DeliveryDatesEnum_ThirtyFifthNearbyWeek
+  | DeliveryDatesEnum_ThirtyFirstNearby
+  | DeliveryDatesEnum_ThirtyFirstNearbyWeek
+  | DeliveryDatesEnum_ThirtyFourthNearby
+  | DeliveryDatesEnum_ThirtyFourthNearbyWeek
+  | DeliveryDatesEnum_ThirtyNinthNearby
+  | DeliveryDatesEnum_ThirtyNinthNearbyWeek
+  | DeliveryDatesEnum_ThirtySecondNearby
+  | DeliveryDatesEnum_ThirtySecondNearbyWeek
+  | DeliveryDatesEnum_ThirtySeventhNearby
+  | DeliveryDatesEnum_ThirtySeventhNearbyWeek
+  | DeliveryDatesEnum_ThirtySixthNearby
+  | DeliveryDatesEnum_ThirtySixthNearbyWeek
+  | DeliveryDatesEnum_ThirtyThirdNearby
+  | DeliveryDatesEnum_ThirtyThirdNearbyWeek
+  | DeliveryDatesEnum_TwelfthNearby
+  | DeliveryDatesEnum_TwelfthNearbyWeek
+  | DeliveryDatesEnum_TwentiethNearby
+  | DeliveryDatesEnum_TwentiethNearbyWeek
+  | DeliveryDatesEnum_TwentyEighthNearby
+  | DeliveryDatesEnum_TwentyEighthNearbyWeek
+  | DeliveryDatesEnum_TwentyFifthNearby
+  | DeliveryDatesEnum_TwentyFifthNearbyWeek
+  | DeliveryDatesEnum_TwentyFirstNearby
+  | DeliveryDatesEnum_TwentyFirstNearbyWeek
+  | DeliveryDatesEnum_TwentyFourthNearby
+  | DeliveryDatesEnum_TwentyFourthearbyWeek
+  | DeliveryDatesEnum_TwentyNinthNearby
+  | DeliveryDatesEnum_TwentyNinthNearbyWeek
+  | DeliveryDatesEnum_TwentySecondNearby
+  | DeliveryDatesEnum_TwentySecondNearbyWeek
+  | DeliveryDatesEnum_TwentySeventhNearby
+  | DeliveryDatesEnum_TwentySeventhNearbyWeek
+  | DeliveryDatesEnum_TwentySixthNearby
+  | DeliveryDatesEnum_TwentySixthNearbyWeek
+  | DeliveryDatesEnum_TwentyThirdNearby
+  | DeliveryDatesEnum_TwentyThirdNearbyWeek
+    deriving (Eq, Ord, Show)
+
+data DeliveryNearbyTypeEnum 
+  = DeliveryNearbyTypeEnum_CalculationPeriod
+  | DeliveryNearbyTypeEnum_NearbyMonth
+  | DeliveryNearbyTypeEnum_NearbyWeek
+    deriving (Eq, Ord, Show)
+
+data DeliveryTypeEnum 
+  = DeliveryTypeEnum_Firm
+  | DeliveryTypeEnum_Interruptible
+    deriving (Eq, Ord, Show)
+
+data DifferenceSeverityEnum 
+  = DifferenceSeverityEnum_Error
+  | DifferenceSeverityEnum_Warning
+    deriving (Eq, Ord, Show)
+
+data DifferenceTypeEnum 
+  = DifferenceTypeEnum_Reference
+  | DifferenceTypeEnum_Scheme
+  | DifferenceTypeEnum_Structure
+  | DifferenceTypeEnum_Value
+    deriving (Eq, Ord, Show)
+
+data DiscountingTypeEnum 
+  = DiscountingTypeEnum_FRA
+  | DiscountingTypeEnum_FRAYield
+  | DiscountingTypeEnum_Standard
+    deriving (Eq, Ord, Show)
+
+data DisruptionFallbacksEnum 
+  = DisruptionFallbacksEnum_AsSpecifiedInConfirmation
+  | DisruptionFallbacksEnum_AsSpecifiedInMasterAgreement
+    deriving (Eq, Ord, Show)
+
+data DividendAmountTypeEnum 
+  = DividendAmountTypeEnum_AsSpecifiedInMasterConfirmation
+  | DividendAmountTypeEnum_ExAmount
+  | DividendAmountTypeEnum_PaidAmount
+  | DividendAmountTypeEnum_RecordAmount
+    deriving (Eq, Ord, Show)
+
+data DividendCompositionEnum 
+  = DividendCompositionEnum_CalculationAgentElection
+  | DividendCompositionEnum_EquityAmountReceiverElection
+    deriving (Eq, Ord, Show)
+
+data DividendDateReferenceEnum 
+  = DividendDateReferenceEnum_AdHocDate
+  | DividendDateReferenceEnum_CashSettlePaymentDateExDiv
+  | DividendDateReferenceEnum_CashSettlePaymentDateIssuerPayment
+  | DividendDateReferenceEnum_CashSettlementPaymentDate
+  | DividendDateReferenceEnum_CumulativeEquityExDiv
+  | DividendDateReferenceEnum_CumulativeEquityPaid
+  | DividendDateReferenceEnum_CumulativeLiborExDiv
+  | DividendDateReferenceEnum_CumulativeLiborPaid
+  | DividendDateReferenceEnum_DividendPaymentDate
+  | DividendDateReferenceEnum_DividendValuationDate
+  | DividendDateReferenceEnum_EquityPaymentDate
+  | DividendDateReferenceEnum_ExDate
+  | DividendDateReferenceEnum_ExDividendPaymentDate
+  | DividendDateReferenceEnum_FloatingAmountPaymentDate
+  | DividendDateReferenceEnum_FollowingPaymentDate
+  | DividendDateReferenceEnum_RecordDate
+  | DividendDateReferenceEnum_SharePayment
+  | DividendDateReferenceEnum_TerminationDate
+    deriving (Eq, Ord, Show)
+
+data DividendEntitlementEnum 
+  = DividendEntitlementEnum_ExDate
+  | DividendEntitlementEnum_RecordDate
+    deriving (Eq, Ord, Show)
+
+data DividendPeriodEnum 
+  = DividendPeriodEnum_FirstPeriod
+  | DividendPeriodEnum_SecondPeriod
+    deriving (Eq, Ord, Show)
+
+data DualCurrencyStrikeQuoteBasisEnum 
+  = DualCurrencyStrikeQuoteBasisEnum_AlternateCurrencyPerDepositCurrency
+  | DualCurrencyStrikeQuoteBasisEnum_DepositCurrencyPerAlternateCurrency
+    deriving (Eq, Ord, Show)
+
+data EMIRSupervisoryBodyEnum 
+  = EMIRSupervisoryBodyEnum_ESMA
+  | EMIRSupervisoryBodyEnum_UKFCA
+    deriving (Eq, Ord, Show)
+
+data ESMABenchmarkIndexCode 
+  = ESMABenchmarkIndexCode_BBSW
+  | ESMABenchmarkIndexCode_BUBO
+  | ESMABenchmarkIndexCode_CDOR
+  | ESMABenchmarkIndexCode_CIBO
+  | ESMABenchmarkIndexCode_EONA
+  | ESMABenchmarkIndexCode_EONS
+  | ESMABenchmarkIndexCode_EUCH
+  | ESMABenchmarkIndexCode_EURI
+  | ESMABenchmarkIndexCode_EUUS
+  | ESMABenchmarkIndexCode_FUSW
+  | ESMABenchmarkIndexCode_GCFR
+  | ESMABenchmarkIndexCode_ISDA
+  | ESMABenchmarkIndexCode_JIBA
+  | ESMABenchmarkIndexCode_LIBI
+  | ESMABenchmarkIndexCode_LIBO
+  | ESMABenchmarkIndexCode_MAAA
+  | ESMABenchmarkIndexCode_MOSP
+  | ESMABenchmarkIndexCode_NIBO
+  | ESMABenchmarkIndexCode_PFAN
+  | ESMABenchmarkIndexCode_PRBO
+  | ESMABenchmarkIndexCode_STBO
+  | ESMABenchmarkIndexCode_SWAP
+  | ESMABenchmarkIndexCode_TIBO
+  | ESMABenchmarkIndexCode_TLBO
+  | ESMABenchmarkIndexCode_TREA
+  | ESMABenchmarkIndexCode_WIBO
+    deriving (Eq, Ord, Show)
+
+data EarlyTerminationDateEnum 
+  = EarlyTerminationDateEnum_AfterFirstResetDate
+  | EarlyTerminationDateEnum_AnyDay
+  | EarlyTerminationDateEnum_AsSpecifiedInMCA
+  | EarlyTerminationDateEnum_ResetDate
+  | EarlyTerminationDateEnum_ValuationDate
+    deriving (Eq, Ord, Show)
+
+data ElectricityProductTypeEnum 
+  = ElectricityProductTypeEnum_Electricity()
+    deriving (Eq, Ord, Show)
+
+data EnvironmentalAbandonmentOfSchemeEnum 
+  = EnvironmentalAbandonmentOfSchemeEnum_OptionA_1
+  | EnvironmentalAbandonmentOfSchemeEnum_OptionA_2
+  | EnvironmentalAbandonmentOfSchemeEnum_OptionB
+  | EnvironmentalAbandonmentOfSchemeEnum_OptionC
+    deriving (Eq, Ord, Show)
+
+data EnvironmentalProductTypeEnum 
+  = EnvironmentalProductTypeEnum_AUSCarbonCreditUnit
+  | EnvironmentalProductTypeEnum_AUSCarbonUnit
+  | EnvironmentalProductTypeEnum_AUSEnergySavingCertificate
+  | EnvironmentalProductTypeEnum_AUSLargeScaleGenerationCertificate
+  | EnvironmentalProductTypeEnum_AUSSmallScaleTechnologyCertificate
+  | EnvironmentalProductTypeEnum_AUSVictorianEnergyEfficiencyCertificate
+  | EnvironmentalProductTypeEnum_AlternativeAllowance
+  | EnvironmentalProductTypeEnum_EUAllowance
+  | EnvironmentalProductTypeEnum_EUCredit
+  | EnvironmentalProductTypeEnum_MXCCFECRTINTLODS
+  | EnvironmentalProductTypeEnum_NOXEmissionsProduct
+  | EnvironmentalProductTypeEnum_NZEmissionsUnits
+  | EnvironmentalProductTypeEnum_RGGIEmissionsProduct
+  | EnvironmentalProductTypeEnum_RegionalEmissionsProduct
+  | EnvironmentalProductTypeEnum_RenewableEnergyCertificate
+  | EnvironmentalProductTypeEnum_SO2EmissionsProduct
+  | EnvironmentalProductTypeEnum_StateEmissionProduct
+  | EnvironmentalProductTypeEnum_UKRenewableObligationCertificate
+  | EnvironmentalProductTypeEnum_VoluntaryEmissionProduct
+    deriving (Eq, Ord, Show)
+
+data EquityOptionTypeEnum 
+  = EquityOptionTypeEnum_Call
+  | EquityOptionTypeEnum_Forward
+  | EquityOptionTypeEnum_Put
+    deriving (Eq, Ord, Show)
+
+data ExerciseActionEnum 
+  = ExerciseActionEnum_Abandon
+  | ExerciseActionEnum_FullExercise
+  | ExerciseActionEnum_PartialExercise
+    deriving (Eq, Ord, Show)
+
+data ExerciseSideEnum 
+  = ExerciseSideEnum_Call
+  | ExerciseSideEnum_Payer
+  | ExerciseSideEnum_Put
+  | ExerciseSideEnum_Receiver
+    deriving (Eq, Ord, Show)
+
+data ExerciseStyleEnum 
+  = ExerciseStyleEnum_American
+  | ExerciseStyleEnum_Bermuda
+  | ExerciseStyleEnum_European
+    deriving (Eq, Ord, Show)
+
+data ExerciseTimingEnum 
+  = ExerciseTimingEnum_Immediate
+  | ExerciseTimingEnum_OnExpiration
+    deriving (Eq, Ord, Show)
+
+data ExtensionStyleEnum 
+  = ExtensionStyleEnum_Evergreen
+  | ExtensionStyleEnum_Extendable
+    deriving (Eq, Ord, Show)
+
+data FPVFinalPriceElectionFallbackEnum 
+  = FPVFinalPriceElectionFallbackEnum_FPVClose
+  | FPVFinalPriceElectionFallbackEnum_FPVHedgeExecution
+    deriving (Eq, Ord, Show)
+
+data FeeElectionEnum 
+  = FeeElectionEnum_AmortizedFee
+  | FeeElectionEnum_AmortizedFeeAndFundingFee
+  | FeeElectionEnum_FlatFee
+  | FeeElectionEnum_FlatFeeAndFundingFee
+  | FeeElectionEnum_FundingFee
+    deriving (Eq, Ord, Show)
+
+data FlatRateEnum 
+  = FlatRateEnum_Fixed
+  | FlatRateEnum_Floating
+    deriving (Eq, Ord, Show)
+
+data FraDiscountingEnum 
+  = FraDiscountingEnum_AFMA
+  | FraDiscountingEnum_ISDA
+  | FraDiscountingEnum_ISDAYield
+  | FraDiscountingEnum_NONE
+    deriving (Eq, Ord, Show)
+
+data FxAccrualKnockoutBarrierRetentionEnum 
+  = FxAccrualKnockoutBarrierRetentionEnum_Keep
+  | FxAccrualKnockoutBarrierRetentionEnum_Lose
+    deriving (Eq, Ord, Show)
+
+data FxAveragingMethodEnum 
+  = FxAveragingMethodEnum_Arithmetic
+  | FxAveragingMethodEnum_Harmonic
+    deriving (Eq, Ord, Show)
+
+data FxBarrierDirectionEnum 
+  = FxBarrierDirectionEnum_Down
+  | FxBarrierDirectionEnum_Up
+    deriving (Eq, Ord, Show)
+
+data FxBarrierScopeEnum 
+  = FxBarrierScopeEnum_Global
+  | FxBarrierScopeEnum_PerExpiry
+    deriving (Eq, Ord, Show)
+
+data FxBarrierStyleEnum 
+  = FxBarrierStyleEnum_American
+  | FxBarrierStyleEnum_European
+    deriving (Eq, Ord, Show)
+
+data FxBarrierTypeEnum 
+  = FxBarrierTypeEnum_Knockin
+  | FxBarrierTypeEnum_Knockout
+  | FxBarrierTypeEnum_ReverseKnockin
+  | FxBarrierTypeEnum_ReverseKnockout
+    deriving (Eq, Ord, Show)
+
+data FxBarrierTypeSimpleEnum 
+  = FxBarrierTypeSimpleEnum_Knockin
+  | FxBarrierTypeSimpleEnum_Knockout
+    deriving (Eq, Ord, Show)
+
+data FxOffsetConventionEnum 
+  = FxOffsetConventionEnum_FxForward
+  | FxOffsetConventionEnum_FxSpot
+    deriving (Eq, Ord, Show)
+
+data FxRegionLowerBoundDirectionEnum 
+  = FxRegionLowerBoundDirectionEnum_Above
+  | FxRegionLowerBoundDirectionEnum_AtOrAbove
+    deriving (Eq, Ord, Show)
+
+data FxRegionUpperBoundDirectionEnum 
+  = FxRegionUpperBoundDirectionEnum_AtOrBelow
+  | FxRegionUpperBoundDirectionEnum_Below
+    deriving (Eq, Ord, Show)
+
+data FxSettlementAdjustmentMethodEnum 
+  = FxSettlementAdjustmentMethodEnum_VariedNotional
+  | FxSettlementAdjustmentMethodEnum_VariedStrike
+    deriving (Eq, Ord, Show)
+
+data FxStraddleTypeEnum 
+  = FxStraddleTypeEnum_AtTheMoneyForward
+  | FxStraddleTypeEnum_DeltaNeutral
+    deriving (Eq, Ord, Show)
+
+data FxTargetStyleEnum 
+  = FxTargetStyleEnum_Exact
+  | FxTargetStyleEnum_Exclusive
+  | FxTargetStyleEnum_Inclusive
+    deriving (Eq, Ord, Show)
+
+data FxTenorPeriodEnum 
+  = FxTenorPeriodEnum_Broken
+  | FxTenorPeriodEnum_Spot
+  | FxTenorPeriodEnum_SpotNext
+  | FxTenorPeriodEnum_Today
+  | FxTenorPeriodEnum_Tomorrow
+  | FxTenorPeriodEnum_TomorrowNext
+    deriving (Eq, Ord, Show)
+
+data GasProductTypeEnum 
+  = GasProductTypeEnum_Butane
+  | GasProductTypeEnum_CarbonDioxide
+  | GasProductTypeEnum_EPMix
+  | GasProductTypeEnum_Ethane
+  | GasProductTypeEnum_Gasoline
+  | GasProductTypeEnum_Helium
+  | GasProductTypeEnum_HydrogenSulfide
+  | GasProductTypeEnum_Isobutane
+  | GasProductTypeEnum_Methane
+  | GasProductTypeEnum_Naphtha
+  | GasProductTypeEnum_NaturalGas
+  | GasProductTypeEnum_Nitrogen
+  | GasProductTypeEnum_Pentane
+  | GasProductTypeEnum_Propane
+  | GasProductTypeEnum_Propylene
+  | GasProductTypeEnum_Water
+    deriving (Eq, Ord, Show)
+
+data IndexEventConsequenceEnum 
+  = IndexEventConsequenceEnum_CalculationAgentAdjustment
+  | IndexEventConsequenceEnum_CancellationAndPayment
+  | IndexEventConsequenceEnum_NegotiatedCloseOut
+  | IndexEventConsequenceEnum_RelatedExchange
+    deriving (Eq, Ord, Show)
+
+data InflationCalculationMethodEnum 
+  = InflationCalculationMethodEnum_Ratio
+  | InflationCalculationMethodEnum_Return
+  | InflationCalculationMethodEnum_Spread
+    deriving (Eq, Ord, Show)
+
+data InflationCalculationStyleEnum 
+  = InflationCalculationStyleEnum_YearOnYear
+  | InflationCalculationStyleEnum_ZeroCoupon
+    deriving (Eq, Ord, Show)
+
+data InterestCalculationMethodEnum 
+  = InterestCalculationMethodEnum_ContractPositionThruPeriod
+  | InterestCalculationMethodEnum_ProRataShareSnapshot
+    deriving (Eq, Ord, Show)
+
+data InterestShortfallCapEnum 
+  = InterestShortfallCapEnum_Fixed
+  | InterestShortfallCapEnum_Variable
+    deriving (Eq, Ord, Show)
+
+data InterpolationPeriodEnum 
+  = InterpolationPeriodEnum_AnyPeriod
+  | InterpolationPeriodEnum_Final
+  | InterpolationPeriodEnum_Initial
+  | InterpolationPeriodEnum_InitialAndFinal
+    deriving (Eq, Ord, Show)
+
+data InventoryAccountingMethodEnum 
+  = InventoryAccountingMethodEnum_FIFO
+  | InventoryAccountingMethodEnum_LIFO
+  | InventoryAccountingMethodEnum_WeightedAverage
+    deriving (Eq, Ord, Show)
+
+data LcAutoAdjustEnum 
+  = LcAutoAdjustEnum_AutoDecrease
+  | LcAutoAdjustEnum_AutoIncrease
+  | LcAutoAdjustEnum_AutoIncreaseOrDecrease
+    deriving (Eq, Ord, Show)
+
+data LengthUnitEnum 
+  = LengthUnitEnum_Pages
+  | LengthUnitEnum_TimeUnit
+    deriving (Eq, Ord, Show)
+
+data LimitModelEnum 
+  = LimitModelEnum_Ping
+  | LimitModelEnum_Plus1ToPing
+  | LimitModelEnum_Plus1ToStop
+  | LimitModelEnum_PushToPing
+  | LimitModelEnum_PushToStop
+    deriving (Eq, Ord, Show)
+
+data LoadTypeEnum 
+  = LoadTypeEnum_Base
+  | LoadTypeEnum_BlockHours
+  | LoadTypeEnum_Custom
+  | LoadTypeEnum_OffPeak
+  | LoadTypeEnum_Peak
+    deriving (Eq, Ord, Show)
+
+data LoanAllAssetsEnum 
+  = LoanAllAssetsEnum_All()
+    deriving (Eq, Ord, Show)
+
+data LoanAllTransactionsEnum 
+  = LoanAllTransactionsEnum_All()
+    deriving (Eq, Ord, Show)
+
+data LoanCovenantObligationMetricValueTypeEnum 
+  = LoanCovenantObligationMetricValueTypeEnum_Maximum
+  | LoanCovenantObligationMetricValueTypeEnum_Minimum
+  | LoanCovenantObligationMetricValueTypeEnum_Precise
+    deriving (Eq, Ord, Show)
+
+data LoanTradingAccrualSettlementEnum 
+  = LoanTradingAccrualSettlementEnum_Flat
+  | LoanTradingAccrualSettlementEnum_SettledWithAccrued
+  | LoanTradingAccrualSettlementEnum_SettledWithoutAccrued
+    deriving (Eq, Ord, Show)
+
+data LoanTradingAccruingFeeTypeEnum 
+  = LoanTradingAccruingFeeTypeEnum_Commitment
+  | LoanTradingAccruingFeeTypeEnum_Facility
+  | LoanTradingAccruingFeeTypeEnum_LetterOfCreditIssuance
+  | LoanTradingAccruingFeeTypeEnum_Ticking
+  | LoanTradingAccruingFeeTypeEnum_Utilization
+    deriving (Eq, Ord, Show)
+
+data LoanTradingAssocEnum 
+  = LoanTradingAssocEnum_LMA
+  | LoanTradingAssocEnum_LSTA
+    deriving (Eq, Ord, Show)
+
+data LoanTradingDocTypeEnum 
+  = LoanTradingDocTypeEnum_Distressed
+  | LoanTradingDocTypeEnum_Par
+    deriving (Eq, Ord, Show)
+
+data LoanTradingFormOfPurchaseEnum 
+  = LoanTradingFormOfPurchaseEnum_Assignment
+  | LoanTradingFormOfPurchaseEnum_AssignmentOnly
+  | LoanTradingFormOfPurchaseEnum_LMAFundedParticipation
+  | LoanTradingFormOfPurchaseEnum_LMAFundedRiskParticipation
+  | LoanTradingFormOfPurchaseEnum_LMARiskParticipation
+  | LoanTradingFormOfPurchaseEnum_LMARiskToFundedParticipation
+  | LoanTradingFormOfPurchaseEnum_LMATransferAgreement
+  | LoanTradingFormOfPurchaseEnum_LMATransferCertificate
+  | LoanTradingFormOfPurchaseEnum_Other
+  | LoanTradingFormOfPurchaseEnum_Participation
+    deriving (Eq, Ord, Show)
+
+data LoanTradingLetterOfCreditFeeTypeEnum 
+  = LoanTradingLetterOfCreditFeeTypeEnum_LetterOfCreditFronting
+  | LoanTradingLetterOfCreditFeeTypeEnum_LetterOfCreditIssuance
+    deriving (Eq, Ord, Show)
+
+data LoanTradingNonAccruingFeeTypeEnum 
+  = LoanTradingNonAccruingFeeTypeEnum_Amendment
+  | LoanTradingNonAccruingFeeTypeEnum_Consent
+  | LoanTradingNonAccruingFeeTypeEnum_Facility
+  | LoanTradingNonAccruingFeeTypeEnum_FacilityExension
+  | LoanTradingNonAccruingFeeTypeEnum_Upfront
+  | LoanTradingNonAccruingFeeTypeEnum_Waiver
+    deriving (Eq, Ord, Show)
+
+data LoanTradingTypeEnum 
+  = LoanTradingTypeEnum_Primary
+  | LoanTradingTypeEnum_Secondary
+    deriving (Eq, Ord, Show)
+
+data LoanTradingVotingRightsEnum 
+  = LoanTradingVotingRightsEnum_PassedOnToBuyer
+  | LoanTradingVotingRightsEnum_RetainedBySeller
+    deriving (Eq, Ord, Show)
+
+data LoanTransferFeePaidByEnum 
+  = LoanTransferFeePaidByEnum_BuyerSplitOneHalf
+  | LoanTransferFeePaidByEnum_OneFeePaidByBuyer
+  | LoanTransferFeePaidByEnum_OneFeePaidBySeller
+  | LoanTransferFeePaidByEnum_PaidByBuyer
+  | LoanTransferFeePaidByEnum_PaidBySeller
+  | LoanTransferFeePaidByEnum_SellerSplitOneHalf
+  | LoanTransferFeePaidByEnum_SplitFull
+    deriving (Eq, Ord, Show)
+
+data MarginTypeEnum 
+  = MarginTypeEnum_Cash
+  | MarginTypeEnum_Instrument
+    deriving (Eq, Ord, Show)
+
+data MarketDisruptionEventsEnum 
+  = MarketDisruptionEventsEnum_Applicable
+  | MarketDisruptionEventsEnum_AsSpecifiedInConfirmation
+  | MarketDisruptionEventsEnum_AsSpecifiedInMasterAgreement
+  | MarketDisruptionEventsEnum_NotApplicable
+    deriving (Eq, Ord, Show)
+
+data MetalTitleEnum 
+  = MetalTitleEnum_DoesNotTransferWithRiskOfLoss
+  | MetalTitleEnum_TransfersWithRiskOfLoss
+    deriving (Eq, Ord, Show)
+
+data MethodOfAdjustmentEnum 
+  = MethodOfAdjustmentEnum_CalculationAgent
+  | MethodOfAdjustmentEnum_OptionsExchange
+    deriving (Eq, Ord, Show)
+
+data NationalisationOrInsolvencyOrDelistingEventEnum 
+  = NationalisationOrInsolvencyOrDelistingEventEnum_CancellationAndPayment
+  | NationalisationOrInsolvencyOrDelistingEventEnum_NegotiatedCloseout
+    deriving (Eq, Ord, Show)
+
+data NegativeInterestRateTreatmentEnum 
+  = NegativeInterestRateTreatmentEnum_NegativeInterestRateMethod
+  | NegativeInterestRateTreatmentEnum_ZeroInterestRateMethod
+  | NegativeInterestRateTreatmentEnum_ZeroInterestRateMethodExcludingSpread
+    deriving (Eq, Ord, Show)
+
+data NonCashDividendTreatmentEnum 
+  = NonCashDividendTreatmentEnum_CashEquivalent
+  | NonCashDividendTreatmentEnum_PotentialAdjustmentEvent
+    deriving (Eq, Ord, Show)
+
+data NotionalAdjustmentEnum 
+  = NotionalAdjustmentEnum_Execution
+  | NotionalAdjustmentEnum_PortfolioRebalancing
+  | NotionalAdjustmentEnum_Standard
+    deriving (Eq, Ord, Show)
+
+data NotionalChangeEnum 
+  = NotionalChangeEnum_Decrease
+  | NotionalChangeEnum_Increase
+    deriving (Eq, Ord, Show)
+
+data ObligationCategoryEnum 
+  = ObligationCategoryEnum_Bond
+  | ObligationCategoryEnum_BondOrLoan
+  | ObligationCategoryEnum_BorrowedMoney
+  | ObligationCategoryEnum_Loan
+  | ObligationCategoryEnum_Payment
+  | ObligationCategoryEnum_ReferenceObligationsOnly
+    deriving (Eq, Ord, Show)
+
+data ObservationPeriodDatesEnum 
+  = ObservationPeriodDatesEnum_FixingDate
+  | ObservationPeriodDatesEnum_SetInAdvance
+  | ObservationPeriodDatesEnum_Standard
+    deriving (Eq, Ord, Show)
+
+data OptionTypeEnum 
+  = OptionTypeEnum_Call
+  | OptionTypeEnum_Payer
+  | OptionTypeEnum_Put
+  | OptionTypeEnum_Receiver
+  | OptionTypeEnum_Straddle
+    deriving (Eq, Ord, Show)
+
+data PartyDeterminationEnum 
+  = PartyDeterminationEnum_Both
+  | PartyDeterminationEnum_NonExercisingParty
+    deriving (Eq, Ord, Show)
+
+data PayRelativeToEnum 
+  = PayRelativeToEnum_CalculationPeriodEndDate
+  | PayRelativeToEnum_CalculationPeriodStartDate
+  | PayRelativeToEnum_LastPricingDate
+  | PayRelativeToEnum_ResetDate
+  | PayRelativeToEnum_ValuationDate
+    deriving (Eq, Ord, Show)
+
+data PayerReceiverEnum 
+  = PayerReceiverEnum_Payer
+  | PayerReceiverEnum_Receiver
+    deriving (Eq, Ord, Show)
+
+data PayoutEnum 
+  = PayoutEnum_Deferred
+  | PayoutEnum_Immediate
+    deriving (Eq, Ord, Show)
+
+data PeriodEnum 
+  = PeriodEnum_D
+  | PeriodEnum_M
+  | PeriodEnum_W
+  | PeriodEnum_Y
+    deriving (Eq, Ord, Show)
+
+data PeriodExtendedEnum 
+  = PeriodExtendedEnum_D
+  | PeriodExtendedEnum_M
+  | PeriodExtendedEnum_T
+  | PeriodExtendedEnum_W
+  | PeriodExtendedEnum_Y
+    deriving (Eq, Ord, Show)
+
+data PeriodTimeEnum 
+  = PeriodTimeEnum_D
+  | PeriodTimeEnum_Hour
+  | PeriodTimeEnum_M
+  | PeriodTimeEnum_Minute
+  | PeriodTimeEnum_Second
+  | PeriodTimeEnum_W
+  | PeriodTimeEnum_Y
+    deriving (Eq, Ord, Show)
+
+data PremiumQuoteBasisEnum 
+  = PremiumQuoteBasisEnum_CallCurrencyPerPutCurrency
+  | PremiumQuoteBasisEnum_Explicit
+  | PremiumQuoteBasisEnum_PercentageOfCallCurrencyAmount
+  | PremiumQuoteBasisEnum_PercentageOfPutCurrencyAmount
+  | PremiumQuoteBasisEnum_PutCurrencyPerCallCurrency
+    deriving (Eq, Ord, Show)
+
+data PremiumTypeEnum 
+  = PremiumTypeEnum_Fixed
+  | PremiumTypeEnum_PostPaid
+  | PremiumTypeEnum_PrePaid
+  | PremiumTypeEnum_Variable
+    deriving (Eq, Ord, Show)
+
+data PriceExpressionEnum 
+  = PriceExpressionEnum_AbsoluteTerms
+  | PriceExpressionEnum_PercentageOfNotional
+    deriving (Eq, Ord, Show)
+
+data PutCallEnum 
+  = PutCallEnum_Call
+  | PutCallEnum_Put
+    deriving (Eq, Ord, Show)
+
+data QuotationRateTypeEnum 
+  = QuotationRateTypeEnum_Ask
+  | QuotationRateTypeEnum_Bid
+  | QuotationRateTypeEnum_ExercisingPartyPays
+  | QuotationRateTypeEnum_Mid
+    deriving (Eq, Ord, Show)
+
+data QuotationSideEnum 
+  = QuotationSideEnum_Ask
+  | QuotationSideEnum_Bid
+  | QuotationSideEnum_Mid
+    deriving (Eq, Ord, Show)
+
+data QuotationStyleEnum 
+  = QuotationStyleEnum_PointsUpFront
+  | QuotationStyleEnum_Price
+  | QuotationStyleEnum_TradedSpread
+    deriving (Eq, Ord, Show)
+
+data QuoteBasisEnum 
+  = QuoteBasisEnum_Currency1PerCurrency2
+  | QuoteBasisEnum_Currency2PerCurrency1
+    deriving (Eq, Ord, Show)
+
+data RateTreatmentEnum 
+  = RateTreatmentEnum_BondEquivalentYield
+  | RateTreatmentEnum_MoneyMarketYield
+    deriving (Eq, Ord, Show)
+
+data RealisedVarianceMethodEnum 
+  = RealisedVarianceMethodEnum_Both
+  | RealisedVarianceMethodEnum_Last
+  | RealisedVarianceMethodEnum_Previous
+    deriving (Eq, Ord, Show)
+
+data RepoDurationEnum 
+  = RepoDurationEnum_Open
+  | RepoDurationEnum_Overnight
+  | RepoDurationEnum_Term
+    deriving (Eq, Ord, Show)
+
+data ReportingFrequencyTypeEnum 
+  = ReportingFrequencyTypeEnum_Annually
+  | ReportingFrequencyTypeEnum_Biweekly
+  | ReportingFrequencyTypeEnum_Daily
+  | ReportingFrequencyTypeEnum_Monthly
+  | ReportingFrequencyTypeEnum_Quarterly
+  | ReportingFrequencyTypeEnum_Semiannually
+  | ReportingFrequencyTypeEnum_Weekly
+    deriving (Eq, Ord, Show)
+
+data ResetRelativeToEnum 
+  = ResetRelativeToEnum_CalculationPeriodEndDate
+  | ResetRelativeToEnum_CalculationPeriodStartDate
+    deriving (Eq, Ord, Show)
+
+data ReturnTypeEnum 
+  = ReturnTypeEnum_Dividend
+  | ReturnTypeEnum_Price
+  | ReturnTypeEnum_Total
+    deriving (Eq, Ord, Show)
+
+data RollConventionEnum 
+  = RollConventionEnum_EOM
+  | RollConventionEnum_FRI
+  | RollConventionEnum_FRN
+  | RollConventionEnum_IMM
+  | RollConventionEnum_IMMAUD
+  | RollConventionEnum_IMMCAD
+  | RollConventionEnum_IMMNZD
+  | RollConventionEnum_MON
+  | RollConventionEnum_NONE
+  | RollConventionEnum_SAT
+  | RollConventionEnum_SFE
+  | RollConventionEnum_SUN
+  | RollConventionEnum_TBILL
+  | RollConventionEnum_THU
+  | RollConventionEnum_TUE
+  | RollConventionEnum_WED
+  | RollConventionEnum__1
+  | RollConventionEnum__10
+  | RollConventionEnum__11
+  | RollConventionEnum__12
+  | RollConventionEnum__13
+  | RollConventionEnum__14
+  | RollConventionEnum__15
+  | RollConventionEnum__16
+  | RollConventionEnum__17
+  | RollConventionEnum__18
+  | RollConventionEnum__19
+  | RollConventionEnum__2
+  | RollConventionEnum__20
+  | RollConventionEnum__21
+  | RollConventionEnum__22
+  | RollConventionEnum__23
+  | RollConventionEnum__24
+  | RollConventionEnum__25
+  | RollConventionEnum__26
+  | RollConventionEnum__27
+  | RollConventionEnum__28
+  | RollConventionEnum__29
+  | RollConventionEnum__3
+  | RollConventionEnum__30
+  | RollConventionEnum__4
+  | RollConventionEnum__5
+  | RollConventionEnum__6
+  | RollConventionEnum__7
+  | RollConventionEnum__8
+  | RollConventionEnum__9
+    deriving (Eq, Ord, Show)
+
+data RoundingDirectionEnum 
+  = RoundingDirectionEnum_Down
+  | RoundingDirectionEnum_Nearest
+  | RoundingDirectionEnum_Up
+    deriving (Eq, Ord, Show)
+
+data SecLendCallingPartyEnum 
+  = SecLendCallingPartyEnum_AsDefinedInMasterAgreement
+  | SecLendCallingPartyEnum_Borrower
+  | SecLendCallingPartyEnum_Either
+  | SecLendCallingPartyEnum_Lender
+    deriving (Eq, Ord, Show)
+
+data SecurityLendingDurationEnum 
+  = SecurityLendingDurationEnum_Open
+  | SecurityLendingDurationEnum_Term
+    deriving (Eq, Ord, Show)
+
+data SettlementPeriodDurationEnum 
+  = SettlementPeriodDurationEnum__15Minutes
+  | SettlementPeriodDurationEnum__1Hour
+  | SettlementPeriodDurationEnum__2Hours
+  | SettlementPeriodDurationEnum__30Minutes
+    deriving (Eq, Ord, Show)
+
+data SettlementTypeEnum 
+  = SettlementTypeEnum_Cash
+  | SettlementTypeEnum_CashOrPhysical
+  | SettlementTypeEnum_Election
+  | SettlementTypeEnum_Physical
+    deriving (Eq, Ord, Show)
+
+data ShareExtraordinaryEventEnum 
+  = ShareExtraordinaryEventEnum_AlternativeObligation
+  | ShareExtraordinaryEventEnum_CalculationAgent
+  | ShareExtraordinaryEventEnum_CancellationAndPayment
+  | ShareExtraordinaryEventEnum_Component
+  | ShareExtraordinaryEventEnum_ModifiedCalculationAgent
+  | ShareExtraordinaryEventEnum_OptionsExchange
+  | ShareExtraordinaryEventEnum_PartialCancellationAndPayment
+    deriving (Eq, Ord, Show)
+
+data SpecifiedPriceEnum 
+  = SpecifiedPriceEnum_Afternoon
+  | SpecifiedPriceEnum_Ask
+  | SpecifiedPriceEnum_Bid
+  | SpecifiedPriceEnum_Closing
+  | SpecifiedPriceEnum_High
+  | SpecifiedPriceEnum_Index
+  | SpecifiedPriceEnum_LocationalMarginal
+  | SpecifiedPriceEnum_Low
+  | SpecifiedPriceEnum_MarginalHourly
+  | SpecifiedPriceEnum_MarketClearing
+  | SpecifiedPriceEnum_MeanOfBidAndAsk
+  | SpecifiedPriceEnum_MeanOfHighAndLow
+  | SpecifiedPriceEnum_Midpoint
+  | SpecifiedPriceEnum_Morning
+  | SpecifiedPriceEnum_NationalSingle
+  | SpecifiedPriceEnum_OSP
+  | SpecifiedPriceEnum_Official
+  | SpecifiedPriceEnum_Opening
+  | SpecifiedPriceEnum_Settlement
+  | SpecifiedPriceEnum_Spot
+  | SpecifiedPriceEnum_UnWeightedAverage
+  | SpecifiedPriceEnum_WeightedAverage
+    deriving (Eq, Ord, Show)
+
+data SpreadCalculationMethodEnum 
+  = SpreadCalculationMethodEnum_ParPar
+  | SpreadCalculationMethodEnum_Proceeds
+    deriving (Eq, Ord, Show)
+
+data StandardSettlementStyleEnum 
+  = StandardSettlementStyleEnum_Net
+  | StandardSettlementStyleEnum_Standard
+  | StandardSettlementStyleEnum_StandardAndNet
+    deriving (Eq, Ord, Show)
+
+data StepRelativeToEnum 
+  = StepRelativeToEnum_Initial
+  | StepRelativeToEnum_Previous
+    deriving (Eq, Ord, Show)
+
+data StrikeQuoteBasisEnum 
+  = StrikeQuoteBasisEnum_CallCurrencyPerPutCurrency
+  | StrikeQuoteBasisEnum_PutCurrencyPerCallCurrency
+    deriving (Eq, Ord, Show)
+
+data StubPeriodTypeEnum 
+  = StubPeriodTypeEnum_LongFinal
+  | StubPeriodTypeEnum_LongInitial
+  | StubPeriodTypeEnum_ShortFinal
+  | StubPeriodTypeEnum_ShortInitial
+    deriving (Eq, Ord, Show)
+
+data SwaptionTypeEnum 
+  = SwaptionTypeEnum_NonStandard
+  | SwaptionTypeEnum_Payer
+  | SwaptionTypeEnum_Receiver
+  | SwaptionTypeEnum_Straddle
+    deriving (Eq, Ord, Show)
+
+data TaskStatusEnum 
+  = TaskStatusEnum_Active
+  | TaskStatusEnum_Cancelled
+  | TaskStatusEnum_Cleared
+    deriving (Eq, Ord, Show)
+
+data TelephoneTypeEnum 
+  = TelephoneTypeEnum_Fax
+  | TelephoneTypeEnum_Mobile
+  | TelephoneTypeEnum_Personal
+  | TelephoneTypeEnum_Work
+    deriving (Eq, Ord, Show)
+
+data TimeTypeEnum 
+  = TimeTypeEnum_AsSpecifiedInMasterConfirmation
+  | TimeTypeEnum_Close
+  | TimeTypeEnum_DerivativesClose
+  | TimeTypeEnum_OSP
+  | TimeTypeEnum_Open
+  | TimeTypeEnum_SpecificTime
+  | TimeTypeEnum_XETRA
+    deriving (Eq, Ord, Show)
+
+data TouchConditionEnum 
+  = TouchConditionEnum_Notouch
+  | TouchConditionEnum_Touch
+    deriving (Eq, Ord, Show)
+
+data TriggerConditionEnum 
+  = TriggerConditionEnum_Above
+  | TriggerConditionEnum_AtOrAbove
+  | TriggerConditionEnum_AtOrBelow
+  | TriggerConditionEnum_Below
+    deriving (Eq, Ord, Show)
+
+data TriggerTimeTypeEnum 
+  = TriggerTimeTypeEnum_Anytime
+  | TriggerTimeTypeEnum_Closing
+    deriving (Eq, Ord, Show)
+
+data TriggerTypeEnum 
+  = TriggerTypeEnum_Equal
+  | TriggerTypeEnum_EqualOrGreater
+  | TriggerTypeEnum_EqualOrLess
+  | TriggerTypeEnum_Greater
+  | TriggerTypeEnum_Less
+    deriving (Eq, Ord, Show)
+
+data ValuationMethodEnum 
+  = ValuationMethodEnum_AverageBlendedHighest
+  | ValuationMethodEnum_AverageBlendedMarket
+  | ValuationMethodEnum_AverageHighest
+  | ValuationMethodEnum_AverageMarket
+  | ValuationMethodEnum_BlendedHighest
+  | ValuationMethodEnum_BlendedMarket
+  | ValuationMethodEnum_Highest
+  | ValuationMethodEnum_Market
+    deriving (Eq, Ord, Show)
+
+data VoteDecisionEnum 
+  = VoteDecisionEnum_Abstain
+  | VoteDecisionEnum_Against
+  | VoteDecisionEnum_For
+  | VoteDecisionEnum_Pending
+    deriving (Eq, Ord, Show)
+
+data WeatherSettlementLevelEnum 
+  = WeatherSettlementLevelEnum_Average
+  | WeatherSettlementLevelEnum_Cumulative
+  | WeatherSettlementLevelEnum_Minimum
+  | WeatherSettlementLevelEnum_Mximum
+    deriving (Eq, Ord, Show)
+
+data WeeklyRollConventionEnum 
+  = WeeklyRollConventionEnum_FRI
+  | WeeklyRollConventionEnum_MON
+  | WeeklyRollConventionEnum_SAT
+  | WeeklyRollConventionEnum_SUN
+  | WeeklyRollConventionEnum_TBILL
+  | WeeklyRollConventionEnum_THU
+  | WeeklyRollConventionEnum_TUE
+  | WeeklyRollConventionEnum_WED
+    deriving (Eq, Ord, Show)
+

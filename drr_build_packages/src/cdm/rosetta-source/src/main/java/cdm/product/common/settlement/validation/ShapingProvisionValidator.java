@@ -1,0 +1,39 @@
+package cdm.product.common.settlement.validation;
+
+import cdm.observable.asset.Money;
+import cdm.product.common.settlement.ShapingProvision;
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class ShapingProvisionValidator implements Validator<ShapingProvision> {
+
+	private List<ComparisonResult> getComparisonResults(ShapingProvision o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("shapeSchedule", (List<? extends Money>) o.getShapeSchedule() == null ? 0 : o.getShapeSchedule().size(), 1, 0)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, ShapingProvision o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("ShapingProvision", ValidationResult.ValidationType.CARDINALITY, "ShapingProvision", path, "", res.getError());
+				}
+				return success("ShapingProvision", ValidationResult.ValidationType.CARDINALITY, "ShapingProvision", path, "");
+			})
+			.collect(toList());
+	}
+
+}

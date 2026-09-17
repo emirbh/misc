@@ -1,0 +1,303 @@
+package fpml.consolidated.fx.accruals;
+
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.Required;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
+import com.rosetta.model.lib.process.Processor;
+import fpml.consolidated.fx.accruals.meta.FxFixingObservationMeta;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
+
+/**
+ * @version 2.1.1
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "recordkeeping-5.13"
+ *
+ * Provision 
+ *
+ *
+ * Body ISDA
+ * Corpus Schema FPML FPML  
+ * version "confirmation-5.13"
+ *
+ * Provision 
+ *
+ */
+@RosettaDataType(value="FxFixingObservation", builder=FxFixingObservation.FxFixingObservationBuilderImpl.class, version="2.1.1")
+@RuneDataType(value="FxFixingObservation", model="fpml", builder=FxFixingObservation.FxFixingObservationBuilderImpl.class, version="2.1.1")
+public interface FxFixingObservation extends RosettaModelObject {
+
+	FxFixingObservationMeta metaData = new FxFixingObservationMeta();
+
+	/*********************** Getter Methods  ***********************/
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision A specific date for which an observation against a particular rate will be made and will be used for subsequent computations.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision A specific date for which an observation against a particular rate will be made and will be used for subsequent computations.
+	 *
+	 */
+	ZonedDateTime getDate();
+	/**
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "recordkeeping-5.13"
+	 *
+	 * Provision An optional factor that can be used for weighting certain observation dates. Typically, firms will weight each date with a factor of 1 if there are standard, unweighted adjustments. If omitted, weight is defaulted to 1.
+	 *
+	 *
+	 * Body ISDA
+	 * Corpus Schema FPML FPML  
+	 * version "confirmation-5.13"
+	 *
+	 * Provision An optional factor that can be used for weighting certain observation dates. Typically, firms will weight each date with a factor of 1 if there are standard, unweighted adjustments. If omitted, weight is defaulted to 1.
+	 *
+	 */
+	BigDecimal getWeight();
+
+	/*********************** Build Methods  ***********************/
+	FxFixingObservation build();
+	
+	FxFixingObservation.FxFixingObservationBuilder toBuilder();
+	
+	static FxFixingObservation.FxFixingObservationBuilder builder() {
+		return new FxFixingObservation.FxFixingObservationBuilderImpl();
+	}
+
+	/*********************** Utility Methods  ***********************/
+	@Override
+	default RosettaMetaData<? extends FxFixingObservation> metaData() {
+		return metaData;
+	}
+	
+	@Override
+	@RuneAttribute("@type")
+	default Class<? extends FxFixingObservation> getType() {
+		return FxFixingObservation.class;
+	}
+	
+	@Override
+	default void process(RosettaPath path, Processor processor) {
+		processor.processBasic(path.newSubPath("date"), ZonedDateTime.class, getDate(), this);
+		processor.processBasic(path.newSubPath("weight"), BigDecimal.class, getWeight(), this);
+	}
+	
+
+	/*********************** Builder Interface  ***********************/
+	interface FxFixingObservationBuilder extends FxFixingObservation, RosettaModelObjectBuilder {
+		FxFixingObservation.FxFixingObservationBuilder setDate(ZonedDateTime date);
+		FxFixingObservation.FxFixingObservationBuilder setWeight(BigDecimal weight);
+
+		@Override
+		default void process(RosettaPath path, BuilderProcessor processor) {
+			processor.processBasic(path.newSubPath("date"), ZonedDateTime.class, getDate(), this);
+			processor.processBasic(path.newSubPath("weight"), BigDecimal.class, getWeight(), this);
+		}
+		
+
+		FxFixingObservation.FxFixingObservationBuilder prune();
+	}
+
+	/*********************** Immutable Implementation of FxFixingObservation  ***********************/
+	class FxFixingObservationImpl implements FxFixingObservation {
+		private final ZonedDateTime date;
+		private final BigDecimal weight;
+		
+		protected FxFixingObservationImpl(FxFixingObservation.FxFixingObservationBuilder builder) {
+			this.date = builder.getDate();
+			this.weight = builder.getWeight();
+		}
+		
+		@Override
+		@RosettaAttribute("date")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("date")
+		public ZonedDateTime getDate() {
+			return date;
+		}
+		
+		@Override
+		@RosettaAttribute("weight")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("weight")
+		public BigDecimal getWeight() {
+			return weight;
+		}
+		
+		@Override
+		public FxFixingObservation build() {
+			return this;
+		}
+		
+		@Override
+		public FxFixingObservation.FxFixingObservationBuilder toBuilder() {
+			FxFixingObservation.FxFixingObservationBuilder builder = builder();
+			setBuilderFields(builder);
+			return builder;
+		}
+		
+		protected void setBuilderFields(FxFixingObservation.FxFixingObservationBuilder builder) {
+			ofNullable(getDate()).ifPresent(builder::setDate);
+			ofNullable(getWeight()).ifPresent(builder::setWeight);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			FxFixingObservation _that = getType().cast(o);
+		
+			if (!Objects.equals(date, _that.getDate())) return false;
+			if (!Objects.equals(weight, _that.getWeight())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (date != null ? date.hashCode() : 0);
+			_result = 31 * _result + (weight != null ? weight.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "FxFixingObservation {" +
+				"date=" + this.date + ", " +
+				"weight=" + this.weight +
+			'}';
+		}
+	}
+
+	/*********************** Builder Implementation of FxFixingObservation  ***********************/
+	class FxFixingObservationBuilderImpl implements FxFixingObservation.FxFixingObservationBuilder {
+	
+		protected ZonedDateTime date;
+		protected BigDecimal weight;
+		
+		@Override
+		@RosettaAttribute("date")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("date")
+		public ZonedDateTime getDate() {
+			return date;
+		}
+		
+		@Override
+		@RosettaAttribute("weight")
+		@Accessor(AccessorType.GETTER)
+		@RuneAttribute("weight")
+		public BigDecimal getWeight() {
+			return weight;
+		}
+		
+		@RosettaAttribute("date")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("date")
+		@Override
+		public FxFixingObservation.FxFixingObservationBuilder setDate(ZonedDateTime _date) {
+			this.date = _date == null ? null : _date;
+			return this;
+		}
+		
+		@RosettaAttribute("weight")
+		@Accessor(AccessorType.SETTER)
+		@RuneAttribute("weight")
+		@Override
+		public FxFixingObservation.FxFixingObservationBuilder setWeight(BigDecimal _weight) {
+			this.weight = _weight == null ? null : _weight;
+			return this;
+		}
+		
+		@Override
+		public FxFixingObservation build() {
+			return new FxFixingObservation.FxFixingObservationImpl(this);
+		}
+		
+		@Override
+		public FxFixingObservation.FxFixingObservationBuilder toBuilder() {
+			return this;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public FxFixingObservation.FxFixingObservationBuilder prune() {
+			return this;
+		}
+		
+		@Override
+		public boolean hasData() {
+			if (getDate()!=null) return true;
+			if (getWeight()!=null) return true;
+			return false;
+		}
+	
+		@SuppressWarnings("unchecked")
+		@Override
+		public FxFixingObservation.FxFixingObservationBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			FxFixingObservation.FxFixingObservationBuilder o = (FxFixingObservation.FxFixingObservationBuilder) other;
+			
+			
+			merger.mergeBasic(getDate(), o.getDate(), this::setDate);
+			merger.mergeBasic(getWeight(), o.getWeight(), this::setWeight);
+			return this;
+		}
+	
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+		
+			FxFixingObservation _that = getType().cast(o);
+		
+			if (!Objects.equals(date, _that.getDate())) return false;
+			if (!Objects.equals(weight, _that.getWeight())) return false;
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			int _result = 0;
+			_result = 31 * _result + (date != null ? date.hashCode() : 0);
+			_result = 31 * _result + (weight != null ? weight.hashCode() : 0);
+			return _result;
+		}
+		
+		@Override
+		public String toString() {
+			return "FxFixingObservationBuilder {" +
+				"date=" + this.date + ", " +
+				"weight=" + this.weight +
+			'}';
+		}
+	}
+}

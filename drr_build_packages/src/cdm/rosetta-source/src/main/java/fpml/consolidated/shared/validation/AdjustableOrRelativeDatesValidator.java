@@ -1,0 +1,42 @@
+package fpml.consolidated.shared.validation;
+
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import fpml.consolidated.shared.AdjustableDates;
+import fpml.consolidated.shared.AdjustableOrRelativeDates;
+import fpml.consolidated.shared.RelativeDates;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class AdjustableOrRelativeDatesValidator implements Validator<AdjustableOrRelativeDates> {
+
+	private List<ComparisonResult> getComparisonResults(AdjustableOrRelativeDates o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("id", (String) o.getId() != null ? 1 : 0, 0, 1), 
+				checkCardinality("adjustableDates", (AdjustableDates) o.getAdjustableDates() != null ? 1 : 0, 0, 1), 
+				checkCardinality("relativeDates", (RelativeDates) o.getRelativeDates() != null ? 1 : 0, 0, 1)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, AdjustableOrRelativeDates o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("AdjustableOrRelativeDates", ValidationResult.ValidationType.CARDINALITY, "AdjustableOrRelativeDates", path, "", res.getError());
+				}
+				return success("AdjustableOrRelativeDates", ValidationResult.ValidationType.CARDINALITY, "AdjustableOrRelativeDates", path, "");
+			})
+			.collect(toList());
+	}
+
+}

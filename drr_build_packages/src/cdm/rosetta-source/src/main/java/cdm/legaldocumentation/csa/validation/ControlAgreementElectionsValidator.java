@@ -1,0 +1,42 @@
+package cdm.legaldocumentation.csa.validation;
+
+import cdm.base.staticdata.party.CounterpartyRoleEnum;
+import cdm.legaldocumentation.csa.ControlAgreementElections;
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class ControlAgreementElectionsValidator implements Validator<ControlAgreementElections> {
+
+	private List<ComparisonResult> getComparisonResults(ControlAgreementElections o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("party", (CounterpartyRoleEnum) o.getParty() != null ? 1 : 0, 1, 1), 
+				checkCardinality("controlAgreementAsCsd", (Boolean) o.getControlAgreementAsCsd() != null ? 1 : 0, 1, 1), 
+				checkCardinality("consistencyWithControlAgreement", (Boolean) o.getConsistencyWithControlAgreement() != null ? 1 : 0, 0, 1), 
+				checkCardinality("relationshipWithControlAgreement", (Boolean) o.getRelationshipWithControlAgreement() != null ? 1 : 0, 0, 1)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, ControlAgreementElections o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("ControlAgreementElections", ValidationResult.ValidationType.CARDINALITY, "ControlAgreementElections", path, "", res.getError());
+				}
+				return success("ControlAgreementElections", ValidationResult.ValidationType.CARDINALITY, "ControlAgreementElections", path, "");
+			})
+			.collect(toList());
+	}
+
+}

@@ -1,0 +1,40 @@
+package fpml.consolidated.ird.validation.exists;
+
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.ird.MandatoryEarlyTerminationAdjustedDates;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class MandatoryEarlyTerminationAdjustedDatesOnlyExistsValidator implements ValidatorWithArg<MandatoryEarlyTerminationAdjustedDates, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends MandatoryEarlyTerminationAdjustedDates> ValidationResult<MandatoryEarlyTerminationAdjustedDates> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("adjustedEarlyTerminationDate", ExistenceChecker.isSet((ZonedDateTime) o.getAdjustedEarlyTerminationDate()))
+				.put("adjustedCashSettlementValuationDate", ExistenceChecker.isSet((ZonedDateTime) o.getAdjustedCashSettlementValuationDate()))
+				.put("adjustedCashSettlementPaymentDate", ExistenceChecker.isSet((ZonedDateTime) o.getAdjustedCashSettlementPaymentDate()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("MandatoryEarlyTerminationAdjustedDates", ValidationResult.ValidationType.ONLY_EXISTS, "MandatoryEarlyTerminationAdjustedDates", path, "");
+		}
+		return failure("MandatoryEarlyTerminationAdjustedDates", ValidationResult.ValidationType.ONLY_EXISTS, "MandatoryEarlyTerminationAdjustedDates", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

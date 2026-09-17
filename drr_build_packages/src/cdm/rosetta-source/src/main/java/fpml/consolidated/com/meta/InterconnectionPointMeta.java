@@ -1,0 +1,64 @@
+package fpml.consolidated.com.meta;
+
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.com.InterconnectionPoint;
+import fpml.consolidated.com.validation.InterconnectionPointTypeFormatValidator;
+import fpml.consolidated.com.validation.InterconnectionPointValidator;
+import fpml.consolidated.com.validation.exists.InterconnectionPointOnlyExistsValidator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version 2.1.1
+ */
+@RosettaMeta(model=InterconnectionPoint.class)
+public class InterconnectionPointMeta implements RosettaMetaData<InterconnectionPoint> {
+
+	@Override
+	public List<Validator<? super InterconnectionPoint>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+		);
+	}
+	
+	@Override
+	public List<Function<? super InterconnectionPoint, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super InterconnectionPoint> validator(ValidatorFactory factory) {
+		return factory.<InterconnectionPoint>create(InterconnectionPointValidator.class);
+	}
+
+	@Override
+	public Validator<? super InterconnectionPoint> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<InterconnectionPoint>create(InterconnectionPointTypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super InterconnectionPoint> validator() {
+		return new InterconnectionPointValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super InterconnectionPoint> typeFormatValidator() {
+		return new InterconnectionPointTypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super InterconnectionPoint, Set<String>> onlyExistsValidator() {
+		return new InterconnectionPointOnlyExistsValidator();
+	}
+}

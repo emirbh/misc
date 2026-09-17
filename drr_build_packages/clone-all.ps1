@@ -11,8 +11,6 @@ function Invoke-Clone([string]$Url, [string]$Tag, [string]$Dir) {
     if ($LASTEXITCODE -ne 0) { throw "git clone failed: $Dir" }
 }
 
-Invoke-Clone https://github.com/eclipse-emf/org.eclipse.emf.git         R2_33_0                         emf-R2_33_0
-Invoke-Clone https://github.com/eclipse-emf/org.eclipse.emf.git         R2_46_0                         emf-R2_46_0
 Invoke-Clone https://github.com/JodaOrg/joda-convert.git                v2.0                            joda-convert
 Invoke-Clone https://github.com/JodaOrg/joda-beans.git                  v2.1                            joda-beans
 Invoke-Clone https://github.com/JodaOrg/joda-time.git                   v2.10.14                        joda-time
@@ -27,7 +25,10 @@ Invoke-Clone https://github.com/finos/rune-dsl.git                      9.83.0  
 Invoke-Clone https://github.com/finos/rune-dsl.git                      9.85.1                          rune-dsl-9.85.1
 Invoke-Clone https://github.com/finos/rune-common.git                   11.121.2                        rune-common
 Invoke-Clone https://github.com/finos/rune-common.git                   11.124.2                        rune-common-11.124.2
-Invoke-Clone https://github.com/finos/common-domain-model.git           6.23.0                          common-domain-model
 
-# rune-fpml, iso20022 and DRR have no public git repository:
-# copy their sources into src\rune-fpml, src\iso20022 and src\DRR.
+# Published sources, not git: copy them into src\ (see build-all's preflight check).
+#   src\cdm                         CDM 6.23.0 (cdm-parent, cdm-java POMs + cdm-java-6.23.0-sources.jar)
+#   src\rune-fpml                   rune-fpml 2.1.1
+#   src\iso20022                    iso20022 1.42.0
+#   src\DRR                         DRR 7.7.0
+#   src\rune-dsl-9.83.0-xtend-gen   MapperMaths.java from rune-runtime-9.83.0-sources.jar

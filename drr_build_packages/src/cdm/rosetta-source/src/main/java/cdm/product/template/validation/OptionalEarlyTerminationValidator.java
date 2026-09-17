@@ -1,0 +1,49 @@
+package cdm.product.template.validation;
+
+import cdm.base.staticdata.party.BuyerSeller;
+import cdm.observable.asset.CalculationAgent;
+import cdm.product.common.settlement.SettlementTerms;
+import cdm.product.template.ExerciseTerms;
+import cdm.product.template.OptionalEarlyTermination;
+import cdm.product.template.OptionalEarlyTerminationAdjustedDates;
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class OptionalEarlyTerminationValidator implements Validator<OptionalEarlyTermination> {
+
+	private List<ComparisonResult> getComparisonResults(OptionalEarlyTermination o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("singlePartyOption", (BuyerSeller) o.getSinglePartyOption() != null ? 1 : 0, 0, 1), 
+				checkCardinality("mutualEarlyTermination", (Boolean) o.getMutualEarlyTermination() != null ? 1 : 0, 0, 1), 
+				checkCardinality("followUpConfirmation", (Boolean) o.getFollowUpConfirmation() != null ? 1 : 0, 0, 1), 
+				checkCardinality("calculationAgent", (CalculationAgent) o.getCalculationAgent() != null ? 1 : 0, 0, 1), 
+				checkCardinality("cashSettlement", (SettlementTerms) o.getCashSettlement() != null ? 1 : 0, 0, 1), 
+				checkCardinality("optionalEarlyTerminationAdjustedDates", (OptionalEarlyTerminationAdjustedDates) o.getOptionalEarlyTerminationAdjustedDates() != null ? 1 : 0, 0, 1), 
+				checkCardinality("exerciseTerms", (ExerciseTerms) o.getExerciseTerms() != null ? 1 : 0, 1, 1)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, OptionalEarlyTermination o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("OptionalEarlyTermination", ValidationResult.ValidationType.CARDINALITY, "OptionalEarlyTermination", path, "", res.getError());
+				}
+				return success("OptionalEarlyTermination", ValidationResult.ValidationType.CARDINALITY, "OptionalEarlyTermination", path, "");
+			})
+			.collect(toList());
+	}
+
+}

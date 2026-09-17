@@ -1,0 +1,67 @@
+package cdm.observable.asset.validation.datarule;
+
+import cdm.observable.asset.CashPrice;
+import cdm.observable.asset.CashPriceTypeEnum;
+import cdm.observable.asset.PremiumExpression;
+import com.google.inject.ImplementedBy;
+import com.rosetta.model.lib.annotations.RosettaDataRule;
+import com.rosetta.model.lib.expression.CardinalityOperator;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+/**
+ * @version 6.23.0
+ */
+@RosettaDataRule("CashPricePremiumType")
+@ImplementedBy(CashPricePremiumType.Default.class)
+public interface CashPricePremiumType extends Validator<CashPrice> {
+	
+	String NAME = "CashPricePremiumType";
+	String DEFINITION = "if premiumExpression exists then cashPriceType = CashPriceTypeEnum -> Premium";
+	
+	class Default implements CashPricePremiumType {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, CashPrice cashPrice) {
+			ComparisonResult result = executeDataRule(cashPrice);
+			if (result.getOrDefault(true)) {
+				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "CashPrice", path, DEFINITION));
+			}
+			
+			String failureMessage = result.getError();
+			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+				failureMessage = "Condition has failed.";
+			}
+			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "CashPrice", path, DEFINITION, failureMessage));
+		}
+		
+		private ComparisonResult executeDataRule(CashPrice cashPrice) {
+			try {
+				if (exists(MapperS.of(cashPrice).<PremiumExpression>map("getPremiumExpression", _cashPrice -> _cashPrice.getPremiumExpression())).getOrDefault(false)) {
+					return areEqual(MapperS.of(cashPrice).<CashPriceTypeEnum>map("getCashPriceType", _cashPrice -> _cashPrice.getCashPriceType()), MapperS.of(CashPriceTypeEnum.PREMIUM), CardinalityOperator.All);
+				}
+				return ComparisonResult.ofEmpty();
+			}
+			catch (Exception ex) {
+				return ComparisonResult.failure(ex.getMessage());
+			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	class NoOp implements CashPricePremiumType {
+	
+		@Override
+		public List<ValidationResult<?>> getValidationResults(RosettaPath path, CashPrice cashPrice) {
+			return Collections.emptyList();
+		}
+	}
+}

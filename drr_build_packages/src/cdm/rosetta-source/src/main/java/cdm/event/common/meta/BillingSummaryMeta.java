@@ -1,0 +1,70 @@
+package cdm.event.common.meta;
+
+import cdm.event.common.BillingSummary;
+import cdm.event.common.validation.BillingSummaryTypeFormatValidator;
+import cdm.event.common.validation.BillingSummaryValidator;
+import cdm.event.common.validation.datarule.BillingSummaryAccountTotal;
+import cdm.event.common.validation.datarule.BillingSummaryGrandTotal;
+import cdm.event.common.validation.datarule.BillingSummaryParentTotal;
+import cdm.event.common.validation.exists.BillingSummaryOnlyExistsValidator;
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version 6.23.0
+ */
+@RosettaMeta(model=BillingSummary.class)
+public class BillingSummaryMeta implements RosettaMetaData<BillingSummary> {
+
+	@Override
+	public List<Validator<? super BillingSummary>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+			factory.<BillingSummary>create(BillingSummaryGrandTotal.class),
+			factory.<BillingSummary>create(BillingSummaryParentTotal.class),
+			factory.<BillingSummary>create(BillingSummaryAccountTotal.class)
+		);
+	}
+	
+	@Override
+	public List<Function<? super BillingSummary, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super BillingSummary> validator(ValidatorFactory factory) {
+		return factory.<BillingSummary>create(BillingSummaryValidator.class);
+	}
+
+	@Override
+	public Validator<? super BillingSummary> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<BillingSummary>create(BillingSummaryTypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super BillingSummary> validator() {
+		return new BillingSummaryValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super BillingSummary> typeFormatValidator() {
+		return new BillingSummaryTypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super BillingSummary, Set<String>> onlyExistsValidator() {
+		return new BillingSummaryOnlyExistsValidator();
+	}
+}

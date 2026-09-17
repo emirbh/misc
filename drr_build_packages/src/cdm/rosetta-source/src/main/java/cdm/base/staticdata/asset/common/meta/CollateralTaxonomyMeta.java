@@ -1,0 +1,72 @@
+package cdm.base.staticdata.asset.common.meta;
+
+import cdm.base.staticdata.asset.common.CollateralTaxonomy;
+import cdm.base.staticdata.asset.common.validation.CollateralTaxonomyTypeFormatValidator;
+import cdm.base.staticdata.asset.common.validation.CollateralTaxonomyValidator;
+import cdm.base.staticdata.asset.common.validation.datarule.CollateralTaxonomyEu_EligibleCollateralTaxonomy;
+import cdm.base.staticdata.asset.common.validation.datarule.CollateralTaxonomyTaxonomyValue;
+import cdm.base.staticdata.asset.common.validation.datarule.CollateralTaxonomyUkEligibleCollateralTaxonomy;
+import cdm.base.staticdata.asset.common.validation.datarule.CollateralTaxonomyUsEligibleCollateralTaxonomy;
+import cdm.base.staticdata.asset.common.validation.exists.CollateralTaxonomyOnlyExistsValidator;
+import com.rosetta.model.lib.annotations.RosettaMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+
+/**
+ * @version 6.23.0
+ */
+@RosettaMeta(model=CollateralTaxonomy.class)
+public class CollateralTaxonomyMeta implements RosettaMetaData<CollateralTaxonomy> {
+
+	@Override
+	public List<Validator<? super CollateralTaxonomy>> dataRules(ValidatorFactory factory) {
+		return Arrays.asList(
+			factory.<CollateralTaxonomy>create(CollateralTaxonomyEu_EligibleCollateralTaxonomy.class),
+			factory.<CollateralTaxonomy>create(CollateralTaxonomyUkEligibleCollateralTaxonomy.class),
+			factory.<CollateralTaxonomy>create(CollateralTaxonomyUsEligibleCollateralTaxonomy.class),
+			factory.<CollateralTaxonomy>create(CollateralTaxonomyTaxonomyValue.class)
+		);
+	}
+	
+	@Override
+	public List<Function<? super CollateralTaxonomy, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public Validator<? super CollateralTaxonomy> validator(ValidatorFactory factory) {
+		return factory.<CollateralTaxonomy>create(CollateralTaxonomyValidator.class);
+	}
+
+	@Override
+	public Validator<? super CollateralTaxonomy> typeFormatValidator(ValidatorFactory factory) {
+		return factory.<CollateralTaxonomy>create(CollateralTaxonomyTypeFormatValidator.class);
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super CollateralTaxonomy> validator() {
+		return new CollateralTaxonomyValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super CollateralTaxonomy> typeFormatValidator() {
+		return new CollateralTaxonomyTypeFormatValidator();
+	}
+	
+	@Override
+	public ValidatorWithArg<? super CollateralTaxonomy, Set<String>> onlyExistsValidator() {
+		return new CollateralTaxonomyOnlyExistsValidator();
+	}
+}

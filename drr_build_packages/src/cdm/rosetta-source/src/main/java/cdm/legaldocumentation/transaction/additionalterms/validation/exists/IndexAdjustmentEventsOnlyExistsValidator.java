@@ -1,0 +1,40 @@
+package cdm.legaldocumentation.transaction.additionalterms.validation.exists;
+
+import cdm.legaldocumentation.transaction.additionalterms.IndexAdjustmentEvents;
+import cdm.observable.event.IndexEventConsequenceEnum;
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class IndexAdjustmentEventsOnlyExistsValidator implements ValidatorWithArg<IndexAdjustmentEvents, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends IndexAdjustmentEvents> ValidationResult<IndexAdjustmentEvents> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("indexModification", ExistenceChecker.isSet((IndexEventConsequenceEnum) o.getIndexModification()))
+				.put("indexCancellation", ExistenceChecker.isSet((IndexEventConsequenceEnum) o.getIndexCancellation()))
+				.put("indexDisruption", ExistenceChecker.isSet((IndexEventConsequenceEnum) o.getIndexDisruption()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("IndexAdjustmentEvents", ValidationResult.ValidationType.ONLY_EXISTS, "IndexAdjustmentEvents", path, "");
+		}
+		return failure("IndexAdjustmentEvents", ValidationResult.ValidationType.ONLY_EXISTS, "IndexAdjustmentEvents", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}

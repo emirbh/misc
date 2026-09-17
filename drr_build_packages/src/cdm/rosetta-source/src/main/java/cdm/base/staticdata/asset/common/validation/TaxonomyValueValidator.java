@@ -1,0 +1,39 @@
+package cdm.base.staticdata.asset.common.validation;
+
+import cdm.base.staticdata.asset.common.TaxonomyValue;
+import com.google.common.collect.Lists;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.metafields.FieldWithMetaString;
+import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
+
+public class TaxonomyValueValidator implements Validator<TaxonomyValue> {
+
+	private List<ComparisonResult> getComparisonResults(TaxonomyValue o) {
+		return Lists.<ComparisonResult>newArrayList(
+				checkCardinality("name", (FieldWithMetaString) o.getName() != null ? 1 : 0, 0, 1)
+			);
+	}
+
+	@Override
+	public List<ValidationResult<?>> getValidationResults(RosettaPath path, TaxonomyValue o) {
+		return getComparisonResults(o)
+			.stream()
+			.map(res -> {
+				if (!isNullOrEmpty(res.getError())) {
+					return failure("TaxonomyValue", ValidationResult.ValidationType.CARDINALITY, "TaxonomyValue", path, "", res.getError());
+				}
+				return success("TaxonomyValue", ValidationResult.ValidationType.CARDINALITY, "TaxonomyValue", path, "");
+			})
+			.collect(toList());
+	}
+
+}

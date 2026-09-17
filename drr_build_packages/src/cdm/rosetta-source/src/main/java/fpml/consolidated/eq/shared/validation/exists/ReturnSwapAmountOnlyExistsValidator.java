@@ -1,0 +1,53 @@
+package fpml.consolidated.eq.shared.validation.exists;
+
+import com.google.common.collect.ImmutableMap;
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ExistenceChecker;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import fpml.consolidated.eq.shared.ReturnSwapAmount;
+import fpml.consolidated.shared.AdjustableRelativeOrPeriodicDates;
+import fpml.consolidated.shared.DeterminationMethod;
+import fpml.consolidated.shared.Formula;
+import fpml.consolidated.shared.IdentifiedCurrency;
+import fpml.consolidated.shared.IdentifiedCurrencyReference;
+import fpml.consolidated.shared.ReferenceAmount;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+
+public class ReturnSwapAmountOnlyExistsValidator implements ValidatorWithArg<ReturnSwapAmount, Set<String>> {
+
+	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+	@Override
+	public <T2 extends ReturnSwapAmount> ValidationResult<ReturnSwapAmount> validate(RosettaPath path, T2 o, Set<String> fields) {
+		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+				.put("currency", ExistenceChecker.isSet((IdentifiedCurrency) o.getCurrency()))
+				.put("determinationMethod", ExistenceChecker.isSet((DeterminationMethod) o.getDeterminationMethod()))
+				.put("currencyReference", ExistenceChecker.isSet((IdentifiedCurrencyReference) o.getCurrencyReference()))
+				.put("referenceAmount", ExistenceChecker.isSet((ReferenceAmount) o.getReferenceAmount()))
+				.put("formula", ExistenceChecker.isSet((Formula) o.getFormula()))
+				.put("encodedDescription", ExistenceChecker.isSet((String) o.getEncodedDescription()))
+				.put("calculationDates", ExistenceChecker.isSet((AdjustableRelativeOrPeriodicDates) o.getCalculationDates()))
+				.put("cashSettlement", ExistenceChecker.isSet((Boolean) o.getCashSettlement()))
+				.put("optionsExchangeDividends", ExistenceChecker.isSet((Boolean) o.getOptionsExchangeDividends()))
+				.put("additionalDividends", ExistenceChecker.isSet((Boolean) o.getAdditionalDividends()))
+				.put("allDividends", ExistenceChecker.isSet((Boolean) o.getAllDividends()))
+				.build();
+		
+		// Find the fields that are set
+		Set<String> setFields = fieldExistenceMap.entrySet().stream()
+				.filter(Map.Entry::getValue)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toSet());
+		
+		if (setFields.equals(fields)) {
+			return success("ReturnSwapAmount", ValidationResult.ValidationType.ONLY_EXISTS, "ReturnSwapAmount", path, "");
+		}
+		return failure("ReturnSwapAmount", ValidationResult.ValidationType.ONLY_EXISTS, "ReturnSwapAmount", path, "",
+				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+	}
+}
