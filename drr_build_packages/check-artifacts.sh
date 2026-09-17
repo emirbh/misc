@@ -2,7 +2,7 @@
 # Check that everything build-all downloads can be obtained on this machine:
 # each Maven artifact from the local repository or through Artifactory, and each
 # Eclipse p2 update site the EMF builds read. Reads required-artifacts.txt and
-# required-p2-sites.txt from the directory this script is in, and can be run from
+# (and, if present, required-p2-sites.txt) from the directory this script is in, and can be run from
 # anywhere. Nothing is downloaded or installed.
 #
 #   ARTIFACTORY_URL    Maven repository URL in Artifactory, e.g.
@@ -20,10 +20,10 @@ LOCAL_REPO="${LOCAL_REPO:-$ROOT/temp/m2}"
 REPORT="$ROOT/temp/logs/artifact-check.txt"
 export ARTIFACTORY_URL="${ARTIFACTORY_URL%/}" ARTIFACTORY_TOKEN="${ARTIFACTORY_TOKEN:-}" \
        ARTIFACTORY_USER="${ARTIFACTORY_USER:-}" ARTIFACTORY_PASSWORD="${ARTIFACTORY_PASSWORD:-}"
-for f in "$LIST" "$SITES"; do
+for f in "$LIST"; do
   if [ ! -f "$f" ]; then
     echo "Not found: $f" >&2
-    echo "Copy required-artifacts.txt and required-p2-sites.txt next to check-artifacts.sh." >&2
+    echo "Copy required-artifacts.txt next to check-artifacts.sh." >&2
     exit 2
   fi
 done
@@ -71,17 +71,20 @@ echo "Maven artifacts: $TOTAL required — $LOCAL local, $REMOTE through Artifac
 if [ "$MISSING" -gt 20 ]; then echo "  ... and $((MISSING - 20)) more"; fi
 
 # ---- Eclipse p2 update sites (not Maven; checked directly) ----
-echo
-echo "Eclipse p2 update sites:"
+# Only when required-p2-sites.txt is present; the current build needs none.
 UNREACHABLE=0
-while IFS= read -r site; do
-  ok=""
-  for f in p2.index compositeContent.jar compositeContent.xml content.jar content.xml.xz content.xml; do
-    [ "$(ARTIFACTORY_TOKEN='' ARTIFACTORY_USER='' http_status "$site/$f")" = 200 ] && { ok=1; break; }
-  done
-  if [ -n "$ok" ]; then echo "  ok           $site"; else echo "  UNREACHABLE  $site"; UNREACHABLE=$((UNREACHABLE + 1)); fi
-done < <(grep -v '^#' "$SITES" | grep -v '^$')
-{ echo; echo "p2 sites unreachable: $UNREACHABLE"; } >> "$REPORT"
+if [ -f "$SITES" ]; then
+  echo
+  echo "Eclipse p2 update sites:"
+  while IFS= read -r site; do
+    ok=""
+    for f in p2.index compositeContent.jar compositeContent.xml content.jar content.xml.xz content.xml; do
+      [ "$(ARTIFACTORY_TOKEN='' ARTIFACTORY_USER='' http_status "$site/$f")" = 200 ] && { ok=1; break; }
+    done
+    if [ -n "$ok" ]; then echo "  ok           $site"; else echo "  UNREACHABLE  $site"; UNREACHABLE=$((UNREACHABLE + 1)); fi
+  done < <(grep -v '^#' "$SITES" | grep -v '^$')
+  { echo; echo "p2 sites unreachable: $UNREACHABLE"; } >> "$REPORT"
+fi
 
 echo
 echo "Full report: $REPORT"

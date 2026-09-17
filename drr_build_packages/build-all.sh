@@ -57,7 +57,7 @@ for entry in "${REQUIRED[@]}"; do
   echo "MISSING: $show"
   case $kind in
     git)  echo "  git clone --depth 1 --branch $b $a \"$show\"" ;;
-    copy) echo "  copy the $a into \"$show\"" ;;
+    copy) echo "  ./prepare-published.sh   (creates it from the published $a)" ;;
   esac
   echo
 done

@@ -58,7 +58,7 @@ foreach ($r in $Required) {
             Write-Host "  git -c core.longpaths=true clone --depth 1 --branch $($r.Tag) $($r.Url) `"$show`""
         }
         'copy' {
-            Write-Host "  copy the $($r.What) into `"$show`""
+            Write-Host "  .\prepare-published.ps1   (creates it from the published $($r.What))"
         }
     }
     Write-Host ''

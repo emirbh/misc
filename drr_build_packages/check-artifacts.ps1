@@ -1,7 +1,7 @@
 # Check that everything build-all downloads can be obtained on this machine:
 # each Maven artifact from the local repository or through Artifactory, and each
 # Eclipse p2 update site the EMF builds read. Reads required-artifacts.txt and
-# required-p2-sites.txt from the directory this script is in, and can be run from
+# (and, if present, required-p2-sites.txt) from the directory this script is in, and can be run from
 # anywhere. Nothing is downloaded or installed.
 #
 #   ARTIFACTORY_URL    Maven repository URL in Artifactory, e.g.
@@ -20,10 +20,10 @@ $LocalRepo = if ($env:LOCAL_REPO) { $env:LOCAL_REPO } else { Join-Path $Root 'te
 $Report    = Join-Path $Root 'temp\logs\artifact-check.txt'
 $BaseUrl   = if ($env:ARTIFACTORY_URL) { $env:ARTIFACTORY_URL.TrimEnd('/') } else { '' }
 $Parallel  = if ($env:PARALLEL) { [int]$env:PARALLEL } else { 16 }
-foreach ($f in @($List, $Sites)) {
+foreach ($f in @($List)) {
     if (-not (Test-Path -LiteralPath $f -PathType Leaf)) {
         Write-Host "Not found: $f"
-        Write-Host 'Copy required-artifacts.txt and required-p2-sites.txt next to check-artifacts.ps1.'
+        Write-Host 'Copy required-artifacts.txt next to check-artifacts.ps1.'
         exit 2
     }
 }
@@ -94,17 +94,20 @@ $missing | Select-Object -First 20 | ForEach-Object { Write-Host "  missing: $_"
 if ($missing.Count -gt 20) { Write-Host "  ... and $($missing.Count - 20) more" }
 
 # ---- Eclipse p2 update sites (not Maven; checked directly) ----
-Write-Host ''
-Write-Host 'Eclipse p2 update sites:'
+# Only when required-p2-sites.txt is present; the current build needs none.
 $unreachable = 0
-$siteClient = New-HttpClient $false
-foreach ($site in @(Get-Content $Sites | Where-Object { $_ -and -not $_.StartsWith('#') })) {
-    $probe = @('p2.index', 'compositeContent.jar', 'compositeContent.xml', 'content.jar', 'content.xml.xz', 'content.xml') | ForEach-Object { "$site/$_" }
-    $status = Get-HttpStatus $siteClient $probe
-    if (@($status.Values | Where-Object { $_ -eq 200 }).Count -gt 0) { Write-Host "  ok           $site" }
-    else { Write-Host "  UNREACHABLE  $site"; $unreachable++ }
+if (Test-Path -LiteralPath $Sites -PathType Leaf) {
+    Write-Host ''
+    Write-Host 'Eclipse p2 update sites:'
+    $siteClient = New-HttpClient $false
+    foreach ($site in @(Get-Content $Sites | Where-Object { $_ -and -not $_.StartsWith('#') })) {
+        $probe = @('p2.index', 'compositeContent.jar', 'compositeContent.xml', 'content.jar', 'content.xml.xz', 'content.xml') | ForEach-Object { "$site/$_" }
+        $status = Get-HttpStatus $siteClient $probe
+        if (@($status.Values | Where-Object { $_ -eq 200 }).Count -gt 0) { Write-Host "  ok           $site" }
+        else { Write-Host "  UNREACHABLE  $site"; $unreachable++ }
+    }
+    Add-Content -Path $Report -Value "`r`np2 sites unreachable: $unreachable"
 }
-Add-Content -Path $Report -Value "`r`np2 sites unreachable: $unreachable"
 
 Write-Host ''
 Write-Host "Full report: $Report"
