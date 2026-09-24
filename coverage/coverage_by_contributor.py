@@ -1,46 +1,40 @@
 #!/usr/bin/env python3
-"""Per-contributor unit & integration test coverage report.
+"""Test coverage per contributor: unit + integration tests in one report.
 
-Joins coverage reports with `git blame`. Every executable line is attributed
-to the contributor who last touched it, and the report shows how much of each
-contributor's code is exercised by unit tests, integration tests, and both
-combined. Python (coverage.py JSON) and Go (cover profiles) are detected
-automatically.
+Run from the root of a git repo, no arguments:
 
-Produce the inputs first (from the repo root).
+    python coverage_by_contributor.py
 
-Python:
-    pytest tests/unit        --cov=src --cov-report=json:coverage-unit.json
-    pytest tests/integration --cov=src --cov-report=json:coverage-integration.json
+It runs the whole test suite once with coverage switched on (unit and
+integration tests together), uses `git blame` to credit every executable line
+to whoever last changed it, and prints one table: how much of each person's
+code the tests run. The table is also saved as coverage_by_contributor.csv.
 
-Go (integration tests behind a build tag, e.g. `//go:build integration`):
-    go test -coverpkg=./... -coverprofile=coverage-unit.out ./...
-    go test -tags=integration -run Integration -coverpkg=./... \
-        -coverprofile=coverage-integration.out ./...
+    Go repo (has go.mod):  go test -tags=integration -coverpkg=./... ./...
+    Python repo:           python -m pytest --cov=.
 
-Go, integration/e2e against a running binary (Go 1.20+):
-    go build -cover -coverpkg=./... -o app ./cmd/app
-    GOCOVERDIR=covdata ./app &   # run the suite against it, then stop it
-    go tool covdata textfmt -i=covdata -o coverage-integration.out
-
-Then:
-
-    python coverage_by_contributor.py \
-        --unit coverage-unit.json --integration coverage-integration.json \
-        [--repo .] [--since 2026-01-01] [--path src/] [--csv out.csv]
+Integration tests in Go are usually behind a build tag; set GO_TAGS below if
+yours use a different one. Test files themselves are not counted.
 """
 from __future__ import annotations
 
-import argparse
 import csv
 import json
+import re
 import subprocess
 import sys
+import tempfile
 from collections.abc import Iterable, Iterator, Mapping
-from dataclasses import dataclass, fields
-from datetime import date, datetime, timezone
+from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
+
+# ---------------------------------------------------------------- settings
+
+REPO = Path.cwd().resolve()
+GO_TAGS = "integration"                 # build tag(s) that switch on integration tests
+OUTPUT_CSV = REPO / "coverage_by_contributor.csv"
+PY_TEST_FILE = re.compile(r"(^|/)(tests?/|test_[^/]*\.py$|[^/]*_test\.py$|conftest\.py$)")
 
 
 # ---------------------------------------------------------------- data model
@@ -52,38 +46,84 @@ class FileCoverage:
     statements: frozenset[int]
     executed: frozenset[int]
 
-    @classmethod
-    def from_json(cls, data: Mapping) -> "FileCoverage":
-        executed = frozenset(data.get("executed_lines", ()))
-        missing = frozenset(data.get("missing_lines", ()))
-        return cls(statements=executed | missing, executed=executed)
+
+@dataclass(frozen=True)
+class Tally:
+    lines: int = 0
+    covered: int = 0
+
+    def __add__(self, other: "Tally") -> "Tally":
+        return Tally(self.lines + other.lines, self.covered + other.covered)
+
+    def row(self, name: str) -> dict[str, str | int]:
+        pct = f"{100 * self.covered / self.lines:.1f}%" if self.lines else "n/a"
+        return {"Contributor": name, "Lines": self.lines, "Covered": self.covered,
+                "Uncovered": self.lines - self.covered, "Coverage": pct}
 
 
-EMPTY = FileCoverage(frozenset(), frozenset())
+@dataclass(frozen=True)
+class BlameLine:
+    line: int
+    author: str
+    email: str
 
 
-class CoverageReport:
-    """A coverage report (coverage.py JSON or Go cover profile), keyed by repo-relative path."""
+# ---------------------------------------------------------------- test runners
 
-    def __init__(self, files: Mapping[str, FileCoverage]):
-        self._files = dict(files)
+class TestRunner:
+    """Runs a repo's full test suite with coverage and returns per-file coverage."""
 
-    @classmethod
-    def load(cls, report: Path | None, repo: Path) -> "CoverageReport":
-        if report is None:
-            return cls({})
-        text = report.read_text()
-        if text.lstrip().startswith("mode:"):
-            return cls(GoProfile(repo).parse(text))
-        raw = json.loads(text)["files"]
-        return cls({_relative(p, repo): FileCoverage.from_json(d) for p, d in raw.items()})
+    name = "?"
 
-    @property
-    def paths(self) -> frozenset[str]:
-        return frozenset(self._files)
+    def __init__(self, repo: Path):
+        self.repo = repo
 
-    def __getitem__(self, path: str) -> FileCoverage:
-        return self._files.get(path, EMPTY)
+    @staticmethod
+    def detect(repo: Path) -> "TestRunner":
+        return (GoRunner if (repo / "go.mod").exists() else PythonRunner)(repo)
+
+    def run(self) -> dict[str, FileCoverage]:
+        raise NotImplementedError
+
+    def _exec(self, cmd: list[str]) -> None:
+        print(f"running: {' '.join(cmd)}", file=sys.stderr)
+        result = subprocess.run(cmd, cwd=self.repo)
+        if result.returncode != 0:
+            print("warning: some tests failed; coverage is from the tests that ran", file=sys.stderr)
+
+
+class GoRunner(TestRunner):
+    name = "Go"
+
+    def run(self) -> dict[str, FileCoverage]:
+        with tempfile.TemporaryDirectory() as tmp:
+            profile = Path(tmp) / "cover.out"
+            self._exec(["go", "test", f"-tags={GO_TAGS}", "-coverpkg=./...",
+                        f"-coverprofile={profile}", "./..."])
+            if not profile.exists():
+                sys.exit("error: go test produced no coverage profile")
+            return GoProfile(self.repo).parse(profile.read_text())
+
+
+class PythonRunner(TestRunner):
+    name = "Python"
+
+    def run(self) -> dict[str, FileCoverage]:
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / "coverage.json"
+            self._exec([sys.executable, "-m", "pytest", "-q", f"--cov={self.repo}",
+                        f"--cov-report=json:{report}"])
+            if not report.exists():
+                sys.exit("error: pytest produced no coverage report (is pytest-cov installed?)")
+            files = json.loads(report.read_text())["files"]
+        return {
+            path: FileCoverage(
+                statements=frozenset(d["executed_lines"]) | frozenset(d["missing_lines"]),
+                executed=frozenset(d["executed_lines"]),
+            )
+            for path, d in ((_relative(p, self.repo), d) for p, d in files.items())
+            if not PY_TEST_FILE.search(path)
+        }
 
 
 def _relative(path: str, repo: Path) -> str:
@@ -91,7 +131,7 @@ def _relative(path: str, repo: Path) -> str:
     return (p.resolve().relative_to(repo) if p.is_absolute() else p).as_posix()
 
 
-# ---------------------------------------------------------------- go support
+# ---------------------------------------------------------------- go profiles
 
 @dataclass(frozen=True)
 class GoBlock:
@@ -119,12 +159,12 @@ _NON_CODE = {"", "{", "}", ")", "})", "},"}
 
 
 class GoProfile:
-    """Turns a Go cover profile into line-level FileCoverage.
+    """Turns a Go cover profile into line-level coverage.
 
-    Go reports coverage per block, not per line, so each source line inside a
-    block is counted, except blank lines, comments and lone braces. A line is
-    covered if any block containing it ran (this also merges the duplicate
-    blocks `-coverpkg` produces).
+    Go reports coverage per block, so each source line inside a block is
+    counted, except blank lines, comments and lone braces. A line is covered if
+    any block containing it ran (this also merges the duplicate blocks that
+    -coverpkg produces).
     """
 
     def __init__(self, repo: Path):
@@ -174,39 +214,6 @@ class GoProfile:
         return {p: to_coverage(p, bs) for p, bs in by_file.items()}
 
 
-@dataclass(frozen=True)
-class BlameLine:
-    line: int
-    author: str
-    email: str
-    time: datetime
-
-
-@dataclass(frozen=True)
-class Tally:
-    statements: int = 0
-    unit: int = 0
-    integration: int = 0
-    combined: int = 0
-
-    def __add__(self, other: "Tally") -> "Tally":
-        return Tally(*(getattr(self, f.name) + getattr(other, f.name) for f in fields(self)))
-
-    @staticmethod
-    def pct(part: int, whole: int) -> str:
-        return f"{100 * part / whole:.1f}%" if whole else "n/a"
-
-    def row(self, name: str) -> dict[str, str | int]:
-        return {
-            "Contributor": name,
-            "Statements": self.statements,
-            "Unit": self.pct(self.unit, self.statements),
-            "Integration": self.pct(self.integration, self.statements),
-            "Combined": self.pct(self.combined, self.statements),
-            "Uncovered": self.statements - self.combined,
-        }
-
-
 # ---------------------------------------------------------------- git blame
 
 class GitBlame:
@@ -231,12 +238,8 @@ def parse_porcelain(text: str) -> Iterator[BlameLine]:
     line_no, expecting_header = 0, True
     for raw in text.splitlines():
         if raw.startswith("\t"):
-            yield BlameLine(
-                line=line_no,
-                author=meta.get("author", "unknown"),
-                email=meta.get("author-mail", "").strip("<>").lower(),
-                time=datetime.fromtimestamp(int(meta.get("author-time", 0)), tz=timezone.utc),
-            )
+            yield BlameLine(line=line_no, author=meta.get("author", "unknown"),
+                            email=meta.get("author-mail", "").strip("<>").lower())
             meta, expecting_header = {}, True
         elif expecting_header:
             line_no, expecting_header = int(raw.split()[2]), False
@@ -245,20 +248,15 @@ def parse_porcelain(text: str) -> Iterator[BlameLine]:
             meta[key] = value
 
 
-# ---------------------------------------------------------------- pipeline
+# ---------------------------------------------------------------- report
 
-def line_tallies(
-    path: str, unit: CoverageReport, integ: CoverageReport, blame: GitBlame, since: datetime | None
-) -> Iterator[tuple[str, str, Tally]]:
-    """Yield (email, author, Tally) for each executable line in one file."""
-    u, i = unit[path], integ[path]
-    blamed = blame(path)
-    for n in sorted(u.statements | i.statements):
-        b = blamed.get(n)
-        if b is None or (since and b.time < since):
-            continue
-        in_u, in_i = n in u.executed, n in i.executed
-        yield b.email or b.author, b.author, Tally(1, int(in_u), int(in_i), int(in_u or in_i))
+def line_tallies(coverage: Mapping[str, FileCoverage], blame: GitBlame) -> Iterator[tuple[str, str, Tally]]:
+    """Yield (email, author, Tally) for every executable line in the repo."""
+    for path in sorted(coverage):
+        cov, blamed = coverage[path], blame(path)
+        for n in sorted(cov.statements):
+            if (b := blamed.get(n)) is not None:
+                yield b.email or b.author, b.author, Tally(1, int(n in cov.executed))
 
 
 def aggregate(records: Iterable[tuple[str, str, Tally]]) -> dict[str, tuple[str, Tally]]:
@@ -270,14 +268,12 @@ def aggregate(records: Iterable[tuple[str, str, Tally]]) -> dict[str, tuple[str,
 
 
 def build_rows(totals: Mapping[str, tuple[str, Tally]]) -> list[dict[str, str | int]]:
-    ranked = sorted(totals.values(), key=lambda nt: nt[1].statements, reverse=True)
+    ranked = sorted(totals.values(), key=lambda nt: nt[1].lines, reverse=True)
     grand = reduce(lambda a, nt: a + nt[1], ranked, Tally())
     return [t.row(n) for n, t in ranked] + [grand.row("TOTAL")]
 
 
 def to_markdown(rows: list[dict[str, str | int]]) -> str:
-    if not rows:
-        return "No covered source files found."
     headers = list(rows[0])
     widths = {h: max(len(h), *(len(str(r[h])) for r in rows)) for h in headers}
     fmt = lambda vals: "| " + " | ".join(str(v).ljust(widths[h]) for h, v in zip(headers, vals)) + " |"
@@ -288,38 +284,24 @@ def to_markdown(rows: list[dict[str, str | int]]) -> str:
     ])
 
 
-# ---------------------------------------------------------------- cli
+def write_csv(rows: list[dict[str, str | int]], path: Path) -> None:
+    with path.open("w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
 
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--unit", type=Path, help="coverage file from the unit test run (coverage.py JSON or Go profile)")
-    ap.add_argument("--integration", type=Path, help="coverage file from the integration test run (coverage.py JSON or Go profile)")
-    ap.add_argument("--repo", type=Path, default=Path("."), help="git repo root (default: .)")
-    ap.add_argument("--since", type=date.fromisoformat, help="only count lines last changed on/after YYYY-MM-DD")
-    ap.add_argument("--path", action="append", default=[], help="only files under this prefix (repeatable)")
-    ap.add_argument("--csv", type=Path, help="also write the table to this CSV file")
-    args = ap.parse_args(argv)
 
-    if not (args.unit or args.integration):
-        ap.error("give at least one of --unit / --integration")
-
-    repo = args.repo.resolve()
-    unit = CoverageReport.load(args.unit, repo)
-    integ = CoverageReport.load(args.integration, repo)
-    since = datetime.combine(args.since, datetime.min.time(), timezone.utc) if args.since else None
-    blame = GitBlame(repo)
-
-    paths = sorted(p for p in unit.paths | integ.paths
-                   if not args.path or any(p.startswith(pre) for pre in args.path))
-    records = (rec for p in paths for rec in line_tallies(p, unit, integ, blame, since))
-    rows = build_rows(aggregate(records))
-
+def main() -> int:
+    if not (REPO / ".git").exists():
+        sys.exit(f"error: {REPO} is not the root of a git repo; run this from the repo root")
+    runner = TestRunner.detect(REPO)
+    print(f"{runner.name} repo: running unit + integration tests with coverage", file=sys.stderr)
+    coverage = runner.run()
+    rows = build_rows(aggregate(line_tallies(coverage, GitBlame(REPO))))
+    print("\nTest coverage per contributor (unit + integration)\n")
     print(to_markdown(rows))
-    if args.csv and rows:
-        with args.csv.open("w", newline="") as fh:
-            writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
-            writer.writeheader()
-            writer.writerows(rows)
+    write_csv(rows, OUTPUT_CSV)
+    print(f"\nsaved {OUTPUT_CSV.name}", file=sys.stderr)
     return 0
 
 
